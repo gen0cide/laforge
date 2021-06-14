@@ -3,13 +3,17 @@ package builder
 import (
 	"context"
 	"errors"
+	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/gen0cide/laforge/builder/vspherensxt"
 	"github.com/gen0cide/laforge/builder/vspherensxt/nsxt"
 	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
 	"github.com/gen0cide/laforge/ent"
+	"github.com/vmware/govmomi"
+	"github.com/vmware/govmomi/object"
 )
 
 type Builder interface {
@@ -98,8 +102,22 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 	}
 
 	httpClient := http.Client{
-		Timeout: 2 * time.Minute,
+		Timeout: 5 * time.Minute,
 	}
+
+	ctx := context.Background()
+	u, err := url.Parse(vsphereBaseUrl + "/sdk")
+	if err != nil {
+		log.Fatalf("error parsing url: %v", err)
+	}
+	u.User = url.UserPassword(vsphereUsername, vspherePassword)
+
+	govmomiClient, err := govmomi.NewClient(ctx, u, false)
+	if err != nil {
+		log.Fatalf("error creating govmomi client: %v", err)
+	}
+
+	gc := object.NewCustomizationSpecManager(govmomiClient.Client)
 
 	nsxtHttpClient, err := nsxt.NewPrincipalIdentityClient(nsxtCertPath, nsxtKeyPath, nsxtCACertPath)
 	if err != nil {
@@ -114,6 +132,8 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 
 	vsphereClient := vsphere.VSphere{
 		HttpClient: httpClient,
+		SoapClient: *govmomiClient,
+		GCManager:  *gc,
 		ServerUrl:  laforgeServerUrl,
 		BaseUrl:    vsphereBaseUrl,
 		Username:   vsphereUsername,

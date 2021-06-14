@@ -35,6 +35,7 @@ import (
 	"github.com/gen0cide/laforge/server/utils"
 	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/sirupsen/logrus"
 )
 
 var RenderFiles = false
@@ -334,7 +335,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 
 	}
 
-	subnetIP, err := calcIP(pNetwork.Cidr, entHost.LastOctet)
+	subnetIP, err := CalcIP(pNetwork.Cidr, entHost.LastOctet)
 	if err != nil {
 		return nil, err
 	}
@@ -671,18 +672,21 @@ func renderScript(ctx context.Context, client *ent.Client, pStep *ent.Provisioni
 	currentTeam := currentProvisionedNetwork.QueryProvisionedNetworkToTeam().OnlyX(ctx)
 	currentBuild := currentTeam.QueryTeamToBuild().OnlyX(ctx)
 	currentEnvironment := currentBuild.QueryBuildToEnvironment().OnlyX(ctx)
+	currentIncludedNetwork := currentEnvironment.QueryEnvironmentToIncludedNetwork().WithIncludedNetworkToHost().WithIncludedNetworkToNetwork().AllX(ctx)
 	currentCompetition := currentBuild.QueryBuildToCompetition().OnlyX(ctx)
 	currentNetwork := currentProvisionedNetwork.QueryProvisionedNetworkToNetwork().OnlyX(ctx)
 	currentHost := currentProvisionedHost.QueryProvisionedHostToHost().OnlyX(ctx)
 	currentIdentities := currentEnvironment.QueryEnvironmentToIdentity().AllX(ctx)
+	agentScriptFile := currentProvisionedHost.QueryProvisionedHostToGinFileMiddleware().OnlyX(ctx)
 	// Need to Make Unique and change how it's loaded in
 	currentDNS := currentCompetition.QueryCompetitionToDNS().FirstX(ctx)
-	templeteData := TempleteContext{
+	templateData := TempleteContext{
 		Build:              currentBuild,
 		Competition:        currentCompetition,
 		Environment:        currentEnvironment,
 		Host:               currentHost,
 		DNS:                currentDNS,
+		IncludedNetworks:   currentIncludedNetwork,
 		Network:            currentNetwork,
 		Script:             currentScript,
 		Team:               currentTeam,
@@ -690,13 +694,14 @@ func renderScript(ctx context.Context, client *ent.Client, pStep *ent.Provisioni
 		ProvisionedNetwork: currentProvisionedNetwork,
 		ProvisionedHost:    currentProvisionedHost,
 		ProvisioningStep:   pStep,
+		AgentSlug:          agentScriptFile.URLID,
 	}
-	t, err := template.ParseFiles(currentScript.AbsPath)
+	t, err := template.New(strings.Replace(currentScript.Source, "./", "", -1)).Funcs(TemplateFuncLib).ParseFiles(currentScript.AbsPath)
 	if err != nil {
-		log.Fatalf("Failed to Parse templete for script %v. Err: %v", currentScript.Name, err)
+		log.Fatalf("Failed to Parse template for script %v. Err: %v", currentScript.Name, err)
 		return "", err
 	}
-	t.Funcs(TemplateFuncLib)
+	// t.Funcs(TemplateFuncLib)
 	fileRelativePath := path.Join(currentEnvironment.Name, fmt.Sprint(currentBuild.Revision), fmt.Sprint(currentTeam.TeamNumber), currentProvisionedNetwork.Name, currentHost.Hostname)
 	os.MkdirAll(fileRelativePath, 0755)
 	fileName := filepath.Base(currentScript.Source)
@@ -710,22 +715,15 @@ func renderScript(ctx context.Context, client *ent.Client, pStep *ent.Provisioni
 		log.Fatalf("Error Generating Script %v. Err: %v", currentScript.Name, err)
 		return "", err
 	}
-	err = t.Execute(f, templeteData)
+	err = t.Execute(f, templateData)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"scriptName": currentScript.Name,
+			"path":       currentScript.AbsPath,
+		}).Errorf("error while parsing template for script: %v", err)
+	}
 	f.Close()
 	return fileName, nil
-}
-
-// CalcIP is used to calculate the IP of a host within a given subnet
-func calcIP(subnet string, lastOctect int) (string, error) {
-	ip, _, err := net.ParseCIDR(subnet)
-	if err != nil {
-		log.Fatalf("Invalid Subner %v. Err: %v", subnet, err)
-		return "", err
-	}
-	offset32 := uint32(lastOctect)
-	ip32 := IPv42Int(ip)
-	newIP := Int2IPv4(ip32 + offset32)
-	return newIP.To4().String(), nil
 }
 
 // IPv42Int converts net.IP address objects to their uint32 representation

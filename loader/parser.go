@@ -1398,7 +1398,7 @@ func createIncludedNetwork(ctx context.Context, client *ent.Client, configInclud
 				createdQuery := client.IncludedNetwork.Create().
 					SetName(cIncludedNetwork.Name).
 					SetHosts(cIncludedNetwork.Hosts).
-					AddIncludedNetworkToNetwork(entNetwork).
+					SetIncludedNetworkToNetwork(entNetwork).
 					AddIncludedNetworkToHost(entHosts...)
 				bulk = append(bulk, createdQuery)
 				continue
@@ -1416,7 +1416,7 @@ func createIncludedNetwork(ctx context.Context, client *ent.Client, configInclud
 		}
 		entIncludedNetwork, err = entIncludedNetwork.Update().
 			AddIncludedNetworkToHost(entHosts...).
-			AddIncludedNetworkToNetwork(entNetwork).
+			SetIncludedNetworkToNetwork(entNetwork).
 			Save(ctx)
 		if err != nil {
 			log.Fatalf("Failed to update the Included Network %v Edges with Hosts %v. Err: %v", cIncludedNetwork.Name, cIncludedNetwork.Hosts, err)

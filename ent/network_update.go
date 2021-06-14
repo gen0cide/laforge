@@ -370,10 +370,10 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nu.mutation.NetworkToIncludedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   network.NetworkToIncludedNetworkTable,
-			Columns: network.NetworkToIncludedNetworkPrimaryKey,
+			Columns: []string{network.NetworkToIncludedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -386,10 +386,10 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := nu.mutation.RemovedNetworkToIncludedNetworkIDs(); len(nodes) > 0 && !nu.mutation.NetworkToIncludedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   network.NetworkToIncludedNetworkTable,
-			Columns: network.NetworkToIncludedNetworkPrimaryKey,
+			Columns: []string{network.NetworkToIncludedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -405,10 +405,10 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := nu.mutation.NetworkToIncludedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   network.NetworkToIncludedNetworkTable,
-			Columns: network.NetworkToIncludedNetworkPrimaryKey,
+			Columns: []string{network.NetworkToIncludedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -805,10 +805,10 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 	}
 	if nuo.mutation.NetworkToIncludedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   network.NetworkToIncludedNetworkTable,
-			Columns: network.NetworkToIncludedNetworkPrimaryKey,
+			Columns: []string{network.NetworkToIncludedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -821,10 +821,10 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 	}
 	if nodes := nuo.mutation.RemovedNetworkToIncludedNetworkIDs(); len(nodes) > 0 && !nuo.mutation.NetworkToIncludedNetworkCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   network.NetworkToIncludedNetworkTable,
-			Columns: network.NetworkToIncludedNetworkPrimaryKey,
+			Columns: []string{network.NetworkToIncludedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -840,10 +840,10 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 	}
 	if nodes := nuo.mutation.NetworkToIncludedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   network.NetworkToIncludedNetworkTable,
-			Columns: network.NetworkToIncludedNetworkPrimaryKey,
+			Columns: []string{network.NetworkToIncludedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

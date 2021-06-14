@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
@@ -23,6 +24,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -99,6 +101,27 @@ func playgroundHandler() gin.HandlerFunc {
 }
 
 func main() {
+	// Start logging all Logrus output to files
+	ginMode := os.Getenv("GIN_MODE")
+	if ginMode == "release" {
+		_, err := os.Stat("logs")
+		if err != nil {
+			if os.IsNotExist(err) {
+				mkdirErr := os.Mkdir("logs", os.ModeAppend|os.ModePerm)
+				if mkdirErr != nil {
+					logrus.Errorf("error while creating logs directory")
+				}
+			} else {
+				logrus.Errorf("error while checking if logs dir exists: %v", err)
+			}
+		}
+		logFile, err := os.OpenFile(fmt.Sprintf("logs/%s.log", time.Now().Format("20060102-15-04-05")), os.O_APPEND|os.O_CREATE|os.O_RDWR, os.ModeAppend)
+		if err != nil {
+			logrus.Errorf("couldn't create log file: %s", err)
+		} else {
+			logrus.SetOutput(logFile)
+		}
+	}
 
 	pgHost, ok := os.LookupEnv("PG_HOST")
 	client := &ent.Client{}

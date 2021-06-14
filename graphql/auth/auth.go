@@ -38,7 +38,7 @@ type Claims struct {
 func Middleware(client *ent.Client) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		hostname, ok := os.LookupEnv("SERVER_HOSTNAME")
+		hostname, ok := os.LookupEnv("GRAPHQL_HOSTNAME")
 		if !ok {
 			hostname = "localhost"
 		}
@@ -103,7 +103,7 @@ func Middleware(client *ent.Client) gin.HandlerFunc {
 // Login decodes the share session cookie and packs the session into context
 func Login(client *ent.Client) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		hostname, ok := os.LookupEnv("SERVER_HOSTNAME")
+		hostname, ok := os.LookupEnv("GRAPHQL_HOSTNAME")
 		if !ok {
 			hostname = "localhost"
 		}
@@ -164,7 +164,7 @@ func Login(client *ent.Client) gin.HandlerFunc {
 // Logout decodes the share session cookie and packs the session into context
 func Logout(client *ent.Client) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		hostname, ok := os.LookupEnv("SERVER_HOSTNAME")
+		hostname, ok := os.LookupEnv("GRAPHQL_HOSTNAME")
 		if !ok {
 			hostname = "localhost"
 		}

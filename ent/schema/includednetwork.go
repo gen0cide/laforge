@@ -29,7 +29,8 @@ func (IncludedNetwork) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("IncludedNetworkToTag", Tag.Type),
 		edge.To("IncludedNetworkToHost", Host.Type),
-		edge.To("IncludedNetworkToNetwork", Network.Type),
+		edge.To("IncludedNetworkToNetwork", Network.Type).
+			Unique(),
 		edge.From("IncludedNetworkToEnvironment", Environment.Type).
 			Ref("EnvironmentToIncludedNetwork"),
 	}

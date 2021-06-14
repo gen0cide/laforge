@@ -489,13 +489,21 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "hosts", Type: field.TypeJSON},
+		{Name: "included_network_included_network_to_network", Type: field.TypeUUID, Nullable: true},
 	}
 	// IncludedNetworksTable holds the schema information for the "included_networks" table.
 	IncludedNetworksTable = &schema.Table{
-		Name:        "included_networks",
-		Columns:     IncludedNetworksColumns,
-		PrimaryKey:  []*schema.Column{IncludedNetworksColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "included_networks",
+		Columns:    IncludedNetworksColumns,
+		PrimaryKey: []*schema.Column{IncludedNetworksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "included_networks_networks_IncludedNetworkToNetwork",
+				Columns:    []*schema.Column{IncludedNetworksColumns[3]},
+				RefColumns: []*schema.Column{NetworksColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// NetworksColumns holds the columns for the "networks" table.
 	NetworksColumns = []*schema.Column{
@@ -1051,31 +1059,6 @@ var (
 			},
 		},
 	}
-	// IncludedNetworkIncludedNetworkToNetworkColumns holds the columns for the "included_network_IncludedNetworkToNetwork" table.
-	IncludedNetworkIncludedNetworkToNetworkColumns = []*schema.Column{
-		{Name: "included_network_id", Type: field.TypeUUID},
-		{Name: "network_id", Type: field.TypeUUID},
-	}
-	// IncludedNetworkIncludedNetworkToNetworkTable holds the schema information for the "included_network_IncludedNetworkToNetwork" table.
-	IncludedNetworkIncludedNetworkToNetworkTable = &schema.Table{
-		Name:       "included_network_IncludedNetworkToNetwork",
-		Columns:    IncludedNetworkIncludedNetworkToNetworkColumns,
-		PrimaryKey: []*schema.Column{IncludedNetworkIncludedNetworkToNetworkColumns[0], IncludedNetworkIncludedNetworkToNetworkColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "included_network_IncludedNetworkToNetwork_included_network_id",
-				Columns:    []*schema.Column{IncludedNetworkIncludedNetworkToNetworkColumns[0]},
-				RefColumns: []*schema.Column{IncludedNetworksColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "included_network_IncludedNetworkToNetwork_network_id",
-				Columns:    []*schema.Column{IncludedNetworkIncludedNetworkToNetworkColumns[1]},
-				RefColumns: []*schema.Column{NetworksColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// PlanNextPlanColumns holds the columns for the "plan_NextPlan" table.
 	PlanNextPlanColumns = []*schema.Column{
 		{Name: "plan_id", Type: field.TypeUUID},
@@ -1138,7 +1121,6 @@ var (
 		EnvironmentEnvironmentToIncludedNetworkTable,
 		EnvironmentEnvironmentToDNSTable,
 		IncludedNetworkIncludedNetworkToHostTable,
-		IncludedNetworkIncludedNetworkToNetworkTable,
 		PlanNextPlanTable,
 	}
 )
@@ -1165,6 +1147,7 @@ func init() {
 	HostDependenciesTable.ForeignKeys[2].RefTable = HostsTable
 	HostDependenciesTable.ForeignKeys[3].RefTable = NetworksTable
 	IdentitiesTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	IncludedNetworksTable.ForeignKeys[0].RefTable = NetworksTable
 	NetworksTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	PlansTable.ForeignKeys[0].RefTable = BuildsTable
 	ProvisionedHostsTable.ForeignKeys[0].RefTable = GinFileMiddlewaresTable
@@ -1211,8 +1194,6 @@ func init() {
 	EnvironmentEnvironmentToDNSTable.ForeignKeys[1].RefTable = DnSsTable
 	IncludedNetworkIncludedNetworkToHostTable.ForeignKeys[0].RefTable = IncludedNetworksTable
 	IncludedNetworkIncludedNetworkToHostTable.ForeignKeys[1].RefTable = HostsTable
-	IncludedNetworkIncludedNetworkToNetworkTable.ForeignKeys[0].RefTable = IncludedNetworksTable
-	IncludedNetworkIncludedNetworkToNetworkTable.ForeignKeys[1].RefTable = NetworksTable
 	PlanNextPlanTable.ForeignKeys[0].RefTable = PlansTable
 	PlanNextPlanTable.ForeignKeys[1].RefTable = PlansTable
 }

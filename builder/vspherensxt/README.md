@@ -10,6 +10,28 @@ There is a bit of setup required in order to get LaForge to run with vSphere and
 
 The LaForge vSphere + NSX-T builder takes advantage of vSphere's [Content Libraries](https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.vm_admin.doc/GUID-254B2CE8-20A8-43F0-90E8-3F6776C2C896.html) to deploy it's hosts.
 
+#### Windows Templates
+
+Follow the guide [here](https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/manage/hybrid/server/best-practices/vmware-windows-template?/azure/cloud-adoption-framework/_bread/toc.json&toc=/azure/cloud-adoption-framework/scenarios/hybrid/toc.json)
+
+**NOTE: Stop at the "Convert to template" Step, we use a different method to place the template in the content library**
+
+#### Linux Templates
+
+```shell
+$ sudo [apt-get/yum] update
+$ sudo [apt-get/yum] upgrade -y
+$ sudo [apt-get/yum] install -y open-vm-tools cloud-init
+$ sudo dpkg-reconfigure cloud-init # NoCloud, OVF, None
+$ sudo nano /etc/cloud/cloud.cfg # add `disable_vmware_customization: false` to EOF
+$ sudo sed -i 's/preserve_hostname: false/preserve_hostname: true/g' /etc/cloud/cloud.cfg
+$ sudo truncate -s0 /etc/hostname
+$ sudo hostnamectl set-hostname localhost
+$ sudo vmware-toolbox-cmd config set deployPkg enable-custom-scripts true
+$ cat /dev/null > ~/.bash_history && history -c
+$ sudo shutdown now
+```
+
 ## LaForge environment config variables
 
 ### Specifying this builder in an environment

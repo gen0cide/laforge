@@ -35,6 +35,7 @@ type IncludedNetworkQuery struct {
 	withIncludedNetworkToHost        *HostQuery
 	withIncludedNetworkToNetwork     *NetworkQuery
 	withIncludedNetworkToEnvironment *EnvironmentQuery
+	withFKs                          bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -129,7 +130,7 @@ func (inq *IncludedNetworkQuery) QueryIncludedNetworkToNetwork() *NetworkQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(includednetwork.Table, includednetwork.FieldID, selector),
 			sqlgraph.To(network.Table, network.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, includednetwork.IncludedNetworkToNetworkTable, includednetwork.IncludedNetworkToNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, includednetwork.IncludedNetworkToNetworkTable, includednetwork.IncludedNetworkToNetworkColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(inq.driver.Dialect(), step)
 		return fromU, nil
@@ -458,6 +459,7 @@ func (inq *IncludedNetworkQuery) prepareQuery(ctx context.Context) error {
 func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork, error) {
 	var (
 		nodes       = []*IncludedNetwork{}
+		withFKs     = inq.withFKs
 		_spec       = inq.querySpec()
 		loadedTypes = [4]bool{
 			inq.withIncludedNetworkToTag != nil,
@@ -466,6 +468,12 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 			inq.withIncludedNetworkToEnvironment != nil,
 		}
 	)
+	if inq.withIncludedNetworkToNetwork != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, includednetwork.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &IncludedNetwork{config: inq.config}
 		nodes = append(nodes, node)
@@ -581,66 +589,30 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 	}
 
 	if query := inq.withIncludedNetworkToNetwork; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[uuid.UUID]*IncludedNetwork, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.IncludedNetworkToNetwork = []*Network{}
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*IncludedNetwork)
+		for i := range nodes {
+			if nodes[i].included_network_included_network_to_network == nil {
+				continue
+			}
+			fk := *nodes[i].included_network_included_network_to_network
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
-		var (
-			edgeids []uuid.UUID
-			edges   = make(map[uuid.UUID][]*IncludedNetwork)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   includednetwork.IncludedNetworkToNetworkTable,
-				Columns: includednetwork.IncludedNetworkToNetworkPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(includednetwork.IncludedNetworkToNetworkPrimaryKey[0], fks...))
-			},
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*uuid.UUID)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*uuid.UUID)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := *eout
-				inValue := *ein
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				if _, ok := edges[inValue]; !ok {
-					edgeids = append(edgeids, inValue)
-				}
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, inq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "IncludedNetworkToNetwork": %w`, err)
-		}
-		query.Where(network.IDIn(edgeids...))
+		query.Where(network.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "IncludedNetworkToNetwork" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "included_network_included_network_to_network" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.IncludedNetworkToNetwork = append(nodes[i].Edges.IncludedNetworkToNetwork, n)
+				nodes[i].Edges.IncludedNetworkToNetwork = n
 			}
 		}
 	}

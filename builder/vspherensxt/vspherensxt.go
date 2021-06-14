@@ -36,27 +36,27 @@ type VSphereNSXTBuilder struct {
 	VSphereFolder             vsphere.Folder
 }
 
-func (builder *VSphereNSXTBuilder) ID() string {
+func (builder VSphereNSXTBuilder) ID() string {
 	return ID
 }
 
-func (builder *VSphereNSXTBuilder) Name() string {
+func (builder VSphereNSXTBuilder) Name() string {
 	return Name
 }
 
-func (builder *VSphereNSXTBuilder) Description() string {
+func (builder VSphereNSXTBuilder) Description() string {
 	return Description
 }
 
-func (builder *VSphereNSXTBuilder) Author() string {
+func (builder VSphereNSXTBuilder) Author() string {
 	return Author
 }
 
-func (builder *VSphereNSXTBuilder) Version() string {
+func (builder VSphereNSXTBuilder) Version() string {
 	return Version
 }
 
-func (builder *VSphereNSXTBuilder) generateBuildID(build *ent.Build) string {
+func (builder VSphereNSXTBuilder) generateBuildID(build *ent.Build) string {
 	buildId, err := build.ID.MarshalText()
 	if err != nil {
 		buildId = []byte(fmt.Sprint(build.Revision))
@@ -64,20 +64,20 @@ func (builder *VSphereNSXTBuilder) generateBuildID(build *ent.Build) string {
 	return fmt.Sprintf("%s", buildId)
 }
 
-func (builder *VSphereNSXTBuilder) generateVmName(competition *ent.Competition, team *ent.Team, host *ent.Host, build *ent.Build) string {
+func (builder VSphereNSXTBuilder) generateVmName(competition *ent.Competition, team *ent.Team, host *ent.Host, build *ent.Build) string {
 	return (competition.HclID + "-Team-" + fmt.Sprint(team.TeamNumber) + "-" + host.Hostname + "-" + builder.generateBuildID(build))
 }
 
-func (builder *VSphereNSXTBuilder) generateRouterName(competition *ent.Competition, team *ent.Team, build *ent.Build) string {
+func (builder VSphereNSXTBuilder) generateRouterName(competition *ent.Competition, team *ent.Team, build *ent.Build) string {
 	return (competition.HclID + "-Team-" + fmt.Sprint(team.TeamNumber) + "-" + builder.generateBuildID(build))
 }
 
-func (builder *VSphereNSXTBuilder) generateNetworkName(competition *ent.Competition, team *ent.Team, network *ent.Network, build *ent.Build) string {
+func (builder VSphereNSXTBuilder) generateNetworkName(competition *ent.Competition, team *ent.Team, network *ent.Network, build *ent.Build) string {
 	return (competition.HclID + "-Team-" + fmt.Sprint(team.TeamNumber) + "-" + network.Name + "-" + builder.generateBuildID(build))
 }
 
 // DeployHost deploys a given host from the environment to VSphere
-func (builder *VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHost *ent.ProvisionedHost) (err error) {
+func (builder VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHost *ent.ProvisionedHost) (err error) {
 	host, err := provisionedHost.QueryProvisionedHostToHost().Only(ctx)
 	if err != nil {
 		return
@@ -145,8 +145,14 @@ func (builder *VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHo
 	nicId, exists := host.Vars["nic_id"]
 	if !exists {
 		if len(template.Nics) > 0 {
-			// nicId = template.Nics[0].Key
-			nicId = "0"
+			nicIds := make([]string, 0, len(template.Nics))
+			for key := range template.Nics {
+				nicIds = append(nicIds, key)
+			}
+			if len(nicIds) < 1 {
+				return fmt.Errorf("no nics exist in the vm template for template %s", (builder.TemplatePrefix + host.OS))
+			}
+			nicId = nicIds[0]
 		} else {
 			err = errors.New("nic_id doesn't exist in the host vars for " + host.Hostname)
 			return err
@@ -156,14 +162,20 @@ func (builder *VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHo
 	vmName := builder.generateVmName(competition, team, host, build)
 	guestCustomizationName := (vmName + "-Customization-Spec")
 
-	guestCustomizationSpec, err := builder.VSphereClient.GenerateGuestCustomization(ctx, template, provisionedHost)
+	specAlreadyExists, err := builder.VSphereClient.GuestCustomizationExists(ctx, guestCustomizationName)
 	if err != nil {
 		return
 	}
+	if !specAlreadyExists {
+		guestCustomizationSpec, err := builder.VSphereClient.GenerateGuestCustomization(ctx, guestCustomizationName, template, provisionedHost)
+		if err != nil {
+			return err
+		}
 
-	err = builder.VSphereClient.CreateGuestCustomization(guestCustomizationName, *guestCustomizationSpec)
-	if err != nil {
-		return
+		err = builder.VSphereClient.CreateGuestCustomization(ctx, *guestCustomizationSpec)
+		if err != nil {
+			return err
+		}
 	}
 
 	templateSpec := vsphere.DeployTemplateSpec{
@@ -211,7 +223,7 @@ func (builder *VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHo
 	return
 }
 
-func (builder *VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error) {
+func (builder VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error) {
 	build, err := provisionedNetwork.QueryProvisionedNetworkToBuild().Only(ctx)
 	if err != nil {
 		return fmt.Errorf("couldn't query build from network \"%s\": %v", provisionedNetwork.Name, err)
@@ -332,7 +344,7 @@ func (builder *VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisione
 	return
 }
 
-func (builder *VSphereNSXTBuilder) TeardownHost(ctx context.Context, provisionedHost *ent.ProvisionedHost) (err error) {
+func (builder VSphereNSXTBuilder) TeardownHost(ctx context.Context, provisionedHost *ent.ProvisionedHost) (err error) {
 	host, err := provisionedHost.QueryProvisionedHostToHost().Only(ctx)
 	if err != nil {
 		return fmt.Errorf("couldn't query host from provisioned host \"%s\": %v", provisionedHost.ID, err)
@@ -355,10 +367,15 @@ func (builder *VSphereNSXTBuilder) TeardownHost(ctx context.Context, provisioned
 	if err != nil {
 		return fmt.Errorf("error while tearing down VM \"%s\": %v", vmName, vsphereErr)
 	}
+	guestCustomizationName := (vmName + "-Customization-Spec")
+	err = builder.VSphereClient.DeleteGuestCustomization(ctx, guestCustomizationName)
+	if err != nil {
+		return fmt.Errorf("error while deleting guest customization spec: %v", err)
+	}
 	return
 }
 
-func (builder *VSphereNSXTBuilder) TeardownNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error) {
+func (builder VSphereNSXTBuilder) TeardownNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error) {
 	build, err := provisionedNetwork.QueryProvisionedNetworkToBuild().Only(ctx)
 	if err != nil {
 		return fmt.Errorf("couldn't query build from network \"%s\": %v", provisionedNetwork.Name, err)

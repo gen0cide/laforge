@@ -128,7 +128,7 @@ func (nq *NetworkQuery) QueryNetworkToIncludedNetwork() *IncludedNetworkQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(network.Table, network.FieldID, selector),
 			sqlgraph.To(includednetwork.Table, includednetwork.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, network.NetworkToIncludedNetworkTable, network.NetworkToIncludedNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, network.NetworkToIncludedNetworkTable, network.NetworkToIncludedNetworkColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
 		return fromU, nil
@@ -517,66 +517,30 @@ func (nq *NetworkQuery) sqlAll(ctx context.Context) ([]*Network, error) {
 
 	if query := nq.withNetworkToIncludedNetwork; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[uuid.UUID]*Network, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.NetworkToIncludedNetwork = []*IncludedNetwork{}
+		nodeids := make(map[uuid.UUID]*Network)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.NetworkToIncludedNetwork = []*IncludedNetwork{}
 		}
-		var (
-			edgeids []uuid.UUID
-			edges   = make(map[uuid.UUID][]*Network)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: true,
-				Table:   network.NetworkToIncludedNetworkTable,
-				Columns: network.NetworkToIncludedNetworkPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(network.NetworkToIncludedNetworkPrimaryKey[1], fks...))
-			},
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*uuid.UUID)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*uuid.UUID)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := *eout
-				inValue := *ein
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				if _, ok := edges[inValue]; !ok {
-					edgeids = append(edgeids, inValue)
-				}
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, nq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "NetworkToIncludedNetwork": %w`, err)
-		}
-		query.Where(includednetwork.IDIn(edgeids...))
+		query.withFKs = true
+		query.Where(predicate.IncludedNetwork(func(s *sql.Selector) {
+			s.Where(sql.InValues(network.NetworkToIncludedNetworkColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			fk := n.included_network_included_network_to_network
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "included_network_included_network_to_network" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "NetworkToIncludedNetwork" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "included_network_included_network_to_network" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.NetworkToIncludedNetwork = append(nodes[i].Edges.NetworkToIncludedNetwork, n)
-			}
+			node.Edges.NetworkToIncludedNetwork = append(node.Edges.NetworkToIncludedNetwork, n)
 		}
 	}
 

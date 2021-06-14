@@ -21,3 +21,4 @@ finals/
 fred/
 
 session.cache
+.env

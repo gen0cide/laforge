@@ -529,7 +529,7 @@ func HasNetworkToIncludedNetwork() predicate.Network {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(NetworkToIncludedNetworkTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, NetworkToIncludedNetworkTable, NetworkToIncludedNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, NetworkToIncludedNetworkTable, NetworkToIncludedNetworkColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -541,7 +541,7 @@ func HasNetworkToIncludedNetworkWith(preds ...predicate.IncludedNetwork) predica
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(NetworkToIncludedNetworkInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, NetworkToIncludedNetworkTable, NetworkToIncludedNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, NetworkToIncludedNetworkTable, NetworkToIncludedNetworkColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

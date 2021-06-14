@@ -9,11 +9,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gen0cide/laforge/builder"
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/sirupsen/logrus"
 )
 
 func StartBuild(client *ent.Client, entBuild *ent.Build) error {
@@ -54,10 +56,26 @@ func StartBuild(client *ent.Client, entBuild *ent.Build) error {
 		log.Fatalf("Failed to Query Start Plan Nodes. Err: %v", err)
 		return err
 	}
+	environment, err := entBuild.QueryBuildToEnvironment().Only(ctx)
+	if err != nil {
+		logrus.Errorf("Failed to Query Environment. Err: %v", err)
+		return err
+	}
+
+	var genericBuilder builder.Builder
+
+	switch environment.Builder {
+	case "vsphere-nsxt":
+		genericBuilder, err = builder.NewVSphereNSXTBuilder(environment)
+		if err != nil {
+			logrus.Errorf("Failed to make vSphere NSX-T builder. Err: %v", err)
+			return err
+		}
+	}
 
 	for _, entPlan := range rootPlans {
 		wg.Add(1)
-		go buildRoutine(client, ctx, entPlan, &wg)
+		go buildRoutine(client, &genericBuilder, ctx, entPlan, &wg)
 	}
 
 	wg.Wait()
@@ -65,7 +83,7 @@ func StartBuild(client *ent.Client, entBuild *ent.Build) error {
 	return nil
 }
 
-func buildRoutine(client *ent.Client, ctx context.Context, entPlan *ent.Plan, wg *sync.WaitGroup) {
+func buildRoutine(client *ent.Client, builder *builder.Builder, ctx context.Context, entPlan *ent.Plan, wg *sync.WaitGroup) {
 	defer wg.Done()
 	prevNodes, err := entPlan.QueryPrevPlan().All(ctx)
 
@@ -98,29 +116,40 @@ func buildRoutine(client *ent.Client, ctx context.Context, entPlan *ent.Plan, wg
 		log.Fatalf("Failed to Query Status %v. Err: %v", entPlan, err)
 	}
 
+	// If it's already in progress, don't worry about traversing to it
+	if entStatus.State == status.StateINPROGRESS {
+		return
+	}
+
 	entStatus.Update().SetState(status.StateINPROGRESS).Save(ctx)
 
+	var planErr error = nil
 	switch entPlan.Type {
 	case plan.TypeProvisionNetwork:
 		entProNetwork, err := entPlan.QueryPlanToProvisionedNetwork().Only(ctx)
 		if err != nil {
 			log.Fatalf("Failed to Query Provisioned Network. Err: %v", err)
 		}
-		buildNetwork(client, ctx, entProNetwork)
+		planErr = buildNetwork(client, builder, ctx, entProNetwork)
 	case plan.TypeProvisionHost:
 		entProHost, err := entPlan.QueryPlanToProvisionedHost().Only(ctx)
 		if err != nil {
 			log.Fatalf("Failed to Query Provisioned Host. Err: %v", err)
 		}
-		buildHost(client, ctx, entProHost)
+		planErr = buildHost(client, builder, ctx, entProHost)
 	case plan.TypeExecuteStep:
 		entProvisioningStep, err := entPlan.QueryPlanToProvisioningStep().Only(ctx)
 		if err != nil {
 			log.Fatalf("Failed to Query Provisioning Step. Err: %v", err)
 		}
-		execStep(client, ctx, entProvisioningStep)
+		planErr = execStep(client, ctx, entProvisioningStep)
 	default:
 		break
+	}
+
+	if planErr != nil {
+		entStatus.Update().SetState(status.StateFAILED).SetFailed(true).Save(ctx)
+		return
 	}
 
 	entStatus.Update().SetState(status.StateCOMPLETE).Save(ctx)
@@ -129,47 +158,36 @@ func buildRoutine(client *ent.Client, ctx context.Context, entPlan *ent.Plan, wg
 	nextPlans, err := entPlan.QueryNextPlan().All(ctx)
 	for _, nextPlan := range nextPlans {
 		wg.Add(1)
-		go buildRoutine(client, ctx, nextPlan, wg)
+		go buildRoutine(client, builder, ctx, nextPlan, wg)
 	}
 }
 
-func buildHost(client *ent.Client, ctx context.Context, entProHost *ent.ProvisionedHost) error {
-
-	entEnvironment, err := entProHost.
-		QueryProvisionedHostToProvisionedNetwork().
-		QueryProvisionedNetworkToBuild().
-		QueryBuildToEnvironment().
-		Only(ctx)
+func buildHost(client *ent.Client, builder *builder.Builder, ctx context.Context, entProHost *ent.ProvisionedHost) error {
+	logrus.Infof("deploying %s", entProHost.SubnetIP)
+	err := (*builder).DeployHost(ctx, entProHost)
 	if err != nil {
-		return fmt.Errorf("failed querying Enviroment for Provioning Network: %v", err)
+		logrus.Errorf("Error while deploying host: %v", err)
+		return err
 	}
-
-	switch entEnvironment.Builder {
-	default:
-		break
-	}
+	logrus.Infof("deployed %s successfully", entProHost.SubnetIP)
 	return nil
 }
 
-func buildNetwork(client *ent.Client, ctx context.Context, entProNetwork *ent.ProvisionedNetwork) error {
-
-	entEnvironment, err := entProNetwork.
-		QueryProvisionedNetworkToBuild().
-		QueryBuildToEnvironment().
-		Only(ctx)
+func buildNetwork(client *ent.Client, builder *builder.Builder, ctx context.Context, entProNetwork *ent.ProvisionedNetwork) error {
+	logrus.Infof("deploying %s", entProNetwork.Name)
+	err := (*builder).DeployNetwork(ctx, entProNetwork)
 	if err != nil {
-		return fmt.Errorf("failed querying Enviroment for Provioning Network: %v", err)
+		logrus.Errorf("Error while deploying network: %v", err)
+		return err
 	}
-
-	switch entEnvironment.Builder {
-	default:
-		break
-	}
+	logrus.Infof("deployed %s successfully", entProNetwork.Name)
+	// Allow networks to set up
+	time.Sleep(30 * time.Second)
 	return nil
 }
 
 func execStep(client *ent.Client, ctx context.Context, entStep *ent.ProvisioningStep) error {
-	GQLHostName, ok := os.LookupEnv("GRAPQL_HOSTNAME")
+	GQLHostName, ok := os.LookupEnv("GRAPHQL_HOSTNAME")
 	downloadURL := ""
 
 	if !ok {
@@ -307,6 +325,28 @@ func execStep(client *ent.Client, ctx context.Context, entStep *ent.Provisioning
 	}
 
 	for {
+		taskFailed, err := entStep.QueryProvisioningStepToAgentTask().Where(
+			agenttask.StateEQ(
+				agenttask.StateFAILED,
+			),
+		).Exist(ctx)
+
+		if err != nil {
+			log.Fatalf("Failed to Query Agent Task State. Err: %v", err)
+		}
+
+		if taskFailed {
+			stepStatus, err := entStep.QueryProvisioningStepToStatus().Only(ctx)
+			if err != nil {
+				log.Fatalf("Failed to Query Provisioning Step Status. Err: %v", err)
+			}
+			_, err = stepStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
+			if err != nil {
+				logrus.Errorf("error while trying to set ent.ProvisioningStep.Status.State to status.StateFAILED: %v", err)
+			}
+			return fmt.Errorf("one or more agent tasks failed")
+		}
+
 		taskRunning, err := entStep.QueryProvisioningStepToAgentTask().Where(
 			agenttask.StateNEQ(
 				agenttask.StateCOMPLETE,

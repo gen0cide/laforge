@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/includednetwork"
+	"github.com/gen0cide/laforge/ent/network"
 	"github.com/google/uuid"
 )
 
@@ -31,11 +32,11 @@ type IncludedNetwork struct {
 	// IncludedNetworkToHost holds the value of the IncludedNetworkToHost edge.
 	HCLIncludedNetworkToHost []*Host `json:"IncludedNetworkToHost,omitempty"`
 	// IncludedNetworkToNetwork holds the value of the IncludedNetworkToNetwork edge.
-	HCLIncludedNetworkToNetwork []*Network `json:"IncludedNetworkToNetwork,omitempty"`
+	HCLIncludedNetworkToNetwork *Network `json:"IncludedNetworkToNetwork,omitempty"`
 	// IncludedNetworkToEnvironment holds the value of the IncludedNetworkToEnvironment edge.
 	HCLIncludedNetworkToEnvironment []*Environment `json:"IncludedNetworkToEnvironment,omitempty"`
 	//
-
+	included_network_included_network_to_network *uuid.UUID
 }
 
 // IncludedNetworkEdges holds the relations/edges for other nodes in the graph.
@@ -45,7 +46,7 @@ type IncludedNetworkEdges struct {
 	// IncludedNetworkToHost holds the value of the IncludedNetworkToHost edge.
 	IncludedNetworkToHost []*Host `json:"IncludedNetworkToHost,omitempty"`
 	// IncludedNetworkToNetwork holds the value of the IncludedNetworkToNetwork edge.
-	IncludedNetworkToNetwork []*Network `json:"IncludedNetworkToNetwork,omitempty"`
+	IncludedNetworkToNetwork *Network `json:"IncludedNetworkToNetwork,omitempty"`
 	// IncludedNetworkToEnvironment holds the value of the IncludedNetworkToEnvironment edge.
 	IncludedNetworkToEnvironment []*Environment `json:"IncludedNetworkToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -72,9 +73,14 @@ func (e IncludedNetworkEdges) IncludedNetworkToHostOrErr() ([]*Host, error) {
 }
 
 // IncludedNetworkToNetworkOrErr returns the IncludedNetworkToNetwork value or an error if the edge
-// was not loaded in eager-loading.
-func (e IncludedNetworkEdges) IncludedNetworkToNetworkOrErr() ([]*Network, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncludedNetworkEdges) IncludedNetworkToNetworkOrErr() (*Network, error) {
 	if e.loadedTypes[2] {
+		if e.IncludedNetworkToNetwork == nil {
+			// The edge IncludedNetworkToNetwork was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: network.Label}
+		}
 		return e.IncludedNetworkToNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "IncludedNetworkToNetwork"}
@@ -99,6 +105,8 @@ func (*IncludedNetwork) scanValues(columns []string) ([]interface{}, error) {
 		case includednetwork.FieldName:
 			values[i] = new(sql.NullString)
 		case includednetwork.FieldID:
+			values[i] = new(uuid.UUID)
+		case includednetwork.ForeignKeys[0]: // included_network_included_network_to_network
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type IncludedNetwork", columns[i])
@@ -135,6 +143,12 @@ func (in *IncludedNetwork) assignValues(columns []string, values []interface{}) 
 				if err := json.Unmarshal(*value, &in.Hosts); err != nil {
 					return fmt.Errorf("unmarshal field hosts: %w", err)
 				}
+			}
+		case includednetwork.ForeignKeys[0]:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field included_network_included_network_to_network", values[i])
+			} else if value != nil {
+				in.included_network_included_network_to_network = value
 			}
 		}
 	}

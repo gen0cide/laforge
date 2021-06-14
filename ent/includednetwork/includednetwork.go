@@ -37,11 +37,13 @@ const (
 	// IncludedNetworkToHostInverseTable is the table name for the Host entity.
 	// It exists in this package in order to avoid circular dependency with the "host" package.
 	IncludedNetworkToHostInverseTable = "hosts"
-	// IncludedNetworkToNetworkTable is the table the holds the IncludedNetworkToNetwork relation/edge. The primary key declared below.
-	IncludedNetworkToNetworkTable = "included_network_IncludedNetworkToNetwork"
+	// IncludedNetworkToNetworkTable is the table the holds the IncludedNetworkToNetwork relation/edge.
+	IncludedNetworkToNetworkTable = "included_networks"
 	// IncludedNetworkToNetworkInverseTable is the table name for the Network entity.
 	// It exists in this package in order to avoid circular dependency with the "network" package.
 	IncludedNetworkToNetworkInverseTable = "networks"
+	// IncludedNetworkToNetworkColumn is the table column denoting the IncludedNetworkToNetwork relation/edge.
+	IncludedNetworkToNetworkColumn = "included_network_included_network_to_network"
 	// IncludedNetworkToEnvironmentTable is the table the holds the IncludedNetworkToEnvironment relation/edge. The primary key declared below.
 	IncludedNetworkToEnvironmentTable = "environment_EnvironmentToIncludedNetwork"
 	// IncludedNetworkToEnvironmentInverseTable is the table name for the Environment entity.
@@ -56,13 +58,16 @@ var Columns = []string{
 	FieldHosts,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "included_networks"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"included_network_included_network_to_network",
+}
+
 var (
 	// IncludedNetworkToHostPrimaryKey and IncludedNetworkToHostColumn2 are the table columns denoting the
 	// primary key for the IncludedNetworkToHost relation (M2M).
 	IncludedNetworkToHostPrimaryKey = []string{"included_network_id", "host_id"}
-	// IncludedNetworkToNetworkPrimaryKey and IncludedNetworkToNetworkColumn2 are the table columns denoting the
-	// primary key for the IncludedNetworkToNetwork relation (M2M).
-	IncludedNetworkToNetworkPrimaryKey = []string{"included_network_id", "network_id"}
 	// IncludedNetworkToEnvironmentPrimaryKey and IncludedNetworkToEnvironmentColumn2 are the table columns denoting the
 	// primary key for the IncludedNetworkToEnvironment relation (M2M).
 	IncludedNetworkToEnvironmentPrimaryKey = []string{"environment_id", "included_network_id"}
@@ -72,6 +77,11 @@ var (
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

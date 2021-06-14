@@ -11,6 +11,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type NSXTClient struct {
@@ -319,7 +321,16 @@ func (nsxt *NSXTClient) CreateTier1(name string, tier0Path string, edgeClusterPa
 	if err != nil {
 		return
 	}
-	if response.StatusCode != 200 {
+	if response.StatusCode != 200 && response.Body != nil {
+		var nsxtError NSXTErrorResponse
+		err = json.NewDecoder(response.Body).Decode(&nsxtError)
+		if err != nil {
+			return
+		}
+		if nsxtError.ErrorCode == 500087 || nsxtError.Message == "The object was modified by somebody else. Please retry." {
+			return
+		}
+		log.Errorf("error while creating tier-1: %v", nsxtError)
 		err = errors.New("recieved status " + response.Status + " from NSX-T while adding Tier 1 Router " + name)
 		return
 	}
@@ -404,9 +415,12 @@ func (nsxt *NSXTClient) DeleteSegment(name string) (nsxtError *NSXTErrorResponse
 	if err != nil {
 		return nil, fmt.Errorf("unkown error while deleting Segment %s: %v", name, err)
 	}
-	if segmentResponse.StatusCode != 200 {
+	if segmentResponse.StatusCode != 200 && segmentRequest.Body != nil {
 		var nsxtError NSXTErrorResponse
-		json.NewDecoder(segmentRequest.Body).Decode(&nsxtError)
+		err := json.NewDecoder(segmentRequest.Body).Decode(&nsxtError)
+		if err != nil {
+			return nil, err
+		}
 		return &nsxtError, nil
 	}
 	return
@@ -494,6 +508,10 @@ func (nsxt *NSXTClient) CreateNATRule(tier1Name string, sourceNetwork NSXTIPElem
 		return
 	}
 	if response.StatusCode != 200 {
+		if response.StatusCode == 409 {
+			log.Infof("NAT Rule for %s already exists", tier1Name)
+			return nil
+		}
 		err = fmt.Errorf("error %s while making NAT rules for \"%s\"", response.Status, tier1Name)
 		return
 	}

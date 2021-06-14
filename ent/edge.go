@@ -460,12 +460,12 @@ func (in *IncludedNetwork) IncludedNetworkToHost(ctx context.Context) ([]*Host, 
 	return result, err
 }
 
-func (in *IncludedNetwork) IncludedNetworkToNetwork(ctx context.Context) ([]*Network, error) {
+func (in *IncludedNetwork) IncludedNetworkToNetwork(ctx context.Context) (*Network, error) {
 	result, err := in.Edges.IncludedNetworkToNetworkOrErr()
 	if IsNotLoaded(err) {
-		result, err = in.QueryIncludedNetworkToNetwork().All(ctx)
+		result, err = in.QueryIncludedNetworkToNetwork().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (in *IncludedNetwork) IncludedNetworkToEnvironment(ctx context.Context) ([]*Environment, error) {

@@ -2951,7 +2951,7 @@ func (c *IncludedNetworkClient) QueryIncludedNetworkToNetwork(in *IncludedNetwor
 		step := sqlgraph.NewStep(
 			sqlgraph.From(includednetwork.Table, includednetwork.FieldID, id),
 			sqlgraph.To(network.Table, network.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, includednetwork.IncludedNetworkToNetworkTable, includednetwork.IncludedNetworkToNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, includednetwork.IncludedNetworkToNetworkTable, includednetwork.IncludedNetworkToNetworkColumn),
 		)
 		fromV = sqlgraph.Neighbors(in.driver.Dialect(), step)
 		return fromV, nil
@@ -3105,7 +3105,7 @@ func (c *NetworkClient) QueryNetworkToIncludedNetwork(n *Network) *IncludedNetwo
 		step := sqlgraph.NewStep(
 			sqlgraph.From(network.Table, network.FieldID, id),
 			sqlgraph.To(includednetwork.Table, includednetwork.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, network.NetworkToIncludedNetworkTable, network.NetworkToIncludedNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, network.NetworkToIncludedNetworkTable, network.NetworkToIncludedNetworkColumn),
 		)
 		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
 		return fromV, nil

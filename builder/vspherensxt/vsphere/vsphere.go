@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -18,9 +19,11 @@ import (
 	"github.com/gen0cide/laforge/ent"
 	log "github.com/sirupsen/logrus"
 	"github.com/vmware/govmomi"
+	"github.com/vmware/govmomi/object"
 	"github.com/vmware/govmomi/vapi/library"
 	"github.com/vmware/govmomi/vapi/rest"
 	"github.com/vmware/govmomi/vim25"
+	"github.com/vmware/govmomi/vim25/types"
 	"gopkg.in/guregu/null.v4"
 )
 
@@ -28,6 +31,8 @@ type VSphere struct {
 	BaseUrl    string
 	ServerUrl  string
 	HttpClient http.Client
+	SoapClient govmomi.Client
+	GCManager  object.CustomizationSpecManager
 	Username   string
 	Password   string
 }
@@ -1126,13 +1131,21 @@ func (vs *VSphere) GetTemplate(templateId string) (template Template, err error)
 		return
 	}
 	if response.StatusCode != http.StatusOK {
+		if log.GetLevel() == log.DebugLevel {
+			// DEBUG: output the deployment id for debug purposes
+			defer response.Body.Close()
+			errorBytes, err := ioutil.ReadAll(response.Body)
+			if err != nil {
+				return Template{}, err
+			}
+			log.Debugf("%s", errorBytes)
+		}
 		log.WithFields(log.Fields{
 			"status": response.Status,
 		}).Warn("vSphere | Non-Okay Response from GetTemplate")
 		err = errors.New("received status " + response.Status + " from VSphere")
 		return
 	}
-
 	defer response.Body.Close()
 	err = json.NewDecoder(response.Body).Decode(&template)
 	if err != nil {
@@ -1302,23 +1315,52 @@ func (vs *VSphere) DeployTemplate(templateId string, spec DeployTemplateSpec) (e
 	return
 }
 
-func (vs *VSphere) GenerateGuestCustomization(ctx context.Context, template Template, provisionedHost *ent.ProvisionedHost) (spec *GuestCustomizationSpec, err error) {
+func (vs *VSphere) GuestCustomizationExists(ctx context.Context, specName string) (exists bool, err error) {
+	exists, err = vs.GCManager.DoesCustomizationSpecExist(ctx, specName)
+	if err != nil {
+		return false, fmt.Errorf("error while checking if GuestCustomizationSpec exists: %v", err)
+	}
+	return exists, nil
+}
+
+func (vs *VSphere) GenerateGuestCustomization(ctx context.Context, specName string, template Template, provisionedHost *ent.ProvisionedHost) (spec *types.CustomizationSpecItem, err error) {
 	log.WithFields(log.Fields{
 		"template.Identifier": template.Identifier,
 		"provisionedHost.ID":  provisionedHost.ID,
 	}).Debug("vSphere | GenerateGuestCustomization")
+
+	exists, err := vs.GCManager.DoesCustomizationSpecExist(ctx, specName)
+	if err != nil {
+		return nil, fmt.Errorf("error while checking if GuestCustomizationSpec exists: %v", err)
+	}
+	if exists {
+		// Just get the spec if it already exists
+		spec, err := vs.GCManager.GetCustomizationSpec(ctx, specName)
+		if err != nil {
+			return nil, fmt.Errorf("error getting GuestCustomizationSpec: %v", err)
+		}
+		log.WithFields(log.Fields{
+			"exists": true,
+		}).Debug("vSphere | GenerateGuestCustomization")
+		return spec, nil
+	}
+
 	host, err := provisionedHost.QueryProvisionedHostToHost().Only(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error while querying host from provisioned host: %v", err)
+	}
+	agentFile, err := provisionedHost.QueryProvisionedHostToGinFileMiddleware().First(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error while querying gin file middleware from provisioned host: %v", err)
 	}
 	env, err := provisionedHost.QueryProvisionedHostToProvisionedNetwork().QueryProvisionedNetworkToTeam().QueryTeamToBuild().QueryBuildToEnvironment().Only(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error while querying environment from provisioned host: %v", err)
 	}
-	// team, err := provisionedHost.QueryProvisionedHostToProvisionedNetwork().QueryProvisionedNetworkToTeam().Only(ctx)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("error while querying team from provisioned host: %v", err)
-	// }
+	comp, err := env.QueryEnvironmentToCompetition().Only(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error while querying competition from environment: %v", err)
+	}
 	provisionedNetwork, err := provisionedHost.QueryProvisionedHostToProvisionedNetwork().Only(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("err while querying provisioned network from provisioned host: %v", err)
@@ -1327,11 +1369,12 @@ func (vs *VSphere) GenerateGuestCustomization(ctx context.Context, template Temp
 	if err != nil {
 		return nil, fmt.Errorf("error while querying network from provisioned network: %v", err)
 	}
-	var linuxConfig *GuestLinuxConfiguration = nil
-	var windowsConfig *GuestWindowsConfiguration = nil
-	var windowsAdapterSettings *GuestWindowsNetworkAdapterSettings = nil
-	var dnsServers []string = []string{}
+	var linuxIdentity *types.CustomizationLinuxPrep = nil
+	var linuxOptions *types.CustomizationLinuxOptions = nil
+	var windowsIdentity *types.CustomizationSysprep = nil
+	var windowsOptions *types.CustomizationWinOptions = nil
 
+	var dnsServers []string = []string{}
 	// Check if the network has an authoritative DNS server
 	authoritativeDns, exists := network.Vars["authoritative_dns_ip"]
 	if exists {
@@ -1342,129 +1385,192 @@ func (vs *VSphere) GenerateGuestCustomization(ctx context.Context, template Temp
 	if exists {
 		dnsServers = append(dnsServers, masterDnsServer)
 	}
-	// Back up with Google DNS in case no dns server is set
-	dnsServers = append(dnsServers, "8.8.8.8")
-
-	guestHostname := GuestHostnameGenerator{
-		FixedName: &host.Hostname,
-		Type:      HOSTNAME_FIXED,
+	if len(dnsServers) < 2 {
+		// Back up with Google DNS in case no dns backup server is set
+		dnsServers = append(dnsServers, "8.8.8.8")
+	}
+	globalIPSettings := types.CustomizationGlobalIPSettings{
+		DynamicData:   types.DynamicData{},
+		DnsSuffixList: []string{},
+		DnsServerList: dnsServers,
 	}
 
-	agentUrl := fmt.Sprintf("%s/agents/%s", vs.ServerUrl, provisionedHost.ID)
+	customizationInfo := types.CustomizationSpecInfo{
+		DynamicData: types.DynamicData{},
+		Name:        specName,
+		Description: fmt.Sprintf("LaForge customization spec for %s", env.Name),
+		Type:        "",
+	}
+
+	agentUrl := fmt.Sprintf("%s/api/download/%s", vs.ServerUrl, agentFile.URLID)
 	// If Windows
 	if strings.Contains(string(template.GuestOS), "WIN") {
-		windowsConfig = &GuestWindowsConfiguration{
-			Sysprep: &GuestWindowsSysprep{
-				GuiRunOnceCommands: &[]string{
-					fmt.Sprintf("Invoke-WebRequest \"%s\" -OutFile \"C:\\laforge.exe\"", agentUrl),
-					"New-Service -name \"laforge\" -binaryPathName \"C:\\laforge.exe\" -displayName \"CPTC LaForge Agent\" -startupType Automatic",
-					"Start-Service -name \"laforge\"",
+		customizationInfo.Type = "Windows"
+		windowsIdentity = &types.CustomizationSysprep{
+			CustomizationIdentitySettings: types.CustomizationIdentitySettings{},
+			GuiUnattended: types.CustomizationGuiUnattended{
+				DynamicData: types.DynamicData{},
+				Password: &types.CustomizationPassword{
+					DynamicData: types.DynamicData{},
+					Value:       comp.RootPassword,
+					PlainText:   true,
 				},
-				UserData: GuestUserData{
-					ComputerName: guestHostname,
-					FullName:     "",
-					Organization: "",
-					ProductKey:   "",
+				TimeZone:       35, // US/Eastern
+				AutoLogon:      true,
+				AutoLogonCount: 1,
+			},
+			UserData: types.CustomizationUserData{
+				DynamicData: types.DynamicData{},
+				FullName:    "Admin",
+				OrgName:     "LaForge",
+				ComputerName: &types.CustomizationFixedName{
+					CustomizationName: types.CustomizationName{},
+					Name:              host.Hostname,
 				},
 			},
-			SysprepXml: new(string),
+			GuiRunOnce: &types.CustomizationGuiRunOnce{
+				DynamicData: types.DynamicData{},
+				CommandList: []string{
+					"powershell -Command mkdir $env:PROGRAMDATA\\Laforge -Force",
+					fmt.Sprintf("powershell -Command Invoke-WebRequest \"%s\" -OutFile \"$env:PROGRAMDATA\\Laforge\\laforge.exe\"", agentUrl),
+					"powershell -Command New-Service -Name laforge -DisplayName 'Tool used for monitoring hosts. NOT IN COMPETITION SCOPE' -BinaryPathName $env:PROGRAMDATA\\Laforge\\laforge.exe -StartupType Automatic",
+					"powershell -Command Start-Service -Name laforge",
+					"powershell -Command logoff",
+				},
+			},
+			Identification:       types.CustomizationIdentification{},
+			LicenseFilePrintData: nil,
 		}
-		windowsAdapterSettings = &GuestWindowsNetworkAdapterSettings{
-			DnsServers: &dnsServers,
+		if len(host.OverridePassword) > 0 {
+			windowsIdentity.GuiUnattended.Password.Value = host.OverridePassword
+		}
+		windowsOptions = &types.CustomizationWinOptions{
+			CustomizationOptions: types.CustomizationOptions{},
+			ChangeSID:            true,
+			DeleteAccounts:       false,
+			Reboot:               types.CustomizationSysprepRebootOptionReboot,
 		}
 	} else {
 		// Otherwise must be Unix
-		configScript := fmt.Sprintf(`# create the systemd service file for the Laforge
-		curl -sL -o /laforge.bin %s
-		chmod +x /laforge.bin
-		
-		cat << EOF > /etc/systemd/system/laforge.service
-		# /etc/systemd/system/laforge.service
-		# version 0.1
-		[Unit]
-		Description=Laforge Agent Service
-		After=network.target
-		[Service]
-		Environment=HOME=/
-		Environment=USER=root
-		User=root
-		Group=root
-		ExecStart=/laforge.bin
-		[Install]
-		WantedBy=multi-user.target
-		EOF
-		
-		systemctl daemon-reload
-		systemctl enable laforge
-		systemctl start laforge`, agentUrl)
-		linuxConfig = &GuestLinuxConfiguration{
-			Domain:     "",
-			Hostname:   guestHostname,
-			ScriptText: &configScript,
+		customizationInfo.Type = "Linux"
+		var linuxPassword string
+		if len(host.OverridePassword) > 0 {
+			linuxPassword = host.OverridePassword
+		} else {
+			linuxPassword = comp.RootPassword
 		}
+		configScript := fmt.Sprintf(`#!/bin/bash
+if [ x$1 == x"postcustomization" ]; then
+curl -sL -o /laforge.bin %s
+chmod +x /laforge.bin
+cat << EOF > /etc/systemd/system/laforge.service
+[Unit]
+Description=Tool used for monitoring hosts. NOT IN COMPETITION SCOPE
+After=network.target
+[Service]
+Environment=HOME=/
+Environment=USER=root
+User=root
+Group=root
+ExecStart=/laforge.bin
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable laforge
+systemctl start laforge
+usermod --password $(echo %s | openssl passwd -1 -stdin) laforge
+fi`, agentUrl, linuxPassword)
+		nope := false
+		linuxIdentity = &types.CustomizationLinuxPrep{
+			CustomizationIdentitySettings: types.CustomizationIdentitySettings{},
+			HostName: &types.CustomizationFixedName{
+				CustomizationName: types.CustomizationName{},
+				Name:              host.Hostname,
+			},
+			Domain:     "cyberrange.rit.edu",
+			TimeZone:   "US/Eastern",
+			HwClockUTC: &nope,
+			ScriptText: configScript,
+		}
+		linuxOptions = &types.CustomizationLinuxOptions{}
 	}
 
 	networkAddrParts := strings.Split(provisionedNetwork.Cidr, "/")
 	networkAddr := networkAddrParts[0]
-	networkOctets := strings.Split(networkAddr, ".")
-	hostAddress := strings.Join(append(networkOctets[:3], fmt.Sprint(host.LastOctet)), ".")
-	gatewayAddress := strings.Join(append(networkOctets[:3], "254"), ".")
-	cidrPrefix, err := strconv.ParseInt(networkAddrParts[1], 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("error while parsing CIDR Prefix: %v", err)
+	networkOctetStrings := strings.Split(networkAddr, ".")
+	networkOctets := []byte{0, 0, 0, 0}
+	for i, octetString := range networkOctetStrings {
+		octet, err := strconv.Atoi(octetString)
+		if err != nil {
+			return nil, fmt.Errorf("error while parsing IPv4 Address %s: %v", provisionedNetwork.Cidr, err)
+		}
+		networkOctets[i] = byte(octet)
 	}
 
-	spec = &GuestCustomizationSpec{
-		ConfigurationSpec: GuestConfigurationSpec{
-			LinuxConfig:   linuxConfig,
-			WindowsConfig: windowsConfig,
-		},
-		GlobalDNSSettings: GuestGlobalDNSSettings{
-			DnsServers: &dnsServers,
-		},
-		Interfaces: []GuestAdapterMapping{
-			{
-				Adapter: GuestIPSettings{
-					IPv4: &GuestIpv4{
-						Gateways: &[]string{
-							gatewayAddress,
-						},
-						IpAddress: &hostAddress,
-						Prefix:    &cidrPrefix,
-						Type:      IPV4_STATIC,
-					},
-					Windows: windowsAdapterSettings,
+	_, ipv4Net, err := net.ParseCIDR(provisionedNetwork.Cidr)
+	if err != nil {
+		log.Fatalf("error while parsing cidr: %v", err)
+	}
+	if len(ipv4Net.Mask) != 4 {
+		log.Fatalf("mask is not correct length")
+	}
+	subnetMask := fmt.Sprintf("%d.%d.%d.%d", ipv4Net.Mask[0], ipv4Net.Mask[1], ipv4Net.Mask[2], ipv4Net.Mask[3])
+	hostAddress := strings.Join(append(networkOctetStrings[:3], fmt.Sprint(host.LastOctet)), ".")
+	gatewayAddress := strings.Join(append(networkOctetStrings[:3], "254"), ".")
+
+	nicSettings := []types.CustomizationAdapterMapping{
+		{
+			DynamicData: types.DynamicData{},
+			MacAddress:  "",
+			Adapter: types.CustomizationIPSettings{
+				DynamicData: types.DynamicData{},
+				Ip: &types.CustomizationFixedIp{
+					CustomizationIpGenerator: types.CustomizationIpGenerator{},
+					IpAddress:                hostAddress,
 				},
-				MacAddress: new(string),
+				SubnetMask: subnetMask,
+				Gateway: []string{
+					gatewayAddress,
+				},
+				IpV6Spec: nil,
 			},
 		},
 	}
+
+	spec = &types.CustomizationSpecItem{
+		DynamicData: types.DynamicData{},
+	}
+	spec.Info = customizationInfo
+	spec.Spec = types.CustomizationSpec{
+		DynamicData: types.DynamicData{},
+	}
+	if linuxIdentity != nil {
+		spec.Spec.Options = linuxOptions
+		spec.Spec.Identity = linuxIdentity
+	} else if windowsIdentity != nil {
+		spec.Spec.Options = windowsOptions
+		spec.Spec.Identity = windowsIdentity
+	}
+	spec.Spec.GlobalIPSettings = globalIPSettings
+	spec.Spec.NicSettingMap = nicSettings
+	spec.Spec.EncryptionKey = []byte{}
+
 	return spec, nil
 }
 
-func (vs *VSphere) CreateGuestCustomization(name string, spec GuestCustomizationSpec) (err error) {
+func (vs *VSphere) CreateGuestCustomization(ctx context.Context, spec types.CustomizationSpecItem) (err error) {
 	log.WithFields(log.Fields{
-		"name": name,
+		"name": spec.Info.Name,
 	}).Debug("vSphere | CreateGuestCustomization")
-	payload := CreateGuestCustomizationSpec{
-		Description: "Created by LaForge",
-		Name:        name,
-		Spec:        spec,
-	}
-	jsonString, err := json.Marshal(payload)
-	if err != nil {
-		return
-	}
-	request, err := vs.generateAuthorizedRequestWithData(http.MethodPost, "/api/vcenter/guest/customization-specs", bytes.NewBuffer(jsonString))
-	if err != nil {
-		return
-	}
-	response, err := vs.HttpClient.Do(request)
-	if err != nil {
-		return
-	}
-	if response.StatusCode != 201 {
-		return fmt.Errorf("unkown error %s while creating guest customization spec %s", response.Status, name)
-	}
+	err = vs.GCManager.CreateCustomizationSpec(ctx, spec)
+	return
+}
+
+func (vs *VSphere) DeleteGuestCustomization(ctx context.Context, specName string) (err error) {
+	log.WithFields(log.Fields{
+		"name": specName,
+	}).Debug("vSphere | DeleteGuestCustomization")
+	err = vs.GCManager.DeleteCustomizationSpec(ctx, specName)
 	return
 }

@@ -2,6 +2,9 @@ package planner
 
 import (
 	"bytes"
+	"log"
+	"net"
+	"path"
 	"strconv"
 	"strings"
 	"text/template"
@@ -18,6 +21,8 @@ type TempleteContext struct {
 	Environment        *ent.Environment
 	Host               *ent.Host
 	DNS                *ent.DNS
+	DNSRecords         []*ent.DNSRecord
+	IncludedNetworks   []*ent.IncludedNetwork
 	Network            *ent.Network
 	Script             *ent.Script
 	Team               *ent.Team
@@ -25,6 +30,7 @@ type TempleteContext struct {
 	ProvisionedNetwork *ent.ProvisionedNetwork
 	ProvisionedHost    *ent.ProvisionedHost
 	ProvisioningStep   *ent.ProvisioningStep
+	AgentSlug          string
 }
 
 // TemplateFuncLib is a standard template library of functions
@@ -52,6 +58,47 @@ var TemplateFuncLib = template.FuncMap{
 	"ToCamel":              strcase.ToCamel,
 	"ToLowerCamel":         strcase.ToLowerCamel,
 	"Incr":                 Incr,
+	"CalcIP":               CalcIP,
+	"TagEquals":            TagEquals,
+	"Octet":                Octet,
+	"Base":                 path.Base,
+}
+
+// Octet is a template helper function to get a network's octet at a specified offset
+func Octet(n *ent.Network) string {
+	if n.Cidr == "" {
+		return "NO_CIDR"
+	}
+	octets := strings.Split(n.Cidr, ".")
+	if len(octets) <= 3 {
+		return "INVALID_CIDR"
+	}
+
+	return octets[2]
+}
+
+func TagEquals(h *ent.Host, tag, value string) bool {
+	v, t := h.Tags[tag]
+	if !t {
+		return false
+	}
+	if v == value {
+		return true
+	}
+	return false
+}
+
+// CalcIP is used to calculate the IP of a host within a given subnet
+func CalcIP(subnet string, lastOctect int) (string, error) {
+	ip, _, err := net.ParseCIDR(subnet)
+	if err != nil {
+		log.Fatalf("Invalid Subner %v. Err: %v", subnet, err)
+		return "", err
+	}
+	offset32 := uint32(lastOctect)
+	ip32 := IPv42Int(ip)
+	newIP := Int2IPv4(ip32 + offset32)
+	return newIP.To4().String(), nil
 }
 
 // UnsafeStringAsInt is a template helper function that will return -1 if it cannot convert the string to an integer.

@@ -45,11 +45,13 @@ const (
 	NetworkToHostDependencyInverseTable = "host_dependencies"
 	// NetworkToHostDependencyColumn is the table column denoting the NetworkToHostDependency relation/edge.
 	NetworkToHostDependencyColumn = "host_dependency_host_dependency_to_network"
-	// NetworkToIncludedNetworkTable is the table the holds the NetworkToIncludedNetwork relation/edge. The primary key declared below.
-	NetworkToIncludedNetworkTable = "included_network_IncludedNetworkToNetwork"
+	// NetworkToIncludedNetworkTable is the table the holds the NetworkToIncludedNetwork relation/edge.
+	NetworkToIncludedNetworkTable = "included_networks"
 	// NetworkToIncludedNetworkInverseTable is the table name for the IncludedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "includednetwork" package.
 	NetworkToIncludedNetworkInverseTable = "included_networks"
+	// NetworkToIncludedNetworkColumn is the table column denoting the NetworkToIncludedNetwork relation/edge.
+	NetworkToIncludedNetworkColumn = "included_network_included_network_to_network"
 )
 
 // Columns holds all SQL columns for network fields.
@@ -68,12 +70,6 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"environment_environment_to_network",
 }
-
-var (
-	// NetworkToIncludedNetworkPrimaryKey and NetworkToIncludedNetworkColumn2 are the table columns denoting the
-	// primary key for the NetworkToIncludedNetwork relation (M2M).
-	NetworkToIncludedNetworkPrimaryKey = []string{"included_network_id", "network_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

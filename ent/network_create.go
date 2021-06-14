@@ -310,10 +310,10 @@ func (nc *NetworkCreate) createSpec() (*Network, *sqlgraph.CreateSpec) {
 	}
 	if nodes := nc.mutation.NetworkToIncludedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: true,
 			Table:   network.NetworkToIncludedNetworkTable,
-			Columns: network.NetworkToIncludedNetworkPrimaryKey,
+			Columns: []string{network.NetworkToIncludedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
