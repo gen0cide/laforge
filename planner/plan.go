@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -597,6 +598,20 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 							log.Fatalf("Failed to Create Provisioning Step for FileDownload %v. Err: %v", hclID, err)
 							return nil, err
 						}
+						if RenderFiles {
+							filePath, err := renderFileDownload(ctx, entProvisioningStep)
+							if err != nil {
+								return nil, err
+							}
+							entTmpUrl, err := utils.CreateTempURL(ctx, client, filePath)
+							if err != nil {
+								return nil, err
+							}
+							_, err = entTmpUrl.Update().SetGinFileMiddlewareToProvisioningStep(entProvisioningStep).Save(ctx)
+							if err != nil {
+								return nil, err
+							}
+						}
 					}
 				}
 			} else {
@@ -723,6 +738,46 @@ func renderScript(ctx context.Context, client *ent.Client, pStep *ent.Provisioni
 		}).Errorf("error while parsing template for script: %v", err)
 	}
 	f.Close()
+	return fileName, nil
+}
+
+func renderFileDownload(ctx context.Context, pStep *ent.ProvisioningStep) (string, error) {
+	currentFileDownload := pStep.QueryProvisioningStepToFileDownload().OnlyX(ctx)
+	currentProvisionedHost := pStep.QueryProvisioningStepToProvisionedHost().OnlyX(ctx)
+	currentProvisionedNetwork := currentProvisionedHost.QueryProvisionedHostToProvisionedNetwork().OnlyX(ctx)
+	currentHost := currentProvisionedHost.QueryProvisionedHostToHost().OnlyX(ctx)
+	currentTeam := currentProvisionedNetwork.QueryProvisionedNetworkToTeam().OnlyX(ctx)
+	currentBuild := currentTeam.QueryTeamToBuild().OnlyX(ctx)
+	currentEnvironment := currentBuild.QueryBuildToEnvironment().OnlyX(ctx)
+
+	fileRelativePath := path.Join(currentEnvironment.Name, fmt.Sprint(currentBuild.Revision), fmt.Sprint(currentTeam.TeamNumber), currentProvisionedNetwork.Name, currentHost.Hostname)
+	os.MkdirAll(fileRelativePath, 0755)
+	fileName := filepath.Base(currentFileDownload.Source)
+	fileName = path.Join(fileRelativePath, fileName)
+	fileName, err := filepath.Abs(fileName)
+	if err != nil {
+		return "", err
+	}
+	destFile, err := os.Create(fileName)
+	if err != nil {
+		err = fmt.Errorf("error creating file download: %v", err)
+		return "", err
+	}
+	defer destFile.Close()
+
+	if currentFileDownload.SourceType == "remote" {
+		// http.Get(currentFileDownload.Source)
+	} else {
+		srcFile, err := os.Open(currentFileDownload.AbsPath)
+		if err != nil {
+			return "", err
+		}
+		defer srcFile.Close()
+		_, err = io.Copy(destFile, srcFile)
+		if err != nil {
+			return "", err
+		}
+	}
 	return fileName, nil
 }
 
