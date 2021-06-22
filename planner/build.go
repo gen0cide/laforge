@@ -91,9 +91,16 @@ func buildRoutine(client *ent.Client, builder *builder.Builder, ctx context.Cont
 		log.Fatalf("Failed to Query Plan Start %v. Err: %v", prevNodes, err)
 	}
 
+	parentNodeFailed := false
+
 	for _, prevNode := range prevNodes {
 		for {
-			prevStatus, err := prevNode.QueryPlanToStatus().Where(
+
+			if parentNodeFailed {
+				break
+			}
+
+			prevCompletedStatus, err := prevNode.QueryPlanToStatus().Where(
 				status.StateNEQ(
 					status.StateCOMPLETE,
 				),
@@ -103,7 +110,22 @@ func buildRoutine(client *ent.Client, builder *builder.Builder, ctx context.Cont
 				log.Fatalf("Failed to Query Status %v. Err: %v", prevNode, err)
 			}
 
-			if !prevStatus {
+			prevFailedStatus, err := prevNode.QueryPlanToStatus().Where(
+				status.StateEQ(
+					status.StateFAILED,
+				),
+			).Exist(ctx)
+
+			if err != nil {
+				log.Fatalf("Failed to Query Status %v. Err: %v", prevNode, err)
+			}
+
+			if !prevCompletedStatus {
+				break
+			}
+
+			if prevFailedStatus {
+				parentNodeFailed = true
 				break
 			}
 
@@ -130,59 +152,130 @@ func buildRoutine(client *ent.Client, builder *builder.Builder, ctx context.Cont
 		if err != nil {
 			log.Fatalf("Failed to Query Provisioned Network. Err: %v", err)
 		}
-		planErr = buildNetwork(client, builder, ctx, entProNetwork)
+		if parentNodeFailed {
+			networkStatus, err := entProNetwork.QueryProvisionedNetworkToStatus().Only(ctx)
+			if err != nil {
+				logrus.Errorf("Error while getting Provisioned Network status: %v", err)
+			}
+			_, saveErr := networkStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
+			if saveErr != nil {
+				logrus.Errorf("Error while setting Provisioned Network status to FAILED: %v", saveErr)
+			}
+			planErr = fmt.Errorf("parent node for Provionded Network has failed")
+		} else {
+			planErr = buildNetwork(client, builder, ctx, entProNetwork)
+		}
 	case plan.TypeProvisionHost:
 		entProHost, err := entPlan.QueryPlanToProvisionedHost().Only(ctx)
 		if err != nil {
 			log.Fatalf("Failed to Query Provisioned Host. Err: %v", err)
 		}
-		planErr = buildHost(client, builder, ctx, entProHost)
+		if parentNodeFailed {
+			hostStatus, err := entProHost.QueryProvisionedHostToStatus().Only(ctx)
+			if err != nil {
+				logrus.Errorf("Error while getting Provisioned Network status: %v", err)
+			}
+			_, saveErr := hostStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
+			if saveErr != nil {
+				logrus.Errorf("Error while setting Provisioned Network status to FAILED: %v", saveErr)
+			}
+			planErr = fmt.Errorf("parent node for Provionded Host has failed")
+		} else {
+			planErr = buildHost(client, builder, ctx, entProHost)
+		}
 	case plan.TypeExecuteStep:
 		entProvisioningStep, err := entPlan.QueryPlanToProvisioningStep().Only(ctx)
 		if err != nil {
 			log.Fatalf("Failed to Query Provisioning Step. Err: %v", err)
 		}
-		planErr = execStep(client, ctx, entProvisioningStep)
+		if parentNodeFailed {
+			stepStatus, err := entProvisioningStep.QueryProvisioningStepToStatus().Only(ctx)
+			if err != nil {
+				log.Fatalf("Failed to Query Provisioning Step Status. Err: %v", err)
+			}
+			_, err = stepStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
+			if err != nil {
+				logrus.Errorf("error while trying to set ent.ProvisioningStep.Status.State to status.StateFAILED: %v", err)
+			}
+			planErr = fmt.Errorf("parent node for Provisioning Step has failed")
+		} else {
+			planErr = execStep(client, ctx, entProvisioningStep)
+		}
 	default:
 		break
 	}
 
 	if planErr != nil {
 		entStatus.Update().SetState(status.StateFAILED).SetFailed(true).Save(ctx)
-		return
+		logrus.WithFields(logrus.Fields{
+			"type":    entPlan.Type,
+			"builder": (*builder).ID(),
+		}).Errorf("error while executing plan: %v", planErr)
+	} else {
+		entStatus.Update().SetState(status.StateCOMPLETE).Save(ctx)
+		entStatus.Update().SetCompleted(true).Save(ctx)
 	}
-
-	entStatus.Update().SetState(status.StateCOMPLETE).Save(ctx)
-	entStatus.Update().SetCompleted(true).Save(ctx)
 
 	nextPlans, err := entPlan.QueryNextPlan().All(ctx)
 	for _, nextPlan := range nextPlans {
 		wg.Add(1)
 		go buildRoutine(client, builder, ctx, nextPlan, wg)
 	}
+
 }
 
 func buildHost(client *ent.Client, builder *builder.Builder, ctx context.Context, entProHost *ent.ProvisionedHost) error {
 	logrus.Infof("deploying %s", entProHost.SubnetIP)
-	err := (*builder).DeployHost(ctx, entProHost)
+	hostStatus, err := entProHost.QueryProvisionedHostToStatus().Only(ctx)
+	if err != nil {
+		logrus.Errorf("Error while getting Provisioned Network status: %v", err)
+		return err
+	}
+	err = (*builder).DeployHost(ctx, entProHost)
 	if err != nil {
 		logrus.Errorf("Error while deploying host: %v", err)
+		_, saveErr := hostStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
+		if saveErr != nil {
+			logrus.Errorf("Error while setting Provisioned Host status to FAILED: %v", saveErr)
+			return saveErr
+		}
 		return err
 	}
 	logrus.Infof("deployed %s successfully", entProHost.SubnetIP)
+	_, saveErr := hostStatus.Update().SetCompleted(true).SetState(status.StateCOMPLETE).Save(ctx)
+	if saveErr != nil {
+		logrus.Errorf("Error while setting Provisioned Network status to COMPLETE: %v", saveErr)
+		return saveErr
+	}
 	return nil
 }
 
 func buildNetwork(client *ent.Client, builder *builder.Builder, ctx context.Context, entProNetwork *ent.ProvisionedNetwork) error {
 	logrus.Infof("deploying %s", entProNetwork.Name)
-	err := (*builder).DeployNetwork(ctx, entProNetwork)
+	networkStatus, err := entProNetwork.QueryProvisionedNetworkToStatus().Only(ctx)
+	if err != nil {
+		logrus.Errorf("Error while getting Provisioned Network status: %v", err)
+		return err
+	}
+	err = (*builder).DeployNetwork(ctx, entProNetwork)
 	if err != nil {
 		logrus.Errorf("Error while deploying network: %v", err)
+		_, saveErr := networkStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
+		if saveErr != nil {
+			logrus.Errorf("Error while setting Provisioned Network status to FAILED: %v", saveErr)
+			return saveErr
+		}
 		return err
 	}
 	logrus.Infof("deployed %s successfully", entProNetwork.Name)
 	// Allow networks to set up
-	time.Sleep(30 * time.Second)
+	time.Sleep(1 * time.Minute)
+
+	_, saveErr := networkStatus.Update().SetCompleted(true).SetState(status.StateCOMPLETE).Save(ctx)
+	if saveErr != nil {
+		logrus.Errorf("Error while setting Provisioned Network status to COMPLETE: %v", saveErr)
+		return saveErr
+	}
 	return nil
 }
 
