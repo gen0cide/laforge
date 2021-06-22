@@ -122,6 +122,10 @@ func main() {
 			logrus.SetOutput(logFile)
 		}
 	}
+	isDebug := os.Getenv("LAFORGE_DEBUG")
+	if isDebug == "true" {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
 
 	pgHost, ok := os.LookupEnv("PG_HOST")
 	client := &ent.Client{}

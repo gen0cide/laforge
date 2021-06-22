@@ -16,9 +16,14 @@ import (
 )
 
 type NSXTClient struct {
-	BaseUrl    string
-	HttpClient http.Client
-	IpPoolName string
+	BaseUrl       string
+	HttpClient    http.Client
+	IpPoolName    string
+	MaxRetries    int
+	tier0Cache    []NSXTTier0
+	ipSubnetCache []NSXTIpSubnet
+	tier1Cache    *map[string]bool
+	natCache      *map[string]bool
 }
 
 type NSXTResourceType string
@@ -281,7 +286,35 @@ func (nsxt *NSXTClient) generateAuthorizedRequestWithData(method string, path st
 	return
 }
 
-func (nsxt *NSXTClient) CreateTier1(name string, tier0Path string, edgeClusterPath string) (err error) {
+func (nsxt *NSXTClient) executeRequestWithRetry(request *http.Request, successStatus int) (response *http.Response, nsxtError *NSXTErrorResponse, err error) {
+	timeout := 10
+	for i := 0; i < nsxt.MaxRetries; i++ {
+		response, err = nsxt.HttpClient.Do(request)
+		if err == nil && response.StatusCode == successStatus {
+			break
+		} else if err == nil && response.StatusCode == http.StatusNotFound {
+			break
+		} else {
+			time.Sleep(time.Duration(timeout) * time.Second)
+			timeout = timeout * 2
+		}
+	}
+	if err == nil && response.StatusCode != successStatus && response.Body != nil {
+		err = json.NewDecoder(response.Body).Decode(nsxtError)
+		if err != nil {
+			return response, nil, nil
+		}
+		// if nsxtError.ErrorCode == 500087 || nsxtError.Message == "The object was modified by somebody else. Please retry." {
+		// 	return
+		// }
+	}
+	return
+}
+
+func (nsxt *NSXTClient) CreateTier1(name string, tier0Path string, edgeClusterPath string) (nsxtError *NSXTErrorResponse, err error) {
+	log.WithFields(log.Fields{
+		"name": name,
+	}).Debug("NSX-T | CreateTier1")
 	payload := NSXTCreateTier1Payload{
 		ResourceType: NSXT_Infra,
 		Children: []NSXTChildTier1{
@@ -317,27 +350,44 @@ func (nsxt *NSXTClient) CreateTier1(name string, tier0Path string, edgeClusterPa
 	if err != nil {
 		return
 	}
-	response, err := nsxt.HttpClient.Do(request)
+	var response *http.Response
+	// _, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK)
+	// if nsxt.tier1Cache == nil {
+	// 	nsxt.tier1Cache = &map[string]bool{}
+	// }
+	timeout := 10
+	for i := 0; i < nsxt.MaxRetries; i++ {
+		// if _, exists := (*nsxt.tier1Cache)[name]; exists {
+		// 	log.Debug("someone else already deployed Tier-1")
+		// 	nsxtError = nil
+		// 	err = nil
+		// 	break
+		// }
+		response, err = nsxt.HttpClient.Do(request)
+		if err == nil && response.StatusCode == http.StatusOK {
+			break
+		} else if err == nil && response.StatusCode == http.StatusBadRequest {
+			break
+		} else {
+			log.Debugf("retrying in %d secs", timeout)
+			time.Sleep(time.Duration(timeout) * time.Second)
+			timeout = timeout * 2
+		}
+	}
 	if err != nil {
 		return
 	}
-	if response.StatusCode != 200 && response.Body != nil {
-		var nsxtError NSXTErrorResponse
-		err = json.NewDecoder(response.Body).Decode(&nsxtError)
-		if err != nil {
-			return
-		}
-		if nsxtError.ErrorCode == 500087 || nsxtError.Message == "The object was modified by somebody else. Please retry." {
-			return
-		}
+	if nsxtError != nil {
 		log.Errorf("error while creating tier-1: %v", nsxtError)
-		err = errors.New("recieved status " + response.Status + " from NSX-T while adding Tier 1 Router " + name)
-		return
 	}
+	// (*nsxt.tier1Cache)[name] = true
 	return
 }
 
 func (nsxt *NSXTClient) DeleteTier1(name string) (nsxtError *NSXTErrorResponse, err error) {
+	log.WithFields(log.Fields{
+		"name": name,
+	}).Debug("NSX-T | DeleteTier1")
 	edgeRoutingRequest, err := nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/tier-1s/" + name + "/locale-services/" + name + "-Edge-Routing"))
 	if err != nil {
 		return nil, fmt.Errorf("error while making the DELETE request for Edge-Routing: %v", err)
@@ -355,19 +405,44 @@ func (nsxt *NSXTClient) DeleteTier1(name string) (nsxtError *NSXTErrorResponse, 
 	if err != nil {
 		return nil, fmt.Errorf("error while making DELETE request for Tier-1: %v", err)
 	}
-	tier1Response, err := nsxt.HttpClient.Do(tier1Request)
+
+	// if nsxt.tier1Cache == nil {
+	// 	nsxt.tier1Cache = make(map[string]bool)
+	// }
+	var response *http.Response
+	timeout := 10
+	for i := 0; i < nsxt.MaxRetries; i++ {
+		// if _, exists := nsxt.tier1Cache[name]; !exists {
+		// 	nsxtError = nil
+		// 	err = nil
+		// 	break
+		// }
+		response, err = nsxt.HttpClient.Do(tier1Request)
+		if err == nil && response.StatusCode == http.StatusOK {
+			break
+		} else if err == nil && response.StatusCode == http.StatusNotFound {
+			break
+		} else {
+			time.Sleep(time.Duration(timeout) * time.Second)
+			timeout = timeout * 2
+		}
+	}
 	if err != nil {
-		return nil, fmt.Errorf("unkown error while deleting Tier-1 %s: %v", name, err)
+		return
 	}
-	if tier1Response.StatusCode != 200 {
-		var nsxtError NSXTErrorResponse
-		json.NewDecoder(tier1Response.Body).Decode(&nsxtError)
-		return &nsxtError, nil
+	if nsxtError != nil {
+		log.Errorf("error while deleting tier-1: %v", nsxtError)
 	}
+	// delete(nsxt.tier1Cache, name)
 	return
 }
 
-func (nsxt *NSXTClient) CreateSegment(name string, tier1path string, gatewayAddress string) (err error) {
+func (nsxt *NSXTClient) CreateSegment(name string, tier1path string, gatewayAddress string) (nsxtError *NSXTErrorResponse, err error) {
+	log.WithFields(log.Fields{
+		"name":           name,
+		"tier1path":      tier1path,
+		"gatewayAddress": gatewayAddress,
+	}).Debug("NSX-T | CreateSegment")
 	payload := NSXTCreateSegmentPayload{
 		ResourceType: "Infra",
 		Children: []NSXTChildSegment{
@@ -386,7 +461,6 @@ func (nsxt *NSXTClient) CreateSegment(name string, tier1path string, gatewayAddr
 			},
 		},
 	}
-
 	jsonString, err := json.Marshal(payload)
 	if err != nil {
 		return
@@ -395,43 +469,43 @@ func (nsxt *NSXTClient) CreateSegment(name string, tier1path string, gatewayAddr
 	if err != nil {
 		return
 	}
-	response, err := nsxt.HttpClient.Do(request)
+	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
-	if response.StatusCode != 200 {
-		err = errors.New("recieved status " + fmt.Sprint(response.StatusCode) + " from NSX-T while adding segment " + name)
-		return
+	if nsxtError != nil {
+		log.Errorf("error while creating segment: %v", nsxtError)
 	}
 	return
 }
 
 func (nsxt *NSXTClient) DeleteSegment(name string) (nsxtError *NSXTErrorResponse, err error) {
-	segmentRequest, err := nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/segments/" + name))
+	log.WithFields(log.Fields{
+		"name": name,
+	}).Debug("NSX-T | DeleteSegment")
+	request, err := nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/segments/" + name))
 	if err != nil {
 		return nil, fmt.Errorf("error while making the DELETE request for the segment %s: %v", name, err)
 	}
-	segmentResponse, err := nsxt.HttpClient.Do(segmentRequest)
+	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
-		return nil, fmt.Errorf("unkown error while deleting Segment %s: %v", name, err)
+		return
 	}
-	if segmentResponse.StatusCode != 200 && segmentRequest.Body != nil {
-		var nsxtError NSXTErrorResponse
-		err := json.NewDecoder(segmentRequest.Body).Decode(&nsxtError)
-		if err != nil {
-			return nil, err
-		}
-		return &nsxtError, nil
+	if nsxtError != nil {
+		log.Errorf("error while deleting segment: %v", nsxtError)
 	}
 	return
 }
 
-func (nsxt *NSXTClient) CheckExistsTier1(name string) (exists bool, err error) {
+func (nsxt *NSXTClient) CheckExistsTier1(name string) (exists bool, nsxtError *NSXTErrorResponse, err error) {
+	log.WithFields(log.Fields{
+		"name": name,
+	}).Debug("NSX-T | CheckExistsTier1")
 	request, err := nsxt.generateAuthorizedRequest(http.MethodGet, ("/policy/api/v1/infra/tier-1s/" + name))
 	if err != nil {
 		return
 	}
-	response, err := nsxt.HttpClient.Do(request)
+	response, nsxtError, err := nsxt.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
@@ -439,21 +513,32 @@ func (nsxt *NSXTClient) CheckExistsTier1(name string) (exists bool, err error) {
 		exists = true
 	} else if response.StatusCode == 404 {
 		exists = false
-	} else {
-		err = errors.New("Unknown error occurred while checking if Tier 1 " + name + " exists; Status = " + response.Status)
-		return false, err
+	} else if nsxtError != nil {
+		log.Errorf("error while checking if tier 1 exists: %v", nsxtError)
 	}
 	return
 }
 
-func (nsxt *NSXTClient) GetTier0s() (tier0s []NSXTTier0, err error) {
+func (nsxt *NSXTClient) GetTier0s() (tier0s []NSXTTier0, nsxtError *NSXTErrorResponse, err error) {
+	log.Debug("NSX-T | GetTier0s")
+	// Cache these results as they don't usually change
+	// Note: just restart the server to reset the cache
+	if nsxt.tier0Cache == nil {
+		nsxt.tier0Cache = make([]NSXTTier0, 0)
+	}
+	if len(nsxt.tier0Cache) > 0 {
+		return nsxt.tier0Cache, nil, nil
+	}
 	request, err := nsxt.generateAuthorizedRequest(http.MethodGet, "/policy/api/v1/infra/tier-0s/")
 	if err != nil {
 		return
 	}
-	response, err := nsxt.HttpClient.Do(request)
+	response, nsxtError, err := nsxt.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
+	}
+	if nsxtError != nil {
+		log.Errorf("error while creating segment: %v", nsxtError)
 	}
 
 	defer response.Body.Close()
@@ -463,17 +548,34 @@ func (nsxt *NSXTClient) GetTier0s() (tier0s []NSXTTier0, err error) {
 		return
 	}
 	tier0s = tier0ListResult.Results
+	if len(nsxt.tier0Cache) != len(tier0s) {
+		nsxt.tier0Cache = append(nsxt.tier0Cache, tier0s...)
+	}
 	return
 }
 
-func (nsxt *NSXTClient) GetIpPoolSubnets(ipPoolName string) (ipSubnets []NSXTIpSubnet, err error) {
+func (nsxt *NSXTClient) GetIpPoolSubnets(ipPoolName string) (ipSubnets []NSXTIpSubnet, nsxtError *NSXTErrorResponse, err error) {
+	log.WithFields(log.Fields{
+		"ipPoolName": ipPoolName,
+	}).Debug("NSX-T | GetIpPoolSubnets")
+	// Cache these results as they don't usually change
+	// Note: just restart the server to reset the cache
+	if nsxt.ipSubnetCache == nil {
+		nsxt.ipSubnetCache = make([]NSXTIpSubnet, 0)
+	}
+	if len(nsxt.ipSubnetCache) > 0 {
+		return nsxt.ipSubnetCache, nil, nil
+	}
 	request, err := nsxt.generateAuthorizedRequest(http.MethodGet, ("/policy/api/v1/infra/ip-pools/" + ipPoolName + "/ip-subnets"))
 	if err != nil {
 		return
 	}
-	response, err := nsxt.HttpClient.Do(request)
+	response, nsxtError, err := nsxt.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
+	}
+	if nsxtError != nil {
+		log.Errorf("error while deleting segment: %v", nsxtError)
 	}
 
 	defer response.Body.Close()
@@ -483,10 +585,18 @@ func (nsxt *NSXTClient) GetIpPoolSubnets(ipPoolName string) (ipSubnets []NSXTIpS
 		return
 	}
 	ipSubnets = ipSubnetsResponse.Results
+	if len(nsxt.ipSubnetCache) != len(ipSubnets) {
+		nsxt.ipSubnetCache = append(nsxt.ipSubnetCache, ipSubnets...)
+	}
 	return
 }
 
-func (nsxt *NSXTClient) CreateNATRule(tier1Name string, sourceNetwork NSXTIPElementList, translatedNetwork NSXTIPElementList) (err error) {
+func (nsxt *NSXTClient) CreateNATRule(tier1Name string, sourceNetwork NSXTIPElementList, translatedNetwork NSXTIPElementList) (nsxtError *NSXTErrorResponse, err error) {
+	log.WithFields(log.Fields{
+		"tier1Name":         tier1Name,
+		"sourceNetwork":     sourceNetwork,
+		"translatedNetwork": translatedNetwork,
+	}).Debug("NSX-T | CreateNATRule")
 	payload := NSXTNATRule{
 		Description:       "NAT for CPTC Competition",
 		Action:            NSXT_NAT_SNAT,
@@ -503,34 +613,53 @@ func (nsxt *NSXTClient) CreateNATRule(tier1Name string, sourceNetwork NSXTIPElem
 	if err != nil {
 		return
 	}
-	response, err := nsxt.HttpClient.Do(request)
+	var response *http.Response
+	if nsxt.natCache == nil {
+		nsxt.natCache = &map[string]bool{}
+	}
+	timeout := 10
+	for i := 0; i < nsxt.MaxRetries; i++ {
+		if _, exists := (*nsxt.natCache)[tier1Name]; exists {
+			log.Debug("someone else already deployed NAT rule")
+			nsxtError = nil
+			err = nil
+			break
+		}
+		response, err = nsxt.HttpClient.Do(request)
+		if err == nil && response.StatusCode == http.StatusOK {
+			break
+		} else if err == nil && response.StatusCode == http.StatusNotFound {
+			break
+		} else {
+			log.Debugf("retrying in %d secs: %s", timeout, (*nsxt.natCache))
+			time.Sleep(time.Duration(timeout) * time.Second)
+			timeout = timeout * 2
+		}
+	}
 	if err != nil {
 		return
 	}
-	if response.StatusCode != 200 {
-		if response.StatusCode == 409 {
-			log.Infof("NAT Rule for %s already exists", tier1Name)
-			return nil
-		}
-		err = fmt.Errorf("error %s while making NAT rules for \"%s\"", response.Status, tier1Name)
-		return
+	if nsxtError != nil {
+		log.Errorf("error while creating NAT Rule: %v", nsxtError)
 	}
+	(*nsxt.natCache)[tier1Name] = true
 	return
 }
 
 func (nsxt *NSXTClient) DeleteNATRule(tier1Name string) (nsxtError *NSXTErrorResponse, err error) {
+	log.WithFields(log.Fields{
+		"tier1Name": tier1Name,
+	}).Debug("NSX-T | DeleteNATRule")
 	request, err := nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-NAT"))
 	if err != nil {
 		return nil, fmt.Errorf("error while making the DELETE request for the NAT Rule for %s: %v", tier1Name, err)
 	}
-	response, err := nsxt.HttpClient.Do(request)
+	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
-		return nil, fmt.Errorf("unkown error while deleting NAT Rule for %s: %v", tier1Name, err)
+		return
 	}
-	if response.StatusCode != 200 {
-		var nsxtError NSXTErrorResponse
-		json.NewDecoder(response.Body).Decode(&nsxtError)
-		return &nsxtError, nil
+	if nsxtError != nil {
+		log.Errorf("error while deleting NAT Rule: %v", nsxtError)
 	}
 	return
 }

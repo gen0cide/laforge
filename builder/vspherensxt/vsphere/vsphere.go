@@ -15,26 +15,34 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gen0cide/laforge/ent"
 	log "github.com/sirupsen/logrus"
 	"github.com/vmware/govmomi"
+	"github.com/vmware/govmomi/find"
 	"github.com/vmware/govmomi/object"
 	"github.com/vmware/govmomi/vapi/library"
 	"github.com/vmware/govmomi/vapi/rest"
 	"github.com/vmware/govmomi/vim25"
+	"github.com/vmware/govmomi/vim25/mo"
 	"github.com/vmware/govmomi/vim25/types"
 	"gopkg.in/guregu/null.v4"
 )
 
 type VSphere struct {
-	BaseUrl    string
-	ServerUrl  string
-	HttpClient http.Client
-	SoapClient govmomi.Client
-	GCManager  object.CustomizationSpecManager
-	Username   string
-	Password   string
+	BaseUrl         string
+	ServerUrl       string
+	HttpClient      http.Client
+	SoapClient      *govmomi.Client
+	Vim25Client     *vim25.Client
+	Finder          *find.Finder
+	GCManager       object.CustomizationSpecManager
+	Username        string
+	Password        string
+	MaxRetries      int
+	templateIdCache *map[string]Identifier
+	templateCache   *map[Identifier]Template
 }
 
 type PowerState string
@@ -690,7 +698,7 @@ func (vs *VSphere) authorize() (sessionToken string, err error) {
 		return
 	}
 	if authResponse.StatusCode != 201 {
-		err = errors.New("recieved status " + authResponse.Status)
+		err = errors.New("received status " + authResponse.Status)
 		return
 	}
 
@@ -737,13 +745,29 @@ func (vs *VSphere) generateAuthorizedRequestWithData(method string, url string, 
 	return
 }
 
+func (vs *VSphere) executeRequestWithRetry(request *http.Request, successStatus int) (response *http.Response, err error) {
+	timeout := 10
+	for i := 0; i < vs.MaxRetries; i++ {
+		response, err = vs.HttpClient.Do(request)
+		if err == nil && response.StatusCode == successStatus {
+			break
+		} else if err == nil && response.StatusCode == http.StatusNotFound {
+			break
+		} else {
+			time.Sleep(time.Duration(timeout) * time.Second)
+			timeout = timeout * 2
+		}
+	}
+	return
+}
+
 func (vs *VSphere) ListVms() (vms []VirtualMachine, err error) {
 	log.Debug("vSphere | ListVms")
 	request, err := vs.generateAuthorizedRequest("GET", "/api/vcenter/vm")
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
+	response, err := vs.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
@@ -751,7 +775,7 @@ func (vs *VSphere) ListVms() (vms []VirtualMachine, err error) {
 		log.WithFields(log.Fields{
 			"status": response.Status,
 		}).Warn("vSphere | Non-Okay Response from ListVms")
-		err = errors.New("recieved status " + response.Status + " from VSphere")
+		err = errors.New("received status " + response.Status + " from VSphere")
 		return
 	}
 
@@ -771,7 +795,7 @@ func (vs *VSphere) GetVm(name string) (vm VirtualMachine, err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
+	response, err := vs.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
@@ -779,7 +803,7 @@ func (vs *VSphere) GetVm(name string) (vm VirtualMachine, err error) {
 		log.WithFields(log.Fields{
 			"status": response.Status,
 		}).Warn("vSphere | Non-Okay Response from GetVm")
-		err = errors.New("recieved status " + response.Status + " from VSphere")
+		err = errors.New("received status " + response.Status + " from VSphere")
 		return
 	}
 
@@ -803,7 +827,7 @@ func (vs *VSphere) ListDatastores() (datastores []Datastore, err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
+	response, err := vs.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
@@ -831,7 +855,7 @@ func (vs *VSphere) GetDatastoreByName(name string) (datastore Datastore, err err
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
+	response, err := vs.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
@@ -867,7 +891,7 @@ func (vs *VSphere) ListFolders() (folders []Folder, err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
+	response, err := vs.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
@@ -895,7 +919,7 @@ func (vs *VSphere) GetFolderByName(name string) (folder Folder, err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
+	response, err := vs.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
@@ -931,7 +955,7 @@ func (vs *VSphere) ListResourcePools() (resourcePools []ResourcePool, err error)
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
+	response, err := vs.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
@@ -959,7 +983,7 @@ func (vs *VSphere) GetResourcePoolByName(name string) (resourcePool ResourcePool
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
+	response, err := vs.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
@@ -995,7 +1019,7 @@ func (vs *VSphere) ListNetworks() (networks []Network, err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
+	response, err := vs.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
@@ -1023,23 +1047,30 @@ func (vs *VSphere) GetNetworkByName(name string) (network Network, err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
-	if err != nil {
-		return
-	}
-	if response.StatusCode != http.StatusOK {
-		log.WithFields(log.Fields{
-			"status": response.Status,
-		}).Warn("vSphere | Non-Okay Response from GetNetworkByName")
-		err = errors.New("received status " + response.Status + " from VSphere")
-		return
-	}
-
-	defer response.Body.Close()
 	var networkList []Network
-	err = json.NewDecoder(response.Body).Decode(&networkList)
-	if err != nil {
-		return
+	cooldown := 10
+	for i := 0; i < vs.MaxRetries; i++ {
+		response, err := vs.executeRequestWithRetry(request, http.StatusOK)
+		if err != nil {
+			continue
+		}
+		if response.StatusCode != http.StatusOK {
+			log.WithFields(log.Fields{
+				"status": response.Status,
+			}).Warn("vSphere | Non-Okay Response from GetNetworkByName")
+			err = errors.New("received status " + response.Status + " from VSphere")
+			continue
+		}
+
+		defer response.Body.Close()
+		err = json.NewDecoder(response.Body).Decode(&networkList)
+		if err != nil {
+			continue
+		}
+		if len(networkList) >= 1 {
+			break
+		}
+		time.Sleep(time.Duration(cooldown) * time.Second)
 	}
 	if len(networkList) < 1 {
 		err = errors.New("no network found for the name\"" + name + "\"")
@@ -1052,11 +1083,22 @@ func (vs *VSphere) GetNetworkByName(name string) (network Network, err error) {
 	network = networkList[0]
 	return
 }
+
 func (vs *VSphere) GetTemplateIDByName(contentLibraryName string, templateName string) (templateId string, err error) {
+	// Speed up the requests with this cache, these results don't change much
+	// Note: just restart the server to clear the cache
+	if vs.templateIdCache == nil {
+		vs.templateIdCache = &map[string]Identifier{}
+	}
+	id, exists := (*vs.templateIdCache)[templateName]
 	log.WithFields(log.Fields{
 		"contentLibraryName": contentLibraryName,
 		"templateName":       templateName,
+		"cached":             exists,
 	}).Debug("vSphere | GetTemplateIDByName")
+	if exists {
+		return string(id), nil
+	}
 	u, err := url.Parse(vs.BaseUrl + "/sdk")
 	if err != nil {
 		return
@@ -1081,9 +1123,15 @@ func (vs *VSphere) GetTemplateIDByName(contentLibraryName string, templateName s
 	cl := library.Find{
 		Name: contentLibraryName,
 	}
-	contentLibrary, err := clm.FindLibrary(ctx, cl)
-	if err != nil {
-		return
+	var contentLibrary []string
+	timeout := 10
+	for i := 0; i < vs.MaxRetries; i++ {
+		contentLibrary, err := clm.FindLibrary(ctx, cl)
+		if err == nil && len(contentLibrary) >= 1 {
+			break
+		}
+		time.Sleep(time.Duration(timeout) * time.Second)
+		timeout = timeout * 2
 	}
 	if len(contentLibrary) < 1 {
 		err = errors.New("no content libaries found with the name \"" + contentLibraryName + "\"")
@@ -1115,18 +1163,29 @@ func (vs *VSphere) GetTemplateIDByName(contentLibraryName string, templateName s
 		return
 	}
 	templateId = item.ID
+	(*vs.templateIdCache)[templateName] = Identifier(item.ID)
 	return
 }
 
 func (vs *VSphere) GetTemplate(templateId string) (template Template, err error) {
+	// Speed up the requests with this cache, these results don't change much
+	// Note: just restart the server to clear the cache
+	if vs.templateCache == nil {
+		vs.templateCache = &map[Identifier]Template{}
+	}
+	template, exists := (*vs.templateCache)[Identifier(templateId)]
 	log.WithFields(log.Fields{
 		"templateId": templateId,
+		"cached":     exists,
 	}).Debug("vSphere | GetTemplate")
+	if exists {
+		return
+	}
 	request, err := vs.generateAuthorizedRequest("GET", "/api/vcenter/vm-template/library-items/"+templateId)
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
+	response, err := vs.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
@@ -1151,6 +1210,7 @@ func (vs *VSphere) GetTemplate(templateId string) (template Template, err error)
 	if err != nil {
 		return
 	}
+	(*vs.templateCache)[template.Identifier] = template
 	return
 }
 
@@ -1169,7 +1229,7 @@ func (vs *VSphere) CreateVM(vmSpec VirtualMachineSpec) (err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
+	response, err := vs.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
@@ -1193,7 +1253,7 @@ func (vs *VSphere) GetVMPowerState(vmIdentifier Identifier) (powerState PowerSta
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
+	response, err := vs.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
@@ -1201,7 +1261,7 @@ func (vs *VSphere) GetVMPowerState(vmIdentifier Identifier) (powerState PowerSta
 		log.WithFields(log.Fields{
 			"status": response.Status,
 		}).Warn("vSphere | Non-Okay Response from ListResourcePools")
-		err = errors.New("recieved status " + response.Status + " from VSphere")
+		err = errors.New("received status " + response.Status + " from VSphere")
 		return
 	}
 	var responseBody VMPowerStateResponse
@@ -1220,7 +1280,7 @@ func (vs *VSphere) ShutdownVM(vmIdentifier Identifier) (err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
+	response, err := vs.executeRequestWithRetry(request, http.StatusNoContent)
 	if err != nil {
 		return
 	}
@@ -1262,7 +1322,7 @@ func (vs *VSphere) DeleteVM(name string) (err error) {
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
+	response, err := vs.executeRequestWithRetry(request, http.StatusNoContent)
 	if err != nil {
 		return
 	}
@@ -1270,7 +1330,7 @@ func (vs *VSphere) DeleteVM(name string) (err error) {
 		log.WithFields(log.Fields{
 			"status": response.Status,
 		}).Warn("vSphere | Non-NoContent Response from DeleteVM")
-		return errors.New("recieved status " + response.Status + " from VSphere while trying to delete the VM: " + name)
+		return errors.New("received status " + response.Status + " from VSphere while trying to delete the VM: " + name)
 	}
 	return
 }
@@ -1288,7 +1348,7 @@ func (vs *VSphere) DeployTemplate(templateId string, spec DeployTemplateSpec) (e
 	if err != nil {
 		return
 	}
-	response, err := vs.HttpClient.Do(request)
+	response, err := vs.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
@@ -1302,7 +1362,6 @@ func (vs *VSphere) DeployTemplate(templateId string, spec DeployTemplateSpec) (e
 		log.WithFields(log.Fields{
 			"status": response.Status,
 		}).Warn("vSphere | Non-Okay Response from DeployTemplate")
-		log.Warnf("%s\n", deploymentBytes)
 		err = errors.New("received status " + response.Status + " from VSphere")
 		return
 	}
@@ -1315,27 +1374,116 @@ func (vs *VSphere) DeployTemplate(templateId string, spec DeployTemplateSpec) (e
 	return
 }
 
-func (vs *VSphere) GuestCustomizationExists(ctx context.Context, specName string) (exists bool, err error) {
-	exists, err = vs.GCManager.DoesCustomizationSpecExist(ctx, specName)
+func (vs *VSphere) DeployLinkedClone(ctx context.Context, sourceVmName, destVmName, networkName string, cpuCount int32, memory int64, folder *object.Folder, resourcePool *object.ResourcePool, guestCustomization *types.CustomizationSpecItem) (err error) {
+	log.WithFields(log.Fields{
+		"sourceVmName": sourceVmName,
+		"spec.Name":    guestCustomization.Info.Name,
+	}).Debug("vSphere | DeployLinkedClone")
+
+	sourceVm, err := vs.Finder.VirtualMachine(ctx, sourceVmName)
 	if err != nil {
-		return false, fmt.Errorf("error while checking if GuestCustomizationSpec exists: %v", err)
+		return
 	}
-	return exists, nil
+	rpReference := resourcePool.Reference()
+
+	var properties mo.VirtualMachine
+	err = sourceVm.Properties(ctx, sourceVm.Reference(), []string{"snapshot"}, &properties)
+	if err != nil {
+		return
+	}
+
+	nsxtNetwork, err := vs.Finder.Network(ctx, networkName)
+	if err != nil {
+		return
+	}
+
+	devices, err := sourceVm.Device(ctx)
+	if err != nil {
+		return
+	}
+	var ethernetCard *types.VirtualEthernetCard
+	for _, device := range devices {
+		if c, ok := device.(types.BaseVirtualEthernetCard); ok {
+			ethernetCard = c.GetVirtualEthernetCard()
+			break
+		}
+	}
+	if ethernetCard == nil {
+		return fmt.Errorf("error finding ethernet device on the template: %s", sourceVmName)
+	}
+	backing, err := nsxtNetwork.EthernetCardBackingInfo(ctx)
+	if err != nil {
+		return
+	}
+	netdev, err := object.EthernetCardTypes().CreateEthernetCard("vmxnet3", backing)
+	if err != nil {
+		return
+	}
+
+	ethernetCard.Backing = netdev.(types.BaseVirtualEthernetCard).GetVirtualEthernetCard().Backing
+
+	cloneSpec := types.VirtualMachineCloneSpec{}
+	relocateSpec := types.VirtualMachineRelocateSpec{}
+	relocateSpec.DiskMoveType = "createNewChildDiskBacking"
+	relocateSpec.Pool = &rpReference
+	relocateSpec.DeviceChange = []types.BaseVirtualDeviceConfigSpec{
+		&types.VirtualDeviceConfigSpec{
+			Operation: types.VirtualDeviceConfigSpecOperationEdit,
+			Device:    ethernetCard,
+		},
+	}
+	cloneSpec.Location = relocateSpec
+	cloneSpec.PowerOn = true
+	cloneSpec.Template = false
+	cloneSpec.Snapshot = properties.Snapshot.CurrentSnapshot
+	cloneSpec.Customization = &guestCustomization.Spec
+	cloneSpec.Config = &types.VirtualMachineConfigSpec{
+		NumCPUs:           cpuCount,
+		NumCoresPerSocket: 2,
+		MemoryMB:          memory,
+	}
+
+	task, err := sourceVm.Clone(ctx, folder, destVmName, cloneSpec)
+	_, err = task.WaitForResult(ctx, nil)
+	return
 }
 
-func (vs *VSphere) GenerateGuestCustomization(ctx context.Context, specName string, template Template, provisionedHost *ent.ProvisionedHost) (spec *types.CustomizationSpecItem, err error) {
+func (vs *VSphere) GuestCustomizationExists(ctx context.Context, specName string) (exists bool, err error) {
+	timeout := 10
+	for i := 0; i < vs.MaxRetries; i++ {
+		exists, err = vs.GCManager.DoesCustomizationSpecExist(ctx, specName)
+		if err == nil {
+			break
+		} else {
+			time.Sleep(time.Duration(timeout) * time.Second)
+			timeout = timeout * 2
+		}
+	}
+	return
+}
+
+func (vs *VSphere) GenerateGuestCustomization(ctx context.Context, specName string, templateName string, provisionedHost *ent.ProvisionedHost) (spec *types.CustomizationSpecItem, err error) {
 	log.WithFields(log.Fields{
-		"template.Identifier": template.Identifier,
-		"provisionedHost.ID":  provisionedHost.ID,
+		"templateName":       templateName,
+		"provisionedHost.ID": provisionedHost.ID,
 	}).Debug("vSphere | GenerateGuestCustomization")
 
-	exists, err := vs.GCManager.DoesCustomizationSpecExist(ctx, specName)
+	exists, err := vs.GuestCustomizationExists(ctx, specName)
 	if err != nil {
 		return nil, fmt.Errorf("error while checking if GuestCustomizationSpec exists: %v", err)
 	}
 	if exists {
 		// Just get the spec if it already exists
-		spec, err := vs.GCManager.GetCustomizationSpec(ctx, specName)
+		timeout := 10
+		for i := 0; i < vs.MaxRetries; i++ {
+			spec, err = vs.GCManager.GetCustomizationSpec(ctx, specName)
+			if err == nil {
+				break
+			} else {
+				time.Sleep(time.Duration(timeout) * time.Second)
+				timeout = timeout * 2
+			}
+		}
 		if err != nil {
 			return nil, fmt.Errorf("error getting GuestCustomizationSpec: %v", err)
 		}
@@ -1369,6 +1517,17 @@ func (vs *VSphere) GenerateGuestCustomization(ctx context.Context, specName stri
 	if err != nil {
 		return nil, fmt.Errorf("error while querying network from provisioned network: %v", err)
 	}
+
+	template, err := vs.Finder.VirtualMachine(ctx, templateName)
+	if err != nil {
+		return nil, fmt.Errorf("error getting template by name %s: %v", templateName, err)
+	}
+	var properties mo.VirtualMachine
+	err = template.Properties(ctx, template.Reference(), []string{"config.guestId"}, &properties)
+	if err != nil {
+		log.Fatalf("error getting guestId of template: %v\n", err)
+	}
+
 	var linuxIdentity *types.CustomizationLinuxPrep = nil
 	var linuxOptions *types.CustomizationLinuxOptions = nil
 	var windowsIdentity *types.CustomizationSysprep = nil
@@ -1404,7 +1563,7 @@ func (vs *VSphere) GenerateGuestCustomization(ctx context.Context, specName stri
 
 	agentUrl := fmt.Sprintf("%s/api/download/%s", vs.ServerUrl, agentFile.URLID)
 	// If Windows
-	if strings.Contains(string(template.GuestOS), "WIN") {
+	if strings.HasPrefix(string(properties.Config.GuestId), "win") {
 		customizationInfo.Type = "Windows"
 		windowsIdentity = &types.CustomizationSysprep{
 			CustomizationIdentitySettings: types.CustomizationIdentitySettings{},
@@ -1425,7 +1584,7 @@ func (vs *VSphere) GenerateGuestCustomization(ctx context.Context, specName stri
 				OrgName:     "LaForge",
 				ComputerName: &types.CustomizationFixedName{
 					CustomizationName: types.CustomizationName{},
-					Name:              host.Hostname,
+					Name:              strings.Replace(host.Hostname, "_", "-", -1),
 				},
 			},
 			GuiRunOnce: &types.CustomizationGuiRunOnce{
@@ -1486,7 +1645,7 @@ fi`, agentUrl, linuxPassword)
 			CustomizationIdentitySettings: types.CustomizationIdentitySettings{},
 			HostName: &types.CustomizationFixedName{
 				CustomizationName: types.CustomizationName{},
-				Name:              host.Hostname,
+				Name:              strings.Replace(host.Hostname, "_", "-", -1),
 			},
 			Domain:     "cyberrange.rit.edu",
 			TimeZone:   "US/Eastern",
@@ -1563,7 +1722,25 @@ func (vs *VSphere) CreateGuestCustomization(ctx context.Context, spec types.Cust
 	log.WithFields(log.Fields{
 		"name": spec.Info.Name,
 	}).Debug("vSphere | CreateGuestCustomization")
-	err = vs.GCManager.CreateCustomizationSpec(ctx, spec)
+
+	exists, err := vs.GuestCustomizationExists(ctx, spec.Info.Name)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return nil
+	}
+
+	timeout := 10
+	for i := 0; i < vs.MaxRetries; i++ {
+		err = vs.GCManager.CreateCustomizationSpec(ctx, spec)
+		if err == nil {
+			break
+		} else {
+			time.Sleep(time.Duration(timeout) * time.Second)
+			timeout = timeout * 2
+		}
+	}
 	return
 }
 
@@ -1571,6 +1748,19 @@ func (vs *VSphere) DeleteGuestCustomization(ctx context.Context, specName string
 	log.WithFields(log.Fields{
 		"name": specName,
 	}).Debug("vSphere | DeleteGuestCustomization")
+	// timeout := 10
+	// for i := 0; i < vs.MaxRetries; i++ {
+	// 	err = vs.GCManager.DeleteCustomizationSpec(ctx, specName)
+	// 	if err != object. {
+	// 		log.Warnf("Error: %v", err)
+	// 	}
+	// 	if err == nil {
+	// 		break
+	// 	} else {
+	// 		time.Sleep(time.Duration(timeout) * time.Second)
+	// 		timeout = timeout * 2
+	// 	}
+	// }
 	err = vs.GCManager.DeleteCustomizationSpec(ctx, specName)
 	return
 }

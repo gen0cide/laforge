@@ -13,7 +13,9 @@ import (
 	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
 	"github.com/gen0cide/laforge/ent"
 	"github.com/vmware/govmomi"
+	"github.com/vmware/govmomi/find"
 	"github.com/vmware/govmomi/object"
+	"github.com/vmware/govmomi/vim25"
 )
 
 type Builder interface {
@@ -117,6 +119,18 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 		log.Fatalf("error creating govmomi client: %v", err)
 	}
 
+	v25, err := vim25.NewClient(ctx, govmomiClient.RoundTripper)
+	if err != nil {
+		log.Fatalf("error creating vim25 thingy: %v", err)
+	}
+
+	finder := find.NewFinder(v25, true)
+	dc, err := finder.DefaultDatacenter(ctx)
+	if err != nil {
+		log.Fatalf("error finding datacenter: %v", err)
+	}
+	finder.SetDatacenter(dc)
+
 	gc := object.NewCustomizationSpecManager(govmomiClient.Client)
 
 	nsxtHttpClient, err := nsxt.NewPrincipalIdentityClient(nsxtCertPath, nsxtKeyPath, nsxtCACertPath)
@@ -128,16 +142,20 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 		HttpClient: nsxtHttpClient,
 		BaseUrl:    nsxtBaseUrl,
 		IpPoolName: nsxtIpPoolName,
+		MaxRetries: 10,
 	}
 
 	vsphereClient := vsphere.VSphere{
-		HttpClient: httpClient,
-		SoapClient: *govmomiClient,
-		GCManager:  *gc,
-		ServerUrl:  laforgeServerUrl,
-		BaseUrl:    vsphereBaseUrl,
-		Username:   vsphereUsername,
-		Password:   vspherePassword,
+		HttpClient:  httpClient,
+		SoapClient:  govmomiClient,
+		Vim25Client: v25,
+		Finder:      finder,
+		GCManager:   *gc,
+		ServerUrl:   laforgeServerUrl,
+		BaseUrl:     vsphereBaseUrl,
+		Username:    vsphereUsername,
+		Password:    vspherePassword,
+		MaxRetries:  10,
 	}
 
 	datastore, err := vsphereClient.GetDatastoreByName(datastoreName)
@@ -145,15 +163,25 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 		return
 	}
 
-	resourcePool, err := vsphereClient.GetResourcePoolByName(resourcePoolName)
+	folder, err := finder.Folder(ctx, folderName)
 	if err != nil {
-		return
+		log.Fatalf("error finding folder: %v", err)
 	}
 
-	folder, err := vsphereClient.GetFolderByName(folderName)
+	resourcePool, err := finder.ResourcePool(ctx, resourcePoolName)
 	if err != nil {
-		return
+		log.Fatalf("error finding resource pool: %v", err)
 	}
+
+	// resourcePool, err := vsphereClient.GetResourcePoolByName(resourcePoolName)
+	// if err != nil {
+	// 	return
+	// }
+
+	// folder, err := vsphereClient.GetFolderByName(folderName)
+	// if err != nil {
+	// 	return
+	// }
 
 	builder = vspherensxt.VSphereNSXTBuilder{
 		HttpClient:                httpClient,

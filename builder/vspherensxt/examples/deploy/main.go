@@ -23,24 +23,17 @@ func main() {
 	folderName, folderNameExists := os.LookupEnv("VSPHERE_FOLDER")
 	networkName, networkNameExists := os.LookupEnv("VSPHERE_NETWORK")
 	if !urlExists || !usernameExists || !passwordExists || !templateNameExists || !libraryNameExists || !datastoreNameExists || !resourcePoolNameExists || !folderNameExists || !networkNameExists {
-		log.Fatalf("please set VSPHERE_URL (exists? %t)"+
-			", VSPHERE_USERNAME (exists? %t)"+
-			", VSPHERE_PASSWORD (exists? %t)"+
-			", VSPHERE_CONTENT_LIBRARY (exists? %t)"+
-			", VSPHERE_TEMPLATE_NAME (exists? %t)"+
-			", VSPHERE_DATASTORE (exists? %t)"+
-			", VSPHERE_RESOURCE_POOL (exists? %t)"+
-			", VSPHERE_FOLDER (exists? %t)"+
-			", VSPHERE_NETWORK (exists? %t)",
-			urlExists,
-			usernameExists,
-			passwordExists,
-			libraryNameExists,
-			templateNameExists,
-			datastoreNameExists,
-			resourcePoolNameExists,
-			folderNameExists,
-			networkNameExists)
+		log.WithFields(log.Fields{
+			"VSPHERE_URL":             urlExists,
+			"VSPHERE_USERNAME":        usernameExists,
+			"VSPHERE_PASSWORD":        passwordExists,
+			"VSPHERE_CONTENT_LIBRARY": libraryNameExists,
+			"VSPHERE_TEMPLATE_NAME":   templateNameExists,
+			"VSPHERE_DATASTORE":       datastoreNameExists,
+			"VSPHERE_RESOURCE_POOL":   resourcePoolNameExists,
+			"VSPHERE_FOLDER":          folderNameExists,
+			"VSPHERE_NETWORK":         networkNameExists,
+		}).Fatal("some env variables are missing, these currently exist:")
 	}
 	vs := vsphere.VSphere{
 		HttpClient: httpClient,
@@ -99,18 +92,18 @@ func main() {
 		log.Fatalf("error while getting resource pools: %v", err)
 	}
 
-	deploymentName := "Agent-Deploy-Test-Windows"
+	deploymentName := "Agent-Deploy-Test-kalibuntu"
 
 	log.Infof("Deploying %s [%s] as %s\n", template.GuestOS, template.Identifier, deploymentName)
 
 	deploymentSpec := vsphere.DeployTemplateSpec{
-		Description: "AHHHHHHHHHHHHHHHHHHHH HELLPPPPPPPPPPP",
+		Description: "Kalibuntu Agent Deploy Test",
 		Name:        deploymentName,
 		DiskStorage: vsphere.TemplateDiskStorage{
 			DatastoreIdentifier: datastore.Identifier,
 		},
 		GuestCustomization: vsphere.DeployGuestCustomization{
-			Name: "LaForge-Test-Windows",
+			Name: "LaForge-Test-Linux",
 		},
 		DiskStorageOverrides: map[string]vsphere.DeploySpecDiskStorage{},
 		HardwareCustomization: vsphere.HardwareCustomization{
@@ -121,7 +114,7 @@ func main() {
 			DisksToRemove: []string{},
 			DisksToUpdate: map[string]vsphere.DiskUpdateSpec{},
 			MemoryUpdate: vsphere.MemoryUpdate{
-				Memory: 4096,
+				Memory: 8192,
 			},
 			Nics: map[string]vsphere.HCNicUpdateSpec{
 				"4000": {

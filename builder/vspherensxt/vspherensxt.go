@@ -8,11 +8,14 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gen0cide/laforge/builder/vspherensxt/nsxt"
 	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
 	"github.com/gen0cide/laforge/ent"
-	"gopkg.in/guregu/null.v4"
+	"github.com/sirupsen/logrus"
+	"github.com/vmware/govmomi/object"
+	"github.com/vmware/govmomi/vim25/types"
 )
 
 const (
@@ -32,8 +35,8 @@ type VSphereNSXTBuilder struct {
 	TemplatePrefix            string
 	VSphereContentLibraryName string
 	VSphereDatastore          vsphere.Datastore
-	VSphereResourcePool       vsphere.ResourcePool
-	VSphereFolder             vsphere.Folder
+	VSphereResourcePool       *object.ResourcePool
+	VSphereFolder             *object.Folder
 }
 
 func (builder VSphereNSXTBuilder) ID() string {
@@ -82,8 +85,8 @@ func (builder VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHos
 	if err != nil {
 		return
 	}
-	cpuCount := 0
-	memorySize := 0
+	cpuCount := int32(0)
+	memorySize := int64(0)
 	switch host.InstanceSize {
 	case "nano":
 		cpuCount = 1
@@ -128,95 +131,101 @@ func (builder VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHos
 
 	networkName := builder.generateNetworkName(competition, team, network, build)
 
-	nsxtNetwork, err := builder.VSphereClient.GetNetworkByName(networkName)
-	if err != nil {
-		return
-	}
+	// nsxtNetwork, err := builder.VSphereClient.GetNetworkByName(networkName)
+	// if err != nil {
+	// 	return
+	// }
 
-	templateId, err := builder.VSphereClient.GetTemplateIDByName(builder.VSphereContentLibraryName, (builder.TemplatePrefix + host.OS))
-	if err != nil {
-		return
-	}
-	template, err := builder.VSphereClient.GetTemplate(templateId)
-	if err != nil {
-		return
-	}
+	// templateId, err := builder.VSphereClient.GetTemplateIDByName(builder.VSphereContentLibraryName, )
+	// if err != nil {
+	// 	return
+	// }
+	// template, err := builder.VSphereClient.GetTemplate(templateId)
+	// if err != nil {
+	// 	return
+	// }
 
-	nicId, exists := host.Vars["nic_id"]
-	if !exists {
-		if len(template.Nics) > 0 {
-			nicIds := make([]string, 0, len(template.Nics))
-			for key := range template.Nics {
-				nicIds = append(nicIds, key)
-			}
-			if len(nicIds) < 1 {
-				return fmt.Errorf("no nics exist in the vm template for template %s", (builder.TemplatePrefix + host.OS))
-			}
-			nicId = nicIds[0]
-		} else {
-			err = errors.New("nic_id doesn't exist in the host vars for " + host.Hostname)
-			return err
-		}
-	}
+	// nicId, exists := host.Vars["nic_id"]
+	// if !exists {
+	// 	if len(template.Nics) > 0 {
+	// 		nicIds := make([]string, 0, len(template.Nics))
+	// 		for key := range template.Nics {
+	// 			nicIds = append(nicIds, key)
+	// 		}
+	// 		if len(nicIds) < 1 {
+	// 			return fmt.Errorf("no nics exist in the vm template for template %s", (builder.TemplatePrefix + host.OS))
+	// 		}
+	// 		nicId = nicIds[0]
+	// 	} else {
+	// 		err = errors.New("nic_id doesn't exist in the host vars for " + host.Hostname)
+	// 		return err
+	// 	}
+	// }
 
+	templateName := (builder.TemplatePrefix + host.OS)
 	vmName := builder.generateVmName(competition, team, host, build)
 	guestCustomizationName := (vmName + "-Customization-Spec")
 
-	specAlreadyExists, err := builder.VSphereClient.GuestCustomizationExists(ctx, guestCustomizationName)
+	var guestCustomizationSpec *types.CustomizationSpecItem
+
+	// specAlreadyExists, err := builder.VSphereClient.GuestCustomizationExists(ctx, guestCustomizationName)
+	// if err != nil {
+	// 	return
+	// }
+	// if !specAlreadyExists {
+	guestCustomizationSpec, err = builder.VSphereClient.GenerateGuestCustomization(ctx, guestCustomizationName, templateName, provisionedHost)
 	if err != nil {
-		return
-	}
-	if !specAlreadyExists {
-		guestCustomizationSpec, err := builder.VSphereClient.GenerateGuestCustomization(ctx, guestCustomizationName, template, provisionedHost)
-		if err != nil {
-			return err
-		}
-
-		err = builder.VSphereClient.CreateGuestCustomization(ctx, *guestCustomizationSpec)
-		if err != nil {
-			return err
-		}
+		return err
 	}
 
-	templateSpec := vsphere.DeployTemplateSpec{
-		Description: host.Description,
-		DiskStorage: vsphere.TemplateDiskStorage{
-			DatastoreIdentifier: builder.VSphereDatastore.Identifier,
-		},
-		DiskStorageOverrides: map[string]vsphere.DeploySpecDiskStorage{},
-		GuestCustomization: vsphere.DeployGuestCustomization{
-			Name: guestCustomizationName,
-		},
-		HardwareCustomization: vsphere.HardwareCustomization{
-			CpuUpdate: vsphere.CpuUpdate{
-				NumCoresPerSocket: 2,
-				NumCpus:           cpuCount,
-			},
-			DisksToRemove: []string{},
-			DisksToUpdate: map[string]vsphere.DiskUpdateSpec{},
-			MemoryUpdate: vsphere.MemoryUpdate{
-				Memory: memorySize,
-			},
-			Nics: map[string]vsphere.HCNicUpdateSpec{
-				nicId: {
-					Identifier: nsxtNetwork.Identifier,
-				},
-			},
-		},
-		Name: vmName,
-		Placement: vsphere.DeployPlacement{
-			ClusterId:      null.String{},
-			FolderId:       null.StringFrom(string(builder.VSphereFolder.Identifier)),
-			HostId:         null.String{},
-			ResourcePoolId: null.StringFrom(string(builder.VSphereResourcePool.Identifier)),
-		},
-		PoweredOn: true,
-		VmHomeStorage: vsphere.DeployHomeStorage{
-			DatastoreId: builder.VSphereDatastore.Identifier,
-		},
+	err = builder.VSphereClient.CreateGuestCustomization(ctx, *guestCustomizationSpec)
+	if err != nil {
+		return err
 	}
+	// }
 
-	err = builder.VSphereClient.DeployTemplate(templateId, templateSpec)
+	logrus.Debug(guestCustomizationSpec)
+
+	// templateSpec := vsphere.DeployTemplateSpec{
+	// 	Description: host.Description,
+	// 	DiskStorage: vsphere.TemplateDiskStorage{
+	// 		DatastoreIdentifier: builder.VSphereDatastore.Identifier,
+	// 	},
+	// 	DiskStorageOverrides: map[string]vsphere.DeploySpecDiskStorage{},
+	// 	GuestCustomization: vsphere.DeployGuestCustomization{
+	// 		Name: guestCustomizationName,
+	// 	},
+	// 	HardwareCustomization: vsphere.HardwareCustomization{
+	// 		CpuUpdate: vsphere.CpuUpdate{
+	// 			NumCoresPerSocket: 2,
+	// 			NumCpus:           cpuCount,
+	// 		},
+	// 		DisksToRemove: []string{},
+	// 		DisksToUpdate: map[string]vsphere.DiskUpdateSpec{},
+	// 		MemoryUpdate: vsphere.MemoryUpdate{
+	// 			Memory: memorySize,
+	// 		},
+	// 		Nics: map[string]vsphere.HCNicUpdateSpec{
+	// 			nicId: {
+	// 				Identifier: nsxtNetwork.Identifier,
+	// 			},
+	// 		},
+	// 	},
+	// 	Name: vmName,
+	// 	Placement: vsphere.DeployPlacement{
+	// 		ClusterId:      null.String{},
+	// 		FolderId:       null.StringFrom(string(builder.VSphereFolder.Identifier)),
+	// 		HostId:         null.String{},
+	// 		ResourcePoolId: null.StringFrom(string(builder.VSphereResourcePool.Identifier)),
+	// 	},
+	// 	PoweredOn: true,
+	// 	VmHomeStorage: vsphere.DeployHomeStorage{
+	// 		DatastoreId: builder.VSphereDatastore.Identifier,
+	// 	},
+	// }
+
+	// err = builder.VSphereClient.DeployTemplate(templateId, templateSpec)
+	err = builder.VSphereClient.DeployLinkedClone(ctx, templateName, vmName, networkName, cpuCount, memorySize, builder.VSphereFolder, builder.VSphereResourcePool, guestCustomizationSpec)
 	if err != nil {
 		return
 	}
@@ -246,16 +255,27 @@ func (builder VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisioned
 	}
 
 	tier1Name := builder.generateRouterName(competition[0], team, build)
-	tier1Exists, err := builder.NsxtClient.CheckExistsTier1(tier1Name)
+	tier1Exists, nsxtError, err := builder.NsxtClient.CheckExistsTier1(tier1Name)
 	if err != nil {
 		return
 	}
+	if nsxtError != nil {
+		return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
+	}
 	if !tier1Exists {
+		// ------------------------------------
+		// Stagger the teams network deployment
+		time.Sleep(time.Duration(team.TeamNumber*5) * time.Second)
+		// ------------------------------------
+
 		tier0Path, tier0PathExists := network.Vars["nsxt_tier0_path"]
 		if !tier0PathExists {
-			tier0s, err := builder.NsxtClient.GetTier0s()
+			tier0s, nsxtError, err := builder.NsxtClient.GetTier0s()
 			if err != nil {
 				return err
+			}
+			if nsxtError != nil {
+				return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
 			}
 			if len(tier0s) > 1 {
 				return errors.New("tier0_path doesn't exist in the network vars for " + network.Name + " and multiple (" + fmt.Sprint(len(tier0s)) + ") Tier 0s found.")
@@ -272,9 +292,12 @@ func (builder VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisioned
 		}
 
 		fmt.Println("Tier-1 router not found for Team " + fmt.Sprint(team.TeamNumber) + ", creating one...")
-		err = builder.NsxtClient.CreateTier1(tier1Name, tier0Path, edgeClusterPath)
+		nsxtError, err = builder.NsxtClient.CreateTier1(tier1Name, tier0Path, edgeClusterPath)
 		if err != nil {
 			return err
+		}
+		if nsxtError != nil {
+			return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
 		}
 
 		addressParts := strings.Split(network.Cidr, "/")
@@ -289,9 +312,12 @@ func (builder VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisioned
 			natSourceAddress = octets[0] + ".0.0.0/8"
 		}
 
-		ipPoolSubnets, err := builder.NsxtClient.GetIpPoolSubnets(builder.NsxtClient.IpPoolName)
+		ipPoolSubnets, nsxtError, err := builder.NsxtClient.GetIpPoolSubnets(builder.NsxtClient.IpPoolName)
 		if err != nil {
 			return err
+		}
+		if nsxtError != nil {
+			return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
 		}
 		if len(ipPoolSubnets) <= 0 {
 			return fmt.Errorf("error: no ip subnets found under the IP Pool \"%s\"", builder.NsxtClient.IpPoolName)
@@ -316,9 +342,12 @@ func (builder VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisioned
 			return fmt.Errorf("NAT IP %s is out of the range %s-%s", natTranslatedAddress, startingIp, endingIp)
 		}
 
-		err = builder.NsxtClient.CreateNATRule(tier1Name, nsxt.NSXTIPElementList(natSourceAddress), nsxt.NSXTIPElementList(natTranslatedAddress))
+		nsxtError, err = builder.NsxtClient.CreateNATRule(tier1Name, nsxt.NSXTIPElementList(natSourceAddress), nsxt.NSXTIPElementList(natTranslatedAddress))
 		if err != nil {
 			return err
+		}
+		if nsxtError != nil {
+			return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
 		}
 	}
 
@@ -340,7 +369,10 @@ func (builder VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisioned
 	}
 
 	// fmt.Println("deploying segment \"" + networkName + "\" w/ gateway_addr = " + gatewayAddress)
-	err = builder.NsxtClient.CreateSegment(networkName, ("/infra/tier-1s/" + tier1Name), gatewayAddress)
+	nsxtError, err = builder.NsxtClient.CreateSegment(networkName, ("/infra/tier-1s/" + tier1Name), gatewayAddress)
+	if nsxtError != nil {
+		return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
+	}
 	return
 }
 
