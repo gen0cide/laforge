@@ -12,6 +12,7 @@ import (
 	"github.com/gen0cide/laforge/builder/vspherensxt/nsxt"
 	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
 	"github.com/gen0cide/laforge/ent"
+	"github.com/sirupsen/logrus"
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/find"
 	"github.com/vmware/govmomi/object"
@@ -28,6 +29,18 @@ type Builder interface {
 	DeployNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error)
 	TeardownHost(ctx context.Context, provisionedHost *ent.ProvisionedHost) (err error)
 	TeardownNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error)
+}
+
+func BuilderFromEnvironment(environment *ent.Environment) (genericBuilder Builder, err error) {
+	switch environment.Builder {
+	case "vsphere-nsxt":
+		genericBuilder, err = NewVSphereNSXTBuilder(environment)
+		if err != nil {
+			logrus.Errorf("Failed to make vSphere NSX-T builder. Err: %v", err)
+			return
+		}
+	}
+	return
 }
 
 // NewVSphereNSXTBuilder creates a builder instance to deploy environments to VSphere and NSX-T

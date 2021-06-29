@@ -13,7 +13,6 @@ import (
 	"github.com/gen0cide/laforge/builder/vspherensxt/nsxt"
 	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
 	"github.com/gen0cide/laforge/ent"
-	"github.com/sirupsen/logrus"
 	"github.com/vmware/govmomi/object"
 	"github.com/vmware/govmomi/vim25/types"
 )
@@ -68,15 +67,15 @@ func (builder VSphereNSXTBuilder) generateBuildID(build *ent.Build) string {
 }
 
 func (builder VSphereNSXTBuilder) generateVmName(competition *ent.Competition, team *ent.Team, host *ent.Host, build *ent.Build) string {
-	return (competition.HclID + "-Team-" + fmt.Sprint(team.TeamNumber) + "-" + host.Hostname + "-" + builder.generateBuildID(build))
+	return (competition.HclID + "-Team-" + fmt.Sprintf("%02d", team.TeamNumber) + "-" + host.Hostname + "-" + builder.generateBuildID(build))
 }
 
 func (builder VSphereNSXTBuilder) generateRouterName(competition *ent.Competition, team *ent.Team, build *ent.Build) string {
-	return (competition.HclID + "-Team-" + fmt.Sprint(team.TeamNumber) + "-" + builder.generateBuildID(build))
+	return (competition.HclID + "-Team-" + fmt.Sprintf("%02d", team.TeamNumber) + "-" + builder.generateBuildID(build))
 }
 
 func (builder VSphereNSXTBuilder) generateNetworkName(competition *ent.Competition, team *ent.Team, network *ent.Network, build *ent.Build) string {
-	return (competition.HclID + "-Team-" + fmt.Sprint(team.TeamNumber) + "-" + network.Name + "-" + builder.generateBuildID(build))
+	return (competition.HclID + "-Team-" + fmt.Sprintf("%02d", team.TeamNumber) + "-" + network.Name + "-" + builder.generateBuildID(build))
 }
 
 // DeployHost deploys a given host from the environment to VSphere
@@ -184,7 +183,7 @@ func (builder VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHos
 	}
 	// }
 
-	logrus.Debug(guestCustomizationSpec)
+	// logrus.Debug(guestCustomizationSpec)
 
 	// templateSpec := vsphere.DeployTemplateSpec{
 	// 	Description: host.Description,
@@ -329,11 +328,11 @@ func (builder VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisioned
 		endOctets := strings.Split(string(endingIp), ".")
 		lastOctet, err := strconv.Atoi(octets[3])
 		if err != nil {
-			return err
+			return fmt.Errorf("error while reading last octet: %v", err)
 		}
 		endLastOctet, err := strconv.Atoi(endOctets[3])
 		if err != nil {
-			return err
+			return fmt.Errorf("error while reading last endoctet: %v", err)
 		}
 		lastOctet = lastOctet + team.TeamNumber
 		octets[3] = strconv.Itoa(lastOctet)
@@ -404,6 +403,10 @@ func (builder VSphereNSXTBuilder) TeardownHost(ctx context.Context, provisionedH
 	if err != nil {
 		return fmt.Errorf("error while deleting guest customization spec: %v", err)
 	}
+
+	// Let vSphere sync with NSX-T
+	time.Sleep(1 * time.Minute)
+
 	return
 }
 
