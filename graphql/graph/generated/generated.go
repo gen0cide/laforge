@@ -278,6 +278,7 @@ type ComplexityRoot struct {
 		DeleteUser     func(childComplexity int, userUUID string) int
 		ExecutePlan    func(childComplexity int, buildUUID string) int
 		LoadEnviroment func(childComplexity int, envFilePath string) int
+		Rebuild        func(childComplexity int, rootPlans []*string) int
 	}
 
 	Network struct {
@@ -501,6 +502,7 @@ type MutationResolver interface {
 	ExecutePlan(ctx context.Context, buildUUID string) (*ent.Build, error)
 	DeleteBuild(ctx context.Context, buildUUID string) (bool, error)
 	CreateTask(ctx context.Context, proHostUUID string, command model.AgentCommand, args string) (bool, error)
+	Rebuild(ctx context.Context, rootPlans []*string) (bool, error)
 }
 type NetworkResolver interface {
 	ID(ctx context.Context, obj *ent.Network) (string, error)
@@ -1743,6 +1745,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.LoadEnviroment(childComplexity, args["envFilePath"].(string)), true
 
+	case "Mutation.rebuild":
+		if e.complexity.Mutation.Rebuild == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_rebuild_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Rebuild(childComplexity, args["rootPlans"].([]*string)), true
+
 	case "Network.cidr":
 		if e.complexity.Network.Cidr == nil {
 			break
@@ -2628,17 +2642,17 @@ enum ProviderType {
   UNDEFINED
 }
 
-enum AgentCommand{
+enum AgentCommand {
   DEFAULT
-	DELETE
-	REBOOT
-	EXTRACT
-	DOWNLOAD
-	CREATEUSER
-	CREATEUSERPASS
-	ADDTOGROUP
-	EXECUTE
-	VALIDATE
+  DELETE
+  REBOOT
+  EXTRACT
+  DOWNLOAD
+  CREATEUSER
+  CREATEUSERPASS
+  ADDTOGROUP
+  EXECUTE
+  VALIDATE
 }
 
 type AgentStatus {
@@ -2647,7 +2661,7 @@ type AgentStatus {
   upTime: Int!
   bootTime: Int!
   numProcs: Int!
-  OS: String! 
+  OS: String!
   hostID: String!
   load1: Float
   load5: Float
@@ -2882,7 +2896,7 @@ type ProvisionedNetwork {
   ProvisionedNetworkToBuild: Build!
   ProvisionedNetworkToTeam: Team!
   ProvisionedNetworkToProvisionedHost: [ProvisionedHost]!
-  ProvisionedNetworkToPlan: Plan!  
+  ProvisionedNetworkToPlan: Plan!
 }
 
 type ProvisioningStep {
@@ -2948,7 +2962,7 @@ type User {
 }
 ###
 
-type AuthUser{
+type AuthUser {
   id: ID!
   username: String!
   password: String!
@@ -2960,7 +2974,7 @@ type AuthUser{
 directive @hasRole(roles: [RoleLevel!]!) on FIELD_DEFINITION
 
 type Query {
-  environments: [Environment] @hasRole(roles: [ADMIN,USER])
+  environments: [Environment] @hasRole(roles: [ADMIN, USER])
   environment(envUUID: String!): Environment
   provisionedHost(proHostUUID: String!): ProvisionedHost
   provisionedNetwork(proNetUUID: String!): ProvisionedNetwork
@@ -2970,18 +2984,20 @@ type Query {
 }
 
 type Mutation {
-  loadEnviroment(envFilePath: String!): [Environment] 
-  createBuild(envUUID: String!,renderFiles: Boolean! = true): Build
-  createUser(username: String!,password:String!,role: RoleLevel!): AuthUser!
+  loadEnviroment(envFilePath: String!): [Environment]
+  createBuild(envUUID: String!, renderFiles: Boolean! = true): Build
+  createUser(username: String!, password: String!, role: RoleLevel!): AuthUser!
   deleteUser(userUUID: String!): Boolean!
   executePlan(buildUUID: String!): Build
   deleteBuild(buildUUID: String!): Boolean!
   createTask(proHostUUID: String!, command: AgentCommand!, args: String!): Boolean!
+  rebuild(rootPlans: [String]!): Boolean!
 }
 
 type Subscription {
   newUsers: AuthUser!
-}`, BuiltIn: false},
+}
+`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -3151,6 +3167,21 @@ func (ec *executionContext) field_Mutation_loadEnviroment_args(ctx context.Conte
 		}
 	}
 	args["envFilePath"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_rebuild_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []*string
+	if tmp, ok := rawArgs["rootPlans"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rootPlans"))
+		arg0, err = ec.unmarshalNString2ᚕᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["rootPlans"] = arg0
 	return args, nil
 }
 
@@ -8958,6 +8989,48 @@ func (ec *executionContext) _Mutation_createTask(ctx context.Context, field grap
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().CreateTask(rctx, args["proHostUUID"].(string), args["command"].(model.AgentCommand), args["args"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_rebuild(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_rebuild_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Rebuild(rctx, args["rootPlans"].([]*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -15320,6 +15393,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "rebuild":
+			out.Values[i] = ec._Mutation_rebuild(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -17921,6 +17999,36 @@ func (ec *executionContext) marshalNString2ᚕstring(ctx context.Context, sel as
 	ret := make(graphql.Array, len(v))
 	for i := range v {
 		ret[i] = ec.marshalOString2string(ctx, sel, v[i])
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
 	}
 
 	return ret

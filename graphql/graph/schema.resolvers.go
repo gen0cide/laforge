@@ -407,6 +407,24 @@ func (r *mutationResolver) CreateTask(ctx context.Context, proHostUUID string, c
 	return true, nil
 }
 
+func (r *mutationResolver) Rebuild(ctx context.Context, rootPlans []*string) (bool, error) {
+	uuids := make([]uuid.UUID, len(rootPlans))
+	for _, rootPlanId := range rootPlans {
+		uuid, err := uuid.Parse(*rootPlanId)
+		if err != nil {
+			return false, err
+		}
+		uuids = append(uuids, uuid)
+	}
+
+	entPlans, err := r.client.Plan.Query().Where(plan.IDIn(uuids...)).All(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return planner.Rebuild(ctx, r.client, entPlans)
+}
+
 func (r *networkResolver) ID(ctx context.Context, obj *ent.Network) (string, error) {
 	return obj.ID.String(), nil
 }
