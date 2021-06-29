@@ -755,7 +755,7 @@ var (
 	// StatusColumns holds the columns for the "status" table.
 	StatusColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "state", Type: field.TypeEnum, Enums: []string{"PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED"}},
+		{Name: "state", Type: field.TypeEnum, Enums: []string{"PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED", "TODELETE", "DELETEINPROGRESS", "DELETED"}},
 		{Name: "status_for", Type: field.TypeEnum, Enums: []string{"Build", "Team", "Plan", "ProvisionedNetwork", "ProvisionedHost", "ProvisioningStep"}},
 		{Name: "started_at", Type: field.TypeTime, Nullable: true},
 		{Name: "ended_at", Type: field.TypeTime, Nullable: true},

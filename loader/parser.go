@@ -425,7 +425,7 @@ func createEnviroments(ctx context.Context, client *ent.Client, configEnvs map[s
 		if err != nil {
 			return nil, err
 		}
-		returnedNetworks, err := createNetworks(ctx, client, loadedConfig.Networks, cEnviroment.HclID)
+		returnedNetworks, err := createNetworks(ctx, client, loadedConfig.Networks, cEnviroment.HCLEnvironmentToIncludedNetwork, cEnviroment.HclID)
 		if err != nil {
 			return nil, err
 		}
@@ -708,10 +708,20 @@ func createHosts(ctx context.Context, client *ent.Client, configHosts map[string
 	return returnedHosts, returnedAllHostDependencies, nil
 }
 
-func createNetworks(ctx context.Context, client *ent.Client, configNetworks map[string]*ent.Network, envHclID string) ([]*ent.Network, error) {
+func createNetworks(ctx context.Context, client *ent.Client, configNetworks map[string]*ent.Network, configIncludedNetworks []*ent.IncludedNetwork, envHclID string) ([]*ent.Network, error) {
 	bulk := []*ent.NetworkCreate{}
 	returnedNetworks := []*ent.Network{}
 	for _, cNetwork := range configNetworks {
+		included := false
+		for _, cIncludedNetwork := range configIncludedNetworks {
+			if cIncludedNetwork.Name == cNetwork.HclID {
+				included = true
+				break
+			}
+		}
+		if !included {
+			continue
+		}
 		entNetwork, err := client.Network.
 			Query().
 			Where(

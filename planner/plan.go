@@ -251,6 +251,7 @@ func createProvisionedNetworks(ctx context.Context, client *ent.Client, entBuild
 
 func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *ent.ProvisionedNetwork, entHost *ent.Host, prevPlan *ent.Plan) (*ent.ProvisionedHost, error) {
 	prevPlans := []*ent.Plan{prevPlan}
+	logrus.Infof("START  %s | %s | %v", pNetwork.Name, entHost.Hostname, prevPlans)
 	planStepNumber := prevPlan.StepNumber + 1
 	entProvisionedHost, err := client.ProvisionedHost.Query().Where(
 		provisionedhost.And(
@@ -321,7 +322,12 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 				if err != nil {
 					log.Fatalf("Failed to Query Provined Network %v for Depended On Host %v. Err: %v", entHostDependency.Edges.HostDependencyToNetwork.HclID, entHostDependency.Edges.HostDependencyToDependOnHost.HclID, err)
 				}
-				entDependsOnHost, err = createProvisionedHosts(ctx, client, dependOnPnetwork, entHostDependency.Edges.HostDependencyToDependOnHost, prevPlan)
+				dependOnPnetworkPlan, err := dependOnPnetwork.QueryProvisionedNetworkToPlan().Only(ctx)
+				if err != nil {
+					logrus.Errorf("error while retrieving plan from provisioned network: %v", err)
+					return nil, err
+				}
+				entDependsOnHost, err = createProvisionedHosts(ctx, client, dependOnPnetwork, entHostDependency.Edges.HostDependencyToDependOnHost, dependOnPnetworkPlan)
 			}
 		}
 		dependOnPlan, err := entDependsOnHost.QueryProvisionedHostToEndStepPlan().Only(ctx)
@@ -358,6 +364,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		return nil, err
 	}
 
+	logrus.Infof("CREATE %s | %s | %v", pNetwork.Name, entHost.Hostname, prevPlans)
 	endPlanNode, err := client.Plan.Create().
 		AddPrevPlan(prevPlans...).
 		SetType(plan.TypeProvisionHost).
@@ -466,7 +473,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 		log.Fatalf("Failed to Query Current Enviroment for Provisoned Host %v. Err: %v", pHost.ID, err)
 		return nil, err
 	}
-	entStatus, err := createPlanningStatus(ctx, client, status.StatusForProvisionedHost)
+	entStatus, err := createPlanningStatus(ctx, client, status.StatusForProvisioningStep)
 	if err != nil {
 		return nil, err
 	}
