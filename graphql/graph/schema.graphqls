@@ -86,17 +86,17 @@ enum ProviderType {
   UNDEFINED
 }
 
-enum AgentCommand{
+enum AgentCommand {
   DEFAULT
-	DELETE
-	REBOOT
-	EXTRACT
-	DOWNLOAD
-	CREATEUSER
-	CREATEUSERPASS
-	ADDTOGROUP
-	EXECUTE
-	VALIDATE
+  DELETE
+  REBOOT
+  EXTRACT
+  DOWNLOAD
+  CREATEUSER
+  CREATEUSERPASS
+  ADDTOGROUP
+  EXECUTE
+  VALIDATE
 }
 
 type AgentStatus {
@@ -105,7 +105,7 @@ type AgentStatus {
   upTime: Int!
   bootTime: Int!
   numProcs: Int!
-  OS: String! 
+  OS: String!
   hostID: String!
   load1: Float
   load5: Float
@@ -340,7 +340,7 @@ type ProvisionedNetwork {
   ProvisionedNetworkToBuild: Build!
   ProvisionedNetworkToTeam: Team!
   ProvisionedNetworkToProvisionedHost: [ProvisionedHost]!
-  ProvisionedNetworkToPlan: Plan!  
+  ProvisionedNetworkToPlan: Plan!
 }
 
 type ProvisioningStep {
@@ -406,7 +406,7 @@ type User {
 }
 ###
 
-type AuthUser{
+type AuthUser {
   id: ID!
   username: String!
   password: String!
@@ -418,7 +418,7 @@ type AuthUser{
 directive @hasRole(roles: [RoleLevel!]!) on FIELD_DEFINITION
 
 type Query {
-  environments: [Environment] @hasRole(roles: [ADMIN,USER])
+  environments: [Environment] @hasRole(roles: [ADMIN, USER])
   environment(envUUID: String!): Environment
   provisionedHost(proHostUUID: String!): ProvisionedHost
   provisionedNetwork(proNetUUID: String!): ProvisionedNetwork
@@ -428,13 +428,14 @@ type Query {
 }
 
 type Mutation {
-  loadEnviroment(envFilePath: String!): [Environment] 
-  createBuild(envUUID: String!,renderFiles: Boolean! = true): Build
-  createUser(username: String!,password:String!,role: RoleLevel!): AuthUser!
+  loadEnviroment(envFilePath: String!): [Environment]
+  createBuild(envUUID: String!, renderFiles: Boolean! = true): Build
+  createUser(username: String!, password: String!, role: RoleLevel!): AuthUser!
   deleteUser(userUUID: String!): Boolean!
   executePlan(buildUUID: String!): Build
   deleteBuild(buildUUID: String!): Boolean!
   createTask(proHostUUID: String!, command: AgentCommand!, args: String!): Boolean!
+  rebuild(rootPlans: [String]!): Boolean!
 }
 
 type Subscription {
