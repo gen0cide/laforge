@@ -8,9 +8,8 @@ import (
 	"sync"
 
 	"github.com/gen0cide/laforge/ent"
-	"github.com/gen0cide/laforge/ent/build"
-	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/plan"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -33,25 +32,34 @@ func main() {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
-	env, err := client.Environment.Query().Where(environment.NameEQ("fred")).Only(ctx)
-	if err != nil {
-		log.Fatalf("error querying env: %v", err)
-	}
+	// env, err := client.Environment.Query().Where(environment.NameEQ("fred")).Only(ctx)
+	// if err != nil {
+	// 	log.Fatalf("error querying env: %v", err)
+	// }
 
-	build, err := env.QueryEnvironmentToBuild().Order(ent.Desc(build.FieldRevision)).First(ctx)
-	if err != nil {
-		log.Fatalf("error w/ build: %v", err)
-	}
+	// build, err := env.QueryEnvironmentToBuild().Order(ent.Desc(build.FieldRevision)).First(ctx)
+	// if err != nil {
+	// 	log.Fatalf("error w/ build: %v", err)
+	// }
 
-	rootPlan, err := build.QueryBuildToPlan().Where(plan.TypeEQ(plan.TypeStartBuild)).First(ctx)
+	// rootPlan, err := build.QueryBuildToPlan().Where(plan.TypeEQ(plan.TypeStartBuild)).First(ctx)
+	uuid, _ := uuid.Parse("fa4018ac-31f9-4165-a958-d901cc55a96e")
+	rootPlan, err := client.Plan.Query().Where(plan.IDEQ(uuid)).Only(ctx)
+	if err != nil {
+		log.Fatalf("error w/ rootPlan: %v", err)
+	}
+	prevPlans, err := rootPlan.PrevPlan(ctx)
 	if err != nil {
 		log.Fatalf("error w/ rootPlan: %v", err)
 	}
 
-	planPath := ""
+	// planPath := ""
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go Traverse(ctx, planPath, rootPlan, &wg)
+	for _, prevPlan := range prevPlans {
+		fmt.Printf("%s\n", prevPlan.ID)
+		// wg.Add(1)
+		// go Traverse(ctx, planPath, prevPlan, &wg)
+	}
 	wg.Wait()
 }
 

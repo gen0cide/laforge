@@ -83,6 +83,74 @@ func DeleteBuild(ctx context.Context, client *ent.Client, entBuild *ent.Build) (
 	return true, nil
 }
 
+// func cleanupBuild(client *ent.Client, ctx context.Context, entPlan *ent.Plan, wg *sync.WaitGroup) {
+// 	defer wg.Done()
+
+// 	var planFilter predicate.Plan
+// 	switch entPlan.Type {
+// 	case plan.TypeStartBuild:
+// 		planFilter = plan.TypeEQ(plan.TypeStartTeam)
+// 	case plan.TypeStartTeam:
+// 		planFilter = plan.TypeEQ(plan.TypeProvisionNetwork)
+// 	case plan.TypeProvisionNetwork:
+// 		planFilter = plan.TypeEQ(plan.TypeProvisionHost)
+// 	case plan.TypeProvisionHost:
+// 		planFilter = plan.TypeEQ(plan.TypeExecuteStep)
+// 	case plan.TypeExecuteStep:
+// 		planFilter = plan.TypeEQ(plan.TypeExecuteStep)
+// 	default:
+// 		break
+// 	}
+// 	nextPlans, err := entPlan.QueryNextPlan().Where(planFilter).All(ctx)
+// 	if err != nil {
+// 		logrus.Errorf("error querying next plan from ent plan: %v", err)
+// 		return
+// 	}
+
+// 	var nextPlanWg sync.WaitGroup
+// 	for _, nextPlan := range nextPlans {
+// 		nextPlanWg.Add(1)
+// 		go cleanupBuild(client, ctx, nextPlan, &nextPlanWg)
+// 	}
+// 	nextPlanWg.Wait()
+
+// 	var deleteErr error = nil
+// 	switch entPlan.Type {
+// 	case plan.TypeStartBuild:
+// 		build, getStatusError := entPlan.QueryPlanToBuild().Only(ctx)
+// 		if getStatusError != nil {
+// 			break
+// 		}
+// 		deleteErr = client.Build.DeleteOne(build).Exec(ctx)
+// 	case plan.TypeStartTeam:
+// 		team, getStatusError := entPlan.QueryPlanToTeam().Only(ctx)
+// 		if getStatusError != nil {
+// 			break
+// 		}
+// 		deleteErr = client.Team.DeleteOne(team).Exec(ctx)
+// 	case plan.TypeProvisionNetwork:
+// 		pnet, getStatusError := entPlan.QueryPlanToProvisionedNetwork().Only(ctx)
+// 		if getStatusError != nil {
+// 			break
+// 		}
+// 		deleteErr = client.ProvisionedNetwork.DeleteOne(pnet).Exec(ctx)
+// 	case plan.TypeProvisionHost:
+// 		phost, getStatusError := entPlan.QueryPlanToProvisionedHost().Only(ctx)
+// 		if getStatusError != nil {
+// 			break
+// 		}
+// 		deleteErr = client.ProvisionedHost.DeleteOne(phost).Exec(ctx)
+// 	case plan.TypeExecuteStep:
+// 		step, getStatusError := entPlan.QueryPlanToProvisioningStep().Only(ctx)
+// 		if getStatusError != nil {
+// 			break
+// 		}
+// 		deleteErr = client.ProvisioningStep.DeleteOne(step).Exec(ctx)
+// 	default:
+// 		break
+// 	}
+// }
+
 func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Context, entPlan *ent.Plan, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -276,7 +344,8 @@ func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Con
 		if deleteErr != nil {
 			break
 		}
-		deleteErr = client.GinFileMiddleware.DeleteOne(ginFileMiddleware).Exec(ctx)
+		deleteErr = ginFileMiddleware.Update().SetAccessed(false).Exec(ctx)
+		// deleteErr = client.GinFileMiddleware.DeleteOne(ginFileMiddleware).Exec(ctx)
 		if deleteErr != nil {
 			break
 		}

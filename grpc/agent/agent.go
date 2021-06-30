@@ -10,9 +10,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
-	"os/exec"
 	"strings"
 	"sync"
 	"time"
@@ -60,12 +58,8 @@ func (p *program) Start(s service.Service) error {
 }
 
 // ExecuteCommand Runs the Command that is inputted and either returns the error or output
-func ExecuteCommand(command string, args ...string) string {
-	output, err := exec.Command(command, args...).Output()
-	if err != nil {
-		return err.Error()
-	}
-	return string(output)
+func ExecuteCommand(command string, args ...string) error {
+	return SystemExecuteCommand(command, args...)
 }
 
 // DeleteObject Deletes the Object that is inputted and either returns the error or nothing
@@ -104,25 +98,8 @@ func AddUserGroup(groupname string, username string) error {
 }
 
 // DownloadFile will download a url to a local file.
-func DownloadFile(filepath string, url string) error {
-
-	// Get the data
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Create the file
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	// Write the body to file
-	_, err = io.Copy(out, resp.Body)
-	return err
+func DownloadFile(path string, url string) error {
+	return SystemDownloadFile(path, url)
 }
 
 // ValidateMD5Hash Validates the MD5 Hash of a file with the provided MD5 Hash
@@ -181,9 +158,9 @@ func RequestTask(c pb.LaforgeClient) {
 			taskArgs := strings.Split(r.Args, " ")
 			command := taskArgs[0]
 			args := taskArgs[1:]
-			output := ExecuteCommand(command, args...)
-			logger.Infof("Command Output: %s", output)
-			RequestTaskStatusRequest(nil, r.Id, c)
+			taskerr := ExecuteCommand(command, args...)
+			// logger.Infof("Command Output: %s", output)
+			RequestTaskStatusRequest(taskerr, r.Id, c)
 		case pb.TaskReply_DOWNLOAD:
 			taskArgs := strings.Split(r.Args, ",")
 			filepath := taskArgs[0]
@@ -200,9 +177,10 @@ func RequestTask(c pb.LaforgeClient) {
 			taskerr := DeleteObject(r.Args)
 			RequestTaskStatusRequest(taskerr, r.Id, c)
 		case pb.TaskReply_REBOOT:
-			Reboot()
 			taskRequest := &pb.TaskStatusRequest{TaskId: r.Id, Status: TaskSucceeded}
 			c.InformTaskStatus(ctx, taskRequest)
+			// Reboot after telling server task succeeded
+			Reboot()
 		case pb.TaskReply_CREATEUSER:
 			taskArgs := strings.Split(r.Args, ",")
 			username := taskArgs[0]

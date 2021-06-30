@@ -787,7 +787,7 @@ func (vs *VSphere) ListVms() (vms []VirtualMachine, err error) {
 	return
 }
 
-func (vs *VSphere) GetVm(name string) (vm VirtualMachine, err error) {
+func (vs *VSphere) GetVm(name string) (vm VirtualMachine, exists bool, err error) {
 	log.WithFields(log.Fields{
 		"name": name,
 	}).Debug("vSphere | GetVm")
@@ -797,6 +797,10 @@ func (vs *VSphere) GetVm(name string) (vm VirtualMachine, err error) {
 	}
 	response, err := vs.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
+		return
+	}
+	if response.StatusCode == http.StatusNotFound {
+		exists = false
 		return
 	}
 	if response.StatusCode != http.StatusOK {
@@ -818,6 +822,7 @@ func (vs *VSphere) GetVm(name string) (vm VirtualMachine, err error) {
 		return
 	}
 	vm = vmList[0]
+	exists = true
 	return
 }
 
@@ -1297,8 +1302,11 @@ func (vs *VSphere) DeleteVM(name string) (err error) {
 	log.WithFields(log.Fields{
 		"name": name,
 	}).Debug("vSphere | DeleteVM")
-	vm, err := vs.GetVm(name)
+	vm, exists, err := vs.GetVm(name)
 	if err != nil {
+		return
+	}
+	if !exists {
 		return
 	}
 
@@ -1761,6 +1769,15 @@ func (vs *VSphere) DeleteGuestCustomization(ctx context.Context, specName string
 	// 		timeout = timeout * 2
 	// 	}
 	// }
+
+	exists, err := vs.GuestCustomizationExists(ctx, specName)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return nil
+	}
+
 	err = vs.GCManager.DeleteCustomizationSpec(ctx, specName)
 	return
 }

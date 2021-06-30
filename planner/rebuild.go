@@ -3,6 +3,7 @@ package planner
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/gen0cide/laforge/builder"
 	"github.com/gen0cide/laforge/ent"
@@ -11,13 +12,6 @@ import (
 )
 
 func Rebuild(ctx context.Context, client *ent.Client, entPlans []*ent.Plan) (bool, error) {
-	// Teardown all hosts involved
-	for _, entPlan := range entPlans {
-		err := markForDeleteRoutine(ctx, entPlan)
-		if err != nil {
-			return false, err
-		}
-	}
 	env, err := entPlans[0].QueryPlanToBuild().QueryBuildToEnvironment().Only(ctx)
 	// environment, err := entBuild.QueryBuildToEnvironment().Only(ctx)
 	if err != nil {
@@ -31,12 +25,26 @@ func Rebuild(ctx context.Context, client *ent.Client, entPlans []*ent.Plan) (boo
 		return false, err
 	}
 
+	// Mark all plans involved for rebuild
+	for _, entPlan := range entPlans {
+		err := markForDeleteRoutine(ctx, entPlan)
+		if err != nil {
+			return false, err
+		}
+	}
+
+	// logrus.Debug("Marked plans for deletion, pausing for 1 minute so you can double check the statuses...")
+	// time.Sleep(1 * time.Minute)
+
 	var wg sync.WaitGroup
 	for _, entPlan := range entPlans {
 		wg.Add(1)
 		go deleteRoutine(client, &genericBuilder, ctx, entPlan, &wg)
 	}
 	wg.Wait()
+
+	logrus.Debug("waiting for deletion to propagate to all systems")
+	time.Sleep(1 * time.Minute)
 
 	for _, entPlan := range entPlans {
 		err := markForRebuildRoutine(ctx, entPlan)
@@ -45,11 +53,15 @@ func Rebuild(ctx context.Context, client *ent.Client, entPlans []*ent.Plan) (boo
 		}
 	}
 
+	// logrus.Debug("Marked plans for build, pausing for 1 minute so you can double check the statuses...")
+	// time.Sleep(1 * time.Minute)
+
+	var wg2 sync.WaitGroup
 	for _, entPlan := range entPlans {
-		wg.Add(1)
-		go buildRoutine(client, &genericBuilder, ctx, entPlan, &wg)
+		wg2.Add(1)
+		go buildRoutine(client, &genericBuilder, ctx, entPlan, &wg2)
 	}
-	wg.Wait()
+	wg2.Wait()
 
 	return true, nil
 }
@@ -83,8 +95,8 @@ func markForRebuildRoutine(ctx context.Context, entPlan *ent.Plan) error {
 	if err != nil {
 		return err
 	}
-	if entStatus.State != status.StatePLANNING {
-		err = entStatus.Update().SetState(status.StatePLANNING).Exec(ctx)
+	if entStatus.State != status.StateAWAITING {
+		err = entStatus.Update().SetState(status.StateAWAITING).Exec(ctx)
 		if err != nil {
 			return err
 		}

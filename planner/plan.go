@@ -251,7 +251,7 @@ func createProvisionedNetworks(ctx context.Context, client *ent.Client, entBuild
 
 func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *ent.ProvisionedNetwork, entHost *ent.Host, prevPlan *ent.Plan) (*ent.ProvisionedHost, error) {
 	prevPlans := []*ent.Plan{prevPlan}
-	logrus.Infof("START  %s | %s | %v", pNetwork.Name, entHost.Hostname, prevPlans)
+	// logrus.Infof("START  %s | %s | %v", pNetwork.Name, entHost.Hostname, prevPlans)
 	planStepNumber := prevPlan.StepNumber + 1
 	entProvisionedHost, err := client.ProvisionedHost.Query().Where(
 		provisionedhost.And(
@@ -364,7 +364,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		return nil, err
 	}
 
-	logrus.Infof("CREATE %s | %s | %v", pNetwork.Name, entHost.Hostname, prevPlans)
+	// logrus.Infof("CREATE %s | %s | %v", pNetwork.Name, entHost.Hostname, prevPlans)
 	endPlanNode, err := client.Plan.Create().
 		AddPrevPlan(prevPlans...).
 		SetType(plan.TypeProvisionHost).

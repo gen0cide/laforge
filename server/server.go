@@ -39,7 +39,8 @@ func redirectToRootHandler(client *ent.Client) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		// h.ServeHTTP(c.Writer, c.Request)
-		c.Redirect(301, "/ui")
+		c.AbortWithStatus(503)
+		// c.Redirect(301, "/ui")
 		c.Abort()
 	}
 }
