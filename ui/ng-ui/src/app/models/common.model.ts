@@ -1,16 +1,23 @@
 import { Build, Environment } from './environment.model';
-import { ProvisionedNetwork } from './network.model';
+import { ProvisionedHost } from './host.model';
+import { ProvisionedNetwork, networkChildrenCompleted } from './network.model';
+import { ProvisioningStep } from './step.model';
 
 export type ID = string | number;
 
 export interface varsMap {
-  key?: string;
-  value?: string;
+  key: string;
+  value: string;
 }
 
 export interface configMap {
-  key?: string;
-  value?: string;
+  key: string;
+  value: string;
+}
+
+export interface tagMap {
+  key: string;
+  value: string;
 }
 
 export interface User {
@@ -20,29 +27,53 @@ export interface User {
   email: string;
 }
 
-export interface Tag {
-  id?: ID;
-  name: string;
-  description?: string;
-}
+// export interface Tag {
+//   id?: ID;
+//   name: string;
+//   description?: string;
+// }
 
 export interface Team {
   id: ID;
-  teamNumber: number;
-  config?: configMap[];
-  revision?: number;
-  maintainer?: User;
-  tags?: Tag[];
-  provisionedNetworks: ProvisionedNetwork[];
+  team_number: number;
+  TeamToBuild?: Build;
+  TeamToStatus?: Status;
+  TeamToProvisionedNetwork?: ProvisionedNetwork[];
+  TeamToPlan?: Plan;
 }
 
+export const teamChildrenCompleted = (team: Team): boolean => {
+  let numCompleted = 0;
+  let totalNetworks = 0;
+  for (const network of team.TeamToProvisionedNetwork) {
+    totalNetworks++;
+    if (networkChildrenCompleted(network)) numCompleted++;
+  }
+  if (numCompleted === totalNetworks) return true;
+  else return false;
+};
+
 export enum ProvisionStatus {
-  ProvStatusUndefined,
-  ProvStatusAwaiting,
-  ProvStatusInProgress,
-  ProvStatusFailed,
-  ProvStatusComplete,
-  ProvStatusTainted
+  PLANNING,
+  AWAITING,
+  INPROGRESS,
+  FAILED,
+  COMPLETE,
+  TAINTED,
+  UNDEFINED,
+  TODELETE,
+  DELETEINPROGRESS,
+  DELETED
+}
+
+export enum ProvisionStatusFor {
+  Build,
+  Team,
+  Plan,
+  ProvisionedNetwork,
+  ProvisionedHost,
+  ProvisioningStep,
+  Undefined
 }
 
 export interface Status {
@@ -52,4 +83,29 @@ export interface Status {
   failed: boolean;
   completed: boolean;
   error: string;
+  status_for?: ProvisionStatusFor;
+}
+
+export enum PlanType {
+  start_build,
+  start_team,
+  provision_network,
+  provision_host,
+  execute_step,
+  undefined
+}
+
+export interface Plan {
+  id: ID;
+  step_number: number;
+  type: PlanType;
+  PlanToStatus: Status;
+  build_id?: ID;
+  NextPlan?: Plan[];
+  PrevPlan?: Plan[];
+  PlanToBuild?: Build;
+  PlanToTeam?: Team;
+  PlanToProvisionedNetwork?: ProvisionedNetwork;
+  PlanToProvisionedHost?: ProvisionedHost;
+  PlanToProvisioningStep?: ProvisioningStep;
 }

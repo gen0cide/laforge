@@ -1,21 +1,31 @@
 import { Injectable } from '@angular/core';
+import { AuthUser, User } from '@models/user.model';
+
+import { ApiService } from '@services/api/api.service';
 import { PromiseType } from 'protractor/built/plugins';
-import { User } from 'src/app/models/user.model';
-import { ApiService } from '../api/api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private user: User;
+  private user: AuthUser;
 
   constructor(private api: ApiService) {
     // TODO: refresh user session with refreshToken
   }
 
-  public login(emailOrUsername: string, password: string): Promise<User> {
+  public login(email: string, password: string): Promise<boolean> {
     // TODO: Perform user auth
-    return Promise.reject({ message: 'Feature not implemented yet' });
+    // return Promise.reject({ message: 'Feature not implemented yet' });
+    return this.api.fakeLogin().then(
+      (user) => {
+        this.user = user;
+        return true;
+      },
+      () => {
+        return false;
+      }
+    );
   }
 
   public signout() {
@@ -24,11 +34,11 @@ export class UserService {
     window.location.reload(); // reload window to reset them to auth screen
   }
 
-  public me(): User {
+  public me(): AuthUser {
     return this.user;
   }
 
-  public updateUser(user: User) {
+  public updateUser(user: AuthUser) {
     // TODO: update the user in the DB with new details
   }
 
@@ -36,7 +46,7 @@ export class UserService {
     // TODO: create the user in the DB
   }
 
-  public getUsers(): Promise<User[]> {
+  public getUsers(): Promise<AuthUser[]> {
     // TODO: Pull a list of the users from the DB
     return Promise.reject({ message: 'Feature not implemented yet' });
   }

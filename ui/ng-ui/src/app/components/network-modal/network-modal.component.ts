@@ -10,7 +10,9 @@ import { ProvisionedNetwork } from 'src/app/models/network.model';
 })
 export class NetworkModalComponent {
   varsColumns: string[] = ['key', 'value'];
-  tagsColumns: string[] = ['name', 'description'];
+  tagsColumns: string[] = ['key', 'value'];
+  failedChildren = false;
+
   constructor(
     public dialogRef: MatDialogRef<NetworkModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { provisionedNetwork: ProvisionedNetwork }
@@ -23,13 +25,19 @@ export class NetworkModalComponent {
   getStatus(): ProvisionStatus {
     let numWithAgentData = 0;
     let totalAgents = 0;
-    for (const host of this.data.provisionedNetwork.provisionedHosts) {
+    for (const host of this.data.provisionedNetwork.ProvisionedNetworkToProvisionedHost) {
       totalAgents++;
-      if (host.heartbeat) numWithAgentData++;
+      if (host.ProvisionedHostToAgentStatus?.clientId) numWithAgentData++;
     }
-    if (numWithAgentData === totalAgents) return ProvisionStatus.ProvStatusComplete;
-    else if (numWithAgentData === 0) return ProvisionStatus.ProvStatusFailed;
-    else return ProvisionStatus.ProvStatusInProgress;
+    if (numWithAgentData === totalAgents) {
+      this.failedChildren = false;
+      return ProvisionStatus.COMPLETE;
+    } else if (numWithAgentData === 0) {
+      return ProvisionStatus.FAILED;
+    } else {
+      this.failedChildren = true;
+      return ProvisionStatus.INPROGRESS;
+    }
   }
 
   getStatusText(): string {
@@ -37,12 +45,16 @@ export class NetworkModalComponent {
   }
 
   getStatusIcon(): string {
+    this.getStatus();
+    if (this.failedChildren) {
+      return 'skull-crossbones';
+    }
     switch (this.getStatus()) {
-      case ProvisionStatus.ProvStatusComplete:
+      case ProvisionStatus.COMPLETE:
         return 'check-circle';
-      case ProvisionStatus.ProvStatusFailed:
+      case ProvisionStatus.FAILED:
         return 'times-circle';
-      case ProvisionStatus.ProvStatusInProgress:
+      case ProvisionStatus.INPROGRESS:
         return 'play-circle';
       default:
         return 'minus-circle';
@@ -51,11 +63,11 @@ export class NetworkModalComponent {
 
   getStatusColor(): string {
     switch (this.getStatus()) {
-      case ProvisionStatus.ProvStatusComplete:
+      case ProvisionStatus.COMPLETE:
         return 'success';
-      case ProvisionStatus.ProvStatusInProgress:
+      case ProvisionStatus.INPROGRESS:
         return 'warning';
-      case ProvisionStatus.ProvStatusFailed:
+      case ProvisionStatus.FAILED:
         return 'danger';
       default:
         return 'dark';

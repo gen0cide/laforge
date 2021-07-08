@@ -1,7 +1,7 @@
 <div class="network" (click)="style === 'collapsed' && viewDetails()" [ngClass]="style" [class.selectable]="selectable">
   <div class="rebuild-select" *ngIf="selectable">
     <mat-checkbox
-      [checked]="isSelected"
+      [checked]="isSelected()"
       [indeterminate]="parentSelected"
       (click)="$event.stopPropagation()"
       (change)="onSelect()"
@@ -19,18 +19,19 @@
           ><b>{{ provisionedNetwork.name }}</b></span
         >
         <span class="network-details"
-          ><em>{{ provisionedNetwork.cidr }} | VDI: {{ provisionedNetwork.network.vdiVisible ? 'true' : 'false' }}</em></span
+          ><em
+            >{{ provisionedNetwork.cidr }} | VDI: {{ provisionedNetwork.ProvisionedNetworkToNetwork.vdi_visible ? 'true' : 'false' }}</em
+          ></span
         >
       </div>
     </div>
-    <div class="hosts" *ngIf="style === 'expanded' || style === 'compact'">
+    <div class="hosts" *ngIf="(!shouldCollapse() && style === 'expanded') || style === 'compact'">
       <app-host
-        *ngFor="let provHost of provisionedNetwork.provisionedHosts"
+        *ngFor="let provHost of provisionedNetwork.ProvisionedNetworkToProvisionedHost"
         [provisionedHost]="provHost"
-        [status]="provHost.status"
         [style]="style"
         [selectable]="selectable"
-        [parentSelected]="isSelected || parentSelected"
+        [parentSelected]="isSelected() || parentSelected"
       ></app-host>
     </div>
   </div>

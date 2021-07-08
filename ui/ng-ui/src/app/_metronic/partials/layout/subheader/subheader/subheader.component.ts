@@ -7,7 +7,8 @@ import { SubheaderService } from '../_services/subheader.service';
 import { PlanService } from '../../../../../plan.service';
 import { MatSelectChange } from '@angular/material/select';
 import { EnvironmentService } from 'src/app/services/environment/environment.service';
-import { Environment } from 'src/app/models/environment.model';
+import { Build, Environment } from 'src/app/models/environment.model';
+import { ID } from 'src/app/models/common.model';
 
 interface Branch {
   name: string;
@@ -33,6 +34,7 @@ export class SubheaderComponent implements OnInit {
     { name: 'Lucas', hash: '32a7fh' }
   ];
   environment: Environment;
+  build: Build;
   envIsLoading: Observable<boolean>;
 
   constructor(
@@ -54,6 +56,10 @@ export class SubheaderComponent implements OnInit {
       .getCurrentEnv()
       .asObservable()
       .subscribe((env) => (this.environment = env));
+    this.envService
+      .getCurrentBuild()
+      .asObservable()
+      .subscribe((env) => (this.build = env));
     this.envIsLoading = this.envService.envIsLoading.asObservable();
   }
 
@@ -70,8 +76,22 @@ export class SubheaderComponent implements OnInit {
     this.planService.getPlan(changeEvent.value);
   }
 
+  compareEnvDropdown(
+    option: {
+      env: ID;
+      build: ID;
+    },
+    value: {
+      env: ID;
+      build: ID;
+    }
+  ) {
+    return option.env === value.env && option.build === value.build;
+  }
+
   selectEnvironment(event: MatSelectChange) {
-    this.envService.setCurrentEnv(event.value);
+    const [envId, buildId] = (event.value as string).split('|');
+    this.envService.setCurrentEnv(envId, buildId);
     this.cdRef.detectChanges();
   }
 }

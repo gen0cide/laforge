@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_services/subheader.service';
 import { User } from 'src/app/models/user.model';
 import { UserService } from 'src/app/services/user/user.service';
-import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_services/subheader.service';
+
+import { AuthUser } from '../../models/user.model';
 
 @Component({
   selector: 'app-account',
@@ -9,7 +11,7 @@ import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_s
   styleUrls: ['./account.component.scss']
 })
 export class AccountComponent implements OnInit {
-  public user: User;
+  public user: AuthUser;
 
   constructor(private subheader: SubheaderService, private userService: UserService) {
     this.subheader.setTitle('Account');

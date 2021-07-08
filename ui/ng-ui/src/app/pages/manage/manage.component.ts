@@ -1,15 +1,18 @@
 import { AfterViewInit, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
+import { RebuildService } from '@services/rebuild/rebuild.service';
 import { QueryRef } from 'apollo-angular';
 import { EmptyObject } from 'apollo-angular/types';
-import { Observable, Subscription } from 'rxjs';
-import { updateAgentStatuses } from 'src/app/models/agent.model';
+import { GraphQLError } from 'graphql';
+import { interval, Observable, Subscription } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { updateEnvAgentStatuses } from 'src/app/models/agent.model';
 import { AgentStatusQueryResult, EnvironmentInfo } from 'src/app/models/api.model';
 import { ID } from 'src/app/models/common.model';
-import { Environment, resolveStatuses } from 'src/app/models/environment.model';
+import { Build, Environment, resolveEnvEnums } from 'src/app/models/environment.model';
 import { ApiService } from 'src/app/services/api/api.service';
 import { EnvironmentService } from 'src/app/services/environment/environment.service';
-import { environment } from 'src/environments/environment';
+
 import { SubheaderService } from '../../_metronic/partials/layout/subheader/_services/subheader.service';
 
 @Component({
@@ -17,13 +20,14 @@ import { SubheaderService } from '../../_metronic/partials/layout/subheader/_ser
   templateUrl: './manage.component.html',
   styleUrls: ['./manage.component.scss']
 })
-export class ManageComponent implements AfterViewInit {
+export class ManageComponent implements OnInit {
   // corpNetwork: ProvisionedNetwork = corp_network_provisioned;
   envs: EnvironmentInfo[];
   environment: Observable<Environment>;
+  build: Observable<Build>;
   envIsLoading: Observable<boolean>;
   loaded = false;
-  environmentDetailsCols: string[] = ['TeamCount', 'AdminCIDRs', 'ExposedVDIPorts', 'maintainer'];
+  environmentDetailsCols: string[] = ['TeamCount', 'AdminCIDRs', 'ExposedVDIPorts'];
   agentPollingInterval: NodeJS.Timeout;
   pollingInterval = 60;
   loading = false;
@@ -33,25 +37,28 @@ export class ManageComponent implements AfterViewInit {
   agentStatusQuery: QueryRef<AgentStatusQueryResult, EmptyObject>;
   agentStatusSubscription: Subscription;
   apolloError: any = {};
+  isRebuildLoading = false;
+  rebuildErrors: (GraphQLError | Error)[] = [];
 
   constructor(
     private api: ApiService,
     private cdRef: ChangeDetectorRef,
     private subheader: SubheaderService,
-    private envService: EnvironmentService
+    private envService: EnvironmentService,
+    private rebuild: RebuildService
   ) {
     this.subheader.setTitle('Environment');
     this.subheader.setDescription('Manage your currently running environment');
 
     this.environment = this.envService.getCurrentEnv().asObservable();
+    this.build = this.envService.getCurrentBuild().asObservable();
     this.envIsLoading = this.envService.envIsLoading.asObservable();
   }
 
-  ngAfterViewInit(): void {
-    this.environment.subscribe((environment) => {
-      if (environment && !this.envService.isWatchingAgentStatus()) {
-        setTimeout(() => this.envService.watchAgentStatuses(), 1000);
-      }
+  ngOnInit(): void {
+    // pull the statuses on load and then poll every 10 secs
+    interval(10000).subscribe(() => {
+      this.envService.updateAgentStatuses();
     });
   }
 
@@ -60,7 +67,25 @@ export class ManageComponent implements AfterViewInit {
   }
 
   rebuildEnv(): void {
+    this.isRebuildLoading = true;
+    this.cdRef.detectChanges();
     console.log('rebuilding env...');
+    this.rebuild
+      .executeRebuild()
+      .then(
+        (success) => {
+          if (success) {
+            this.isRebuildLoading = false;
+          } else {
+            this.rebuildErrors = [Error('Rebuild was unsuccessfull, please check server logs for failure point.')];
+          }
+        },
+        (errs) => {
+          this.rebuildErrors = errs;
+        }
+      )
+      .finally(() => this.cdRef.detectChanges());
+    console.log('done rebuilding env...');
   }
 
   toggleSelectionMode(): void {

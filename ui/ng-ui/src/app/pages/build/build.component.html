@@ -5,11 +5,11 @@
   <mat-card-content *ngIf="envIsSelected() && environment == null">Loading Environment...</mat-card-content>
   <mat-card-header *ngIf="environment | async as _environment">
     <div class="w-25 d-flex align-items-center justify-content-evenly">
-      <mat-card-title>{{ _environment.Name }}</mat-card-title>
-      <mat-card-subtitle>{{ _environment.Description }}</mat-card-subtitle>
+      <mat-card-title>{{ _environment.name }}</mat-card-title>
+      <mat-card-subtitle>{{ _environment.description }}</mat-card-subtitle>
     </div>
   </mat-card-header>
-  <mat-card-content *ngIf="environment | async as _environment">
-    <app-team *ngFor="let team of _environment.build.teams" [team]="team" [mode]="'build'"></app-team>
+  <mat-card-content *ngIf="build | async as _build">
+    <app-team *ngFor="let team of _build.buildToTeam" [team]="team" [style]="'expanded'"></app-team>
   </mat-card-content>
 </mat-card>

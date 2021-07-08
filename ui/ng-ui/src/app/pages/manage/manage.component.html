@@ -21,8 +21,16 @@
         <mat-card-subtitle>{{ _environment.Description }}</mat-card-subtitle>
       </div>
       <div class="controls">
-        <button mat-icon-button color="warn" aria-label="Rebuild the current environment" title="Rebuild" (click)="rebuildEnv()">
-          <i class="fa fa-undo-alt text-danger"></i>
+        <button
+          mat-icon-button
+          color="warn"
+          aria-label="Rebuild the current environment"
+          title="Rebuild"
+          (click)="rebuildEnv()"
+          [disabled]="!selectionMode"
+          [disableRipple]="!selectionMode"
+        >
+          <i class="fa fa-undo-alt" [ngClass]="'text-' + (selectionMode ? 'danger' : 'secondary')"></i>
         </button>
         <button
           mat-icon-button
@@ -38,25 +46,25 @@
     <mat-table [dataSource]="[_environment]" class="bg-gray-100">
       <ng-container matColumnDef="TeamCount">
         <mat-header-cell *matHeaderCellDef> # Teams </mat-header-cell>
-        <mat-cell *matCellDef="let env"> {{ env.TeamCount }} </mat-cell>
+        <mat-cell *matCellDef="let env"> {{ env.team_count }} </mat-cell>
       </ng-container>
       <ng-container matColumnDef="AdminCIDRs">
         <mat-header-cell *matHeaderCellDef> Admin CIDRs </mat-header-cell>
-        <mat-cell *matCellDef="let env"> {{ env.AdminCIDRs.join(', ') }} </mat-cell>
+        <mat-cell *matCellDef="let env"> {{ env.admin_cidrs.join(', ') }} </mat-cell>
       </ng-container>
       <ng-container matColumnDef="ExposedVDIPorts">
         <mat-header-cell *matHeaderCellDef> Exposed VDI Ports </mat-header-cell>
-        <mat-cell *matCellDef="let env"> {{ env.ExposedVDIPorts.join(', ') }} </mat-cell>
+        <mat-cell *matCellDef="let env"> {{ env.exposed_vdi_ports.join(', ') }} </mat-cell>
       </ng-container>
-      <ng-container matColumnDef="maintainer">
+      <!-- <ng-container matColumnDef="maintainer">
         <mat-header-cell *matHeaderCellDef> Maintainer </mat-header-cell>
         <mat-cell *matCellDef="let env"> {{ env.maintainer.name }} <{{ env.maintainer.email }}> </mat-cell>
-      </ng-container>
+      </ng-container> -->
       <mat-header-row *matHeaderRowDef="environmentDetailsCols"></mat-header-row>
       <mat-row *matRowDef="let row; columns: environmentDetailsCols"></mat-row>
     </mat-table>
   </mat-card-header>
-  <mat-card-content *ngIf="environment | async as _environment">
-    <app-team *ngFor="let team of _environment.build.teams" [team]="team" [selectable]="selectionMode"></app-team>
+  <mat-card-content *ngIf="build | async as _build">
+    <app-team *ngFor="let team of _build.buildToTeam" [team]="team" [selectable]="selectionMode"></app-team>
   </mat-card-content>
 </mat-card>

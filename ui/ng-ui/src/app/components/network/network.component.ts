@@ -2,8 +2,9 @@ import { Component, Input, OnInit } from '@angular/core';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
 import { ProvisionStatus, Status } from 'src/app/models/common.model';
-import { ProvisionedNetwork } from 'src/app/models/network.model';
+import { networkChildrenCompleted, ProvisionedNetwork } from 'src/app/models/network.model';
 import { RebuildService } from 'src/app/services/rebuild/rebuild.service';
+
 import { NetworkModalComponent } from '../network-modal/network-modal.component';
 
 @Component({
@@ -17,7 +18,7 @@ export class NetworkComponent implements OnInit {
   @Input() style: 'compact' | 'collapsed' | 'expanded';
   @Input() selectable: boolean;
   @Input() parentSelected: boolean;
-  isSelected = false;
+  isSelectedState = false;
 
   constructor(public dialog: MatDialog, private rebuild: RebuildService) {
     if (!this.style) this.style = 'compact';
@@ -38,22 +39,22 @@ export class NetworkComponent implements OnInit {
   getStatus(): ProvisionStatus {
     let numWithAgentData = 0;
     let totalAgents = 0;
-    for (const host of this.provisionedNetwork.provisionedHosts) {
+    for (const host of this.provisionedNetwork.ProvisionedNetworkToProvisionedHost) {
       totalAgents++;
-      if (host.heartbeat) numWithAgentData++;
+      if (host.ProvisionedHostToAgentStatus?.clientId) numWithAgentData++;
     }
-    if (numWithAgentData === totalAgents) return ProvisionStatus.ProvStatusComplete;
-    else if (numWithAgentData === 0) return ProvisionStatus.ProvStatusFailed;
-    else return ProvisionStatus.ProvStatusInProgress;
+    if (numWithAgentData === totalAgents) return ProvisionStatus.COMPLETE;
+    else if (numWithAgentData === 0) return ProvisionStatus.FAILED;
+    else return ProvisionStatus.INPROGRESS;
   }
 
   getStatusColor(): string {
     switch (this.getStatus()) {
-      case ProvisionStatus.ProvStatusComplete:
+      case ProvisionStatus.COMPLETE:
         return 'success';
-      case ProvisionStatus.ProvStatusInProgress:
+      case ProvisionStatus.INPROGRESS:
         return 'warning';
-      case ProvisionStatus.ProvStatusFailed:
+      case ProvisionStatus.FAILED:
         return 'danger';
       default:
         return 'dark';
@@ -61,12 +62,24 @@ export class NetworkComponent implements OnInit {
   }
 
   onSelect(): void {
-    this.isSelected = !this.isSelected;
-    if (this.isSelected) this.rebuild.addNetwork(this.provisionedNetwork);
-    else this.rebuild.removeNetwork(this.provisionedNetwork);
+    let success = false;
+    if (!this.isSelected()) {
+      success = this.rebuild.addNetwork(this.provisionedNetwork);
+    } else {
+      success = this.rebuild.removeNetwork(this.provisionedNetwork);
+    }
+    if (success) this.isSelectedState = !this.isSelectedState;
   }
 
   onIndeterminateChange(isIndeterminate: boolean): void {
-    if (!isIndeterminate && this.isSelected) setTimeout(() => this.rebuild.addNetwork(this.provisionedNetwork), 500);
+    if (!isIndeterminate && this.isSelectedState) setTimeout(() => this.rebuild.addNetwork(this.provisionedNetwork), 500);
+  }
+
+  isSelected(): boolean {
+    return this.rebuild.hasNetwork(this.provisionedNetwork);
+  }
+
+  shouldCollapse(): boolean {
+    return networkChildrenCompleted(this.provisionedNetwork);
   }
 }

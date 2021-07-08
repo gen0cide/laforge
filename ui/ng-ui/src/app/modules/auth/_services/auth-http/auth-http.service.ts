@@ -8,13 +8,14 @@ import { AuthModel } from '../../_models/auth.model';
 const API_USERS_URL = `${environment.apiUrl}/users`;
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AuthHTTPService {
   constructor(private http: HttpClient) {}
 
   // public methods
   login(email: string, password: string): Observable<any> {
+    console.log('real login');
     return this.http.post<AuthModel>(API_USERS_URL, { email, password });
   }
 
@@ -26,16 +27,16 @@ export class AuthHTTPService {
   // Your server should check email => If email exists send link to the user and return true | If email doesn't exist return false
   forgotPassword(email: string): Observable<boolean> {
     return this.http.post<boolean>(`${API_USERS_URL}/forgot-password`, {
-      email,
+      email
     });
   }
 
   getUserByToken(token): Observable<UserModel> {
     const httpHeaders = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${token}`
     });
     return this.http.get<UserModel>(`${API_USERS_URL}`, {
-      headers: httpHeaders,
+      headers: httpHeaders
     });
   }
 }

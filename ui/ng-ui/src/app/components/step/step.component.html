@@ -6,7 +6,7 @@
       <i class="fas fa-1x" [ngClass]="'fa-' + getStatusIcon()"></i>
     </div>
     <div class="step-preview mr-1">
-      #{{ stepNumber }} {{ provisionedStep.provisionType }}
+      #{{ provisionedStep.step_number }} {{ getText() }}
       <!-- <span class="step-stepname">{{ provisionedHost ? provisionedHost.host.hostname : '' }}</span> -->
     </div>
   </div>

@@ -1,22 +1,23 @@
-import { ID, Tag, User, varsMap } from './common.model';
+import { ID, tagMap, User, varsMap } from './common.model';
+import { Environment } from './environment.model';
 import { Finding } from './finding.model';
 
 export interface Script {
   id: ID;
-  hcl_id?: string;
   name: string;
+  hcl_id?: string;
   language: string;
   description: string;
   source: string;
-  sourceType: string;
-  cooldown: number;
-  timeout: number;
-  ignoreErrors: boolean;
-  args: string[];
+  source_type: string;
   disabled: boolean;
+  args: string[];
   vars: varsMap[];
-  scriptToTag: Tag[];
-  absPath: string;
-  scriptTouser: User;
-  scriptToFinding: Finding[];
+  tags: tagMap[];
+  cooldown?: number;
+  timeout?: number;
+  ignore_errors?: boolean;
+  absPath?: string;
+  ScriptToFinding?: Finding[];
+  ScriptToEnvironment?: Environment;
 }

@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { Environment, resolveStatuses } from 'src/app/models/environment.model';
+import { Environment, resolveEnvEnums } from 'src/app/models/environment.model';
 import { ApiService } from 'src/app/services/api/api.service';
-import { ProvisionStatus } from 'src/app/models/common.model';
+import { ProvisionStatus, Status } from 'src/app/models/common.model';
 
 @Component({
   selector: 'app-test',
@@ -10,20 +10,71 @@ import { ProvisionStatus } from 'src/app/models/common.model';
 })
 export class TestComponent implements OnInit {
   environment: Environment;
-  failStatus: ProvisionStatus = ProvisionStatus.ProvStatusFailed;
-  completeStatus: ProvisionStatus = ProvisionStatus.ProvStatusComplete;
-  awaitingStatus: ProvisionStatus = ProvisionStatus.ProvStatusAwaiting;
-  inProgressStatus: ProvisionStatus = ProvisionStatus.ProvStatusInProgress;
-  taintedStatus: ProvisionStatus = ProvisionStatus.ProvStatusTainted;
-  undefinedStatus: ProvisionStatus = ProvisionStatus.ProvStatusUndefined;
+  failStatus: Status;
+  completeStatus: Status;
+  awaitingStatus: Status;
+  inProgressStatus: Status;
+  taintedStatus: Status;
+  undefinedStatus: Status;
 
-  constructor(private api: ApiService, private cdRef: ChangeDetectorRef) {}
+  constructor(private api: ApiService, private cdRef: ChangeDetectorRef) {
+    this.completeStatus = {
+      state: ProvisionStatus.COMPLETE,
+      startedAt: Date.now().toString(),
+      endedAt: Date.now().toString(),
+      completed: true,
+      failed: false,
+      error: ''
+    };
+    this.failStatus = {
+      state: ProvisionStatus.FAILED,
+      startedAt: Date.now().toString(),
+      endedAt: Date.now().toString(),
+      completed: false,
+      failed: true,
+      error: ''
+    };
+    this.awaitingStatus = {
+      state: ProvisionStatus.AWAITING,
+      startedAt: Date.now().toString(),
+      endedAt: Date.now().toString(),
+      completed: false,
+      failed: false,
+      error: ''
+    };
+    this.inProgressStatus = {
+      state: ProvisionStatus.INPROGRESS,
+      startedAt: Date.now().toString(),
+      endedAt: Date.now().toString(),
+      completed: false,
+      failed: false,
+      error: ''
+    };
+    this.taintedStatus = {
+      state: ProvisionStatus.TAINTED,
+      startedAt: Date.now().toString(),
+      endedAt: Date.now().toString(),
+      completed: false,
+      failed: true,
+      error: ''
+    };
+    this.undefinedStatus = {
+      state: ProvisionStatus.UNDEFINED,
+      startedAt: Date.now().toString(),
+      endedAt: Date.now().toString(),
+      completed: false,
+      failed: false,
+      error: ''
+    };
+  }
 
   ngOnInit(): void {
-    this.api.getEnvironment('a3f73ee0-da71-4aa6-9280-18ad1a1a8d16').subscribe((result) => {
-      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-      this.environment = resolveStatuses((result.data as any).environment) as Environment;
-      this.cdRef.detectChanges();
+    this.api.pullEnvironments().then((envs) => {
+      this.api.getEnvironment(envs[0].id).subscribe((result) => {
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        this.environment = resolveEnvEnums((result.data as any).environment) as Environment;
+        this.cdRef.detectChanges();
+      }, console.error);
     });
   }
 }

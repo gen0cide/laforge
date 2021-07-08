@@ -1,16 +1,18 @@
-import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
-import { LayoutComponent } from './_layout/layout.component';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 
 import { ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
+import { Routes, RouterModule } from '@angular/router';
+
 import { ViewComponentsModule } from '../components/view-components.module';
+
+import { LayoutComponent } from './_layout/layout.component';
 
 const routes: Routes = [
   {
@@ -37,10 +39,10 @@ const routes: Routes = [
         path: 'plan',
         loadChildren: () => import('./plan/plan.module').then((m) => m.PlanModule)
       },
-      {
-        path: 'test',
-        loadChildren: () => import('./test/test.module').then((m) => m.TestModule)
-      },
+      // {
+      //   path: 'test',
+      //   loadChildren: () => import('./test/test.module').then((m) => m.TestModule)
+      // },
       {
         path: 'account',
         loadChildren: () => import('./account/account.module').then((m) => m.AccountModule)

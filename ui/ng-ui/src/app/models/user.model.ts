@@ -1,4 +1,5 @@
-import { ID } from './common.model';
+import { ID, tagMap, varsMap } from './common.model';
+import { Environment } from './environment.model';
 
 export interface Role {
   id: ID;
@@ -8,17 +9,40 @@ export interface Role {
 
 export interface User {
   id: ID;
-  username: string;
+  name: string;
+  uuid: string;
   email: string;
-  accessToken: string; // consider deprecating these fields in favor of cookies set by auth server
-  refreshToken: string; // ^^^^
-  roles: Role[];
-  profilePicture: string; // CDN URL to user profile picture
-  firstName: string;
-  lastName: string;
-  occupation: string; // probably not needed? use roles to further explain
-  companyName: string; // possible convert to a region object?
-  phone: string;
-  // address: Address; do we really want to store user addresses?
-  // socialNetworks field if we really really want it (store as it's own object or limit to certain ones?)
+}
+
+export enum RoleLevel {
+  ADMIN,
+  USER,
+  UNDEFINED
+}
+
+export enum ProviderType {
+  LOCAL,
+  GITHUB,
+  OPENID,
+  UNDEFINED
+}
+export interface AuthUser {
+  id: ID;
+  username: string;
+  role: RoleLevel;
+  provider: ProviderType;
+}
+
+export interface Identity {
+  id: ID;
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  hcl_id?: string;
+  description?: string;
+  avatar_file?: string;
+  vars?: varsMap[];
+  tags?: tagMap[];
+  identityToEnvironment?: Environment;
 }

@@ -1,4 +1,5 @@
-import { ID, Tag, User, varsMap } from './common.model';
+import { ID, tagMap, varsMap } from './common.model';
+import { Environment } from './environment.model';
 
 export interface Command {
   id: ID;
@@ -6,11 +7,12 @@ export interface Command {
   description: string;
   program: string;
   args: string[];
-  ignoreErrors: boolean;
-  cooldown: number;
-  timeout: number;
   disabled: boolean;
-  vars: varsMap[];
-  tags: Tag[];
-  maintainer: User;
+  hcl_id?: string;
+  ignoreErrors?: boolean;
+  cooldown?: number;
+  timeout?: number;
+  vars?: varsMap[];
+  tags?: tagMap[];
+  CommandToEnvironment?: Environment;
 }

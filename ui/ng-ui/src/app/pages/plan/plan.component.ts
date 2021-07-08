@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { MatSelectChange } from '@angular/material/select';
 import { EnvironmentInfo } from 'src/app/models/api.model';
 import { ID } from 'src/app/models/common.model';
-import { Environment } from 'src/app/models/environment.model';
+import { Build, Environment } from 'src/app/models/environment.model';
 import { ApiService } from 'src/app/services/api/api.service';
 import { EnvironmentService } from 'src/app/services/environment/environment.service';
 import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_services/subheader.service';
@@ -23,6 +23,7 @@ import { PlanService } from '../../plan.service';
 })
 export class PlanComponent implements OnInit {
   environment: Observable<Environment>;
+  build: Observable<Build>;
   apolloError: any = {};
 
   constructor(
@@ -35,6 +36,7 @@ export class PlanComponent implements OnInit {
     this.subheader.setDescription('Plan an environment to build');
 
     this.environment = this.envService.getCurrentEnv().asObservable();
+    this.build = this.envService.getCurrentBuild().asObservable();
   }
 
   ngOnInit(): void {}

@@ -11,13 +11,14 @@ import { environment } from '../../../../../environments/environment';
 const API_USERS_URL = `${environment.apiUrl}/users`;
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AuthHTTPService {
   constructor(private http: HttpClient) {}
 
   // public methods
   login(email: string, password: string): Observable<any> {
+    console.log('fake login');
     const notFoundError = new Error('Not Found');
     if (!email || !password) {
       return of(notFoundError);
@@ -30,10 +31,7 @@ export class AuthHTTPService {
         }
 
         const user = result.find((u) => {
-          return (
-            u.email.toLowerCase() === email.toLowerCase() &&
-            u.password === password
-          );
+          return u.email.toLowerCase() === email.toLowerCase() && u.password === password;
         });
         if (!user) {
           return notFoundError;
@@ -61,9 +59,7 @@ export class AuthHTTPService {
   forgotPassword(email: string): Observable<boolean> {
     return this.getAllUsers().pipe(
       map((result: UserModel[]) => {
-        const user = result.find(
-          (u) => u.email.toLowerCase() === email.toLowerCase()
-        );
+        const user = result.find((u) => u.email.toLowerCase() === email.toLowerCase());
         return user !== undefined;
       })
     );

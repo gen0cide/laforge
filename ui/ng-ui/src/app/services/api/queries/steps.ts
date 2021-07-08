@@ -1,42 +1,96 @@
 import { gql } from 'apollo-angular';
-import { DocumentNode } from 'graphql';
-import { ID } from 'src/app/models/common.model';
 
-const getProvisionedSteps = (hostId: ID): DocumentNode => gql`
-  {
-    provisionedHost(proHostUUID: "${hostId}") {
+const getProvisionedSteps = gql`
+  query($hostId: String!) {
+    provisionedHost(proHostUUID: $hostId) {
       id
-      provisionedSteps {
+      ProvisionedHostToProvisioningStep {
         id
-        provisionType
-        status {
+        type
+        ProvisioningStepToStatus {
           state
-          startedAt
-          endedAt
+          started_at
+          ended_at
           error
         }
-        script {
+        ProvisioningStepToScript {
           id
           name
+          language
           description
           source
-          sourceType
+          source_type
           disabled
+          args
+          vars {
+            key
+            value
+          }
+          tags {
+            key
+            value
+          }
         }
-        command {
+        ProvisioningStepToCommand {
           id
           name
           description
+          program
           args
           disabled
+          vars {
+            key
+            value
+          }
+          tags {
+            key
+            value
+          }
         }
-        DNSRecord {
+        ProvisioningStepToDNSRecord {
           id
           name
           values
           type
           zone
           disabled
+          vars {
+            key
+            value
+          }
+          tags {
+            key
+            value
+          }
+        }
+        ProvisioningStepToFileDownload {
+          id
+          source
+          sourceType
+          destination
+          disabled
+          tags {
+            key
+            value
+          }
+        }
+        ProvisioningStepToFileDelete {
+          id
+          path
+          tags {
+            key
+            value
+          }
+        }
+        ProvisioningStepToFileExtract {
+          id
+          source
+          destination
+          type
+          tags {
+            key
+            value
+          }
         }
       }
     }

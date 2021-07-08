@@ -1,27 +1,29 @@
+import { APP_BASE_HREF } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { NgModule, APP_INITIALIZER } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpClientModule } from '@angular/common/http';
-import { HttpClientInMemoryWebApiModule } from 'angular-in-memory-web-api';
-import { ClipboardModule } from 'ngx-clipboard';
-import { TranslateModule } from '@ngx-translate/core';
-import { InlineSVGModule } from 'ng-inline-svg';
+import { environment } from '@env';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { AuthService } from './modules/auth/_services/auth.service';
-import { FakeAPIService } from './_helpers/fake/fake-api.service';
-import { environment } from 'src/environments/environment';
-// Highlight JS
-import { HighlightModule, HIGHLIGHT_OPTIONS } from 'ngx-highlightjs';
+import { TranslateModule } from '@ngx-translate/core';
+import { HttpClientInMemoryWebApiModule } from 'angular-in-memory-web-api';
 import highlight from 'highlight.js/lib/highlight';
-import xml from 'highlight.js/lib/languages/xml';
 import json from 'highlight.js/lib/languages/json';
 import scss from 'highlight.js/lib/languages/scss';
 import typescript from 'highlight.js/lib/languages/typescript';
+import xml from 'highlight.js/lib/languages/xml';
+import { InlineSVGModule } from 'ng-inline-svg';
+import { ClipboardModule } from 'ngx-clipboard';
+
+import { HighlightModule, HIGHLIGHT_OPTIONS } from 'ngx-highlightjs';
+
+import { FakeAPIService } from './_helpers/fake/fake-api.service';
 import { SplashScreenModule } from './_metronic/partials/layout/splash-screen/splash-screen.module';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
 import { GraphQLModule } from './graphql.module';
-import { APP_BASE_HREF } from '@angular/common';
+import { AuthService } from './modules/auth/_services/auth.service';
+// Highlight JS
 
 function appInitializer(authService: AuthService) {
   return () => {

@@ -166,136 +166,180 @@ const getEnvironmentQuery = (id: ID): DocumentNode => gql`
 {
   environment(envUUID: "${id}") {
     id
-    CompetitionID,
-    Name,
-    Description,
-    Builder,
-    TeamCount,
-    AdminCIDRs,
-    ExposedVDIPorts,
+    competition_id
+    name
+    description
+    builder
+    team_count
+    admin_cidrs
+    exposed_vdi_ports
     tags {
-      id,
-      name,
-      description
-    },
-    config {
-      key,
+      key
       value
-    },
-    environmentToUser {
-      id,
-      name,
-      uuid,
+    }
+    config {
+      key
+      value
+    }
+    EnvironmentToUser {
+      id
+      name
+      uuid
       email
-    },
-    environmentToBuild {
-      id,
-      revision,
-      tags {
-        id,
-        name,
-        description
-      },
-      config {
-        key,
-        value
-      },
-      buildToUser {
-        id,
-        name,
-        uuid,
-        email
-      },
+    }
+    EnvironmentToBuild {
+      id
+      revision
+      buildToStatus {
+        completed
+        failed
+        state
+      }
       buildToTeam {
-        id,
-        teamNumber,
-        teamToProvisionedNetwork {
-          id,
-          name,
-          cidr,
-          provisionedNetworkToNetwork {
-            id,
-            vdiVisible
+        id
+        team_number
+        TeamToStatus {
+          completed
+          failed
+          state
+        }
+        TeamToProvisionedNetwork {
+          id
+          name
+          cidr
+          ProvisionedNetworkToStatus {
+            completed
+            failed
+            state
+          }
+          ProvisionedNetworkToNetwork {
+            id
+            vdi_visible
             vars {
-              key,
+              key
               value
-            },
-            networkToTag {
-              id,
-              name,
+            }
+            tags {
+              key
+              value
+            }
+          }
+          ProvisionedNetworkToProvisionedHost {
+            id
+            subnet_ip
+            ProvisionedHostToStatus {
+              completed
+              failed
+              state
+            }
+            ProvisionedHostToHost {
+              id
+              hostname
               description
-            },
-          },
-          provisionedNetworkToProvisionedHost {
-            id,
-            subnetIP,
-            provisionedHostToHost {
-              id,
-              hostname,
-              OS,
-              allowMacChanges,
-              exposedTCPPorts,
-              exposedUDPPorts,
-              userGroups,
-              overridePassword,
-              hostToUser {
-                name,
-                email
-              },
+              OS
+              allow_mac_changes
+              exposed_tcp_ports
+              exposed_udp_ports
+              user_groups
+              override_password
               vars {
-                key,
+                key
                 value
-              },
-            	hostToTag {
-                name,
-                description
-              },
-            },
-            provisionedHostToProvisioningStep {
-              id,
-              provisionType,
-              provisioningStepToScript {
-                id,
-                name,
-                description,
-                source,
-                sourceType,
-                disabled
-              },
-              provisioningStepToCommand {
-                id,
-                name,
-                description,
-                args,
-                disabled
-              },
-              provisioningStepToDNSRecord {
-                id,
-                name,
-                values,
-                type,
-                zone,
-                disabled
-              },
-              provisioningStepToFileDownload {
-                id,
-                source,
-                sourceType,
-                destination,
-                disabled,
-              },
-              provisioningStepToFileDelete {
-                id
-                path,
-              },
-              provisioningStepToFileExtract {
-                id,
-                source,
-                destination,
-                type
+              }
+            	tags {
+                key
+                value
               }
             }
-          },
+            ProvisionedHostToProvisioningStep {
+              id
+              type
+              ProvisioningStepToStatus {
+                completed
+                failed
+                state
+              }
+              ProvisioningStepToScript {
+                id
+                name
+                language
+                description
+                source
+                source_type
+                disabled
+                args
+                vars {
+                  key
+                  value
+                }
+                tags {
+                  key
+                  value
+                }
+              }
+              ProvisioningStepToCommand {
+                id
+                name
+                description
+                program
+                args
+                disabled
+                vars {
+                  key
+                  value
+                }
+                tags {
+                  key
+                  value
+                }
+              }
+              ProvisioningStepToDNSRecord {
+                id
+                name
+                values
+                type
+                zone
+                disabled
+                vars {
+                  key
+                  value
+                }
+                tags {
+                  key
+                  value
+                }
+              }
+              ProvisioningStepToFileDownload {
+                id
+                source
+                sourceType
+                destination
+                disabled
+                tags {
+                  key
+                  value
+                }
+              }
+              ProvisioningStepToFileDelete {
+                id
+                path
+                tags {
+                  key
+                  value
+                }
+              }
+              ProvisioningStepToFileExtract {
+                id
+                source
+                destination
+                type
+                tags {
+                  key
+                  value
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -307,8 +351,12 @@ const getEnvironmentsQuery = (): DocumentNode => gql`
   {
     environments {
       id
-      Name
-      CompetitionID
+      name
+      competition_id
+      EnvironmentToBuild {
+        id
+        revision
+      }
     }
   }
 `;

@@ -1,7 +1,8 @@
 import { Component, Inject, Input, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ProvisionStatus } from 'src/app/models/common.model';
-import { ProvisionedHost, ProvisionedStep } from 'src/app/models/host.model';
+import { ProvisionedHost } from 'src/app/models/host.model';
+import { ProvisioningStep } from 'src/app/models/step.model';
 import { ApiService } from 'src/app/services/api/api.service';
 
 @Component({
@@ -12,7 +13,7 @@ import { ApiService } from 'src/app/services/api/api.service';
 class HostModalComponent implements OnInit {
   varsColumns: string[] = ['key', 'value'];
   tagsColumns: string[] = ['name', 'description'];
-  provisionedSteps: ProvisionedStep[];
+  provisionedSteps: ProvisioningStep[];
 
   constructor(
     public dialogRef: MatDialogRef<HostModalComponent>,
@@ -21,8 +22,8 @@ class HostModalComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    if (this.data.provisionedHost.provisionedSteps == null) {
-      this.api.pullHostSteps(this.data.provisionedHost.id).then((steps: ProvisionedStep[]) => {
+    if (this.data.provisionedHost.ProvisionedHostToProvisioningStep.length === 0) {
+      this.api.pullHostSteps(this.data.provisionedHost.id).then((steps: ProvisioningStep[]) => {
         this.provisionedSteps = steps;
       });
     }
@@ -33,46 +34,40 @@ class HostModalComponent implements OnInit {
   }
 
   isAgentStale(): boolean {
-    if (this.data.provisionedHost.heartbeat == null) return true;
-    return Date.now() / 1000 - this.data.provisionedHost.heartbeat.timestamp > this.api.getStatusPollingInterval() + 60
+    if (!this.data.provisionedHost.ProvisionedHostToAgentStatus?.clientId) return true;
+    return Date.now() / 1000 - this.data.provisionedHost.ProvisionedHostToAgentStatus.timestamp > 60;
   }
 
   getStatusIcon(): string {
-    if (this.data.provisionedHost.heartbeat != null) {
-      if (this.isAgentStale())
-        return 'exclamation-circle';
-      else
-        return 'check-circle';
+    if (this.data.provisionedHost.ProvisionedHostToAgentStatus?.clientId) {
+      if (this.isAgentStale()) return 'exclamation-circle';
+      else return 'check-circle';
     }
-    else return 'minus-circle';
     // TODO: Fix for live statuses after finals
-    // switch (this.data.provisionedHost.status.state) {
-    //   case ProvisionStatus.ProvStatusComplete:
-    //     return 'check-circle';
-    //   case ProvisionStatus.ProvStatusFailed:
-    //     return 'times-circle';
-    //   case ProvisionStatus.ProvStatusInProgress:
-    //     return 'play-circle';
-    //   default:
-    //     return 'minus-circle';
-    // }
+    switch (this.data.provisionedHost.ProvisionedHostToStatus.state) {
+      case ProvisionStatus.COMPLETE:
+        return 'check-circle';
+      case ProvisionStatus.FAILED:
+        return 'times-circle';
+      case ProvisionStatus.INPROGRESS:
+        return 'play-circle';
+      default:
+        return 'minus-circle';
+    }
   }
 
   getStatusColor(): string {
-    if (this.data.provisionedHost.heartbeat != null) {
-      if (this.isAgentStale())
-        return 'warning'
-      else
-        return 'success';
+    if (this.data.provisionedHost.ProvisionedHostToAgentStatus?.clientId) {
+      if (this.isAgentStale()) return 'warning';
+      else return 'success';
     }
-    else return 'dark';
     // TODO: Fix for live statuses after finals
-    switch (this.data.provisionedHost.status.state) {
-      case ProvisionStatus.ProvStatusComplete:
+    switch (this.data.provisionedHost.ProvisionedHostToStatus.state) {
+      case ProvisionStatus.COMPLETE:
         return 'success';
-      case ProvisionStatus.ProvStatusFailed:
+      case ProvisionStatus.FAILED:
         return 'danger';
-      case ProvisionStatus.ProvStatusInProgress:
+      case ProvisionStatus.INPROGRESS:
         return 'info';
       default:
         return 'dark';

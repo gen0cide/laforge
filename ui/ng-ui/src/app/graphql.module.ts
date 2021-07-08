@@ -6,10 +6,12 @@ import { environment } from 'src/environments/environment';
 
 export function createApollo(httpLink: HttpLink): ApolloClientOptions<any> {
   return {
-    link: httpLink.create({ uri: environment.graphqlUrl }),
+    uri: environment.graphqlUrl,
+    link: httpLink.create({ uri: environment.graphqlUrl, withCredentials: true }),
     cache: new InMemoryCache({
       resultCaching: false
-    })
+    }),
+    credentials: 'include'
   };
 }
 

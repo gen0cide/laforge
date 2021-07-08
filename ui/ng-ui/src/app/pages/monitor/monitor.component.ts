@@ -1,18 +1,19 @@
 import { ChangeDetectorRef, Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
-import { Observable, Subscription } from 'rxjs';
-import { updateAgentStatuses } from 'src/app/models/agent.model';
-import { AgentStatusQueryResult, EnvironmentInfo } from 'src/app/models/api.model';
-import { Environment, resolveStatuses } from 'src/app/models/environment.model';
-import { ApiService } from 'src/app/services/api/api.service';
-import { EnvironmentService } from 'src/app/services/environment/environment.service';
-import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_services/subheader.service';
-import { filter } from 'rxjs/operators';
+import { ApolloError } from '@apollo/client/core';
+import { RebuildService } from '@services/rebuild/rebuild.service';
 import { QueryRef } from 'apollo-angular';
 import { EmptyObject } from 'apollo-angular/types';
-import { ApolloError } from '@apollo/client/core';
-import { environment } from 'src/environments/environment';
+import { Observable, Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_services/subheader.service';
+import { updateEnvAgentStatuses } from 'src/app/models/agent.model';
+import { AgentStatusQueryResult, EnvironmentInfo } from 'src/app/models/api.model';
 import { ID } from 'src/app/models/common.model';
+import { Build, Environment, resolveEnvEnums } from 'src/app/models/environment.model';
+import { ApiService } from 'src/app/services/api/api.service';
+import { EnvironmentService } from 'src/app/services/environment/environment.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-manage',
@@ -24,7 +25,8 @@ export class MonitorComponent implements AfterViewInit, OnDestroy {
   // envs: EnvironmentInfo[];
   environment: Observable<Environment> = null;
   envLoaded = false;
-  environmentDetailsCols: string[] = ['TeamCount', 'AdminCIDRs', 'ExposedVDIPorts', 'maintainer'];
+  build: Observable<Build>;
+  environmentDetailsCols: string[] = ['TeamCount', 'AdminCIDRs', 'ExposedVDIPorts'];
   agentPollingInterval: NodeJS.Timeout;
   pollingInterval = 60;
   loading = false;
@@ -43,11 +45,17 @@ export class MonitorComponent implements AfterViewInit, OnDestroy {
     this.subheader.setDescription('View live data being sent from the host agents');
 
     this.environment = this.envService.getCurrentEnv().asObservable();
+    this.build = this.envService.getCurrentBuild().asObservable();
   }
 
   ngAfterViewInit(): void {
-    this.environment.subscribe((environment) => {
-      if (environment && !this.envService.isWatchingAgentStatus()) {
+    // this.environment.subscribe((environment) => {
+    //   if (environment && !this.envService.isWatchingAgentStatus()) {
+    //     setTimeout(() => this.envService.watchAgentStatuses(), 1000);
+    //   }
+    // });
+    this.build.subscribe((build) => {
+      if (build && !this.envService.isWatchingAgentStatus()) {
         setTimeout(() => this.envService.watchAgentStatuses(), 1000);
       }
     });
