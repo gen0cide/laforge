@@ -156,6 +156,7 @@ func Login(client *ent.Client) gin.HandlerFunc {
 
 		// TODO: Change Cookie to be secure
 		ctx.SetCookie("auth-cookie", tokenString, 60*60, "/", hostname, false, false)
+		ctx.JSON(200, entAuthUser)
 
 		ctx.Next()
 	}

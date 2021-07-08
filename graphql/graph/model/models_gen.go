@@ -273,13 +273,16 @@ func (e ProviderType) MarshalGQL(w io.Writer) {
 type ProvisionStatus string
 
 const (
-	ProvisionStatusPlanning   ProvisionStatus = "PLANNING"
-	ProvisionStatusAwaiting   ProvisionStatus = "AWAITING"
-	ProvisionStatusInprogress ProvisionStatus = "INPROGRESS"
-	ProvisionStatusFailed     ProvisionStatus = "FAILED"
-	ProvisionStatusComplete   ProvisionStatus = "COMPLETE"
-	ProvisionStatusTainted    ProvisionStatus = "TAINTED"
-	ProvisionStatusUndefined  ProvisionStatus = "UNDEFINED"
+	ProvisionStatusPlanning         ProvisionStatus = "PLANNING"
+	ProvisionStatusAwaiting         ProvisionStatus = "AWAITING"
+	ProvisionStatusInprogress       ProvisionStatus = "INPROGRESS"
+	ProvisionStatusFailed           ProvisionStatus = "FAILED"
+	ProvisionStatusComplete         ProvisionStatus = "COMPLETE"
+	ProvisionStatusTainted          ProvisionStatus = "TAINTED"
+	ProvisionStatusUndefined        ProvisionStatus = "UNDEFINED"
+	ProvisionStatusTodelete         ProvisionStatus = "TODELETE"
+	ProvisionStatusDeleteinprogress ProvisionStatus = "DELETEINPROGRESS"
+	ProvisionStatusDeleted          ProvisionStatus = "DELETED"
 )
 
 var AllProvisionStatus = []ProvisionStatus{
@@ -290,11 +293,14 @@ var AllProvisionStatus = []ProvisionStatus{
 	ProvisionStatusComplete,
 	ProvisionStatusTainted,
 	ProvisionStatusUndefined,
+	ProvisionStatusTodelete,
+	ProvisionStatusDeleteinprogress,
+	ProvisionStatusDeleted,
 }
 
 func (e ProvisionStatus) IsValid() bool {
 	switch e {
-	case ProvisionStatusPlanning, ProvisionStatusAwaiting, ProvisionStatusInprogress, ProvisionStatusFailed, ProvisionStatusComplete, ProvisionStatusTainted, ProvisionStatusUndefined:
+	case ProvisionStatusPlanning, ProvisionStatusAwaiting, ProvisionStatusInprogress, ProvisionStatusFailed, ProvisionStatusComplete, ProvisionStatusTainted, ProvisionStatusUndefined, ProvisionStatusTodelete, ProvisionStatusDeleteinprogress, ProvisionStatusDeleted:
 		return true
 	}
 	return false

@@ -2598,6 +2598,9 @@ enum ProvisionStatus {
   COMPLETE
   TAINTED
   UNDEFINED
+  TODELETE
+  DELETEINPROGRESS
+  DELETED
 }
 
 enum ProvisionStatusFor {
