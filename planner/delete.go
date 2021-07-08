@@ -312,6 +312,11 @@ func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Con
 		logrus.Errorf("error updating ent plan status: %v", err)
 		return
 	}
+	provisionedStatus, err = provisionedStatus.Update().SetState(status.StateDELETEINPROGRESS).Save(ctx)
+	if err != nil {
+		logrus.Errorf("error updating ent provisioned status: %v", err)
+		return
+	}
 
 	var deleteErr error = nil
 	switch entPlan.Type {

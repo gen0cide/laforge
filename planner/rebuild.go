@@ -7,6 +7,7 @@ import (
 
 	"github.com/gen0cide/laforge/builder"
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/sirupsen/logrus"
 )
@@ -25,9 +26,10 @@ func Rebuild(ctx context.Context, client *ent.Client, entPlans []*ent.Plan) (boo
 		return false, err
 	}
 
+	deleteContext := context.Background()
 	// Mark all plans involved for rebuild
 	for _, entPlan := range entPlans {
-		err := markForDeleteRoutine(ctx, entPlan)
+		err := markForDeleteRoutine(deleteContext, entPlan)
 		if err != nil {
 			return false, err
 		}
@@ -39,15 +41,16 @@ func Rebuild(ctx context.Context, client *ent.Client, entPlans []*ent.Plan) (boo
 	var wg sync.WaitGroup
 	for _, entPlan := range entPlans {
 		wg.Add(1)
-		go deleteRoutine(client, &genericBuilder, ctx, entPlan, &wg)
+		go deleteRoutine(client, &genericBuilder, deleteContext, entPlan, &wg)
 	}
 	wg.Wait()
 
 	logrus.Debug("waiting for deletion to propagate to all systems")
 	time.Sleep(1 * time.Minute)
 
+	buildContext := context.Background()
 	for _, entPlan := range entPlans {
-		err := markForRebuildRoutine(ctx, entPlan)
+		err := markForRebuildRoutine(buildContext, entPlan)
 		if err != nil {
 			return false, err
 		}
@@ -59,7 +62,7 @@ func Rebuild(ctx context.Context, client *ent.Client, entPlans []*ent.Plan) (boo
 	var wg2 sync.WaitGroup
 	for _, entPlan := range entPlans {
 		wg2.Add(1)
-		go buildRoutine(client, &genericBuilder, ctx, entPlan, &wg2)
+		go buildRoutine(client, &genericBuilder, buildContext, entPlan, &wg2)
 	}
 	wg2.Wait()
 
@@ -73,6 +76,51 @@ func markForDeleteRoutine(ctx context.Context, entPlan *ent.Plan) error {
 	}
 	if entStatus.State != status.StateTODELETE {
 		err = entStatus.Update().SetState(status.StateTODELETE).Exec(ctx)
+		if err != nil {
+			return err
+		}
+	}
+	var provisionedStatus *ent.Status
+	var getStatusError error = nil
+	switch entPlan.Type {
+	case plan.TypeStartBuild:
+		build, getStatusError := entPlan.QueryPlanToBuild().Only(ctx)
+		if getStatusError != nil {
+			break
+		}
+		provisionedStatus, getStatusError = build.QueryBuildToStatus().Only(ctx)
+	case plan.TypeStartTeam:
+		team, getStatusError := entPlan.QueryPlanToTeam().Only(ctx)
+		if getStatusError != nil {
+			break
+		}
+		provisionedStatus, getStatusError = team.QueryTeamToStatus().Only(ctx)
+	case plan.TypeProvisionNetwork:
+		pnet, getStatusError := entPlan.QueryPlanToProvisionedNetwork().Only(ctx)
+		if getStatusError != nil {
+			break
+		}
+		provisionedStatus, getStatusError = pnet.QueryProvisionedNetworkToStatus().Only(ctx)
+	case plan.TypeProvisionHost:
+		phost, getStatusError := entPlan.QueryPlanToProvisionedHost().Only(ctx)
+		if getStatusError != nil {
+			break
+		}
+		provisionedStatus, getStatusError = phost.QueryProvisionedHostToStatus().Only(ctx)
+	case plan.TypeExecuteStep:
+		step, getStatusError := entPlan.QueryPlanToProvisioningStep().Only(ctx)
+		if getStatusError != nil {
+			break
+		}
+		provisionedStatus, getStatusError = step.QueryProvisioningStepToStatus().Only(ctx)
+	default:
+		break
+	}
+	if getStatusError != nil {
+		logrus.Errorf("error getting status of provisioned object: %v", getStatusError)
+	}
+	if provisionedStatus.State != status.StateTODELETE {
+		err = provisionedStatus.Update().SetState(status.StateTODELETE).Exec(ctx)
 		if err != nil {
 			return err
 		}
@@ -97,6 +145,51 @@ func markForRebuildRoutine(ctx context.Context, entPlan *ent.Plan) error {
 	}
 	if entStatus.State != status.StateAWAITING {
 		err = entStatus.Update().SetState(status.StateAWAITING).Exec(ctx)
+		if err != nil {
+			return err
+		}
+	}
+	var provisionedStatus *ent.Status
+	var getStatusError error = nil
+	switch entPlan.Type {
+	case plan.TypeStartBuild:
+		build, getStatusError := entPlan.QueryPlanToBuild().Only(ctx)
+		if getStatusError != nil {
+			break
+		}
+		provisionedStatus, getStatusError = build.QueryBuildToStatus().Only(ctx)
+	case plan.TypeStartTeam:
+		team, getStatusError := entPlan.QueryPlanToTeam().Only(ctx)
+		if getStatusError != nil {
+			break
+		}
+		provisionedStatus, getStatusError = team.QueryTeamToStatus().Only(ctx)
+	case plan.TypeProvisionNetwork:
+		pnet, getStatusError := entPlan.QueryPlanToProvisionedNetwork().Only(ctx)
+		if getStatusError != nil {
+			break
+		}
+		provisionedStatus, getStatusError = pnet.QueryProvisionedNetworkToStatus().Only(ctx)
+	case plan.TypeProvisionHost:
+		phost, getStatusError := entPlan.QueryPlanToProvisionedHost().Only(ctx)
+		if getStatusError != nil {
+			break
+		}
+		provisionedStatus, getStatusError = phost.QueryProvisionedHostToStatus().Only(ctx)
+	case plan.TypeExecuteStep:
+		step, getStatusError := entPlan.QueryPlanToProvisioningStep().Only(ctx)
+		if getStatusError != nil {
+			break
+		}
+		provisionedStatus, getStatusError = step.QueryProvisioningStepToStatus().Only(ctx)
+	default:
+		break
+	}
+	if getStatusError != nil {
+		logrus.Errorf("error getting status of provisioned object: %v", getStatusError)
+	}
+	if provisionedStatus.State != status.StateAWAITING {
+		err = provisionedStatus.Update().SetState(status.StateAWAITING).Exec(ctx)
 		if err != nil {
 			return err
 		}

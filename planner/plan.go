@@ -418,11 +418,17 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 			log.Fatalf("Failed to Query Script %v. Err: %v", userDataScriptID, err)
 			return nil, err
 		}
+		entUserDataStatus, err := client.Status.Create().SetState(status.StateCOMPLETE).SetStatusFor(status.StatusForProvisioningStep).Save(ctx)
+		if err != nil {
+			log.Fatalf("Failed to Create Provisioning Step Status for Script %v. Err: %v", userDataScriptID, err)
+			return nil, err
+		}
 		entUserDataProvisioningStep, err := client.ProvisioningStep.Create().
 			SetStepNumber(0).
 			SetType(provisioningstep.TypeScript).
 			SetProvisioningStepToScript(userDataScript).
 			SetProvisioningStepToProvisionedHost(entProvisionedHost).
+			SetProvisioningStepToStatus(entUserDataStatus).
 			Save(ctx)
 		if err != nil {
 			log.Fatalf("Failed to Create Provisioning Step for Script %v. Err: %v", userDataScriptID, err)
