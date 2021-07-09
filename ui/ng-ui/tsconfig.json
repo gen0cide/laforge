@@ -19,7 +19,9 @@
       "@models/*": ["src/app/models/*"],
       "@pages/*": ["src/app/pages/*"],
       "@services/*": ["src/app/services/*"],
-      "@env": ["src/environments/environment"]
+      "@env": ["src/environments/environment"],
+      "@graphql": ["src/generated/graphql"],
+      "@util": ["src/app/util"]
     }
   },
   "angularCompilerOptions": {

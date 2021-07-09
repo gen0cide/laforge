@@ -1,0 +1,3 @@
+mutation Rebuild($rootPlans: [String]!) {
+  rebuild(rootPlans: $rootPlans)
+}

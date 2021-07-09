@@ -20,12 +20,12 @@
         <mat-card-title>{{ _environment.Name }}<i class="fas fa-2x fa-sync fa-spin" *ngIf="loading"></i></mat-card-title>
         <mat-card-subtitle>{{ _environment.Description }}</mat-card-subtitle>
       </div>
-      <mat-form-field appearance="fill">
+      <!-- <mat-form-field appearance="fill">
         <mat-label>Update Every...</mat-label>
         <mat-select (selectionChange)="onIntervalChange($event)" [value]="this.envService.pollingInterval">
           <mat-option *ngFor="let interval of intervalOptions" [value]="interval"> {{ interval }} secs </mat-option>
         </mat-select>
-      </mat-form-field>
+      </mat-form-field> -->
     </div>
     <mat-table [dataSource]="[_environment]" class="bg-gray-100">
       <ng-container matColumnDef="TeamCount">

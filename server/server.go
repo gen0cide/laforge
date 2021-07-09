@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
+	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gen0cide/laforge/ent"
@@ -22,6 +24,7 @@ import (
 	"github.com/gen0cide/laforge/grpc/server/static"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
@@ -71,20 +74,33 @@ func tempURLHandler(client *ent.Client) gin.HandlerFunc {
 }
 
 // Defining the Graphql handler
-func graphqlHandler(client *ent.Client) gin.HandlerFunc {
+func graphqlHandler(client *ent.Client, rdb *redis.Client) gin.HandlerFunc {
 	// NewExecutableSchema and Config are in the generated.go file
 	// Resolver is in the resolver.go file
-	h := handler.NewDefaultServer(graph.NewSchema(client))
+	h := handler.New(graph.NewSchema(client, rdb))
 
 	h.AddTransport(&transport.Websocket{
 		Upgrader: websocket.Upgrader{
+			HandshakeTimeout: 0,
+			ReadBufferSize:   1024,
+			WriteBufferSize:  1024,
+			WriteBufferPool:  nil,
 			CheckOrigin: func(r *http.Request) bool {
-				// Check against your desired domains here
 				return true
 			},
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
+			EnableCompression: false,
 		},
+		KeepAlivePingInterval: 5 * time.Second,
+	})
+	h.AddTransport(transport.GET{})
+	h.AddTransport(transport.POST{})
+	h.AddTransport(transport.MultipartForm{})
+
+	h.SetQueryCache(lru.New(1000))
+
+	h.Use(extension.Introspection{})
+	h.Use(extension.AutomaticPersistedQuery{
+		Cache: lru.New(100),
 	})
 
 	return func(c *gin.Context) {
@@ -153,6 +169,40 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
+	redisHost, okRS := os.LookupEnv("REDIS_SERVER")
+	redisPass, okRP := os.LookupEnv("REDIS_PASSWORD")
+
+	rdb := &redis.Client{}
+	if okRS {
+		if okRP {
+			rdb = redis.NewClient(&redis.Options{
+				Addr:     redisHost,
+				Password: redisPass,
+				DB:       0, // use default DB
+			})
+		} else {
+			rdb = redis.NewClient(&redis.Options{
+				Addr:     redisHost,
+				Password: "", // no password set
+				DB:       0,  // use default DB
+			})
+		}
+	} else {
+		if okRP {
+			rdb = redis.NewClient(&redis.Options{
+				Addr:     "localhost:6379",
+				Password: redisPass,
+				DB:       0, // use default DB
+			})
+		} else {
+			rdb = redis.NewClient(&redis.Options{
+				Addr:     "localhost:6379",
+				Password: "", // no password set
+				DB:       0,  // use default DB
+			})
+		}
+	}
+
 	router := gin.Default()
 
 	// Add CORS middleware around every request
@@ -169,7 +219,8 @@ func main() {
 	if !ok {
 		port = defaultPort
 	}
-	gqlHandler := graphqlHandler(client)
+
+	gqlHandler := graphqlHandler(client, rdb)
 	redirectHandler := redirectToRootHandler(client)
 	router.GET("/", redirectHandler)
 	// router.Static("/ui/", "./dist")
@@ -225,6 +276,7 @@ func main() {
 	pb.RegisterLaforgeServer(s, &server.Server{
 		Client:                     client,
 		UnimplementedLaforgeServer: pb.UnimplementedLaforgeServer{},
+		RDB:                        rdb,
 	})
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

@@ -21,6 +21,7 @@ require (
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/go-playground/validator/v10 v10.6.1 // indirect
+	github.com/go-redis/redis/v8 v8.11.0 // indirect
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/uuid v1.2.0

@@ -1,6 +1,6 @@
 import { Build, Environment } from './environment.model';
 import { ProvisionedHost } from './host.model';
-import { ProvisionedNetwork, networkChildrenCompleted } from './network.model';
+import { ProvisionedNetwork } from './network.model';
 import { ProvisioningStep } from './step.model';
 
 export type ID = string | number;
@@ -41,17 +41,6 @@ export interface Team {
   TeamToProvisionedNetwork?: ProvisionedNetwork[];
   TeamToPlan?: Plan;
 }
-
-export const teamChildrenCompleted = (team: Team): boolean => {
-  let numCompleted = 0;
-  let totalNetworks = 0;
-  for (const network of team.TeamToProvisionedNetwork) {
-    totalNetworks++;
-    if (networkChildrenCompleted(network)) numCompleted++;
-  }
-  if (numCompleted === totalNetworks) return true;
-  else return false;
-};
 
 export enum ProvisionStatus {
   PLANNING,

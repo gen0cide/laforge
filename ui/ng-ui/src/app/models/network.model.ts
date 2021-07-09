@@ -1,6 +1,6 @@
 import { ID, varsMap, Status, tagMap, Team, Plan } from './common.model';
 import { Build, Environment } from './environment.model';
-import { hostChildrenCompleted, ProvisionedHost } from './host.model';
+import { ProvisionedHost } from './host.model';
 
 export interface Network {
   id: ID;
@@ -23,14 +23,3 @@ export interface ProvisionedNetwork {
   ProvisionedNetworkToProvisionedHost?: ProvisionedHost[];
   ProvisionedNetworkToPlan?: Plan;
 }
-
-export const networkChildrenCompleted = (network: ProvisionedNetwork): boolean => {
-  let numCompleted = 0;
-  let totalHosts = 0;
-  for (const host of network.ProvisionedNetworkToProvisionedHost) {
-    totalHosts++;
-    if (hostChildrenCompleted(host)) numCompleted++;
-  }
-  if (numCompleted === totalHosts) return true;
-  else return false;
-};

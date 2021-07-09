@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
 import { ApolloError } from '@apollo/client/core';
+import { LaForgeGetBuildTreeQuery, LaForgeGetEnvironmentInfoQuery } from '@graphql';
 import { RebuildService } from '@services/rebuild/rebuild.service';
 import { QueryRef } from 'apollo-angular';
 import { EmptyObject } from 'apollo-angular/types';
@@ -23,9 +24,9 @@ import { environment } from 'src/environments/environment';
 export class MonitorComponent implements AfterViewInit, OnDestroy {
   // corpNetwork: ProvisionedNetwork = corp_network_provisioned;
   // envs: EnvironmentInfo[];
-  environment: Observable<Environment> = null;
+  environment: Observable<LaForgeGetEnvironmentInfoQuery['environment']> = null;
   envLoaded = false;
-  build: Observable<Build>;
+  build: Observable<LaForgeGetBuildTreeQuery['build']>;
   environmentDetailsCols: string[] = ['TeamCount', 'AdminCIDRs', 'ExposedVDIPorts'];
   agentPollingInterval: NodeJS.Timeout;
   pollingInterval = 60;
@@ -44,8 +45,8 @@ export class MonitorComponent implements AfterViewInit, OnDestroy {
     this.subheader.setTitle('Monitor Agents');
     this.subheader.setDescription('View live data being sent from the host agents');
 
-    this.environment = this.envService.getCurrentEnv().asObservable();
-    this.build = this.envService.getCurrentBuild().asObservable();
+    this.environment = this.envService.getEnvironmentInfo().asObservable();
+    this.build = this.envService.getBuildTree().asObservable();
   }
 
   ngAfterViewInit(): void {
@@ -54,21 +55,21 @@ export class MonitorComponent implements AfterViewInit, OnDestroy {
     //     setTimeout(() => this.envService.watchAgentStatuses(), 1000);
     //   }
     // });
-    this.build.subscribe((build) => {
-      if (build && !this.envService.isWatchingAgentStatus()) {
-        setTimeout(() => this.envService.watchAgentStatuses(), 1000);
-      }
-    });
+    // this.build.subscribe((build) => {
+    //   if (build && !this.envService.isWatchingAgentStatus()) {
+    //     setTimeout(() => this.envService.watchAgentStatuses(), 1000);
+    //   }
+    // });
   }
 
   envIsSelected(): boolean {
-    return this.envService.getCurrentEnv() != null && environment != null;
+    return this.envService.getEnvironmentInfo() != null && environment != null;
   }
 
   ngOnDestroy(): void {}
 
   onIntervalChange(changeEvent: MatSelectChange): void {
-    this.envService.setAgentPollingInterval(changeEvent.value);
+    // this.envService.setAgentPollingInterval(changeEvent.value);
   }
 
   rebuildEnv(): void {

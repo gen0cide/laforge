@@ -9,6 +9,7 @@ import { MatSelectChange } from '@angular/material/select';
 import { EnvironmentService } from 'src/app/services/environment/environment.service';
 import { Build, Environment } from 'src/app/models/environment.model';
 import { ID } from 'src/app/models/common.model';
+import { LaForgeGetBuildTreeQuery, LaForgeGetEnvironmentInfoQuery } from '@graphql';
 
 interface Branch {
   name: string;
@@ -33,8 +34,8 @@ export class SubheaderComponent implements OnInit {
     { name: 'Bradley', hash: '98y3if' },
     { name: 'Lucas', hash: '32a7fh' }
   ];
-  environment: Environment;
-  build: Build;
+  environment: LaForgeGetEnvironmentInfoQuery['environment'];
+  build: LaForgeGetBuildTreeQuery['build'];
   envIsLoading: Observable<boolean>;
 
   constructor(
@@ -53,11 +54,11 @@ export class SubheaderComponent implements OnInit {
     });
 
     this.envService
-      .getCurrentEnv()
+      .getEnvironmentInfo()
       .asObservable()
       .subscribe((env) => (this.environment = env));
     this.envService
-      .getCurrentBuild()
+      .getBuildTree()
       .asObservable()
       .subscribe((env) => (this.build = env));
     this.envIsLoading = this.envService.envIsLoading.asObservable();

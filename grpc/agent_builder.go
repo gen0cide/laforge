@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/gen0cide/laforge/ent"
+	"github.com/sirupsen/logrus"
 )
 
 func BuildAgent(agentID string, serverAddress string, binarypath string, isWindows bool) {
@@ -50,18 +51,18 @@ func main() {
 
 	// Run the auto migration tool.
 	if err := client.Schema.Create(ctx); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
+		logrus.Errorf("failed creating schema resources: %v", err)
 	}
 
 	phs, err := client.ProvisionedHost.Query().All(ctx)
 	if err != nil {
-		log.Fatalf("Failed to Query All Provisioned Hosts: %v", err)
+		logrus.Errorf("Failed to Query All Provisioned Hosts: %v", err)
 	}
 
 	for _, ph := range phs {
 		host, err := ph.QueryProvisionedHostToHost().Only(ctx)
 		if err != nil {
-			log.Fatalf("Failed to Query Host: %v", err)
+			logrus.Errorf("Failed to Query Host: %v", err)
 		}
 		hostName := host.Hostname
 
@@ -78,18 +79,18 @@ func main() {
 
 		pn, err := ph.QueryProvisionedHostToProvisionedNetwork().Only(ctx)
 		if err != nil {
-			log.Fatalf("Failed to Query Provisioned Network: %v", err)
+			logrus.Errorf("Failed to Query Provisioned Network: %v", err)
 		}
 		networkName := pn.Name
 
 		team, err := pn.QueryProvisionedNetworkToTeam().Only(ctx)
 		if err != nil {
-			log.Fatalf("Failed to Query Team: %v", err)
+			logrus.Errorf("Failed to Query Team: %v", err)
 		}
 		teamName := team.TeamNumber
 		env, err := team.QueryTeamToBuild().QueryBuildToEnvironment().Only(ctx)
 		if err != nil {
-			log.Fatalf("Failed to Query Enviroment: %v", err)
+			logrus.Errorf("Failed to Query Enviroment: %v", err)
 		}
 		envName := env.Name
 

@@ -1,6 +1,8 @@
 import { PortalInjector } from '@angular/cdk/portal';
 import { Component, Input, OnInit } from '@angular/core';
-import { ProvisionStatus, Team, teamChildrenCompleted } from 'src/app/models/common.model';
+import { LaForgeGetBuildTreeQuery, LaForgeTeam } from '@graphql';
+import { teamChildrenCompleted } from '@util';
+import { ProvisionStatus } from 'src/app/models/common.model';
 
 import { RebuildService } from '../../services/rebuild/rebuild.service';
 
@@ -11,7 +13,7 @@ import { RebuildService } from '../../services/rebuild/rebuild.service';
 })
 export class TeamComponent implements OnInit {
   @Input() title: string;
-  @Input() team: Team;
+  @Input() team: LaForgeTeam;
   @Input() style: 'compact' | 'collapsed' | 'expanded';
   @Input() selectable: boolean;
   @Input() mode: 'plan' | 'build' | 'manage';

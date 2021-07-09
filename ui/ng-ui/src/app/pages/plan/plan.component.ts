@@ -1,12 +1,13 @@
 import { ChangeDetectorRef, Component, NgModule, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
 import { MatSelectChange } from '@angular/material/select';
+import { LaForgeGetBuildTreeQuery, LaForgeGetEnvironmentInfoQuery } from '@graphql';
+import { Observable } from 'rxjs';
+import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_services/subheader.service';
 import { EnvironmentInfo } from 'src/app/models/api.model';
 import { ID } from 'src/app/models/common.model';
 import { Build, Environment } from 'src/app/models/environment.model';
 import { ApiService } from 'src/app/services/api/api.service';
 import { EnvironmentService } from 'src/app/services/environment/environment.service';
-import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_services/subheader.service';
 
 // import { Step } from '../.../../../models/plan.model';
 import { PlanService } from '../../plan.service';
@@ -22,8 +23,8 @@ import { PlanService } from '../../plan.service';
   styleUrls: ['./plan.component.scss']
 })
 export class PlanComponent implements OnInit {
-  environment: Observable<Environment>;
-  build: Observable<Build>;
+  environment: Observable<LaForgeGetEnvironmentInfoQuery['environment']>;
+  build: Observable<LaForgeGetBuildTreeQuery['build']>;
   apolloError: any = {};
 
   constructor(
@@ -35,13 +36,13 @@ export class PlanComponent implements OnInit {
     this.subheader.setTitle('Plan');
     this.subheader.setDescription('Plan an environment to build');
 
-    this.environment = this.envService.getCurrentEnv().asObservable();
-    this.build = this.envService.getCurrentBuild().asObservable();
+    this.environment = this.envService.getEnvironmentInfo().asObservable();
+    this.build = this.envService.getBuildTree().asObservable();
   }
 
   ngOnInit(): void {}
 
   envIsSelected(): boolean {
-    return this.envService.getCurrentEnv().getValue() != null;
+    return this.envService.getEnvironmentInfo().getValue() != null;
   }
 }

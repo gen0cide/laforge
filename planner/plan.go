@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"os"
 	"path"
@@ -49,22 +48,22 @@ func main() {
 
 	// Run the auto migration tool.
 	if err := client.Schema.Create(ctx); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
+		logrus.Errorf("failed creating schema resources: %v", err)
 	}
 	uuidString := "36579b83-cc50-4f9f-a007-6da25467dc8a"
 	envID, err := uuid.Parse(uuidString)
 	if err != nil {
-		log.Fatalf("Unable to parse UUID %v. Err: %v", uuidString, err)
+		logrus.Errorf("Unable to parse UUID %v. Err: %v", uuidString, err)
 	}
 
 	entEnvironment, err := client.Environment.Query().Where(environment.ID(envID)).WithEnvironmentToBuild().Only(ctx)
 	if err != nil {
-		log.Fatalf("Failed to find Environment %v. Err: %v", uuidString, err)
+		logrus.Errorf("Failed to find Environment %v. Err: %v", uuidString, err)
 	}
 
 	entBuild, _ := CreateBuild(ctx, client, entEnvironment)
 	if err != nil {
-		log.Fatalf("Failed to create Build for Enviroment %v. Err: %v", 1, err)
+		logrus.Errorf("Failed to create Build for Enviroment %v. Err: %v", 1, err)
 	}
 	fmt.Println(entBuild)
 }
@@ -72,7 +71,7 @@ func main() {
 func createPlanningStatus(ctx context.Context, client *ent.Client, statusFor status.StatusFor) (*ent.Status, error) {
 	entStatus, err := client.Status.Create().SetState(status.StatePLANNING).SetStatusFor(statusFor).Save(ctx)
 	if err != nil {
-		log.Fatalf("Failed to create Status for %v. Err: %v", statusFor, err)
+		logrus.Errorf("Failed to create Status for %v. Err: %v", statusFor, err)
 		return nil, err
 	}
 	return entStatus, nil
@@ -86,7 +85,7 @@ func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.En
 	}
 	entCompetition, err := client.Competition.Query().Where(competition.HclIDEQ(entEnvironment.CompetitionID)).Only(ctx)
 	if err != nil {
-		log.Fatalf("Failed to Query Competition %v for Enviroment %v. Err: %v", len(entEnvironment.CompetitionID), entEnvironment.HclID, err)
+		logrus.Errorf("Failed to Query Competition %v for Enviroment %v. Err: %v", len(entEnvironment.CompetitionID), entEnvironment.HclID, err)
 		return nil, err
 	}
 	entBuild, err := client.Build.Create().
@@ -96,7 +95,7 @@ func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.En
 		SetBuildToCompetition(entCompetition).
 		Save(ctx)
 	if err != nil {
-		log.Fatalf("Failed to create Build %v for Enviroment %v. Err: %v", len(entEnvironment.Edges.EnvironmentToBuild), entEnvironment.HclID, err)
+		logrus.Errorf("Failed to create Build %v for Enviroment %v. Err: %v", len(entEnvironment.Edges.EnvironmentToBuild), entEnvironment.HclID, err)
 		return nil, err
 	}
 	entPlanStatus, err := createPlanningStatus(ctx, client, status.StatusForPlan)
@@ -112,7 +111,7 @@ func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.En
 		SetPlanToStatus(entPlanStatus).
 		Save(ctx)
 	if err != nil {
-		log.Fatalf("Failed to create Plan Node for Build %v. Err: %v", entBuild.ID, err)
+		logrus.Errorf("Failed to create Plan Node for Build %v. Err: %v", entBuild.ID, err)
 		return nil, err
 	}
 	for teamNumber := 0; teamNumber < entEnvironment.TeamCount; teamNumber++ {
@@ -125,6 +124,7 @@ func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.En
 		ctx := context.Background()
 		defer ctx.Done()
 		entBuild.Update().SetCompletedPlan(true).SaveX(ctx)
+		rdb.Publish(ctx, "updatedBuild", entBuild.ID.String())
 	}(&wg, entBuild)
 
 	return entBuild, nil
@@ -146,12 +146,12 @@ func createTeam(client *ent.Client, entBuild *ent.Build, teamNumber int, wg *syn
 		SetTeamToStatus(entStatus).
 		Save(ctx)
 	if err != nil {
-		log.Fatalf("Failed to create Team Number %v for Build %v. Err: %v", teamNumber, entBuild.ID, err)
+		logrus.Errorf("Failed to create Team Number %v for Build %v. Err: %v", teamNumber, entBuild.ID, err)
 		return nil, err
 	}
 	buildPlanNode, err := entBuild.QueryBuildToPlan().Where(plan.StepNumberEQ(0)).Only(ctx)
 	if err != nil {
-		log.Fatalf("Failed to Query Plan Node for Build %v. Err: %v", entBuild.ID, err)
+		logrus.Errorf("Failed to Query Plan Node for Build %v. Err: %v", entBuild.ID, err)
 		return nil, err
 	}
 	entPlanStatus, err := createPlanningStatus(ctx, client, status.StatusForPlan)
@@ -169,12 +169,12 @@ func createTeam(client *ent.Client, entBuild *ent.Build, teamNumber int, wg *syn
 		SetPlanToStatus(entPlanStatus).
 		Save(ctx)
 	if err != nil {
-		log.Fatalf("Failed to create Plan Node for Team %v. Err: %v", teamNumber, err)
+		logrus.Errorf("Failed to create Plan Node for Team %v. Err: %v", teamNumber, err)
 		return nil, err
 	}
 	buildNetworks, err := entBuild.QueryBuildToEnvironment().QueryEnvironmentToNetwork().All(ctx)
 	if err != nil {
-		log.Fatalf("Failed to Query Enviroment for Build %v. Err: %v", entBuild.ID, err)
+		logrus.Errorf("Failed to Query Enviroment for Build %v. Err: %v", entBuild.ID, err)
 		return nil, err
 	}
 	createProvisonedNetworks := []*ent.ProvisionedNetwork{}
@@ -189,12 +189,12 @@ func createTeam(client *ent.Client, entBuild *ent.Build, teamNumber int, wg *syn
 			QueryIncludedNetworkToHost().
 			All(ctx)
 		if err != nil {
-			log.Fatalf("Failed to Query Hosts for Network %v. Err: %v", pNetwork.Name, err)
+			logrus.Errorf("Failed to Query Hosts for Network %v. Err: %v", pNetwork.Name, err)
 			return nil, err
 		}
 		networkPlan, err := pNetwork.QueryProvisionedNetworkToPlan().Only(ctx)
 		if err != nil {
-			log.Fatalf("Failed to Query Plan for Network %v. Err: %v", pNetwork.Name, err)
+			logrus.Errorf("Failed to Query Plan for Network %v. Err: %v", pNetwork.Name, err)
 			return nil, err
 		}
 		for _, entHost := range entHosts {
@@ -220,12 +220,12 @@ func createProvisionedNetworks(ctx context.Context, client *ent.Client, entBuild
 		SetProvisionedNetworkToBuild(entBuild).
 		Save(ctx)
 	if err != nil {
-		log.Fatalf("Failed to create Provisoned Network %v for Team %v. Err: %v", entNetwork.Name, entTeam.TeamNumber, err)
+		logrus.Errorf("Failed to create Provisoned Network %v for Team %v. Err: %v", entNetwork.Name, entTeam.TeamNumber, err)
 		return nil, err
 	}
 	teamPlanNode, err := entTeam.QueryTeamToPlan().Only(ctx)
 	if err != nil {
-		log.Fatalf("Failed to Query Plan Node for Build %v. Err: %v", entBuild.ID, err)
+		logrus.Errorf("Failed to Query Plan Node for Build %v. Err: %v", entBuild.ID, err)
 		return nil, err
 	}
 
@@ -243,7 +243,7 @@ func createProvisionedNetworks(ctx context.Context, client *ent.Client, entBuild
 		SetPlanToStatus(entPlanStatus).
 		Save(ctx)
 	if err != nil {
-		log.Fatalf("Failed to create Plan Node for Provisioned Network  %v. Err: %v", entProvisionedNetwork.Name, err)
+		logrus.Errorf("Failed to create Plan Node for Provisioned Network  %v. Err: %v", entProvisionedNetwork.Name, err)
 		return nil, err
 	}
 	return entProvisionedNetwork, nil
@@ -265,7 +265,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 	).Only(ctx)
 	if err != nil {
 		if err != err.(*ent.NotFoundError) {
-			log.Fatalf("Failed to Query Existing Host %v. Err: %v", entHost.HclID, err)
+			logrus.Errorf("Failed to Query Existing Host %v. Err: %v", entHost.HclID, err)
 			return nil, err
 		}
 	} else {
@@ -303,7 +303,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		).WithProvisionedHostToPlan().Only(ctx)
 		if err != nil {
 			if err != err.(*ent.NotFoundError) {
-				log.Fatalf("Failed to Query Depended On Host %v for Host %v. Err: %v", entHostDependency.Edges.HostDependencyToDependOnHost.HclID, entHost.HclID, err)
+				logrus.Errorf("Failed to Query Depended On Host %v for Host %v. Err: %v", entHostDependency.Edges.HostDependencyToDependOnHost.HclID, entHost.HclID, err)
 				return nil, err
 			} else {
 				dependOnPnetwork, err := client.ProvisionedNetwork.Query().Where(
@@ -320,7 +320,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 					),
 				).Only(ctx)
 				if err != nil {
-					log.Fatalf("Failed to Query Provined Network %v for Depended On Host %v. Err: %v", entHostDependency.Edges.HostDependencyToNetwork.HclID, entHostDependency.Edges.HostDependencyToDependOnHost.HclID, err)
+					logrus.Errorf("Failed to Query Provined Network %v for Depended On Host %v. Err: %v", entHostDependency.Edges.HostDependencyToNetwork.HclID, entHostDependency.Edges.HostDependencyToDependOnHost.HclID, err)
 				}
 				dependOnPnetworkPlan, err := dependOnPnetwork.QueryProvisionedNetworkToPlan().Only(ctx)
 				if err != nil {
@@ -332,7 +332,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		}
 		dependOnPlan, err := entDependsOnHost.QueryProvisionedHostToEndStepPlan().Only(ctx)
 		if err != nil && err != err.(*ent.NotFoundError) {
-			log.Fatalf("Failed to Query Depended On Host %v Plan for Host %v. Err: %v", entHostDependency.Edges.HostDependencyToDependOnHost.HclID, entHost.HclID, err)
+			logrus.Errorf("Failed to Query Depended On Host %v Plan for Host %v. Err: %v", entHostDependency.Edges.HostDependencyToDependOnHost.HclID, entHost.HclID, err)
 			return nil, err
 		}
 		prevPlans = append(prevPlans, dependOnPlan)
@@ -376,7 +376,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		Save(ctx)
 
 	if err != nil {
-		log.Fatalf("Failed to create Plan Node for Provisioned Host  %v. Err: %v", entHost.HclID, err)
+		logrus.Errorf("Failed to create Plan Node for Provisioned Host  %v. Err: %v", entHost.HclID, err)
 		return nil, err
 	}
 
@@ -397,7 +397,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 	}
 	binaryName, err = filepath.Abs(binaryName)
 	if err != nil {
-		log.Fatalf("Unable to Resolve Absolute File Path. Err: %v", err)
+		logrus.Errorf("Unable to Resolve Absolute File Path. Err: %v", err)
 		return nil, err
 	}
 	if RenderFiles {
@@ -415,12 +415,12 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 	if ok {
 		userDataScript, err := client.Script.Query().Where(script.HclIDEQ(userDataScriptID)).Only(ctx)
 		if err != nil {
-			log.Fatalf("Failed to Query Script %v. Err: %v", userDataScriptID, err)
+			logrus.Errorf("Failed to Query Script %v. Err: %v", userDataScriptID, err)
 			return nil, err
 		}
 		entUserDataStatus, err := client.Status.Create().SetState(status.StateCOMPLETE).SetStatusFor(status.StatusForProvisioningStep).Save(ctx)
 		if err != nil {
-			log.Fatalf("Failed to Create Provisioning Step Status for Script %v. Err: %v", userDataScriptID, err)
+			logrus.Errorf("Failed to Create Provisioning Step Status for Script %v. Err: %v", userDataScriptID, err)
 			return nil, err
 		}
 		entUserDataProvisioningStep, err := client.ProvisioningStep.Create().
@@ -431,7 +431,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 			SetProvisioningStepToStatus(entUserDataStatus).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("Failed to Create Provisioning Step for Script %v. Err: %v", userDataScriptID, err)
+			logrus.Errorf("Failed to Create Provisioning Step for Script %v. Err: %v", userDataScriptID, err)
 			return nil, err
 		}
 		if RenderFiles {
@@ -464,7 +464,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 	}
 	_, err = entProvisionedHost.Update().SetProvisionedHostToEndStepPlan(endPlanNode).Save(ctx)
 	if err != nil {
-		log.Fatalf("Unable to Update The End Step. Err: %v", err)
+		logrus.Errorf("Unable to Update The End Step. Err: %v", err)
 		return nil, err
 	}
 
@@ -476,7 +476,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 	currentEnviroment, err := pHost.QueryProvisionedHostToHost().QueryHostToEnvironment().Only(ctx)
 	currentBuild := pHost.QueryProvisionedHostToProvisionedNetwork().QueryProvisionedNetworkToBuild().WithBuildToEnvironment().OnlyX(ctx)
 	if err != nil {
-		log.Fatalf("Failed to Query Current Enviroment for Provisoned Host %v. Err: %v", pHost.ID, err)
+		logrus.Errorf("Failed to Query Current Enviroment for Provisoned Host %v. Err: %v", pHost.ID, err)
 		return nil, err
 	}
 	entStatus, err := createPlanningStatus(ctx, client, status.StatusForProvisioningStep)
@@ -493,7 +493,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 	).Only(ctx)
 	if err != nil {
 		if err != err.(*ent.NotFoundError) {
-			log.Fatalf("Failed to Query Script %v. Err: %v", hclID, err)
+			logrus.Errorf("Failed to Query Script %v. Err: %v", hclID, err)
 			return nil, err
 		} else {
 			entCommand, err := client.Command.Query().Where(
@@ -505,7 +505,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 				)).Only(ctx)
 			if err != nil {
 				if err != err.(*ent.NotFoundError) {
-					log.Fatalf("Failed to Query Command %v. Err: %v", hclID, err)
+					logrus.Errorf("Failed to Query Command %v. Err: %v", hclID, err)
 					return nil, err
 				} else {
 					entFileDownload, err := client.FileDownload.Query().Where(
@@ -517,7 +517,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 						)).Only(ctx)
 					if err != nil {
 						if err != err.(*ent.NotFoundError) {
-							log.Fatalf("Failed to Query FileDownload %v. Err: %v", hclID, err)
+							logrus.Errorf("Failed to Query FileDownload %v. Err: %v", hclID, err)
 							return nil, err
 						} else {
 							entFileExtract, err := client.FileExtract.Query().Where(
@@ -529,7 +529,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 								)).Only(ctx)
 							if err != nil {
 								if err != err.(*ent.NotFoundError) {
-									log.Fatalf("Failed to Query FileExtract %v. Err: %v", hclID, err)
+									logrus.Errorf("Failed to Query FileExtract %v. Err: %v", hclID, err)
 									return nil, err
 								} else {
 									entFileDelete, err := client.FileDelete.Query().Where(
@@ -541,7 +541,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 										)).Only(ctx)
 									if err != nil {
 										if err != err.(*ent.NotFoundError) {
-											log.Fatalf("Failed to Query FileDelete %v. Err: %v", hclID, err)
+											logrus.Errorf("Failed to Query FileDelete %v. Err: %v", hclID, err)
 											return nil, err
 										} else {
 											entDNSRecord, err := client.DNSRecord.Query().Where(
@@ -553,10 +553,10 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 												)).Only(ctx)
 											if err != nil {
 												if err != err.(*ent.NotFoundError) {
-													log.Fatalf("Failed to Query FileDelete %v. Err: %v", hclID, err)
+													logrus.Errorf("Failed to Query FileDelete %v. Err: %v", hclID, err)
 													return nil, err
 												} else {
-													log.Fatalf("No Provisioning Steps found for %v. Err: %v", hclID, err)
+													logrus.Errorf("No Provisioning Steps found for %v. Err: %v", hclID, err)
 													return nil, err
 												}
 											} else {
@@ -567,7 +567,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 													SetProvisioningStepToProvisionedHost(pHost).
 													Save(ctx)
 												if err != nil {
-													log.Fatalf("Failed to Create Provisioning Step for FileDelete %v. Err: %v", hclID, err)
+													logrus.Errorf("Failed to Create Provisioning Step for FileDelete %v. Err: %v", hclID, err)
 													return nil, err
 												}
 											}
@@ -580,7 +580,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 											SetProvisioningStepToProvisionedHost(pHost).
 											Save(ctx)
 										if err != nil {
-											log.Fatalf("Failed to Create Provisioning Step for FileDelete %v. Err: %v", hclID, err)
+											logrus.Errorf("Failed to Create Provisioning Step for FileDelete %v. Err: %v", hclID, err)
 											return nil, err
 										}
 									}
@@ -594,7 +594,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 									SetProvisioningStepToProvisionedHost(pHost).
 									Save(ctx)
 								if err != nil {
-									log.Fatalf("Failed to Create Provisioning Step for FileExtract %v. Err: %v", hclID, err)
+									logrus.Errorf("Failed to Create Provisioning Step for FileExtract %v. Err: %v", hclID, err)
 									return nil, err
 								}
 							}
@@ -608,7 +608,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 							SetProvisioningStepToProvisionedHost(pHost).
 							Save(ctx)
 						if err != nil {
-							log.Fatalf("Failed to Create Provisioning Step for FileDownload %v. Err: %v", hclID, err)
+							logrus.Errorf("Failed to Create Provisioning Step for FileDownload %v. Err: %v", hclID, err)
 							return nil, err
 						}
 						if RenderFiles {
@@ -636,7 +636,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 					SetProvisioningStepToProvisionedHost(pHost).
 					Save(ctx)
 				if err != nil {
-					log.Fatalf("Failed to Create Provisioning Step for Command %v. Err: %v", hclID, err)
+					logrus.Errorf("Failed to Create Provisioning Step for Command %v. Err: %v", hclID, err)
 					return nil, err
 				}
 			}
@@ -650,7 +650,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 			SetProvisioningStepToProvisionedHost(pHost).
 			Save(ctx)
 		if err != nil {
-			log.Fatalf("Failed to Create Provisioning Step for Script %v. Err: %v", hclID, err)
+			logrus.Errorf("Failed to Create Provisioning Step for Script %v. Err: %v", hclID, err)
 			return nil, err
 		}
 		if RenderFiles {
@@ -685,7 +685,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 		Save(ctx)
 
 	if err != nil {
-		log.Fatalf("Failed to Create Plan Node for Provisioning Step %v. Err: %v", entProvisioningStep.ID, err)
+		logrus.Errorf("Failed to Create Plan Node for Provisioning Step %v. Err: %v", entProvisioningStep.ID, err)
 		return nil, err
 	}
 
@@ -726,7 +726,7 @@ func renderScript(ctx context.Context, client *ent.Client, pStep *ent.Provisioni
 	}
 	t, err := template.New(strings.Replace(currentScript.Source, "./", "", -1)).Funcs(TemplateFuncLib).ParseFiles(currentScript.AbsPath)
 	if err != nil {
-		log.Fatalf("Failed to Parse template for script %v. Err: %v", currentScript.Name, err)
+		logrus.Errorf("Failed to Parse template for script %v. Err: %v", currentScript.Name, err)
 		return "", err
 	}
 	// t.Funcs(TemplateFuncLib)
@@ -740,7 +740,7 @@ func renderScript(ctx context.Context, client *ent.Client, pStep *ent.Provisioni
 	}
 	f, err := os.Create(fileName)
 	if err != nil {
-		log.Fatalf("Error Generating Script %v. Err: %v", currentScript.Name, err)
+		logrus.Errorf("Error Generating Script %v. Err: %v", currentScript.Name, err)
 		return "", err
 	}
 	err = t.Execute(f, templateData)

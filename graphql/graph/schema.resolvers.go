@@ -637,6 +637,10 @@ func (r *scriptResolver) Tags(ctx context.Context, obj *ent.Script) ([]*model.Ta
 	return results, nil
 }
 
+func (r *statusResolver) ID(ctx context.Context, obj *ent.Status) (string, error) {
+	return obj.ID.String(), nil
+}
+
 func (r *statusResolver) State(ctx context.Context, obj *ent.Status) (model.ProvisionStatus, error) {
 	return model.ProvisionStatus(obj.State), nil
 }
@@ -653,15 +657,70 @@ func (r *statusResolver) EndedAt(ctx context.Context, obj *ent.Status) (string, 
 	return obj.EndedAt.String(), nil
 }
 
-func (r *subscriptionResolver) NewUsers(ctx context.Context) (<-chan *ent.AuthUser, error) {
-	UUID := uuid.New().String()
-
-	newUser := make(chan *ent.AuthUser, 1)
+func (r *subscriptionResolver) UpdatedAgentStatus(ctx context.Context) (<-chan *ent.AgentStatus, error) {
+	newAgentStatus := make(chan *ent.AgentStatus, 1)
 	go func() {
-		<-ctx.Done()
+		sub := r.rdb.Subscribe(ctx, "newAgentStatus")
+		_, err := sub.Receive(ctx)
+		if err != nil {
+			return
+		}
+		ch := sub.Channel()
+		for {
+			select {
+			case message := <-ch:
+				uuid, err := uuid.Parse(message.Payload)
+				if err != nil {
+					sub.Close()
+					return
+				}
+				entAgentStatus, err := r.client.AgentStatus.Get(ctx, uuid)
+				if err != nil {
+					sub.Close()
+					return
+				}
+				newAgentStatus <- entAgentStatus
+			// close when context done
+			case <-ctx.Done():
+				sub.Close()
+				return
+			}
+		}
 	}()
-	newUserPublishedChannel[UUID] = newUser
-	return newUser, nil
+	return newAgentStatus, nil
+}
+
+func (r *subscriptionResolver) UpdatedStatus(ctx context.Context) (<-chan *ent.Status, error) {
+	newStatus := make(chan *ent.Status, 1)
+	go func() {
+		sub := r.rdb.Subscribe(ctx, "updatedStatus")
+		_, err := sub.Receive(ctx)
+		if err != nil {
+			return
+		}
+		ch := sub.Channel()
+		for {
+			select {
+			case message := <-ch:
+				uuid, err := uuid.Parse(message.Payload)
+				if err != nil {
+					sub.Close()
+					return
+				}
+				entStatus, err := r.client.Status.Get(ctx, uuid)
+				if err != nil {
+					sub.Close()
+					return
+				}
+				newStatus <- entStatus
+			// close when context done
+			case <-ctx.Done():
+				sub.Close()
+				return
+			}
+		}
+	}()
+	return newStatus, nil
 }
 
 func (r *teamResolver) ID(ctx context.Context, obj *ent.Team) (string, error) {
@@ -778,3 +837,20 @@ type statusResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
 type teamResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *subscriptionResolver) NewUsers(ctx context.Context) (<-chan *ent.AuthUser, error) {
+	UUID := uuid.New().String()
+
+	newUser := make(chan *ent.AuthUser, 1)
+	go func() {
+		<-ctx.Done()
+	}()
+	newUserPublishedChannel[UUID] = newUser
+	return newUser, nil
+}

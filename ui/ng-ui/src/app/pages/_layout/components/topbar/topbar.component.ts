@@ -1,16 +1,17 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { LayoutService } from '../../../../_metronic/core';
-import { AuthService } from '../../../../modules/auth/_services/auth.service';
-import { UserModel } from '../../../../modules/auth/_models/user.model';
-import KTLayoutQuickSearch from '../../../../../assets/js/layout/extended/quick-search';
-import KTLayoutQuickNotifications from '../../../../../assets/js/layout/extended/quick-notifications';
+
+import { KTUtil } from '../../../../../assets/js/components/util';
+import KTLayoutHeaderTopbar from '../../../../../assets/js/layout/base/header-topbar';
 import KTLayoutQuickActions from '../../../../../assets/js/layout/extended/quick-actions';
 import KTLayoutQuickCartPanel from '../../../../../assets/js/layout/extended/quick-cart';
+import KTLayoutQuickNotifications from '../../../../../assets/js/layout/extended/quick-notifications';
 import KTLayoutQuickPanel from '../../../../../assets/js/layout/extended/quick-panel';
+import KTLayoutQuickSearch from '../../../../../assets/js/layout/extended/quick-search';
 import KTLayoutQuickUser from '../../../../../assets/js/layout/extended/quick-user';
-import KTLayoutHeaderTopbar from '../../../../../assets/js/layout/base/header-topbar';
-import { KTUtil } from '../../../../../assets/js/components/util';
+import { LayoutService } from '../../../../_metronic/core';
+import { UserModel } from '../../../../modules/auth/_models/user.model';
+import { AuthService } from '../../../../modules/auth/_services/auth.service';
 
 @Component({
   selector: 'app-topbar',

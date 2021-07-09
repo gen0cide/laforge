@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { LayoutService, LayoutInitService } from '../../_metronic/core';
+
 import KTLayoutContent from '../../../assets/js/layout/base/content';
+import { LayoutService, LayoutInitService } from '../../_metronic/core';
 
 @Component({
   selector: 'app-layout',

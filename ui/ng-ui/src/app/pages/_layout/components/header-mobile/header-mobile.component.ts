@@ -1,4 +1,5 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
+
 import { LayoutService } from '../../../../_metronic/core';
 
 @Component({

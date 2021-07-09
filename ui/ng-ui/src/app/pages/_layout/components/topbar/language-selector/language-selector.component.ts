@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NavigationStart, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
+
 import { TranslationService } from '../../../../../modules/i18n/translation.service';
 
 interface LanguageFlag {

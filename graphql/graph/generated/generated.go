@@ -381,13 +381,15 @@ type ComplexityRoot struct {
 		EndedAt   func(childComplexity int) int
 		Error     func(childComplexity int) int
 		Failed    func(childComplexity int) int
+		ID        func(childComplexity int) int
 		StartedAt func(childComplexity int) int
 		State     func(childComplexity int) int
 		StatusFor func(childComplexity int) int
 	}
 
 	Subscription struct {
-		NewUsers func(childComplexity int) int
+		UpdatedAgentStatus func(childComplexity int) int
+		UpdatedStatus      func(childComplexity int) int
 	}
 
 	Team struct {
@@ -546,13 +548,15 @@ type ScriptResolver interface {
 	Tags(ctx context.Context, obj *ent.Script) ([]*model.TagMap, error)
 }
 type StatusResolver interface {
+	ID(ctx context.Context, obj *ent.Status) (string, error)
 	State(ctx context.Context, obj *ent.Status) (model.ProvisionStatus, error)
 	StatusFor(ctx context.Context, obj *ent.Status) (model.ProvisionStatusFor, error)
 	StartedAt(ctx context.Context, obj *ent.Status) (string, error)
 	EndedAt(ctx context.Context, obj *ent.Status) (string, error)
 }
 type SubscriptionResolver interface {
-	NewUsers(ctx context.Context) (<-chan *ent.AuthUser, error)
+	UpdatedAgentStatus(ctx context.Context) (<-chan *ent.AgentStatus, error)
+	UpdatedStatus(ctx context.Context) (<-chan *ent.Status, error)
 }
 type TeamResolver interface {
 	ID(ctx context.Context, obj *ent.Team) (string, error)
@@ -2333,6 +2337,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Status.Failed(childComplexity), true
 
+	case "Status.id":
+		if e.complexity.Status.ID == nil {
+			break
+		}
+
+		return e.complexity.Status.ID(childComplexity), true
+
 	case "Status.started_at":
 		if e.complexity.Status.StartedAt == nil {
 			break
@@ -2354,12 +2365,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Status.StatusFor(childComplexity), true
 
-	case "Subscription.newUsers":
-		if e.complexity.Subscription.NewUsers == nil {
+	case "Subscription.updatedAgentStatus":
+		if e.complexity.Subscription.UpdatedAgentStatus == nil {
 			break
 		}
 
-		return e.complexity.Subscription.NewUsers(childComplexity), true
+		return e.complexity.Subscription.UpdatedAgentStatus(childComplexity), true
+
+	case "Subscription.updatedStatus":
+		if e.complexity.Subscription.UpdatedStatus == nil {
+			break
+		}
+
+		return e.complexity.Subscription.UpdatedStatus(childComplexity), true
 
 	case "Team.id":
 		if e.complexity.Team.ID == nil {
@@ -2938,6 +2956,7 @@ type Script {
 }
 
 type Status {
+  id: ID!
   state: ProvisionStatus!
   status_for: ProvisionStatusFor!
   started_at: String!
@@ -2998,7 +3017,8 @@ type Mutation {
 }
 
 type Subscription {
-  newUsers: AuthUser!
+  updatedAgentStatus: AgentStatus!
+  updatedStatus: Status!
 }
 `, BuiltIn: false},
 }
@@ -11720,6 +11740,41 @@ func (ec *executionContext) _Script_ScriptToEnvironment(ctx context.Context, fie
 	return ec.marshalNEnvironment2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐEnvironment(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Status_id(ctx context.Context, field graphql.CollectedField, obj *ent.Status) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Status",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Status().ID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Status_state(ctx context.Context, field graphql.CollectedField, obj *ent.Status) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -11962,7 +12017,7 @@ func (ec *executionContext) _Status_error(ctx context.Context, field graphql.Col
 	return ec.marshalOString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Subscription_newUsers(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
+func (ec *executionContext) _Subscription_updatedAgentStatus(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -11980,7 +12035,7 @@ func (ec *executionContext) _Subscription_newUsers(ctx context.Context, field gr
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Subscription().NewUsers(rctx)
+		return ec.resolvers.Subscription().UpdatedAgentStatus(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11993,7 +12048,7 @@ func (ec *executionContext) _Subscription_newUsers(ctx context.Context, field gr
 		return nil
 	}
 	return func() graphql.Marshaler {
-		res, ok := <-resTmp.(<-chan *ent.AuthUser)
+		res, ok := <-resTmp.(<-chan *ent.AgentStatus)
 		if !ok {
 			return nil
 		}
@@ -12001,7 +12056,52 @@ func (ec *executionContext) _Subscription_newUsers(ctx context.Context, field gr
 			w.Write([]byte{'{'})
 			graphql.MarshalString(field.Alias).MarshalGQL(w)
 			w.Write([]byte{':'})
-			ec.marshalNAuthUser2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAuthUser(ctx, field.Selections, res).MarshalGQL(w)
+			ec.marshalNAgentStatus2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAgentStatus(ctx, field.Selections, res).MarshalGQL(w)
+			w.Write([]byte{'}'})
+		})
+	}
+}
+
+func (ec *executionContext) _Subscription_updatedStatus(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().UpdatedStatus(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return nil
+	}
+	return func() graphql.Marshaler {
+		res, ok := <-resTmp.(<-chan *ent.Status)
+		if !ok {
+			return nil
+		}
+		return graphql.WriterFunc(func(w io.Writer) {
+			w.Write([]byte{'{'})
+			graphql.MarshalString(field.Alias).MarshalGQL(w)
+			w.Write([]byte{':'})
+			ec.marshalNStatus2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐStatus(ctx, field.Selections, res).MarshalGQL(w)
 			w.Write([]byte{'}'})
 		})
 	}
@@ -16366,6 +16466,20 @@ func (ec *executionContext) _Status(ctx context.Context, sel ast.SelectionSet, o
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Status")
+		case "id":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Status_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "state":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -16458,8 +16572,10 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 	}
 
 	switch fields[0].Name {
-	case "newUsers":
-		return ec._Subscription_newUsers(ctx, fields[0])
+	case "updatedAgentStatus":
+		return ec._Subscription_updatedAgentStatus(ctx, fields[0])
+	case "updatedStatus":
+		return ec._Subscription_updatedStatus(ctx, fields[0])
 	default:
 		panic("unknown field " + strconv.Quote(fields[0].Name))
 	}
@@ -16962,6 +17078,20 @@ func (ec *executionContext) unmarshalNAgentCommand2githubᚗcomᚋgen0cideᚋlaf
 
 func (ec *executionContext) marshalNAgentCommand2githubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐAgentCommand(ctx context.Context, sel ast.SelectionSet, v model.AgentCommand) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) marshalNAgentStatus2githubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAgentStatus(ctx context.Context, sel ast.SelectionSet, v ent.AgentStatus) graphql.Marshaler {
+	return ec._AgentStatus(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAgentStatus2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAgentStatus(ctx context.Context, sel ast.SelectionSet, v *ent.AgentStatus) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._AgentStatus(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNAuthUser2githubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAuthUser(ctx context.Context, sel ast.SelectionSet, v ent.AuthUser) graphql.Marshaler {
@@ -17950,6 +18080,10 @@ func (ec *executionContext) marshalNScript2ᚖgithubᚗcomᚋgen0cideᚋlaforge�
 		return graphql.Null
 	}
 	return ec._Script(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNStatus2githubᚗcomᚋgen0cideᚋlaforgeᚋentᚐStatus(ctx context.Context, sel ast.SelectionSet, v ent.Status) graphql.Marshaler {
+	return ec._Status(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNStatus2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐStatus(ctx context.Context, sel ast.SelectionSet, v *ent.Status) graphql.Marshaler {

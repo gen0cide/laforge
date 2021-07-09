@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ProvisionStatus, Status } from 'src/app/models/common.model';
 import { Environment, resolveEnvEnums } from 'src/app/models/environment.model';
 import { ApiService } from 'src/app/services/api/api.service';
-import { ProvisionStatus, Status } from 'src/app/models/common.model';
 
 @Component({
   selector: 'app-test',

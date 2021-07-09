@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { LaForgeProvisionedHost, LaForgeProvisionedNetwork, LaForgeTeam } from '@graphql';
 import { RebuildPlansData, RebuildPlansMutation, RebuildPlansVars } from '@services/api/queries/rebuild';
 import { Apollo } from 'apollo-angular';
 import { GraphQLError } from 'graphql';
@@ -58,7 +59,7 @@ export class RebuildService {
    * @param team team to rebuild
    * @returns successfully added to list to rebuild
    */
-  addTeam = (team: Team): boolean => {
+  addTeam = (team: LaForgeTeam): boolean => {
     const planId = team.TeamToPlan?.id ?? null;
     if (planId === null) return false;
     this.addPlan(planId);
@@ -70,7 +71,7 @@ export class RebuildService {
    * @param team team to remove from rebuild list
    * @returns successfully removed from the list to rebuild
    */
-  removeTeam = (team: Team): boolean => {
+  removeTeam = (team: LaForgeTeam): boolean => {
     const planId = team.TeamToPlan?.id ?? null;
     if (planId === null) return false;
     this.removePlan(planId);
@@ -82,7 +83,7 @@ export class RebuildService {
    * @param team team to check
    * @returns if team is in rebuild list
    */
-  hasTeam = (team: Team): boolean => {
+  hasTeam = (team: LaForgeTeam): boolean => {
     const planId = team.TeamToPlan?.id ?? null;
     if (planId === null) return false;
     return this.rootPlans.indexOf(planId) >= 0;
@@ -93,7 +94,7 @@ export class RebuildService {
    * @param network network to rebuild
    * @returns successfully added to list to rebuild
    */
-  addNetwork = (network: ProvisionedNetwork): boolean => {
+  addNetwork = (network: LaForgeProvisionedNetwork): boolean => {
     const planId = network.ProvisionedNetworkToPlan?.id ?? null;
     if (planId === null) return false;
     this.addPlan(planId);
@@ -105,7 +106,7 @@ export class RebuildService {
    * @param network network to remove from rebuild list
    * @returns successfully removed from the list to rebuild
    */
-  removeNetwork = (network: ProvisionedNetwork): boolean => {
+  removeNetwork = (network: LaForgeProvisionedNetwork): boolean => {
     const planId = network.ProvisionedNetworkToPlan?.id ?? null;
     if (planId === null) return false;
     this.removePlan(planId);
@@ -117,7 +118,7 @@ export class RebuildService {
    * @param network network to check
    * @returns if network is in rebuild list
    */
-  hasNetwork = (network: ProvisionedNetwork): boolean => {
+  hasNetwork = (network: LaForgeProvisionedNetwork): boolean => {
     const planId = network.ProvisionedNetworkToPlan?.id ?? null;
     if (planId === null) return false;
     return this.rootPlans.indexOf(planId) >= 0;
@@ -128,7 +129,7 @@ export class RebuildService {
    * @param host host to rebuild
    * @returns successfully added to list to rebuild
    */
-  addHost = (host: ProvisionedHost): boolean => {
+  addHost = (host: LaForgeProvisionedHost): boolean => {
     const planId = host.ProvisionedHostToPlan?.id ?? null;
     if (planId === null) return false;
     this.addPlan(planId);
@@ -140,7 +141,7 @@ export class RebuildService {
    * @param host host to remove from rebuild list
    * @returns successfully removed from the list to rebuild
    */
-  removeHost = (host: ProvisionedHost): boolean => {
+  removeHost = (host: LaForgeProvisionedHost): boolean => {
     const planId = host.ProvisionedHostToPlan?.id ?? null;
     if (planId === null) return false;
     this.removePlan(planId);
@@ -152,7 +153,7 @@ export class RebuildService {
    * @param host host to check
    * @returns if host is in rebuild list
    */
-  hasHost = (host: ProvisionedHost): boolean => {
+  hasHost = (host: LaForgeProvisionedHost): boolean => {
     const planId = host.ProvisionedHostToPlan?.id ?? null;
     if (planId === null) return false;
     return this.rootPlans.indexOf(planId) >= 0;

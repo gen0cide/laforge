@@ -1,15 +1,17 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Routes, RouterModule } from '@angular/router';
-import { TestComponent } from './test.component';
-import { MatCardModule } from '@angular/material/card';
-import { MatTableModule } from '@angular/material/table';
+import { NgModule } from '@angular/core';
+
 import { MatButtonModule } from '@angular/material/button';
-import { MatListModule } from '@angular/material/list';
+import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatListModule } from '@angular/material/list';
+import { MatTableModule } from '@angular/material/table';
+import { Routes, RouterModule } from '@angular/router';
 
 import { ViewComponentsModule } from '../../components/view-components.module';
+
+import { TestComponent } from './test.component';
 
 const routes: Routes = [
   {

@@ -79,6 +79,7 @@ func markForDeleteRoutine(ctx context.Context, entPlan *ent.Plan) error {
 		if err != nil {
 			return err
 		}
+		rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
 	}
 	var provisionedStatus *ent.Status
 	var getStatusError error = nil
@@ -124,6 +125,7 @@ func markForDeleteRoutine(ctx context.Context, entPlan *ent.Plan) error {
 		if err != nil {
 			return err
 		}
+		rdb.Publish(ctx, "updatedStatus", provisionedStatus.ID.String())
 	}
 	nextPlans, err := entPlan.QueryNextPlan().All(ctx)
 	if err != nil {
@@ -148,6 +150,7 @@ func markForRebuildRoutine(ctx context.Context, entPlan *ent.Plan) error {
 		if err != nil {
 			return err
 		}
+		rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
 	}
 	var provisionedStatus *ent.Status
 	var getStatusError error = nil
@@ -193,6 +196,7 @@ func markForRebuildRoutine(ctx context.Context, entPlan *ent.Plan) error {
 		if err != nil {
 			return err
 		}
+		rdb.Publish(ctx, "updatedStatus", provisionedStatus.ID.String())
 	}
 	nextPlans, err := entPlan.QueryNextPlan().All(ctx)
 	if err != nil {

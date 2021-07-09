@@ -1,13 +1,14 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Routes, RouterModule } from '@angular/router';
-import { BuildComponent } from './build.component';
-import { MatCardModule } from '@angular/material/card';
-import { MatTableModule } from '@angular/material/table';
+import { NgModule } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
+import { Routes, RouterModule } from '@angular/router';
 
 import { ViewComponentsModule } from '../../components/view-components.module';
-import { MatSelectModule } from '@angular/material/select';
+
+import { BuildComponent } from './build.component';
 
 const routes: Routes = [
   {

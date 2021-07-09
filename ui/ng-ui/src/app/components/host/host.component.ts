@@ -1,7 +1,14 @@
 import { Component, Input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { ProvisionStatus, Status } from 'src/app/models/common.model';
-import { hostChildrenCompleted, ProvisionedHost } from 'src/app/models/host.model';
+import {
+  LaForgeGetBuildTreeQuery,
+  LaForgeProvisionedHost,
+  LaForgeProvisionStatus,
+  LaForgeSubscribeUpdatedAgentStatusSubscription,
+  LaForgeSubscribeUpdatedStatusSubscription
+} from '@graphql';
+import { EnvironmentService } from '@services/environment/environment.service';
+import { hostChildrenCompleted } from '@util';
 
 import { ApiService } from 'src/app/services/api/api.service';
 
@@ -15,18 +22,27 @@ import { HostModalComponent } from '../host-modal/host-modal.component';
 })
 export class HostComponent {
   // @Input() status: Status;
-  @Input() provisionedHost: ProvisionedHost;
+  @Input()
+  // eslint-disable-next-line max-len
+  provisionedHost: LaForgeGetBuildTreeQuery['build']['buildToTeam'][0]['TeamToProvisionedNetwork'][0]['ProvisionedNetworkToProvisionedHost'][0];
   @Input() style: 'compact' | 'collapsed' | 'expanded';
   @Input() selectable: boolean;
   @Input() parentSelected: boolean;
   @Input() hasAgent: boolean;
   isSelectedState = false;
+  // planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
+  // provisionedHostStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
+  // agentStatus: LaForgeSubscribeUpdatedAgentStatusSubscription['updatedAgentStatus'];
 
-  constructor(public dialog: MatDialog, private rebuild: RebuildService, private api: ApiService) {
+  constructor(public dialog: MatDialog, private rebuild: RebuildService, private api: ApiService, private envService: EnvironmentService) {
     if (!this.style) this.style = 'compact';
     if (!this.selectable) this.selectable = false;
     if (!this.parentSelected) this.parentSelected = false;
     if (!this.hasAgent) this.hasAgent = false;
+
+    // envService.statusUpdate.subscribe(() => {
+
+    // })
   }
 
   viewDetails(): void {
@@ -37,29 +53,44 @@ export class HostComponent {
     });
   }
 
+  getPlanStatus(): LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'] {
+    return this.envService.getStatus(this.provisionedHost.ProvisionedHostToPlan.id);
+  }
+
+  getProvisionedHostStatus(): LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'] {
+    return this.envService.getStatus(this.provisionedHost.ProvisionedHostToStatus.id);
+  }
+
+  getAgentStatus(): LaForgeSubscribeUpdatedAgentStatusSubscription['updatedAgentStatus'] {
+    return this.envService.getAgentStatus(this.provisionedHost.ProvisionedHostToAgentStatus.clientId);
+  }
+
   isAgentStale(): boolean {
-    if (!this.provisionedHost.ProvisionedHostToAgentStatus?.clientId) return true;
-    return Date.now() / 1000 - this.provisionedHost.ProvisionedHostToAgentStatus.timestamp > 60;
+    if (!this.getAgentStatus()) return true;
+    return Date.now() / 1000 - this.getAgentStatus().timestamp > 60;
   }
 
   getStatusIcon(): string {
-    if (this.provisionedHost.ProvisionedHostToAgentStatus?.clientId) {
+    if (this.getAgentStatus()) {
       if (this.isAgentStale()) return 'exclamation-circle';
       else return 'check-circle';
     } else {
-      const status = this.provisionedHost.ProvisionedHostToPlan?.PlanToStatus ?? this.provisionedHost.ProvisionedHostToStatus;
+      const status = this.getPlanStatus() ?? this.getProvisionedHostStatus();
+      if (!status?.state) {
+        return 'minus-circle';
+      }
       switch (status.state) {
-        case ProvisionStatus.COMPLETE:
+        case LaForgeProvisionStatus.Complete:
           return 'box-check';
-        case ProvisionStatus.TODELETE:
+        case LaForgeProvisionStatus.Todelete:
           return 'recycle';
-        case ProvisionStatus.DELETEINPROGRESS:
+        case LaForgeProvisionStatus.Deleteinprogress:
           return 'trash-restore';
-        case ProvisionStatus.DELETED:
+        case LaForgeProvisionStatus.Deleted:
           return 'trash';
-        case ProvisionStatus.FAILED:
+        case LaForgeProvisionStatus.Failed:
           return 'times-circle';
-        case ProvisionStatus.INPROGRESS:
+        case LaForgeProvisionStatus.Inprogress:
           return 'play-circle';
         default:
           return 'minus-circle';
@@ -68,23 +99,26 @@ export class HostComponent {
   }
 
   getStatusColor(): string {
-    if (this.provisionedHost.ProvisionedHostToAgentStatus?.clientId) {
+    if (this.getAgentStatus()) {
       if (this.isAgentStale()) return 'warning';
       else return 'success';
     } else {
-      const status = this.provisionedHost.ProvisionedHostToPlan?.PlanToStatus ?? this.provisionedHost.ProvisionedHostToStatus;
+      const status = this.getPlanStatus() ?? this.getProvisionedHostStatus();
+      if (!status?.state) {
+        return 'minus-circle';
+      }
       switch (status.state) {
-        case ProvisionStatus.COMPLETE:
+        case LaForgeProvisionStatus.Complete:
           return 'success';
-        case ProvisionStatus.TODELETE:
+        case LaForgeProvisionStatus.Todelete:
           return 'recycle';
-        case ProvisionStatus.DELETEINPROGRESS:
+        case LaForgeProvisionStatus.Deleteinprogress:
           return 'trash-restore';
-        case ProvisionStatus.DELETED:
+        case LaForgeProvisionStatus.Deleted:
           return 'trash';
-        case ProvisionStatus.FAILED:
+        case LaForgeProvisionStatus.Failed:
           return 'danger';
-        case ProvisionStatus.INPROGRESS:
+        case LaForgeProvisionStatus.Inprogress:
           return 'info';
         default:
           return 'dark';
@@ -95,23 +129,24 @@ export class HostComponent {
   onSelect(): void {
     let success = false;
     if (!this.isSelected()) {
-      success = this.rebuild.addHost(this.provisionedHost);
+      success = this.rebuild.addHost(this.provisionedHost as LaForgeProvisionedHost);
     } else {
-      success = this.rebuild.removeHost(this.provisionedHost);
+      success = this.rebuild.removeHost(this.provisionedHost as LaForgeProvisionedHost);
     }
     console.log(success);
     if (success) this.isSelectedState = !this.isSelectedState;
   }
 
   onIndeterminateChange(isIndeterminate: boolean): void {
-    if (!isIndeterminate && this.isSelectedState) setTimeout(() => this.rebuild.addHost(this.provisionedHost), 500);
+    if (!isIndeterminate && this.isSelectedState)
+      setTimeout(() => this.rebuild.addHost(this.provisionedHost as LaForgeProvisionedHost), 500);
   }
 
   isSelected(): boolean {
-    return this.rebuild.hasHost(this.provisionedHost);
+    return this.rebuild.hasHost(this.provisionedHost as LaForgeProvisionedHost);
   }
 
   shouldCollapse(): boolean {
-    return hostChildrenCompleted(this.provisionedHost);
+    return hostChildrenCompleted(this.provisionedHost as LaForgeProvisionedHost);
   }
 }

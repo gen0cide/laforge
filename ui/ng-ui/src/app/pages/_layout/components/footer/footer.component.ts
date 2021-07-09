@@ -1,6 +1,7 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { LayoutService } from '../../../../_metronic/core';
+
 import KTLayoutFooter from '../../../../../assets/js/layout/base/footer';
+import { LayoutService } from '../../../../_metronic/core';
 
 @Component({
   selector: 'app-footer',

@@ -1,12 +1,13 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
+
 import { KTUtil } from '../../../../../assets/js/components/util';
+import KTLayoutAside from '../../../../../assets/js/layout/base/aside';
+import KTLayoutAsideMenu from '../../../../../assets/js/layout/base/aside-menu';
 import KTLayoutAsideToggle from '../../../../../assets/js/layout/base/aside-toggle';
+import KTLayoutBrand from '../../../../../assets/js/layout/base/brand';
 import KTLayoutStickyCard from '../../../../../assets/js/layout/base/sticky-card';
 import KTLayoutStretchedCard from '../../../../../assets/js/layout/base/stretched-card';
 import { LayoutService } from '../../../../_metronic/core';
-import KTLayoutBrand from '../../../../../assets/js/layout/base/brand';
-import KTLayoutAside from '../../../../../assets/js/layout/base/aside';
-import KTLayoutAsideMenu from '../../../../../assets/js/layout/base/aside-menu';
 
 @Component({
   selector: 'app-scripts-init',

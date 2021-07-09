@@ -40,14 +40,3 @@ export interface ProvisionedHost {
   ProvisionedHostToAgentStatus?: AgentStatus;
   ProvisionedHostToPlan?: Plan;
 }
-
-export const hostChildrenCompleted = (host: ProvisionedHost): boolean => {
-  let numCompleted = 0;
-  let totalSteps = 0;
-  for (const step of host.ProvisionedHostToProvisioningStep) {
-    totalSteps++;
-    if (step.ProvisioningStepToStatus.state === ProvisionStatus.COMPLETE) numCompleted++;
-  }
-  if (numCompleted === totalSteps) return true;
-  else return false;
-};

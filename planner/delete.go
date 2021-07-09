@@ -35,6 +35,7 @@ func DeleteBuild(ctx context.Context, client *ent.Client, entBuild *ent.Build) (
 		go func(wg *sync.WaitGroup, planStatus *ent.Status) {
 			defer wg.Done()
 			planStatus.Update().SetState(status.StateTODELETE).Save(ctx)
+			rdb.Publish(ctx, "updatedStatus", planStatus.ID.String())
 		}(&wg, planStatus)
 	}
 
@@ -62,9 +63,10 @@ func DeleteBuild(ctx context.Context, client *ent.Client, entBuild *ent.Build) (
 		"rootPlanCount": len(rootPlans),
 	}).Debug("found root plans")
 
+	deleteCtx := context.Background()
 	for _, entPlan := range rootPlans {
 		wg.Add(1)
-		go deleteRoutine(client, &genericBuilder, ctx, entPlan, &wg)
+		go deleteRoutine(client, &genericBuilder, deleteCtx, entPlan, &wg)
 	}
 
 	wg.Wait()
@@ -262,11 +264,13 @@ func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Con
 				logrus.Errorf("error updating ent plan status to TAINTED: %v", err)
 				return
 			}
+			rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
 			_, err = provisionedStatus.Update().SetState(status.StateTAINTED).Save(ctx)
 			if err != nil {
 				logrus.Errorf("error updating provisioned object status to TAINTED: %v", err)
 				return
 			}
+			rdb.Publish(ctx, "updatedStatus", provisionedStatus.ID.String())
 			return
 		}
 
@@ -312,18 +316,22 @@ func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Con
 		logrus.Errorf("error updating ent plan status: %v", err)
 		return
 	}
+	rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
 	provisionedStatus, err = provisionedStatus.Update().SetState(status.StateDELETEINPROGRESS).Save(ctx)
 	if err != nil {
 		logrus.Errorf("error updating ent provisioned status: %v", err)
 		return
 	}
+	rdb.Publish(ctx, "updatedStatus", provisionedStatus.ID.String())
 
 	var deleteErr error = nil
 	switch entPlan.Type {
 	case plan.TypeStartBuild:
 		deleteErr = provisionedStatus.Update().SetState(status.StateDELETED).Exec(ctx)
+		rdb.Publish(ctx, "updatedStatus", provisionedStatus.ID.String())
 	case plan.TypeStartTeam:
 		deleteErr = provisionedStatus.Update().SetState(status.StateDELETED).Exec(ctx)
+		rdb.Publish(ctx, "updatedStatus", provisionedStatus.ID.String())
 	case plan.TypeProvisionNetwork:
 		entProNetwork, err := entPlan.PlanToProvisionedNetwork(ctx)
 		if err != nil {
@@ -355,12 +363,14 @@ func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Con
 			break
 		}
 		deleteErr = provisionedStatus.Update().SetState(status.StateDELETED).Exec(ctx)
+		rdb.Publish(ctx, "updatedStatus", provisionedStatus.ID.String())
 	default:
 		break
 	}
 
 	if deleteErr != nil {
 		entStatus.Update().SetState(status.StateTAINTED).SetFailed(true).Save(ctx)
+		rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
 		logrus.WithFields(logrus.Fields{
 			"type":    entPlan.Type,
 			"builder": (*builder).ID(),
@@ -372,6 +382,7 @@ func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Con
 			logrus.Errorf("error while setting entStatus to DELETED: %v", err)
 			return
 		}
+		rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
 	}
 }
 
@@ -391,6 +402,7 @@ func deleteHost(client *ent.Client, builder *builder.Builder, ctx context.Contex
 			logrus.Errorf("error while setting Provisioned Host status to TAINTED: %v", saveErr)
 			return saveErr
 		}
+		rdb.Publish(ctx, "updatedStatus", hostStatus.ID.String())
 		return err
 	} else {
 		_, saveErr := hostStatus.Update().SetState(status.StateDELETED).Save(ctx)
@@ -398,6 +410,7 @@ func deleteHost(client *ent.Client, builder *builder.Builder, ctx context.Contex
 			logrus.Errorf("error while setting Provisioned Host status to DELETED: %v", saveErr)
 			return saveErr
 		}
+		rdb.Publish(ctx, "updatedStatus", hostStatus.ID.String())
 	}
 	logrus.Infof("deleted %s successfully", entProHost.SubnetIP)
 
@@ -425,6 +438,7 @@ func deleteNetwork(client *ent.Client, builder *builder.Builder, ctx context.Con
 			logrus.Errorf("error while setting Provisioned Network status to TAINTED: %v", saveErr)
 			return saveErr
 		}
+		rdb.Publish(ctx, "updatedStatus", networkStatus.ID.String())
 		return err
 	} else {
 		_, saveErr := networkStatus.Update().SetState(status.StateDELETED).Save(ctx)
@@ -432,6 +446,7 @@ func deleteNetwork(client *ent.Client, builder *builder.Builder, ctx context.Con
 			logrus.Errorf("error while setting Provisioned Network status to DELETED: %v", saveErr)
 			return saveErr
 		}
+		rdb.Publish(ctx, "updatedStatus", networkStatus.ID.String())
 	}
 	logrus.Infof("deleted %s successfully", entProNetwork.Name)
 	return nil

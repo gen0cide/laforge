@@ -9,6 +9,7 @@ import (
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	pb "github.com/gen0cide/laforge/grpc/proto"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 )
 
@@ -16,12 +17,14 @@ var (
 	Port     = ":50051"
 	CertFile = "service.pem"
 	KeyFile  = "service.key"
+
 	// webPort  = ":5000"
 )
 
 type Server struct {
 	Client *ent.Client
 	pb.UnimplementedLaforgeServer
+	RDB *redis.Client
 }
 
 //ByteCountIEC Converts Bytes to Higher Order
@@ -50,7 +53,7 @@ func (s *Server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb
 
 	ph, err := s.Client.ProvisionedHost.Query().Where(provisionedhost.IDEQ(uuid)).Only(ctx)
 
-	_, err = s.Client.AgentStatus.
+	createdEntAgentStatus, err := s.Client.AgentStatus.
 		Create().
 		SetClientID(in.GetClientId()).
 		SetHostname(in.GetHostname()).
@@ -72,6 +75,8 @@ func (s *Server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb
 	if err != nil {
 		return nil, fmt.Errorf("failed Creating Agent Status: %v", err)
 	}
+
+	s.RDB.Publish(ctx, "newAgentStatus", createdEntAgentStatus.ID.String())
 
 	avalibleTasks, err := ph.QueryProvisionedHostToAgentTask().Where(
 		agenttask.StateEQ(agenttask.StateAWAITING),

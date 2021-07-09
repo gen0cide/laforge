@@ -382,6 +382,7 @@ type Script {
 }
 
 type Status {
+  id: ID!
   state: ProvisionStatus!
   status_for: ProvisionStatusFor!
   started_at: String!
@@ -442,5 +443,6 @@ type Mutation {
 }
 
 type Subscription {
-  newUsers: AuthUser!
+  updatedAgentStatus: AgentStatus!
+  updatedStatus: Status!
 }

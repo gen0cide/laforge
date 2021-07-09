@@ -2,7 +2,6 @@ package planner
 
 import (
 	"bytes"
-	"log"
 	"net"
 	"path"
 	"strconv"
@@ -13,6 +12,7 @@ import (
 	"github.com/bradfitz/iter"
 	"github.com/gen0cide/laforge/ent"
 	"github.com/iancoleman/strcase"
+	"github.com/sirupsen/logrus"
 )
 
 type TempleteContext struct {
@@ -92,7 +92,7 @@ func TagEquals(h *ent.Host, tag, value string) bool {
 func CalcIP(subnet string, lastOctect int) (string, error) {
 	ip, _, err := net.ParseCIDR(subnet)
 	if err != nil {
-		log.Fatalf("Invalid Subner %v. Err: %v", subnet, err)
+		logrus.Errorf("Invalid Subnet %v. Err: %v", subnet, err)
 		return "", err
 	}
 	offset32 := uint32(lastOctect)

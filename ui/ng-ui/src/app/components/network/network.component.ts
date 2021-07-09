@@ -1,8 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
+import { LaForgeProvisionedNetwork } from '@graphql';
+import { networkChildrenCompleted } from '@util';
 import { ProvisionStatus, Status } from 'src/app/models/common.model';
-import { networkChildrenCompleted, ProvisionedNetwork } from 'src/app/models/network.model';
 import { RebuildService } from 'src/app/services/rebuild/rebuild.service';
 
 import { NetworkModalComponent } from '../network-modal/network-modal.component';
@@ -13,7 +14,7 @@ import { NetworkModalComponent } from '../network-modal/network-modal.component'
   styleUrls: ['./network.component.scss']
 })
 export class NetworkComponent implements OnInit {
-  @Input() provisionedNetwork: ProvisionedNetwork;
+  @Input() provisionedNetwork: LaForgeProvisionedNetwork;
   @Input() status: Status;
   @Input() style: 'compact' | 'collapsed' | 'expanded';
   @Input() selectable: boolean;
