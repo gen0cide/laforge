@@ -3,7 +3,6 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -22,12 +21,12 @@ func BuildAgent(agentID string, serverAddress string, binarypath string, isWindo
 		command = "CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags=\" -X 'main.clientID=" + agentID + "' -X 'main.address=" + serverAddress + "'\" -o " + binarypath + " github.com/gen0cide/laforge/grpc/agent"
 	}
 	cmd := exec.Command("bash", "-c", command)
-	_, err := cmd.CombinedOutput()
+	stdoutStderr, err := cmd.CombinedOutput()
 	cmd.Run()
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
-	// log.Printf("Created %s, Output %s\n", binarypath, stdoutStderr)
+	logrus.Debugf("Created %s, Output %s\n", binarypath, stdoutStderr)
 }
 
 func main() {

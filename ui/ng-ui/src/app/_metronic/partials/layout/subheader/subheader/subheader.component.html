@@ -49,7 +49,7 @@
           [value]="(environment ? environment?.id : '') + '|' + (build ? build.id : '')"
         >
           <mat-optgroup *ngFor="let env of _environments" [label]="env.name + ' | ' + env.competition_id">
-            <mat-option *ngFor="let bld of env.EnvironmentToBuild" [value]="env.id + '|' + bld.id">
+            <mat-option *ngFor="let bld of env.EnvironmentToBuild | sortBy: 'desc':'revision'" [value]="env.id + '|' + bld.id">
               <em>{{ env.name + ' | ' + env.competition_id + ' | v' + bld.revision }}</em>
             </mat-option>
           </mat-optgroup>

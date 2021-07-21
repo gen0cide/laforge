@@ -1,30 +1,17 @@
 subscription SubscribeUpdatedStatus {
   updatedStatus {
-    id
-    state
-    started_at
-    ended_at
-    failed
-    completed
-    error
+    ...StatusFields
   }
 }
 
 subscription SubscribeUpdatedAgentStatus {
   updatedAgentStatus {
-    clientId
-    hostname
-    upTime
-    bootTime
-    numProcs
-    OS
-    hostID
-    load1
-    load5
-    load15
-    totalMem
-    freeMem
-    usedMem
-    timestamp
+    ...AgentStatusFields
+  }
+}
+
+subscription SubscribeUpdatedServerTask {
+  updatedServerTask {
+    ...ServerTaskFields
   }
 }

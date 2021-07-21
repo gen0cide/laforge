@@ -13,6 +13,9 @@ query GetBuildTree($buildId: String!) {
       }
       TeamToPlan {
         id
+        PlanToStatus {
+          id
+        }
       }
       TeamToProvisionedNetwork {
         id
@@ -35,6 +38,9 @@ query GetBuildTree($buildId: String!) {
         }
         ProvisionedNetworkToPlan {
           id
+          PlanToStatus {
+            id
+          }
         }
         ProvisionedNetworkToProvisionedHost {
           id
@@ -63,6 +69,9 @@ query GetBuildTree($buildId: String!) {
           }
           ProvisionedHostToPlan {
             id
+            PlanToStatus {
+              id
+            }
           }
           ProvisionedHostToProvisioningStep {
             id
@@ -152,10 +161,43 @@ query GetBuildTree($buildId: String!) {
             }
             ProvisioningStepToPlan {
               id
+              PlanToStatus {
+                id
+              }
             }
           }
           ProvisionedHostToAgentStatus {
             clientId
+          }
+        }
+      }
+    }
+  }
+}
+
+query GetBuildPlans($buildId: String!) {
+  build(buildUUID: $buildId) {
+    id
+    buildToTeam {
+      id
+      TeamToPlan {
+        ...PlanFields
+      }
+      TeamToProvisionedNetwork {
+        id
+        ProvisionedNetworkToPlan {
+          ...PlanFields
+        }
+        ProvisionedNetworkToProvisionedHost {
+          id
+          ProvisionedHostToPlan {
+            ...PlanFields
+          }
+          ProvisionedHostToProvisioningStep {
+            id
+            ProvisioningStepToPlan {
+              ...PlanFields
+            }
           }
         }
       }

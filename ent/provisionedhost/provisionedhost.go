@@ -3,6 +3,10 @@
 package provisionedhost
 
 import (
+	"fmt"
+	"io"
+	"strconv"
+
 	"github.com/google/uuid"
 )
 
@@ -13,6 +17,8 @@ const (
 	FieldID = "id"
 	// FieldSubnetIP holds the string denoting the subnet_ip field in the database.
 	FieldSubnetIP = "subnet_ip"
+	// FieldAddonType holds the string denoting the addon_type field in the database.
+	FieldAddonType = "addon_type"
 	// EdgeProvisionedHostToStatus holds the string denoting the provisionedhosttostatus edge name in mutations.
 	EdgeProvisionedHostToStatus = "ProvisionedHostToStatus"
 	// EdgeProvisionedHostToProvisionedNetwork holds the string denoting the provisionedhosttoprovisionednetwork edge name in mutations.
@@ -102,6 +108,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldSubnetIP,
+	FieldAddonType,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "provisioned_hosts"
@@ -133,3 +140,43 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// AddonType defines the type for the "addon_type" enum field.
+type AddonType string
+
+// AddonType values.
+const (
+	AddonTypeDNS AddonType = "DNS"
+)
+
+func (at AddonType) String() string {
+	return string(at)
+}
+
+// AddonTypeValidator is a validator for the "addon_type" field enum values. It is called by the builders before save.
+func AddonTypeValidator(at AddonType) error {
+	switch at {
+	case AddonTypeDNS:
+		return nil
+	default:
+		return fmt.Errorf("provisionedhost: invalid enum value for addon_type field: %q", at)
+	}
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (at AddonType) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(at.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (at *AddonType) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*at = AddonType(str)
+	if err := AddonTypeValidator(*at); err != nil {
+		return fmt.Errorf("%s is not a valid AddonType", str)
+	}
+	return nil
+}

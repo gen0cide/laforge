@@ -19,8 +19,8 @@ type Token struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// Token holds the value of the "token" field.
 	Token string `json:"token,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt int `json:"created_at,omitempty"`
+	// ExpireAt holds the value of the "expire_at" field.
+	ExpireAt int64 `json:"expire_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TokenQuery when eager-loading is set.
 	Edges TokenEdges `json:"edges"`
@@ -60,7 +60,7 @@ func (*Token) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case token.FieldCreatedAt:
+		case token.FieldExpireAt:
 			values[i] = new(sql.NullInt64)
 		case token.FieldToken:
 			values[i] = new(sql.NullString)
@@ -95,11 +95,11 @@ func (t *Token) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				t.Token = value.String
 			}
-		case token.FieldCreatedAt:
+		case token.FieldExpireAt:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+				return fmt.Errorf("unexpected type %T for field expire_at", values[i])
 			} else if value.Valid {
-				t.CreatedAt = int(value.Int64)
+				t.ExpireAt = value.Int64
 			}
 		case token.ForeignKeys[0]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -142,8 +142,8 @@ func (t *Token) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", t.ID))
 	builder.WriteString(", token=")
 	builder.WriteString(t.Token)
-	builder.WriteString(", created_at=")
-	builder.WriteString(fmt.Sprintf("%v", t.CreatedAt))
+	builder.WriteString(", expire_at=")
+	builder.WriteString(fmt.Sprintf("%v", t.ExpireAt))
 	builder.WriteByte(')')
 	return builder.String()
 }

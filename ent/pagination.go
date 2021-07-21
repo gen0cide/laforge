@@ -39,6 +39,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/script"
+	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
@@ -5934,6 +5935,233 @@ func (s *Script) ToEdge(order *ScriptOrder) *ScriptEdge {
 	return &ScriptEdge{
 		Node:   s,
 		Cursor: order.Field.toCursor(s),
+	}
+}
+
+// ServerTaskEdge is the edge representation of ServerTask.
+type ServerTaskEdge struct {
+	Node   *ServerTask `json:"node"`
+	Cursor Cursor      `json:"cursor"`
+}
+
+// ServerTaskConnection is the connection containing edges to ServerTask.
+type ServerTaskConnection struct {
+	Edges      []*ServerTaskEdge `json:"edges"`
+	PageInfo   PageInfo          `json:"pageInfo"`
+	TotalCount int               `json:"totalCount"`
+}
+
+// ServerTaskPaginateOption enables pagination customization.
+type ServerTaskPaginateOption func(*serverTaskPager) error
+
+// WithServerTaskOrder configures pagination ordering.
+func WithServerTaskOrder(order *ServerTaskOrder) ServerTaskPaginateOption {
+	if order == nil {
+		order = DefaultServerTaskOrder
+	}
+	o := *order
+	return func(pager *serverTaskPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultServerTaskOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithServerTaskFilter configures pagination filter.
+func WithServerTaskFilter(filter func(*ServerTaskQuery) (*ServerTaskQuery, error)) ServerTaskPaginateOption {
+	return func(pager *serverTaskPager) error {
+		if filter == nil {
+			return errors.New("ServerTaskQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type serverTaskPager struct {
+	order  *ServerTaskOrder
+	filter func(*ServerTaskQuery) (*ServerTaskQuery, error)
+}
+
+func newServerTaskPager(opts []ServerTaskPaginateOption) (*serverTaskPager, error) {
+	pager := &serverTaskPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultServerTaskOrder
+	}
+	return pager, nil
+}
+
+func (p *serverTaskPager) applyFilter(query *ServerTaskQuery) (*ServerTaskQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *serverTaskPager) toCursor(st *ServerTask) Cursor {
+	return p.order.Field.toCursor(st)
+}
+
+func (p *serverTaskPager) applyCursors(query *ServerTaskQuery, after, before *Cursor) *ServerTaskQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultServerTaskOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *serverTaskPager) applyOrder(query *ServerTaskQuery, reverse bool) *ServerTaskQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultServerTaskOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultServerTaskOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to ServerTask.
+func (st *ServerTaskQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...ServerTaskPaginateOption,
+) (*ServerTaskConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newServerTaskPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if st, err = pager.applyFilter(st); err != nil {
+		return nil, err
+	}
+
+	conn := &ServerTaskConnection{Edges: []*ServerTaskEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := st.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := st.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	st = pager.applyCursors(st, after, before)
+	st = pager.applyOrder(st, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		st = st.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		st = st.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := st.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *ServerTask
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *ServerTask {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *ServerTask {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*ServerTaskEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &ServerTaskEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+// ServerTaskOrderField defines the ordering field of ServerTask.
+type ServerTaskOrderField struct {
+	field    string
+	toCursor func(*ServerTask) Cursor
+}
+
+// ServerTaskOrder defines the ordering of ServerTask.
+type ServerTaskOrder struct {
+	Direction OrderDirection        `json:"direction"`
+	Field     *ServerTaskOrderField `json:"field"`
+}
+
+// DefaultServerTaskOrder is the default ordering of ServerTask.
+var DefaultServerTaskOrder = &ServerTaskOrder{
+	Direction: OrderDirectionAsc,
+	Field: &ServerTaskOrderField{
+		field: servertask.FieldID,
+		toCursor: func(st *ServerTask) Cursor {
+			return Cursor{ID: st.ID}
+		},
+	},
+}
+
+// ToEdge converts ServerTask into ServerTaskEdge.
+func (st *ServerTask) ToEdge(order *ServerTaskOrder) *ServerTaskEdge {
+	if order == nil {
+		order = DefaultServerTaskOrder
+	}
+	return &ServerTaskEdge{
+		Node:   st,
+		Cursor: order.Field.toCursor(st),
 	}
 }
 

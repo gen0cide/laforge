@@ -1,18 +1,10 @@
 <!--begin::Signin-->
 <div class="login-form login-signin">
   <!--begin::Form-->
-  <form
-    class="form"
-    [formGroup]="loginForm"
-    novalidate="novalidate"
-    id="kt_login_signin_form"
-    (ngSubmit)="submit()"
-  >
+  <form class="form" [formGroup]="loginForm" novalidate="novalidate" id="kt_login_signin_form" (ngSubmit)="submit()">
     <!-- begin::Alert error-->
     <ng-container *ngIf="hasError">
-      <div
-        class="mb-10 alert alert-custom alert-light-danger alert-dismissible"
-      >
+      <div class="mb-10 alert alert-custom alert-light-danger alert-dismissible">
         <div class="alert-text">The login details are incorrect</div>
       </div>
     </ng-container>
@@ -20,45 +12,45 @@
 
     <!--begin::Form group-->
     <div class="form-group">
-      <label class="font-size-h6 font-weight-bolder text-white">Email</label>
+      <label class="font-size-h6 font-weight-bolder text-white">Username</label>
       <input
         class="form-control form-control-solid h-auto py-7 px-6 rounded-lg"
-        type="email"
-        name="email"
-        formControlName="email"
+        type="text"
+        name="username"
+        formControlName="username"
         autocomplete="off"
-        [ngClass]="{ 'is-invalid': loginForm.controls['email'].invalid }"
+        [ngClass]="{ 'is-invalid': loginForm.controls['username'].invalid }"
       />
       <ng-container
         [ngTemplateOutlet]="formError"
         [ngTemplateOutletContext]="{
           validation: 'required',
-          message: 'Email is required',
-          control: loginForm.controls['email']
+          message: 'Username is required',
+          control: loginForm.controls['username']
         }"
       ></ng-container>
       <ng-container
         [ngTemplateOutlet]="formError"
         [ngTemplateOutletContext]="{
-          validation: 'email',
-          message: 'Email is invalid',
-          control: loginForm.controls['email']
+          validation: 'username',
+          message: 'Username is invalid',
+          control: loginForm.controls['username']
         }"
       ></ng-container>
       <ng-container
         [ngTemplateOutlet]="formError"
         [ngTemplateOutletContext]="{
           validation: 'minLength',
-          message: 'Email should have at least 3 characters',
-          control: loginForm.controls['email']
+          message: 'Username should have at least 3 characters',
+          control: loginForm.controls['username']
         }"
       ></ng-container>
       <ng-container
         [ngTemplateOutlet]="formError"
         [ngTemplateOutletContext]="{
           validation: 'maxLength',
-          message: 'Email should have maximum 360 characters',
-          control: loginForm.controls['email']
+          message: 'Username should have maximum 360 characters',
+          control: loginForm.controls['username']
         }"
       ></ng-container>
     </div>
@@ -67,9 +59,7 @@
     <!--begin::Form group-->
     <div class="form-group">
       <div class="d-flex justify-content-between mt-n5">
-        <label class="font-size-h6 font-weight-bolder text-white pt-5"
-          >Password</label
-        >
+        <label class="font-size-h6 font-weight-bolder text-white pt-5">Password</label>
         <a
           routerLink="/auth/forgot-password"
           class="text-primary font-size-h6 font-weight-bolder text-hover-primary pt-5"
@@ -124,15 +114,11 @@
       >
         <i class="fad fa-user-visor"></i> Sign In
       </button>
-
-      <button
-        type="button"
-        class="btn btn-light-primary font-weight-bolder px-8 py-4 my-3 font-size-lg"
-      >
+      <button type="button" class="btn btn-light-primary font-weight-bolder px-8 py-4 my-3 font-size-lg">
         <i class="fab fa-github"></i> Sign in with GitHub
       </button>
 
-      <ng-container *ngIf="isLoading$ | async">
+      <ng-container *ngIf="(isLoading$ | async) || (redirectLoading | async)">
         <span class="spinner spinner-primary ml-5"></span>
       </ng-container>
     </div>
@@ -142,15 +128,8 @@
 </div>
 <!--end::Signin-->
 
-<ng-template
-  #formError
-  let-control="control"
-  let-message="message"
-  let-validation="validation"
->
-  <ng-container
-    *ngIf="control.hasError(validation) && (control.dirty || control.touched)"
-  >
+<ng-template #formError let-control="control" let-message="message" let-validation="validation">
+  <ng-container *ngIf="control.hasError(validation) && (control.dirty || control.touched)">
     <div class="fv-plugins-message-container">
       <div class="fv-help-block">
         {{ message }}

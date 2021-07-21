@@ -1,5 +1,3 @@
-import { Host } from '@angular/core';
-
 import { tagMap, User } from './common.model';
 import { Environment } from './environment.model';
 import { Script } from './script.model';

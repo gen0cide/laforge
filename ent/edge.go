@@ -36,6 +36,14 @@ func (au *AuthUser) AuthUserToToken(ctx context.Context) ([]*Token, error) {
 	return result, err
 }
 
+func (au *AuthUser) AuthUserToServerTasks(ctx context.Context) ([]*ServerTask, error) {
+	result, err := au.Edges.AuthUserToServerTasksOrErr()
+	if IsNotLoaded(err) {
+		result, err = au.QueryAuthUserToServerTasks().All(ctx)
+	}
+	return result, err
+}
+
 func (b *Build) BuildToStatus(ctx context.Context) (*Status, error) {
 	result, err := b.Edges.BuildToStatusOrErr()
 	if IsNotLoaded(err) {
@@ -796,6 +804,46 @@ func (s *Script) ScriptToEnvironment(ctx context.Context) (*Environment, error) 
 	return result, MaskNotFound(err)
 }
 
+func (st *ServerTask) ServerTaskToAuthUser(ctx context.Context) (*AuthUser, error) {
+	result, err := st.Edges.ServerTaskToAuthUserOrErr()
+	if IsNotLoaded(err) {
+		result, err = st.QueryServerTaskToAuthUser().Only(ctx)
+	}
+	return result, err
+}
+
+func (st *ServerTask) ServerTaskToStatus(ctx context.Context) (*Status, error) {
+	result, err := st.Edges.ServerTaskToStatusOrErr()
+	if IsNotLoaded(err) {
+		result, err = st.QueryServerTaskToStatus().Only(ctx)
+	}
+	return result, err
+}
+
+func (st *ServerTask) ServerTaskToEnvironment(ctx context.Context) (*Environment, error) {
+	result, err := st.Edges.ServerTaskToEnvironmentOrErr()
+	if IsNotLoaded(err) {
+		result, err = st.QueryServerTaskToEnvironment().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (st *ServerTask) ServerTaskToBuild(ctx context.Context) (*Build, error) {
+	result, err := st.Edges.ServerTaskToBuildOrErr()
+	if IsNotLoaded(err) {
+		result, err = st.QueryServerTaskToBuild().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (st *ServerTask) ServerTaskToGinFileMiddleware(ctx context.Context) ([]*GinFileMiddleware, error) {
+	result, err := st.Edges.ServerTaskToGinFileMiddlewareOrErr()
+	if IsNotLoaded(err) {
+		result, err = st.QueryServerTaskToGinFileMiddleware().All(ctx)
+	}
+	return result, err
+}
+
 func (s *Status) StatusToBuild(ctx context.Context) (*Build, error) {
 	result, err := s.Edges.StatusToBuildOrErr()
 	if IsNotLoaded(err) {
@@ -840,6 +888,14 @@ func (s *Status) StatusToPlan(ctx context.Context) (*Plan, error) {
 	result, err := s.Edges.StatusToPlanOrErr()
 	if IsNotLoaded(err) {
 		result, err = s.QueryStatusToPlan().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (s *Status) StatusToServerTask(ctx context.Context) (*ServerTask, error) {
+	result, err := s.Edges.StatusToServerTaskOrErr()
+	if IsNotLoaded(err) {
+		result, err = s.QueryStatusToServerTask().Only(ctx)
 	}
 	return result, MaskNotFound(err)
 }

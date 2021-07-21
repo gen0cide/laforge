@@ -3,8 +3,6 @@ import { gql } from 'apollo-angular';
 
 import { Plan } from '../../../models/common.model';
 
-import { PlanFields } from './fragments';
-
 export const GetBuildQuery = gql`
   query($buildId: String!) {
     build(buildUUID: $buildId) {
@@ -218,7 +216,7 @@ export interface GetBuildPlansData {
   };
 }
 
-export const GetBuildPlansQuery = gql`
+const GetBuildPlansQuery = gql`
   query($buildId: String!) {
     build(buildUUID: $buildId) {
       id
@@ -248,6 +246,4 @@ export const GetBuildPlansQuery = gql`
       }
     }
   }
-
-  ${PlanFields}
 `;

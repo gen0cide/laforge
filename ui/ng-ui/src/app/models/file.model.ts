@@ -1,4 +1,4 @@
-import { ID, tagMap, varsMap } from './common.model';
+import { ID, tagMap } from './common.model';
 import { Environment } from './environment.model';
 
 export interface FileDownload {

@@ -29,6 +29,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/schema"
 	"github.com/gen0cide/laforge/ent/script"
+	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
@@ -49,12 +50,48 @@ func init() {
 	agentstatus.DefaultID = agentstatusDescID.Default.(func() uuid.UUID)
 	agenttaskFields := schema.AgentTask{}.Fields()
 	_ = agenttaskFields
+	// agenttaskDescOutput is the schema descriptor for output field.
+	agenttaskDescOutput := agenttaskFields[4].Descriptor()
+	// agenttask.DefaultOutput holds the default value on creation for the output field.
+	agenttask.DefaultOutput = agenttaskDescOutput.Default.(string)
+	// agenttaskDescErrorMessage is the schema descriptor for error_message field.
+	agenttaskDescErrorMessage := agenttaskFields[6].Descriptor()
+	// agenttask.DefaultErrorMessage holds the default value on creation for the error_message field.
+	agenttask.DefaultErrorMessage = agenttaskDescErrorMessage.Default.(string)
 	// agenttaskDescID is the schema descriptor for id field.
 	agenttaskDescID := agenttaskFields[0].Descriptor()
 	// agenttask.DefaultID holds the default value on creation for the id field.
 	agenttask.DefaultID = agenttaskDescID.Default.(func() uuid.UUID)
 	authuserFields := schema.AuthUser{}.Fields()
 	_ = authuserFields
+	// authuserDescFirstName is the schema descriptor for first_name field.
+	authuserDescFirstName := authuserFields[3].Descriptor()
+	// authuser.DefaultFirstName holds the default value on creation for the first_name field.
+	authuser.DefaultFirstName = authuserDescFirstName.Default.(string)
+	// authuserDescLastName is the schema descriptor for last_name field.
+	authuserDescLastName := authuserFields[4].Descriptor()
+	// authuser.DefaultLastName holds the default value on creation for the last_name field.
+	authuser.DefaultLastName = authuserDescLastName.Default.(string)
+	// authuserDescEmail is the schema descriptor for email field.
+	authuserDescEmail := authuserFields[5].Descriptor()
+	// authuser.DefaultEmail holds the default value on creation for the email field.
+	authuser.DefaultEmail = authuserDescEmail.Default.(string)
+	// authuserDescPhone is the schema descriptor for phone field.
+	authuserDescPhone := authuserFields[6].Descriptor()
+	// authuser.DefaultPhone holds the default value on creation for the phone field.
+	authuser.DefaultPhone = authuserDescPhone.Default.(string)
+	// authuserDescCompany is the schema descriptor for company field.
+	authuserDescCompany := authuserFields[7].Descriptor()
+	// authuser.DefaultCompany holds the default value on creation for the company field.
+	authuser.DefaultCompany = authuserDescCompany.Default.(string)
+	// authuserDescOccupation is the schema descriptor for occupation field.
+	authuserDescOccupation := authuserFields[8].Descriptor()
+	// authuser.DefaultOccupation holds the default value on creation for the occupation field.
+	authuser.DefaultOccupation = authuserDescOccupation.Default.(string)
+	// authuserDescPrivateKeyPath is the schema descriptor for private_key_path field.
+	authuserDescPrivateKeyPath := authuserFields[9].Descriptor()
+	// authuser.DefaultPrivateKeyPath holds the default value on creation for the private_key_path field.
+	authuser.DefaultPrivateKeyPath = authuserDescPrivateKeyPath.Default.(string)
 	// authuserDescID is the schema descriptor for id field.
 	authuserDescID := authuserFields[0].Descriptor()
 	// authuser.DefaultID holds the default value on creation for the id field.
@@ -211,6 +248,12 @@ func init() {
 	scriptDescID := scriptFields[0].Descriptor()
 	// script.DefaultID holds the default value on creation for the id field.
 	script.DefaultID = scriptDescID.Default.(func() uuid.UUID)
+	servertaskFields := schema.ServerTask{}.Fields()
+	_ = servertaskFields
+	// servertaskDescID is the schema descriptor for id field.
+	servertaskDescID := servertaskFields[0].Descriptor()
+	// servertask.DefaultID holds the default value on creation for the id field.
+	servertask.DefaultID = servertaskDescID.Default.(func() uuid.UUID)
 	statusFields := schema.Status{}.Fields()
 	_ = statusFields
 	// statusDescFailed is the schema descriptor for failed field.

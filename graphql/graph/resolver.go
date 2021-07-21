@@ -25,12 +25,6 @@ type Resolver struct {
 	rdb    *redis.Client
 }
 
-var newUserPublishedChannel map[string]chan *ent.AuthUser
-
-func init() {
-	newUserPublishedChannel = map[string]chan *ent.AuthUser{}
-}
-
 // NewSchema creates a graphql executable schema.
 func NewSchema(client *ent.Client, rdb *redis.Client) graphql.ExecutableSchema {
 	GQLConfig := generated.Config{

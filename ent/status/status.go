@@ -41,6 +41,8 @@ const (
 	EdgeStatusToTeam = "StatusToTeam"
 	// EdgeStatusToPlan holds the string denoting the statustoplan edge name in mutations.
 	EdgeStatusToPlan = "StatusToPlan"
+	// EdgeStatusToServerTask holds the string denoting the statustoservertask edge name in mutations.
+	EdgeStatusToServerTask = "StatusToServerTask"
 	// Table holds the table name of the status in the database.
 	Table = "status"
 	// StatusToBuildTable is the table the holds the StatusToBuild relation/edge.
@@ -85,6 +87,13 @@ const (
 	StatusToPlanInverseTable = "plans"
 	// StatusToPlanColumn is the table column denoting the StatusToPlan relation/edge.
 	StatusToPlanColumn = "plan_plan_to_status"
+	// StatusToServerTaskTable is the table the holds the StatusToServerTask relation/edge.
+	StatusToServerTaskTable = "status"
+	// StatusToServerTaskInverseTable is the table name for the ServerTask entity.
+	// It exists in this package in order to avoid circular dependency with the "servertask" package.
+	StatusToServerTaskInverseTable = "server_tasks"
+	// StatusToServerTaskColumn is the table column denoting the StatusToServerTask relation/edge.
+	StatusToServerTaskColumn = "server_task_server_task_to_status"
 )
 
 // Columns holds all SQL columns for status fields.
@@ -107,6 +116,7 @@ var ForeignKeys = []string{
 	"provisioned_host_provisioned_host_to_status",
 	"provisioned_network_provisioned_network_to_status",
 	"provisioning_step_provisioning_step_to_status",
+	"server_task_server_task_to_status",
 	"team_team_to_status",
 }
 
@@ -175,6 +185,7 @@ const (
 	StatusForProvisionedNetwork StatusFor = "ProvisionedNetwork"
 	StatusForProvisionedHost    StatusFor = "ProvisionedHost"
 	StatusForProvisioningStep   StatusFor = "ProvisioningStep"
+	StatusForServerTask         StatusFor = "ServerTask"
 )
 
 func (sf StatusFor) String() string {
@@ -184,7 +195,7 @@ func (sf StatusFor) String() string {
 // StatusForValidator is a validator for the "status_for" field enum values. It is called by the builders before save.
 func StatusForValidator(sf StatusFor) error {
 	switch sf {
-	case StatusForBuild, StatusForTeam, StatusForPlan, StatusForProvisionedNetwork, StatusForProvisionedHost, StatusForProvisioningStep:
+	case StatusForBuild, StatusForTeam, StatusForPlan, StatusForProvisionedNetwork, StatusForProvisionedHost, StatusForProvisioningStep, StatusForServerTask:
 		return nil
 	default:
 		return fmt.Errorf("status: invalid enum value for status_for field: %q", sf)

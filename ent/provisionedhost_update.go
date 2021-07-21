@@ -42,6 +42,26 @@ func (phu *ProvisionedHostUpdate) SetSubnetIP(s string) *ProvisionedHostUpdate {
 	return phu
 }
 
+// SetAddonType sets the "addon_type" field.
+func (phu *ProvisionedHostUpdate) SetAddonType(pt provisionedhost.AddonType) *ProvisionedHostUpdate {
+	phu.mutation.SetAddonType(pt)
+	return phu
+}
+
+// SetNillableAddonType sets the "addon_type" field if the given value is not nil.
+func (phu *ProvisionedHostUpdate) SetNillableAddonType(pt *provisionedhost.AddonType) *ProvisionedHostUpdate {
+	if pt != nil {
+		phu.SetAddonType(*pt)
+	}
+	return phu
+}
+
+// ClearAddonType clears the value of the "addon_type" field.
+func (phu *ProvisionedHostUpdate) ClearAddonType() *ProvisionedHostUpdate {
+	phu.mutation.ClearAddonType()
+	return phu
+}
+
 // SetProvisionedHostToStatusID sets the "ProvisionedHostToStatus" edge to the Status entity by ID.
 func (phu *ProvisionedHostUpdate) SetProvisionedHostToStatusID(id uuid.UUID) *ProvisionedHostUpdate {
 	phu.mutation.SetProvisionedHostToStatusID(id)
@@ -340,6 +360,11 @@ func (phu *ProvisionedHostUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (phu *ProvisionedHostUpdate) check() error {
+	if v, ok := phu.mutation.AddonType(); ok {
+		if err := provisionedhost.AddonTypeValidator(v); err != nil {
+			return &ValidationError{Name: "addon_type", err: fmt.Errorf("ent: validator failed for field \"addon_type\": %w", err)}
+		}
+	}
 	if _, ok := phu.mutation.ProvisionedHostToStatusID(); phu.mutation.ProvisionedHostToStatusCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"ProvisionedHostToStatus\"")
 	}
@@ -375,6 +400,19 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 			Type:   field.TypeString,
 			Value:  value,
 			Column: provisionedhost.FieldSubnetIP,
+		})
+	}
+	if value, ok := phu.mutation.AddonType(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: provisionedhost.FieldAddonType,
+		})
+	}
+	if phu.mutation.AddonTypeCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Column: provisionedhost.FieldAddonType,
 		})
 	}
 	if phu.mutation.ProvisionedHostToStatusCleared() {
@@ -774,6 +812,26 @@ func (phuo *ProvisionedHostUpdateOne) SetSubnetIP(s string) *ProvisionedHostUpda
 	return phuo
 }
 
+// SetAddonType sets the "addon_type" field.
+func (phuo *ProvisionedHostUpdateOne) SetAddonType(pt provisionedhost.AddonType) *ProvisionedHostUpdateOne {
+	phuo.mutation.SetAddonType(pt)
+	return phuo
+}
+
+// SetNillableAddonType sets the "addon_type" field if the given value is not nil.
+func (phuo *ProvisionedHostUpdateOne) SetNillableAddonType(pt *provisionedhost.AddonType) *ProvisionedHostUpdateOne {
+	if pt != nil {
+		phuo.SetAddonType(*pt)
+	}
+	return phuo
+}
+
+// ClearAddonType clears the value of the "addon_type" field.
+func (phuo *ProvisionedHostUpdateOne) ClearAddonType() *ProvisionedHostUpdateOne {
+	phuo.mutation.ClearAddonType()
+	return phuo
+}
+
 // SetProvisionedHostToStatusID sets the "ProvisionedHostToStatus" edge to the Status entity by ID.
 func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToStatusID(id uuid.UUID) *ProvisionedHostUpdateOne {
 	phuo.mutation.SetProvisionedHostToStatusID(id)
@@ -1079,6 +1137,11 @@ func (phuo *ProvisionedHostUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (phuo *ProvisionedHostUpdateOne) check() error {
+	if v, ok := phuo.mutation.AddonType(); ok {
+		if err := provisionedhost.AddonTypeValidator(v); err != nil {
+			return &ValidationError{Name: "addon_type", err: fmt.Errorf("ent: validator failed for field \"addon_type\": %w", err)}
+		}
+	}
 	if _, ok := phuo.mutation.ProvisionedHostToStatusID(); phuo.mutation.ProvisionedHostToStatusCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"ProvisionedHostToStatus\"")
 	}
@@ -1131,6 +1194,19 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 			Type:   field.TypeString,
 			Value:  value,
 			Column: provisionedhost.FieldSubnetIP,
+		})
+	}
+	if value, ok := phuo.mutation.AddonType(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: provisionedhost.FieldAddonType,
+		})
+	}
+	if phuo.mutation.AddonTypeCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Column: provisionedhost.FieldAddonType,
 		})
 	}
 	if phuo.mutation.ProvisionedHostToStatusCleared() {

@@ -15,6 +15,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
 	"github.com/google/uuid"
@@ -227,6 +228,25 @@ func (sc *StatusCreate) SetNillableStatusToPlanID(id *uuid.UUID) *StatusCreate {
 // SetStatusToPlan sets the "StatusToPlan" edge to the Plan entity.
 func (sc *StatusCreate) SetStatusToPlan(p *Plan) *StatusCreate {
 	return sc.SetStatusToPlanID(p.ID)
+}
+
+// SetStatusToServerTaskID sets the "StatusToServerTask" edge to the ServerTask entity by ID.
+func (sc *StatusCreate) SetStatusToServerTaskID(id uuid.UUID) *StatusCreate {
+	sc.mutation.SetStatusToServerTaskID(id)
+	return sc
+}
+
+// SetNillableStatusToServerTaskID sets the "StatusToServerTask" edge to the ServerTask entity by ID if the given value is not nil.
+func (sc *StatusCreate) SetNillableStatusToServerTaskID(id *uuid.UUID) *StatusCreate {
+	if id != nil {
+		sc = sc.SetStatusToServerTaskID(*id)
+	}
+	return sc
+}
+
+// SetStatusToServerTask sets the "StatusToServerTask" edge to the ServerTask entity.
+func (sc *StatusCreate) SetStatusToServerTask(s *ServerTask) *StatusCreate {
+	return sc.SetStatusToServerTaskID(s.ID)
 }
 
 // Mutation returns the StatusMutation object of the builder.
@@ -522,6 +542,26 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.plan_plan_to_status = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.StatusToServerTaskIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToServerTaskTable,
+			Columns: []string{status.StatusToServerTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: servertask.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.server_task_server_task_to_status = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

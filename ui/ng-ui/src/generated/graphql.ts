@@ -12,6 +12,7 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  Time: any;
 };
 
 export enum LaForgeAgentCommand {
@@ -24,7 +25,9 @@ export enum LaForgeAgentCommand {
   Createuserpass = 'CREATEUSERPASS',
   Addtogroup = 'ADDTOGROUP',
   Execute = 'EXECUTE',
-  Validate = 'VALIDATE'
+  Validate = 'VALIDATE',
+  Changeperms = 'CHANGEPERMS',
+  Appendfile = 'APPENDFILE'
 }
 
 export type LaForgeAgentStatus = {
@@ -49,9 +52,14 @@ export type LaForgeAuthUser = {
   __typename?: 'AuthUser';
   id: Scalars['ID'];
   username: Scalars['String'];
-  password: Scalars['String'];
   role: LaForgeRoleLevel;
   provider: LaForgeProviderType;
+  first_name: Scalars['String'];
+  last_name: Scalars['String'];
+  email: Scalars['String'];
+  phone: Scalars['String'];
+  company: Scalars['String'];
+  occupation: Scalars['String'];
 };
 
 export type LaForgeBuild = {
@@ -261,29 +269,27 @@ export type LaForgeIdentity = {
 
 export type LaForgeMutation = {
   __typename?: 'Mutation';
-  loadEnviroment?: Maybe<Array<Maybe<LaForgeEnvironment>>>;
+  loadEnvironment?: Maybe<Array<Maybe<LaForgeEnvironment>>>;
   createBuild?: Maybe<LaForgeBuild>;
-  createUser: LaForgeAuthUser;
   deleteUser: Scalars['Boolean'];
   executePlan?: Maybe<LaForgeBuild>;
   deleteBuild: Scalars['Boolean'];
   createTask: Scalars['Boolean'];
   rebuild: Scalars['Boolean'];
+  modifySelfPassword: Scalars['Boolean'];
+  modifySelfUserInfo?: Maybe<LaForgeAuthUser>;
+  createUser?: Maybe<LaForgeAuthUser>;
+  modifyAdminUserInfo?: Maybe<LaForgeAuthUser>;
+  modifyAdminPassword: Scalars['Boolean'];
 };
 
-export type LaForgeMutationLoadEnviromentArgs = {
+export type LaForgeMutationLoadEnvironmentArgs = {
   envFilePath: Scalars['String'];
 };
 
 export type LaForgeMutationCreateBuildArgs = {
   envUUID: Scalars['String'];
   renderFiles?: Scalars['Boolean'];
-};
-
-export type LaForgeMutationCreateUserArgs = {
-  username: Scalars['String'];
-  password: Scalars['String'];
-  role: LaForgeRoleLevel;
 };
 
 export type LaForgeMutationDeleteUserArgs = {
@@ -306,6 +312,45 @@ export type LaForgeMutationCreateTaskArgs = {
 
 export type LaForgeMutationRebuildArgs = {
   rootPlans: Array<Maybe<Scalars['String']>>;
+};
+
+export type LaForgeMutationModifySelfPasswordArgs = {
+  currentPassword: Scalars['String'];
+  newPassword: Scalars['String'];
+};
+
+export type LaForgeMutationModifySelfUserInfoArgs = {
+  firstName?: Maybe<Scalars['String']>;
+  lastName?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+  phone?: Maybe<Scalars['String']>;
+  company?: Maybe<Scalars['String']>;
+  occupation?: Maybe<Scalars['String']>;
+};
+
+export type LaForgeMutationCreateUserArgs = {
+  username: Scalars['String'];
+  password: Scalars['String'];
+  role: LaForgeRoleLevel;
+  provider: LaForgeProviderType;
+};
+
+export type LaForgeMutationModifyAdminUserInfoArgs = {
+  userID: Scalars['String'];
+  username?: Maybe<Scalars['String']>;
+  firstName?: Maybe<Scalars['String']>;
+  lastName?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+  phone?: Maybe<Scalars['String']>;
+  company?: Maybe<Scalars['String']>;
+  occupation?: Maybe<Scalars['String']>;
+  role?: Maybe<LaForgeRoleLevel>;
+  provider?: Maybe<LaForgeProviderType>;
+};
+
+export type LaForgeMutationModifyAdminPasswordArgs = {
+  userID: Scalars['String'];
+  newPassword: Scalars['String'];
 };
 
 export type LaForgeNetwork = {
@@ -436,6 +481,12 @@ export type LaForgeQuery = {
   provisionedStep?: Maybe<LaForgeProvisioningStep>;
   plan?: Maybe<LaForgePlan>;
   build?: Maybe<LaForgeBuild>;
+  status?: Maybe<LaForgeStatus>;
+  agentStatus?: Maybe<LaForgeAgentStatus>;
+  getServerTasks?: Maybe<Array<Maybe<LaForgeServerTask>>>;
+  currentUser?: Maybe<LaForgeAuthUser>;
+  getUserList?: Maybe<Array<Maybe<LaForgeAuthUser>>>;
+  getCurrentUserTasks?: Maybe<Array<Maybe<LaForgeServerTask>>>;
 };
 
 export type LaForgeQueryEnvironmentArgs = {
@@ -460,6 +511,14 @@ export type LaForgeQueryPlanArgs = {
 
 export type LaForgeQueryBuildArgs = {
   buildUUID: Scalars['String'];
+};
+
+export type LaForgeQueryStatusArgs = {
+  statusUUID: Scalars['String'];
+};
+
+export type LaForgeQueryAgentStatusArgs = {
+  clientId: Scalars['String'];
 };
 
 export enum LaForgeRoleLevel {
@@ -489,6 +548,28 @@ export type LaForgeScript = {
   ScriptToEnvironment: LaForgeEnvironment;
 };
 
+export type LaForgeServerTask = {
+  __typename?: 'ServerTask';
+  id: Scalars['ID'];
+  type: LaForgeServerTaskType;
+  start_time?: Maybe<Scalars['Time']>;
+  end_time?: Maybe<Scalars['Time']>;
+  errors?: Maybe<Array<Maybe<Scalars['String']>>>;
+  log_file_path?: Maybe<Scalars['String']>;
+  ServerTaskToAuthUser: LaForgeAuthUser;
+  ServerTaskToStatus: LaForgeStatus;
+  ServerTaskToEnvironment?: Maybe<LaForgeEnvironment>;
+  ServerTaskToBuild?: Maybe<LaForgeBuild>;
+};
+
+export enum LaForgeServerTaskType {
+  Loadenv = 'LOADENV',
+  Createbuild = 'CREATEBUILD',
+  Renderfiles = 'RENDERFILES',
+  Deletebuild = 'DELETEBUILD',
+  Rebuild = 'REBUILD'
+}
+
 export type LaForgeStatus = {
   __typename?: 'Status';
   id: Scalars['ID'];
@@ -505,6 +586,7 @@ export type LaForgeSubscription = {
   __typename?: 'Subscription';
   updatedAgentStatus: LaForgeAgentStatus;
   updatedStatus: LaForgeStatus;
+  updatedServerTask: LaForgeServerTask;
 };
 
 export type LaForgeTeam = {
@@ -543,6 +625,17 @@ export type LaForgeVarsMap = {
   value: Scalars['String'];
 };
 
+export type LaForgeGetCurrentUserQueryVariables = Exact<{ [key: string]: never }>;
+
+export type LaForgeGetCurrentUserQuery = { __typename?: 'Query' } & {
+  currentUser?: Maybe<
+    { __typename?: 'AuthUser' } & Pick<
+      LaForgeAuthUser,
+      'id' | 'username' | 'role' | 'provider' | 'first_name' | 'last_name' | 'email' | 'phone' | 'company' | 'occupation'
+    >
+  >;
+};
+
 export type LaForgeGetBuildTreeQueryVariables = Exact<{
   buildId: Scalars['String'];
 }>;
@@ -555,7 +648,9 @@ export type LaForgeGetBuildTreeQuery = { __typename?: 'Query' } & {
           Maybe<
             { __typename?: 'Team' } & Pick<LaForgeTeam, 'id' | 'team_number'> & {
                 TeamToStatus: { __typename?: 'Status' } & Pick<LaForgeStatus, 'id'>;
-                TeamToPlan: { __typename?: 'Plan' } & Pick<LaForgePlan, 'id'>;
+                TeamToPlan: { __typename?: 'Plan' } & Pick<LaForgePlan, 'id'> & {
+                    PlanToStatus: { __typename?: 'Status' } & Pick<LaForgeStatus, 'id'>;
+                  };
                 TeamToProvisionedNetwork: Array<
                   Maybe<
                     { __typename?: 'ProvisionedNetwork' } & Pick<LaForgeProvisionedNetwork, 'id' | 'name' | 'cidr'> & {
@@ -564,7 +659,9 @@ export type LaForgeGetBuildTreeQuery = { __typename?: 'Query' } & {
                             tags: Array<Maybe<{ __typename?: 'tagMap' } & Pick<LaForgeTagMap, 'key' | 'value'>>>;
                           };
                         ProvisionedNetworkToStatus: { __typename?: 'Status' } & Pick<LaForgeStatus, 'id'>;
-                        ProvisionedNetworkToPlan: { __typename?: 'Plan' } & Pick<LaForgePlan, 'id'>;
+                        ProvisionedNetworkToPlan: { __typename?: 'Plan' } & Pick<LaForgePlan, 'id'> & {
+                            PlanToStatus: { __typename?: 'Status' } & Pick<LaForgeStatus, 'id'>;
+                          };
                         ProvisionedNetworkToProvisionedHost: Array<
                           Maybe<
                             { __typename?: 'ProvisionedHost' } & Pick<LaForgeProvisionedHost, 'id' | 'subnet_ip'> & {
@@ -584,7 +681,9 @@ export type LaForgeGetBuildTreeQuery = { __typename?: 'Query' } & {
                                     tags: Array<Maybe<{ __typename?: 'tagMap' } & Pick<LaForgeTagMap, 'key' | 'value'>>>;
                                   };
                                 ProvisionedHostToStatus: { __typename?: 'Status' } & Pick<LaForgeStatus, 'id'>;
-                                ProvisionedHostToPlan: { __typename?: 'Plan' } & Pick<LaForgePlan, 'id'>;
+                                ProvisionedHostToPlan: { __typename?: 'Plan' } & Pick<LaForgePlan, 'id'> & {
+                                    PlanToStatus: { __typename?: 'Status' } & Pick<LaForgeStatus, 'id'>;
+                                  };
                                 ProvisionedHostToProvisioningStep: Array<
                                   Maybe<
                                     { __typename?: 'ProvisioningStep' } & Pick<LaForgeProvisioningStep, 'id' | 'type' | 'step_number'> & {
@@ -637,11 +736,54 @@ export type LaForgeGetBuildTreeQuery = { __typename?: 'Query' } & {
                                           > & { tags: Array<Maybe<{ __typename?: 'tagMap' } & Pick<LaForgeTagMap, 'key' | 'value'>>> }
                                         >;
                                         ProvisioningStepToStatus: { __typename?: 'Status' } & Pick<LaForgeStatus, 'id'>;
-                                        ProvisioningStepToPlan?: Maybe<{ __typename?: 'Plan' } & Pick<LaForgePlan, 'id'>>;
+                                        ProvisioningStepToPlan?: Maybe<
+                                          { __typename?: 'Plan' } & Pick<LaForgePlan, 'id'> & {
+                                              PlanToStatus: { __typename?: 'Status' } & Pick<LaForgeStatus, 'id'>;
+                                            }
+                                        >;
                                       }
                                   >
                                 >;
                                 ProvisionedHostToAgentStatus?: Maybe<{ __typename?: 'AgentStatus' } & Pick<LaForgeAgentStatus, 'clientId'>>;
+                              }
+                          >
+                        >;
+                      }
+                  >
+                >;
+              }
+          >
+        >;
+      }
+  >;
+};
+
+export type LaForgeGetBuildPlansQueryVariables = Exact<{
+  buildId: Scalars['String'];
+}>;
+
+export type LaForgeGetBuildPlansQuery = { __typename?: 'Query' } & {
+  build?: Maybe<
+    { __typename?: 'Build' } & Pick<LaForgeBuild, 'id'> & {
+        buildToTeam: Array<
+          Maybe<
+            { __typename?: 'Team' } & Pick<LaForgeTeam, 'id'> & {
+                TeamToPlan: { __typename?: 'Plan' } & LaForgePlanFieldsFragment;
+                TeamToProvisionedNetwork: Array<
+                  Maybe<
+                    { __typename?: 'ProvisionedNetwork' } & Pick<LaForgeProvisionedNetwork, 'id'> & {
+                        ProvisionedNetworkToPlan: { __typename?: 'Plan' } & LaForgePlanFieldsFragment;
+                        ProvisionedNetworkToProvisionedHost: Array<
+                          Maybe<
+                            { __typename?: 'ProvisionedHost' } & Pick<LaForgeProvisionedHost, 'id'> & {
+                                ProvisionedHostToPlan: { __typename?: 'Plan' } & LaForgePlanFieldsFragment;
+                                ProvisionedHostToProvisioningStep: Array<
+                                  Maybe<
+                                    { __typename?: 'ProvisioningStep' } & Pick<LaForgeProvisioningStep, 'id'> & {
+                                        ProvisioningStepToPlan?: Maybe<{ __typename?: 'Plan' } & LaForgePlanFieldsFragment>;
+                                      }
+                                  >
+                                >;
                               }
                           >
                         >;
@@ -671,18 +813,15 @@ export type LaForgeGetEnvironmentQuery = { __typename?: 'Query' } & {
         EnvironmentToBuild: Array<
           Maybe<
             { __typename?: 'Build' } & Pick<LaForgeBuild, 'id' | 'revision'> & {
-                buildToStatus: { __typename?: 'Status' } & Pick<LaForgeStatus, 'completed' | 'failed' | 'state'>;
+                buildToStatus: { __typename?: 'Status' } & LaForgeStatusFieldsFragment;
                 buildToTeam: Array<
                   Maybe<
                     { __typename?: 'Team' } & Pick<LaForgeTeam, 'id' | 'team_number'> & {
-                        TeamToStatus: { __typename?: 'Status' } & Pick<LaForgeStatus, 'completed' | 'failed' | 'state'>;
+                        TeamToStatus: { __typename?: 'Status' } & LaForgeStatusFieldsFragment;
                         TeamToProvisionedNetwork: Array<
                           Maybe<
                             { __typename?: 'ProvisionedNetwork' } & Pick<LaForgeProvisionedNetwork, 'id' | 'name' | 'cidr'> & {
-                                ProvisionedNetworkToStatus: { __typename?: 'Status' } & Pick<
-                                  LaForgeStatus,
-                                  'completed' | 'failed' | 'state'
-                                >;
+                                ProvisionedNetworkToStatus: { __typename?: 'Status' } & LaForgeStatusFieldsFragment;
                                 ProvisionedNetworkToNetwork: { __typename?: 'Network' } & Pick<LaForgeNetwork, 'id' | 'vdi_visible'> & {
                                     vars?: Maybe<Array<Maybe<{ __typename?: 'varsMap' } & Pick<LaForgeVarsMap, 'key' | 'value'>>>>;
                                     tags: Array<Maybe<{ __typename?: 'tagMap' } & Pick<LaForgeTagMap, 'key' | 'value'>>>;
@@ -690,10 +829,7 @@ export type LaForgeGetEnvironmentQuery = { __typename?: 'Query' } & {
                                 ProvisionedNetworkToProvisionedHost: Array<
                                   Maybe<
                                     { __typename?: 'ProvisionedHost' } & Pick<LaForgeProvisionedHost, 'id' | 'subnet_ip'> & {
-                                        ProvisionedHostToStatus: { __typename?: 'Status' } & Pick<
-                                          LaForgeStatus,
-                                          'completed' | 'failed' | 'state'
-                                        >;
+                                        ProvisionedHostToStatus: { __typename?: 'Status' } & LaForgeStatusFieldsFragment;
                                         ProvisionedHostToHost: { __typename?: 'Host' } & Pick<
                                           LaForgeHost,
                                           | 'id'
@@ -712,10 +848,7 @@ export type LaForgeGetEnvironmentQuery = { __typename?: 'Query' } & {
                                         ProvisionedHostToProvisioningStep: Array<
                                           Maybe<
                                             { __typename?: 'ProvisioningStep' } & Pick<LaForgeProvisioningStep, 'id' | 'type'> & {
-                                                ProvisioningStepToStatus: { __typename?: 'Status' } & Pick<
-                                                  LaForgeStatus,
-                                                  'completed' | 'failed' | 'state'
-                                                >;
+                                                ProvisioningStepToStatus: { __typename?: 'Status' } & LaForgeStatusFieldsFragment;
                                                 ProvisioningStepToScript?: Maybe<
                                                   { __typename?: 'Script' } & Pick<
                                                     LaForgeScript,
@@ -832,43 +965,221 @@ export type LaForgeGetEnvironmentInfoQuery = { __typename?: 'Query' } & {
   >;
 };
 
+export type LaForgeStatusFieldsFragment = { __typename?: 'Status' } & Pick<
+  LaForgeStatus,
+  'id' | 'state' | 'started_at' | 'ended_at' | 'failed' | 'completed' | 'error'
+>;
+
+export type LaForgeAgentStatusFieldsFragment = { __typename?: 'AgentStatus' } & Pick<
+  LaForgeAgentStatus,
+  | 'clientId'
+  | 'hostname'
+  | 'upTime'
+  | 'bootTime'
+  | 'numProcs'
+  | 'OS'
+  | 'hostID'
+  | 'load1'
+  | 'load5'
+  | 'load15'
+  | 'totalMem'
+  | 'freeMem'
+  | 'usedMem'
+  | 'timestamp'
+>;
+
+export type LaForgePlanFieldsFragment = { __typename?: 'Plan' } & Pick<LaForgePlan, 'id' | 'step_number' | 'type'> & {
+    PlanToStatus: { __typename?: 'Status' } & LaForgeStatusFieldsFragment;
+  };
+
 export type LaForgeRebuildMutationVariables = Exact<{
   rootPlans: Array<Maybe<Scalars['String']>> | Maybe<Scalars['String']>;
 }>;
 
 export type LaForgeRebuildMutation = { __typename?: 'Mutation' } & Pick<LaForgeMutation, 'rebuild'>;
 
+export type LaForgeGetStatusQueryVariables = Exact<{
+  statusId: Scalars['String'];
+}>;
+
+export type LaForgeGetStatusQuery = { __typename?: 'Query' } & { status?: Maybe<{ __typename?: 'Status' } & LaForgeStatusFieldsFragment> };
+
+export type LaForgeGetAgentStatusQueryVariables = Exact<{
+  clientId: Scalars['String'];
+}>;
+
+export type LaForgeGetAgentStatusQuery = { __typename?: 'Query' } & {
+  agentStatus?: Maybe<{ __typename?: 'AgentStatus' } & LaForgeAgentStatusFieldsFragment>;
+};
+
+export type LaForgePullPlanStatusesQueryVariables = Exact<{
+  buildId: Scalars['String'];
+}>;
+
+export type LaForgePullPlanStatusesQuery = { __typename?: 'Query' } & {
+  build?: Maybe<
+    { __typename?: 'Build' } & Pick<LaForgeBuild, 'id'> & {
+        buildToPlan: Array<
+          Maybe<
+            { __typename?: 'Plan' } & Pick<LaForgePlan, 'id'> & { PlanToStatus: { __typename?: 'Status' } & LaForgeStatusFieldsFragment }
+          >
+        >;
+      }
+  >;
+};
+
+export type LaForgePullAgentStatusesQueryVariables = Exact<{
+  buildId: Scalars['String'];
+}>;
+
+export type LaForgePullAgentStatusesQuery = { __typename?: 'Query' } & {
+  build?: Maybe<
+    { __typename?: 'Build' } & Pick<LaForgeBuild, 'id'> & {
+        buildToTeam: Array<
+          Maybe<
+            { __typename?: 'Team' } & Pick<LaForgeTeam, 'id'> & {
+                TeamToProvisionedNetwork: Array<
+                  Maybe<
+                    { __typename?: 'ProvisionedNetwork' } & Pick<LaForgeProvisionedNetwork, 'id'> & {
+                        ProvisionedNetworkToProvisionedHost: Array<
+                          Maybe<
+                            { __typename?: 'ProvisionedHost' } & Pick<LaForgeProvisionedHost, 'id'> & {
+                                ProvisionedHostToAgentStatus?: Maybe<{ __typename?: 'AgentStatus' } & LaForgeAgentStatusFieldsFragment>;
+                              }
+                          >
+                        >;
+                      }
+                  >
+                >;
+              }
+          >
+        >;
+      }
+  >;
+};
+
 export type LaForgeSubscribeUpdatedStatusSubscriptionVariables = Exact<{ [key: string]: never }>;
 
 export type LaForgeSubscribeUpdatedStatusSubscription = { __typename?: 'Subscription' } & {
-  updatedStatus: { __typename?: 'Status' } & Pick<
-    LaForgeStatus,
-    'id' | 'state' | 'started_at' | 'ended_at' | 'failed' | 'completed' | 'error'
-  >;
+  updatedStatus: { __typename?: 'Status' } & LaForgeStatusFieldsFragment;
 };
 
 export type LaForgeSubscribeUpdatedAgentStatusSubscriptionVariables = Exact<{ [key: string]: never }>;
 
 export type LaForgeSubscribeUpdatedAgentStatusSubscription = { __typename?: 'Subscription' } & {
-  updatedAgentStatus: { __typename?: 'AgentStatus' } & Pick<
-    LaForgeAgentStatus,
-    | 'clientId'
-    | 'hostname'
-    | 'upTime'
-    | 'bootTime'
-    | 'numProcs'
-    | 'OS'
-    | 'hostID'
-    | 'load1'
-    | 'load5'
-    | 'load15'
-    | 'totalMem'
-    | 'freeMem'
-    | 'usedMem'
-    | 'timestamp'
-  >;
+  updatedAgentStatus: { __typename?: 'AgentStatus' } & LaForgeAgentStatusFieldsFragment;
 };
 
+export type LaForgeSubscribeUpdatedServerTaskSubscriptionVariables = Exact<{ [key: string]: never }>;
+
+export type LaForgeSubscribeUpdatedServerTaskSubscription = { __typename?: 'Subscription' } & {
+  updatedServerTask: { __typename?: 'ServerTask' } & LaForgeServerTaskFieldsFragment;
+};
+
+export type LaForgeServerTaskFieldsFragment = { __typename?: 'ServerTask' } & Pick<
+  LaForgeServerTask,
+  'id' | 'type' | 'start_time' | 'end_time' | 'errors' | 'log_file_path'
+> & {
+    ServerTaskToStatus: { __typename?: 'Status' } & LaForgeStatusFieldsFragment;
+    ServerTaskToEnvironment?: Maybe<{ __typename?: 'Environment' } & Pick<LaForgeEnvironment, 'id' | 'name'>>;
+    ServerTaskToBuild?: Maybe<{ __typename?: 'Build' } & Pick<LaForgeBuild, 'id' | 'revision'>>;
+  };
+
+export type LaForgeGetCurrentUserTasksQueryVariables = Exact<{ [key: string]: never }>;
+
+export type LaForgeGetCurrentUserTasksQuery = { __typename?: 'Query' } & {
+  getCurrentUserTasks?: Maybe<Array<Maybe<{ __typename?: 'ServerTask' } & LaForgeServerTaskFieldsFragment>>>;
+};
+
+export const AgentStatusFieldsFragmentDoc = gql`
+  fragment AgentStatusFields on AgentStatus {
+    clientId
+    hostname
+    upTime
+    bootTime
+    numProcs
+    OS
+    hostID
+    load1
+    load5
+    load15
+    totalMem
+    freeMem
+    usedMem
+    timestamp
+  }
+`;
+export const StatusFieldsFragmentDoc = gql`
+  fragment StatusFields on Status {
+    id
+    state
+    started_at
+    ended_at
+    failed
+    completed
+    error
+  }
+`;
+export const PlanFieldsFragmentDoc = gql`
+  fragment PlanFields on Plan {
+    id
+    step_number
+    type
+    PlanToStatus {
+      ...StatusFields
+    }
+  }
+  ${StatusFieldsFragmentDoc}
+`;
+export const ServerTaskFieldsFragmentDoc = gql`
+  fragment ServerTaskFields on ServerTask {
+    id
+    type
+    start_time
+    end_time
+    errors
+    log_file_path
+    ServerTaskToStatus {
+      ...StatusFields
+    }
+    ServerTaskToEnvironment {
+      id
+      name
+    }
+    ServerTaskToBuild {
+      id
+      revision
+    }
+  }
+  ${StatusFieldsFragmentDoc}
+`;
+export const GetCurrentUserDocument = gql`
+  query GetCurrentUser {
+    currentUser {
+      id
+      username
+      role
+      provider
+      first_name
+      last_name
+      email
+      phone
+      company
+      occupation
+    }
+  }
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeGetCurrentUserGQL extends Apollo.Query<LaForgeGetCurrentUserQuery, LaForgeGetCurrentUserQueryVariables> {
+  document = GetCurrentUserDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
 export const GetBuildTreeDocument = gql`
   query GetBuildTree($buildId: String!) {
     build(buildUUID: $buildId) {
@@ -885,6 +1196,9 @@ export const GetBuildTreeDocument = gql`
         }
         TeamToPlan {
           id
+          PlanToStatus {
+            id
+          }
         }
         TeamToProvisionedNetwork {
           id
@@ -907,6 +1221,9 @@ export const GetBuildTreeDocument = gql`
           }
           ProvisionedNetworkToPlan {
             id
+            PlanToStatus {
+              id
+            }
           }
           ProvisionedNetworkToProvisionedHost {
             id
@@ -935,6 +1252,9 @@ export const GetBuildTreeDocument = gql`
             }
             ProvisionedHostToPlan {
               id
+              PlanToStatus {
+                id
+              }
             }
             ProvisionedHostToProvisioningStep {
               id
@@ -1024,6 +1344,9 @@ export const GetBuildTreeDocument = gql`
               }
               ProvisioningStepToPlan {
                 id
+                PlanToStatus {
+                  id
+                }
               }
             }
             ProvisionedHostToAgentStatus {
@@ -1041,6 +1364,49 @@ export const GetBuildTreeDocument = gql`
 })
 export class LaForgeGetBuildTreeGQL extends Apollo.Query<LaForgeGetBuildTreeQuery, LaForgeGetBuildTreeQueryVariables> {
   document = GetBuildTreeDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const GetBuildPlansDocument = gql`
+  query GetBuildPlans($buildId: String!) {
+    build(buildUUID: $buildId) {
+      id
+      buildToTeam {
+        id
+        TeamToPlan {
+          ...PlanFields
+        }
+        TeamToProvisionedNetwork {
+          id
+          ProvisionedNetworkToPlan {
+            ...PlanFields
+          }
+          ProvisionedNetworkToProvisionedHost {
+            id
+            ProvisionedHostToPlan {
+              ...PlanFields
+            }
+            ProvisionedHostToProvisioningStep {
+              id
+              ProvisioningStepToPlan {
+                ...PlanFields
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  ${PlanFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeGetBuildPlansGQL extends Apollo.Query<LaForgeGetBuildPlansQuery, LaForgeGetBuildPlansQueryVariables> {
+  document = GetBuildPlansDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);
@@ -1075,26 +1441,20 @@ export const GetEnvironmentDocument = gql`
         id
         revision
         buildToStatus {
-          completed
-          failed
-          state
+          ...StatusFields
         }
         buildToTeam {
           id
           team_number
           TeamToStatus {
-            completed
-            failed
-            state
+            ...StatusFields
           }
           TeamToProvisionedNetwork {
             id
             name
             cidr
             ProvisionedNetworkToStatus {
-              completed
-              failed
-              state
+              ...StatusFields
             }
             ProvisionedNetworkToNetwork {
               id
@@ -1112,9 +1472,7 @@ export const GetEnvironmentDocument = gql`
               id
               subnet_ip
               ProvisionedHostToStatus {
-                completed
-                failed
-                state
+                ...StatusFields
               }
               ProvisionedHostToHost {
                 id
@@ -1139,9 +1497,7 @@ export const GetEnvironmentDocument = gql`
                 id
                 type
                 ProvisioningStepToStatus {
-                  completed
-                  failed
-                  state
+                  ...StatusFields
                 }
                 ProvisioningStepToScript {
                   id
@@ -1229,6 +1585,7 @@ export const GetEnvironmentDocument = gql`
       }
     }
   }
+  ${StatusFieldsFragmentDoc}
 `;
 
 @Injectable({
@@ -1324,18 +1681,107 @@ export class LaForgeRebuildGQL extends Apollo.Mutation<LaForgeRebuildMutation, L
     super(apollo);
   }
 }
+export const GetStatusDocument = gql`
+  query GetStatus($statusId: String!) {
+    status(statusUUID: $statusId) {
+      ...StatusFields
+    }
+  }
+  ${StatusFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeGetStatusGQL extends Apollo.Query<LaForgeGetStatusQuery, LaForgeGetStatusQueryVariables> {
+  document = GetStatusDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const GetAgentStatusDocument = gql`
+  query GetAgentStatus($clientId: String!) {
+    agentStatus(clientId: $clientId) {
+      ...AgentStatusFields
+    }
+  }
+  ${AgentStatusFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeGetAgentStatusGQL extends Apollo.Query<LaForgeGetAgentStatusQuery, LaForgeGetAgentStatusQueryVariables> {
+  document = GetAgentStatusDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const PullPlanStatusesDocument = gql`
+  query PullPlanStatuses($buildId: String!) {
+    build(buildUUID: $buildId) {
+      id
+      buildToPlan {
+        id
+        PlanToStatus {
+          ...StatusFields
+        }
+      }
+    }
+  }
+  ${StatusFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgePullPlanStatusesGQL extends Apollo.Query<LaForgePullPlanStatusesQuery, LaForgePullPlanStatusesQueryVariables> {
+  document = PullPlanStatusesDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const PullAgentStatusesDocument = gql`
+  query PullAgentStatuses($buildId: String!) {
+    build(buildUUID: $buildId) {
+      id
+      buildToTeam {
+        id
+        TeamToProvisionedNetwork {
+          id
+          ProvisionedNetworkToProvisionedHost {
+            id
+            ProvisionedHostToAgentStatus {
+              ...AgentStatusFields
+            }
+          }
+        }
+      }
+    }
+  }
+  ${AgentStatusFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgePullAgentStatusesGQL extends Apollo.Query<LaForgePullAgentStatusesQuery, LaForgePullAgentStatusesQueryVariables> {
+  document = PullAgentStatusesDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
 export const SubscribeUpdatedStatusDocument = gql`
   subscription SubscribeUpdatedStatus {
     updatedStatus {
-      id
-      state
-      started_at
-      ended_at
-      failed
-      completed
-      error
+      ...StatusFields
     }
   }
+  ${StatusFieldsFragmentDoc}
 `;
 
 @Injectable({
@@ -1354,22 +1800,10 @@ export class LaForgeSubscribeUpdatedStatusGQL extends Apollo.Subscription<
 export const SubscribeUpdatedAgentStatusDocument = gql`
   subscription SubscribeUpdatedAgentStatus {
     updatedAgentStatus {
-      clientId
-      hostname
-      upTime
-      bootTime
-      numProcs
-      OS
-      hostID
-      load1
-      load5
-      load15
-      totalMem
-      freeMem
-      usedMem
-      timestamp
+      ...AgentStatusFields
     }
   }
+  ${AgentStatusFieldsFragmentDoc}
 `;
 
 @Injectable({
@@ -1380,6 +1814,47 @@ export class LaForgeSubscribeUpdatedAgentStatusGQL extends Apollo.Subscription<
   LaForgeSubscribeUpdatedAgentStatusSubscriptionVariables
 > {
   document = SubscribeUpdatedAgentStatusDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const SubscribeUpdatedServerTaskDocument = gql`
+  subscription SubscribeUpdatedServerTask {
+    updatedServerTask {
+      ...ServerTaskFields
+    }
+  }
+  ${ServerTaskFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeSubscribeUpdatedServerTaskGQL extends Apollo.Subscription<
+  LaForgeSubscribeUpdatedServerTaskSubscription,
+  LaForgeSubscribeUpdatedServerTaskSubscriptionVariables
+> {
+  document = SubscribeUpdatedServerTaskDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const GetCurrentUserTasksDocument = gql`
+  query GetCurrentUserTasks {
+    getCurrentUserTasks {
+      ...ServerTaskFields
+    }
+  }
+  ${ServerTaskFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeGetCurrentUserTasksGQL extends Apollo.Query<LaForgeGetCurrentUserTasksQuery, LaForgeGetCurrentUserTasksQueryVariables> {
+  document = GetCurrentUserTasksDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);

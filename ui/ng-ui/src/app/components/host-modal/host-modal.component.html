@@ -1,11 +1,7 @@
 <div class="host-dialog-header d-flex align-items-center justify-content-between">
   <div class="flex-fill host-status-icon d-flex align-items-center justify-content-start" [ngClass]="'text-' + getStatusColor()">
     <i class="fas fa-2x" [ngClass]="'fa-' + getStatusIcon()"></i>
-    <h4 class="m-0">
-      &nbsp;{{
-        isAgentStale() ? (data.provisionedHost.ProvisionedHostToAgentStatus == null ? 'No Connection' : 'Connection Lost') : 'Connected'
-      }}
-    </h4>
+    <h4 class="m-0">&nbsp;{{ isAgentStale() ? (!data.agentStatus ? 'No Connection' : 'Connection Lost') : 'Connected' }}</h4>
   </div>
   <div class="flex-fill d-flex align-items-center justify-content-center">
     <h4 class="host-name m-0">{{ data.provisionedHost.ProvisionedHostToHost.hostname }}</h4>
@@ -21,66 +17,64 @@
 <div class="row">
   <div class="col-12">
     <h3 class="text-center">Agent Data</h3>
-    <p class="text-center text-secondary">
-      {{
-        data.provisionedHost.ProvisionedHostToAgentStatus &&
-          (data.provisionedHost.ProvisionedHostToAgentStatus.timestamp | amFromUnix | amDateFormat: 'h:mm A, MMMM D YYYY')
-      }}
+    <p class="text-center text-secondary" *ngIf="data.agentStatus">ClientID - {{ data.agentStatus.clientId }}</p>
+    <p class="text-center text-secondary" *ngIf="data.agentStatus">
+      {{ data.agentStatus.timestamp | amFromUnix | amDateFormat: 'h:mm A, MMMM D YYYY' }}
     </p>
   </div>
   <div class="col-12">
-    <div class="row" *ngIf="!data.provisionedHost.ProvisionedHostToAgentStatus">
+    <div class="row" *ngIf="!data.agentStatus">
       <div class="col-12">
         <p class="text-center text-danger">Could not connect to the Agent. Please ensure the host deployed properly.</p>
       </div>
     </div>
   </div>
   <div class="col-12">
-    <div class="row" *ngIf="data.provisionedHost.ProvisionedHostToAgentStatus">
+    <div class="row" *ngIf="data.agentStatus">
       <!-- <div class="col-6">
       <p class="detail-title"><b>Hostname</b></p>
-      <p class="detail-value">{{ data.provisionedHost.ProvisionedHostToAgentStatus.hostname }}</p>
+      <p class="detail-value">{{ agentStatus.hostname }}</p>
     </div> -->
       <div class="col-4">
         <p class="detail-title"><b>Uptime</b></p>
-        <p class="detail-value">{{ data.provisionedHost.ProvisionedHostToAgentStatus.upTime | amDuration: 'seconds' }}</p>
+        <p class="detail-value">{{ data.agentStatus.upTime | amDuration: 'seconds' }}</p>
       </div>
       <div class="col-4">
         <p class="detail-title"><b>Boot Time</b></p>
-        <p class="detail-value">{{ data.provisionedHost.ProvisionedHostToAgentStatus.bootTime | amFromUnix | amDateFormat: 'hh:mm A' }}</p>
+        <p class="detail-value">{{ data.agentStatus.bootTime | amFromUnix | amDateFormat: 'hh:mm A' }}</p>
       </div>
       <div class="col-4">
         <p class="detail-title"><b># Processes Running</b></p>
-        <p class="detail-value">{{ data.provisionedHost.ProvisionedHostToAgentStatus.numProcs }}</p>
+        <p class="detail-value">{{ data.agentStatus.numProcs }}</p>
       </div>
       <!-- Fred said to ignore hostID for now -->
       <!-- <div class="col-6">
       <p class="detail-title"><b>Host ID</b></p>
-      <p class="detail-value">{{ data.provisionedHost.ProvisionedHostToAgentStatus.hostID }}</p>
+      <p class="detail-value">{{ agentStatus.hostID }}</p>
     </div> -->
-      <div class="col-4" *ngIf="data.provisionedHost.ProvisionedHostToAgentStatus.load1 != null">
+      <div class="col-4" *ngIf="data.agentStatus.load1 != null">
         <p class="detail-title"><b>1 Minute Load</b></p>
-        <p class="detail-value">{{ data.provisionedHost.ProvisionedHostToAgentStatus.load1 / 100 | percent: '1.2' }}</p>
+        <p class="detail-value">{{ data.agentStatus.load1 / 100 | percent: '1.2' }}</p>
       </div>
-      <div class="col-4" *ngIf="data.provisionedHost.ProvisionedHostToAgentStatus.load5 != null">
+      <div class="col-4" *ngIf="data.agentStatus.load5 != null">
         <p class="detail-title"><b>5 Minute Load</b></p>
-        <p class="detail-value">{{ data.provisionedHost.ProvisionedHostToAgentStatus.load5 / 100 | percent: '1.2' }}</p>
+        <p class="detail-value">{{ data.agentStatus.load5 / 100 | percent: '1.2' }}</p>
       </div>
-      <div class="col-4" *ngIf="data.provisionedHost.ProvisionedHostToAgentStatus.load15 != null">
+      <div class="col-4" *ngIf="data.agentStatus.load15 != null">
         <p class="detail-title"><b>15 Minute Load</b></p>
-        <p class="detail-value">{{ data.provisionedHost.ProvisionedHostToAgentStatus.load15 / 100 | percent: '1.2' }}</p>
+        <p class="detail-value">{{ data.agentStatus.load15 / 100 | percent: '1.2' }}</p>
       </div>
       <div class="col-4">
         <p class="detail-title"><b>Total Memory</b></p>
-        <p class="detail-value">{{ data.provisionedHost.ProvisionedHostToAgentStatus.totalMem | fromBytes }}</p>
+        <p class="detail-value">{{ data.agentStatus.totalMem | fromBytes }}</p>
       </div>
       <div class="col-4">
         <p class="detail-title"><b>Free Memory</b></p>
-        <p class="detail-value">{{ data.provisionedHost.ProvisionedHostToAgentStatus.freeMem | fromBytes }}</p>
+        <p class="detail-value">{{ data.agentStatus.freeMem | fromBytes }}</p>
       </div>
       <div class="col-4">
         <p class="detail-title"><b>Used Memory</b></p>
-        <p class="detail-value">{{ data.provisionedHost.ProvisionedHostToAgentStatus.usedMem | fromBytes }}</p>
+        <p class="detail-value">{{ data.agentStatus.usedMem | fromBytes }}</p>
       </div>
     </div>
   </div>
@@ -176,20 +170,12 @@
   <div class="col-12">
     <p class="detail-title"><b>Steps</b></p>
     <app-step
-      *ngFor="
-        let step of data.provisionedHost.ProvisionedHostToProvisioningStep == null
-          ? provisionedSteps
-          : data.provisionedHost.ProvisionedHostToProvisioningStep;
-        let i = index
-      "
+      *ngFor="let step of data.provisionedHost.ProvisionedHostToProvisioningStep | sortBy: 'asc':'step_number'; let i = index"
       [stepNumber]="i + 1"
-      [provisionedStep]="step"
+      [provisioningStep]="step"
       [showDetail]="false"
       [style]="'compact'"
     ></app-step>
-    <i
-      class="fas fa-2x fa-sync fa-spin"
-      *ngIf="data.provisionedHost.ProvisionedHostToProvisioningStep == null && provisionedSteps == null"
-    ></i>
+    <!-- <i class="fas fa-2x fa-sync fa-spin" *ngIf="data.provisionedHost.ProvisionedHostToProvisioningStep == null"></i> -->
   </div>
 </div>

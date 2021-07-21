@@ -18,7 +18,7 @@ func (Status) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
 		field.Enum("state").Values("PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED", "TODELETE", "DELETEINPROGRESS", "DELETED"),
-		field.Enum("status_for").Values("Build", "Team", "Plan", "ProvisionedNetwork", "ProvisionedHost", "ProvisioningStep"),
+		field.Enum("status_for").Values("Build", "Team", "Plan", "ProvisionedNetwork", "ProvisionedHost", "ProvisioningStep", "ServerTask"),
 		field.Time("started_at").Optional(),
 		field.Time("ended_at").Optional(),
 		field.Bool("failed").Default(false),
@@ -47,6 +47,9 @@ func (Status) Edges() []ent.Edge {
 			Unique(),
 		edge.From("StatusToPlan", Plan.Type).
 			Ref("PlanToStatus").
+			Unique(),
+		edge.From("StatusToServerTask", ServerTask.Type).
+			Ref("ServerTaskToStatus").
 			Unique(),
 	}
 }

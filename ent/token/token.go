@@ -13,8 +13,8 @@ const (
 	FieldID = "id"
 	// FieldToken holds the string denoting the token field in the database.
 	FieldToken = "token"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
+	// FieldExpireAt holds the string denoting the expire_at field in the database.
+	FieldExpireAt = "expire_at"
 	// EdgeTokenToAuthUser holds the string denoting the tokentoauthuser edge name in mutations.
 	EdgeTokenToAuthUser = "TokenToAuthUser"
 	// Table holds the table name of the token in the database.
@@ -32,7 +32,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldToken,
-	FieldCreatedAt,
+	FieldExpireAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "tokens"

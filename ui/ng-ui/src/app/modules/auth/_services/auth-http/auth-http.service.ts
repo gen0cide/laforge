@@ -4,6 +4,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { UserModel } from '../../_models/user.model';
 import { environment } from '../../../../../environments/environment';
 import { AuthModel } from '../../_models/auth.model';
+import { LaForgeAuthUser, LaForgeGetCurrentUserGQL } from '@graphql';
+import { map } from 'rxjs/operators';
 
 const API_USERS_URL = `${environment.apiUrl}/users`;
 
@@ -11,12 +13,43 @@ const API_USERS_URL = `${environment.apiUrl}/users`;
   providedIn: 'root'
 })
 export class AuthHTTPService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private getCurrentUser: LaForgeGetCurrentUserGQL) {}
+
+  logout(): Observable<boolean> {
+    return this.http
+      .get(`${environment.authBaseUrl}/logout`, {
+        withCredentials: true,
+        observe: 'response'
+      })
+      .pipe(
+        map((response) => {
+          return response.status === 200;
+        })
+      );
+  }
 
   // public methods
   login(email: string, password: string): Observable<any> {
-    console.log('real login');
-    return this.http.post<AuthModel>(API_USERS_URL, { email, password });
+    return this.http.post<AuthModel>(
+      API_USERS_URL,
+      { email, password },
+      {
+        withCredentials: true
+      }
+    );
+  }
+
+  localLogin(email: string, password: string): Observable<LaForgeAuthUser> {
+    return this.http.post<LaForgeAuthUser>(
+      `${environment.authBaseUrl}/local/login`,
+      {
+        username: email,
+        password
+      },
+      {
+        withCredentials: true
+      }
+    );
   }
 
   // CREATE =>  POST: add a new user to the server
@@ -38,5 +71,13 @@ export class AuthHTTPService {
     return this.http.get<UserModel>(`${API_USERS_URL}`, {
       headers: httpHeaders
     });
+  }
+
+  getCurrentUserFromContext(): Observable<LaForgeAuthUser> {
+    return this.getCurrentUser.fetch().pipe(
+      map((result) => {
+        return result.data.currentUser;
+      })
+    );
   }
 }

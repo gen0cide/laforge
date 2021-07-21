@@ -25,6 +25,8 @@ const (
 	FieldOutput = "output"
 	// FieldState holds the string denoting the state field in the database.
 	FieldState = "state"
+	// FieldErrorMessage holds the string denoting the error_message field in the database.
+	FieldErrorMessage = "error_message"
 	// EdgeAgentTaskToProvisioningStep holds the string denoting the agenttasktoprovisioningstep edge name in mutations.
 	EdgeAgentTaskToProvisioningStep = "AgentTaskToProvisioningStep"
 	// EdgeAgentTaskToProvisionedHost holds the string denoting the agenttasktoprovisionedhost edge name in mutations.
@@ -55,6 +57,7 @@ var Columns = []string{
 	FieldNumber,
 	FieldOutput,
 	FieldState,
+	FieldErrorMessage,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "agent_tasks"
@@ -80,6 +83,10 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultOutput holds the default value on creation for the "output" field.
+	DefaultOutput string
+	// DefaultErrorMessage holds the default value on creation for the "error_message" field.
+	DefaultErrorMessage string
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

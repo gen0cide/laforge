@@ -13,20 +13,25 @@ import (
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
+	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/sirupsen/logrus"
 )
 
-func DeleteBuild(ctx context.Context, client *ent.Client, entBuild *ent.Build) (bool, error) {
-	entPlans, err := entBuild.QueryBuildToPlan().All(ctx)
+func DeleteBuild(client *ent.Client, entBuild *ent.Build, spawnedDelete chan bool) (bool, error) {
+	deleteContext := context.Background()
+
+	entPlans, err := entBuild.QueryBuildToPlan().All(deleteContext)
 	if err != nil {
+		spawnedDelete <- false
 		return false, err
 	}
 
 	var wg sync.WaitGroup
 	for _, entPlan := range entPlans {
-		planStatus, err := entPlan.PlanToStatus(ctx)
+		planStatus, err := entPlan.PlanToStatus(deleteContext)
 		if err != nil {
+			spawnedDelete <- false
 			return false, err
 		}
 
@@ -34,28 +39,31 @@ func DeleteBuild(ctx context.Context, client *ent.Client, entBuild *ent.Build) (
 
 		go func(wg *sync.WaitGroup, planStatus *ent.Status) {
 			defer wg.Done()
-			planStatus.Update().SetState(status.StateTODELETE).Save(ctx)
-			rdb.Publish(ctx, "updatedStatus", planStatus.ID.String())
+			planStatus.Update().SetState(status.StateTODELETE).Save(deleteContext)
+			rdb.Publish(deleteContext, "updatedStatus", planStatus.ID.String())
 		}(&wg, planStatus)
 	}
 
 	wg.Wait()
 
-	rootPlans, err := entBuild.QueryBuildToPlan().Where(plan.TypeEQ(plan.TypeStartBuild)).All(ctx)
+	rootPlans, err := entBuild.QueryBuildToPlan().Where(plan.TypeEQ(plan.TypeStartBuild)).All(deleteContext)
 	if err != nil {
 		logrus.Errorf("error querying root plans from build: %v", err)
+		spawnedDelete <- false
 		return false, err
 	}
 	logrus.Infof("ROOT PLANS: %v", rootPlans)
-	environment, err := entBuild.QueryBuildToEnvironment().Only(ctx)
+	environment, err := entBuild.QueryBuildToEnvironment().Only(deleteContext)
 	if err != nil {
 		logrus.Errorf("error querying environment from build: %v", err)
+		spawnedDelete <- false
 		return false, err
 	}
 
 	genericBuilder, err := builder.BuilderFromEnvironment(environment)
 	if err != nil {
 		logrus.Errorf("error generating builder: %v", err)
+		spawnedDelete <- false
 		return false, err
 	}
 
@@ -68,6 +76,8 @@ func DeleteBuild(ctx context.Context, client *ent.Client, entBuild *ent.Build) (
 		wg.Add(1)
 		go deleteRoutine(client, &genericBuilder, deleteCtx, entPlan, &wg)
 	}
+
+	spawnedDelete <- true
 
 	wg.Wait()
 
@@ -411,6 +421,33 @@ func deleteHost(client *ent.Client, builder *builder.Builder, ctx context.Contex
 			return saveErr
 		}
 		rdb.Publish(ctx, "updatedStatus", hostStatus.ID.String())
+		// Set delete on the User Data script
+		step, saveErr := entProHost.QueryProvisionedHostToProvisioningStep().Where(provisioningstep.StepNumberEQ(0)).Only(ctx)
+		if saveErr != nil {
+			logrus.Errorf("error while querying userdata script from Provisioned Host: %v", saveErr)
+			return saveErr
+		}
+		ginFileMiddleware, saveErr := step.QueryProvisioningStepToGinFileMiddleware().Only(ctx)
+		if saveErr != nil {
+			logrus.Errorf("error while querying Gin File Middleware from provisioning step: %v", saveErr)
+			return saveErr
+		}
+		saveErr = ginFileMiddleware.Update().SetAccessed(false).Exec(ctx)
+		if saveErr != nil {
+			logrus.Errorf("error while setting Gin File Middleware accessed to false: %v", saveErr)
+			return saveErr
+		}
+		provisionedStatus, saveErr := step.QueryProvisioningStepToStatus().Only(ctx)
+		if saveErr != nil {
+			logrus.Errorf("error while querying Status from Provisioning Step: %v", saveErr)
+			return saveErr
+		}
+		saveErr = provisionedStatus.Update().SetState(status.StateDELETED).Exec(ctx)
+		if saveErr != nil {
+			logrus.Errorf("error while setting Provisioning Step status to DELETED: %v", saveErr)
+			return saveErr
+		}
+		rdb.Publish(ctx, "updatedStatus", provisionedStatus.ID.String())
 	}
 	logrus.Infof("deleted %s successfully", entProHost.SubnetIP)
 

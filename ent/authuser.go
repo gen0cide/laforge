@@ -19,7 +19,21 @@ type AuthUser struct {
 	// Username holds the value of the "username" field.
 	Username string `json:"username,omitempty"`
 	// Password holds the value of the "password" field.
-	Password string `json:"password,omitempty"`
+	Password string `json:"-"`
+	// FirstName holds the value of the "first_name" field.
+	FirstName string `json:"first_name,omitempty"`
+	// LastName holds the value of the "last_name" field.
+	LastName string `json:"last_name,omitempty"`
+	// Email holds the value of the "email" field.
+	Email string `json:"email,omitempty"`
+	// Phone holds the value of the "phone" field.
+	Phone string `json:"phone,omitempty"`
+	// Company holds the value of the "company" field.
+	Company string `json:"company,omitempty"`
+	// Occupation holds the value of the "occupation" field.
+	Occupation string `json:"occupation,omitempty"`
+	// PrivateKeyPath holds the value of the "private_key_path" field.
+	PrivateKeyPath string `json:"private_key_path,omitempty"`
 	// Role holds the value of the "role" field.
 	Role authuser.Role `json:"role,omitempty"`
 	// Provider holds the value of the "provider" field.
@@ -31,6 +45,8 @@ type AuthUser struct {
 	// Edges put into the main struct to be loaded via hcl
 	// AuthUserToToken holds the value of the AuthUserToToken edge.
 	HCLAuthUserToToken []*Token `json:"AuthUserToToken,omitempty"`
+	// AuthUserToServerTasks holds the value of the AuthUserToServerTasks edge.
+	HCLAuthUserToServerTasks []*ServerTask `json:"AuthUserToServerTasks,omitempty"`
 	//
 
 }
@@ -39,9 +55,11 @@ type AuthUser struct {
 type AuthUserEdges struct {
 	// AuthUserToToken holds the value of the AuthUserToToken edge.
 	AuthUserToToken []*Token `json:"AuthUserToToken,omitempty"`
+	// AuthUserToServerTasks holds the value of the AuthUserToServerTasks edge.
+	AuthUserToServerTasks []*ServerTask `json:"AuthUserToServerTasks,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // AuthUserToTokenOrErr returns the AuthUserToToken value or an error if the edge
@@ -53,12 +71,21 @@ func (e AuthUserEdges) AuthUserToTokenOrErr() ([]*Token, error) {
 	return nil, &NotLoadedError{edge: "AuthUserToToken"}
 }
 
+// AuthUserToServerTasksOrErr returns the AuthUserToServerTasks value or an error if the edge
+// was not loaded in eager-loading.
+func (e AuthUserEdges) AuthUserToServerTasksOrErr() ([]*ServerTask, error) {
+	if e.loadedTypes[1] {
+		return e.AuthUserToServerTasks, nil
+	}
+	return nil, &NotLoadedError{edge: "AuthUserToServerTasks"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*AuthUser) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case authuser.FieldUsername, authuser.FieldPassword, authuser.FieldRole, authuser.FieldProvider:
+		case authuser.FieldUsername, authuser.FieldPassword, authuser.FieldFirstName, authuser.FieldLastName, authuser.FieldEmail, authuser.FieldPhone, authuser.FieldCompany, authuser.FieldOccupation, authuser.FieldPrivateKeyPath, authuser.FieldRole, authuser.FieldProvider:
 			values[i] = new(sql.NullString)
 		case authuser.FieldID:
 			values[i] = new(uuid.UUID)
@@ -95,6 +122,48 @@ func (au *AuthUser) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				au.Password = value.String
 			}
+		case authuser.FieldFirstName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field first_name", values[i])
+			} else if value.Valid {
+				au.FirstName = value.String
+			}
+		case authuser.FieldLastName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field last_name", values[i])
+			} else if value.Valid {
+				au.LastName = value.String
+			}
+		case authuser.FieldEmail:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field email", values[i])
+			} else if value.Valid {
+				au.Email = value.String
+			}
+		case authuser.FieldPhone:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field phone", values[i])
+			} else if value.Valid {
+				au.Phone = value.String
+			}
+		case authuser.FieldCompany:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field company", values[i])
+			} else if value.Valid {
+				au.Company = value.String
+			}
+		case authuser.FieldOccupation:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field occupation", values[i])
+			} else if value.Valid {
+				au.Occupation = value.String
+			}
+		case authuser.FieldPrivateKeyPath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field private_key_path", values[i])
+			} else if value.Valid {
+				au.PrivateKeyPath = value.String
+			}
 		case authuser.FieldRole:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field role", values[i])
@@ -115,6 +184,11 @@ func (au *AuthUser) assignValues(columns []string, values []interface{}) error {
 // QueryAuthUserToToken queries the "AuthUserToToken" edge of the AuthUser entity.
 func (au *AuthUser) QueryAuthUserToToken() *TokenQuery {
 	return (&AuthUserClient{config: au.config}).QueryAuthUserToToken(au)
+}
+
+// QueryAuthUserToServerTasks queries the "AuthUserToServerTasks" edge of the AuthUser entity.
+func (au *AuthUser) QueryAuthUserToServerTasks() *ServerTaskQuery {
+	return (&AuthUserClient{config: au.config}).QueryAuthUserToServerTasks(au)
 }
 
 // Update returns a builder for updating this AuthUser.
@@ -142,8 +216,21 @@ func (au *AuthUser) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", au.ID))
 	builder.WriteString(", username=")
 	builder.WriteString(au.Username)
-	builder.WriteString(", password=")
-	builder.WriteString(au.Password)
+	builder.WriteString(", password=<sensitive>")
+	builder.WriteString(", first_name=")
+	builder.WriteString(au.FirstName)
+	builder.WriteString(", last_name=")
+	builder.WriteString(au.LastName)
+	builder.WriteString(", email=")
+	builder.WriteString(au.Email)
+	builder.WriteString(", phone=")
+	builder.WriteString(au.Phone)
+	builder.WriteString(", company=")
+	builder.WriteString(au.Company)
+	builder.WriteString(", occupation=")
+	builder.WriteString(au.Occupation)
+	builder.WriteString(", private_key_path=")
+	builder.WriteString(au.PrivateKeyPath)
 	builder.WriteString(", role=")
 	builder.WriteString(fmt.Sprintf("%v", au.Role))
 	builder.WriteString(", provider=")

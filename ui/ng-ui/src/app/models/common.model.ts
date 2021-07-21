@@ -1,4 +1,4 @@
-import { Build, Environment } from './environment.model';
+import { Build } from './environment.model';
 import { ProvisionedHost } from './host.model';
 import { ProvisionedNetwork } from './network.model';
 import { ProvisioningStep } from './step.model';

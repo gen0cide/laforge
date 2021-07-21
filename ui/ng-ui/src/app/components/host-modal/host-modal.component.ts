@@ -1,8 +1,12 @@
-import { Component, Inject, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { ProvisionStatus } from 'src/app/models/common.model';
-import { ProvisionedHost } from 'src/app/models/host.model';
-import { ProvisioningStep } from 'src/app/models/step.model';
+import {
+  LaForgeSubscribeUpdatedStatusSubscription,
+  LaForgeSubscribeUpdatedAgentStatusSubscription,
+  LaForgeGetBuildTreeQuery,
+  LaForgeProvisionStatus
+} from '@graphql';
+import { EnvironmentService } from '@services/environment/environment.service';
 import { ApiService } from 'src/app/services/api/api.service';
 
 @Component({
@@ -10,46 +14,85 @@ import { ApiService } from 'src/app/services/api/api.service';
   templateUrl: './host-modal.component.html',
   styleUrls: ['./host-modal.component.scss']
 })
-class HostModalComponent implements OnInit {
+class HostModalComponent implements OnInit, OnDestroy {
   varsColumns: string[] = ['key', 'value'];
   tagsColumns: string[] = ['name', 'description'];
-  provisionedSteps: ProvisioningStep[];
+  // planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
+  // provisionedHostStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
+  // agentStatus: LaForgeSubscribeUpdatedAgentStatusSubscription['updatedAgentStatus'];
 
   constructor(
     public dialogRef: MatDialogRef<HostModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { provisionedHost: ProvisionedHost; needsToQuerySteps?: boolean },
-    private api: ApiService
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
+      // eslint-disable-next-line max-len
+      provisionedHost: LaForgeGetBuildTreeQuery['build']['buildToTeam'][0]['TeamToProvisionedNetwork'][0]['ProvisionedNetworkToProvisionedHost'][0];
+      planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
+      provisionedHostStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
+      agentStatus: LaForgeSubscribeUpdatedAgentStatusSubscription['updatedAgentStatus'];
+      needsToQuerySteps?: boolean;
+    },
+    private api: ApiService,
+    private envService: EnvironmentService,
+    private cdRef: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    if (this.data.provisionedHost.ProvisionedHostToProvisioningStep.length === 0) {
-      this.api.pullHostSteps(this.data.provisionedHost.id).then((steps: ProvisioningStep[]) => {
-        this.provisionedSteps = steps;
-      });
-    }
+    // this.envService.statusUpdate.asObservable().subscribe(() => {
+    //   this.checkPlanStatus();
+    //   this.checkProvisionedHostStatus();
+    //   this.cdRef.detectChanges();
+    // });
+    // this.envService.agentStatusUpdate.asObservable().subscribe(() => {
+    //   this.checkAgentStatus();
+    //   this.cdRef.detectChanges();
+    // });
+  }
+
+  ngOnDestroy() {
+    // this.envService.statusUpdate.unsubscribe();
+    // this.envService.agentStatusUpdate.unsubscribe();
   }
 
   onClose(): void {
     this.dialogRef.close();
   }
 
+  checkPlanStatus(): void {
+    this.data.planStatus =
+      this.envService.getStatus(this.data.provisionedHost.ProvisionedHostToPlan.PlanToStatus.id) || this.data.planStatus;
+  }
+
+  checkProvisionedHostStatus(): void {
+    this.data.provisionedHostStatus =
+      this.envService.getStatus(this.data.provisionedHost.ProvisionedHostToStatus.id) || this.data.provisionedHostStatus;
+  }
+
+  checkAgentStatus(): void {
+    this.data.agentStatus =
+      this.envService.getAgentStatus(this.data.provisionedHost.ProvisionedHostToAgentStatus.clientId) || this.data.agentStatus;
+  }
+
   isAgentStale(): boolean {
-    if (!this.data.provisionedHost.ProvisionedHostToAgentStatus?.clientId) return true;
-    return Date.now() / 1000 - this.data.provisionedHost.ProvisionedHostToAgentStatus.timestamp > 60;
+    if (!this.data.agentStatus) return true;
+    return Date.now() / 1000 - this.data.agentStatus.timestamp > 120;
   }
 
   getStatusIcon(): string {
-    if (this.data.provisionedHost.ProvisionedHostToAgentStatus?.clientId) {
+    if (this.data.agentStatus) {
       if (this.isAgentStale()) return 'exclamation-circle';
       else return 'check-circle';
     }
-    // TODO: Fix for live statuses after finals
-    switch (this.data.provisionedHost.ProvisionedHostToStatus.state) {
-      case ProvisionStatus.COMPLETE:
+    const status = this.data.planStatus ?? this.data.provisionedHostStatus;
+    if (!status?.state) {
+      return 'minus-circle';
+    }
+    switch (status.state) {
+      case LaForgeProvisionStatus.Complete:
         return 'check-circle';
-      case ProvisionStatus.FAILED:
+      case LaForgeProvisionStatus.Failed:
         return 'times-circle';
-      case ProvisionStatus.INPROGRESS:
+      case LaForgeProvisionStatus.Inprogress:
         return 'play-circle';
       default:
         return 'minus-circle';
@@ -57,17 +100,20 @@ class HostModalComponent implements OnInit {
   }
 
   getStatusColor(): string {
-    if (this.data.provisionedHost.ProvisionedHostToAgentStatus?.clientId) {
+    if (this.data.agentStatus) {
       if (this.isAgentStale()) return 'warning';
       else return 'success';
     }
-    // TODO: Fix for live statuses after finals
-    switch (this.data.provisionedHost.ProvisionedHostToStatus.state) {
-      case ProvisionStatus.COMPLETE:
+    const status = this.data.planStatus ?? this.data.provisionedHostStatus;
+    if (!status?.state) {
+      return 'minus-circle';
+    }
+    switch (status.state) {
+      case LaForgeProvisionStatus.Complete:
         return 'success';
-      case ProvisionStatus.FAILED:
+      case LaForgeProvisionStatus.Failed:
         return 'danger';
-      case ProvisionStatus.INPROGRESS:
+      case LaForgeProvisionStatus.Inprogress:
         return 'info';
       default:
         return 'dark';

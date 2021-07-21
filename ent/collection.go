@@ -309,6 +309,18 @@ func (s *ScriptQuery) collectField(ctx *graphql.OperationContext, field graphql.
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (st *ServerTaskQuery) CollectFields(ctx context.Context, satisfies ...string) *ServerTaskQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		st = st.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return st
+}
+
+func (st *ServerTaskQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *ServerTaskQuery {
+	return st
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (s *StatusQuery) CollectFields(ctx context.Context, satisfies ...string) *StatusQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		s = s.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)

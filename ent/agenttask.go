@@ -25,9 +25,11 @@ type AgentTask struct {
 	// Number holds the value of the "number" field.
 	Number int `json:"number,omitempty"`
 	// Output holds the value of the "output" field.
-	Output *string `json:"output,omitempty"`
+	Output string `json:"output,omitempty"`
 	// State holds the value of the "state" field.
 	State agenttask.State `json:"state,omitempty"`
+	// ErrorMessage holds the value of the "error_message" field.
+	ErrorMessage string `json:"error_message,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AgentTaskQuery when eager-loading is set.
 	Edges AgentTaskEdges `json:"edges"`
@@ -88,7 +90,7 @@ func (*AgentTask) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case agenttask.FieldNumber:
 			values[i] = new(sql.NullInt64)
-		case agenttask.FieldCommand, agenttask.FieldArgs, agenttask.FieldOutput, agenttask.FieldState:
+		case agenttask.FieldCommand, agenttask.FieldArgs, agenttask.FieldOutput, agenttask.FieldState, agenttask.FieldErrorMessage:
 			values[i] = new(sql.NullString)
 		case agenttask.FieldID:
 			values[i] = new(uuid.UUID)
@@ -139,14 +141,19 @@ func (at *AgentTask) assignValues(columns []string, values []interface{}) error 
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field output", values[i])
 			} else if value.Valid {
-				at.Output = new(string)
-				*at.Output = value.String
+				at.Output = value.String
 			}
 		case agenttask.FieldState:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field state", values[i])
 			} else if value.Valid {
 				at.State = agenttask.State(value.String)
+			}
+		case agenttask.FieldErrorMessage:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field error_message", values[i])
+			} else if value.Valid {
+				at.ErrorMessage = value.String
 			}
 		case agenttask.ForeignKeys[0]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -204,12 +211,12 @@ func (at *AgentTask) String() string {
 	builder.WriteString(at.Args)
 	builder.WriteString(", number=")
 	builder.WriteString(fmt.Sprintf("%v", at.Number))
-	if v := at.Output; v != nil {
-		builder.WriteString(", output=")
-		builder.WriteString(*v)
-	}
+	builder.WriteString(", output=")
+	builder.WriteString(at.Output)
 	builder.WriteString(", state=")
 	builder.WriteString(fmt.Sprintf("%v", at.State))
+	builder.WriteString(", error_message=")
+	builder.WriteString(at.ErrorMessage)
 	builder.WriteByte(')')
 	return builder.String()
 }

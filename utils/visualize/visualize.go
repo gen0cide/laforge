@@ -9,11 +9,21 @@ import (
 
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/plan"
+	"github.com/gen0cide/laforge/ent/provisionedhost"
+	"github.com/gen0cide/laforge/ent/provisionednetwork"
+	"github.com/gen0cide/laforge/ent/team"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	// logrus.SetLevel(logrus.DebugLevel)
+	// s := "blah\nblah💔"
+	// fmt.Printf("%s\n---\n", s)
+	// s = strings.ReplaceAll(s, "\n", "🔥")
+	// fmt.Printf("%s\n---\n", s)
+	// s = strings.ReplaceAll(s, "🔥", "\n")
+	// fmt.Printf("%s\n---\n", s)
+	logrus.SetLevel(logrus.DebugLevel)
 	pgHost, ok := os.LookupEnv("PG_HOST")
 	client := &ent.Client{}
 
@@ -32,10 +42,26 @@ func main() {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
-	// env, err := client.Environment.Query().Where(environment.NameEQ("fred")).Only(ctx)
+	// hosts, err := client.Host.Query().All(ctx)
 	// if err != nil {
 	// 	log.Fatalf("error querying env: %v", err)
 	// }
+
+	uuid, _ := uuid.Parse("0f8ce3a7-2d7d-4791-a25b-60d5afbdfdf9")
+	build := client.Build.GetX(ctx, uuid)
+	teams := build.QueryBuildToTeam().AllX(ctx)
+
+	for _, teamer := range teams {
+		ph, err := client.ProvisionedHost.Query().Where(provisionedhost.And(
+			provisionedhost.HasProvisionedHostToProvisionedNetworkWith(provisionednetwork.HasProvisionedNetworkToTeamWith(team.IDEQ(teamer.ID))),
+			provisionedhost.AddonTypeEQ(provisionedhost.AddonTypeDNS),
+		)).All(ctx)
+		if err != nil {
+			log.Fatalf("failed creating schema resources: %v", err)
+		}
+
+		fmt.Println(ph)
+	}
 
 	// build, err := env.QueryEnvironmentToBuild().Order(ent.Desc(build.FieldRevision)).First(ctx)
 	// if err != nil {
@@ -43,24 +69,24 @@ func main() {
 	// }
 
 	// rootPlan, err := build.QueryBuildToPlan().Where(plan.TypeEQ(plan.TypeStartBuild)).First(ctx)
-	uuid, _ := uuid.Parse("fa4018ac-31f9-4165-a958-d901cc55a96e")
-	rootPlan, err := client.Plan.Query().Where(plan.IDEQ(uuid)).Only(ctx)
-	if err != nil {
-		log.Fatalf("error w/ rootPlan: %v", err)
-	}
-	prevPlans, err := rootPlan.PrevPlan(ctx)
-	if err != nil {
-		log.Fatalf("error w/ rootPlan: %v", err)
-	}
+	// uuid, _ := uuid.Parse("fa4018ac-31f9-4165-a958-d901cc55a96e")
+	// rootPlan, err := client.Plan.Query().Where(plan.IDEQ(uuid)).Only(ctx)
+	// if err != nil {
+	// 	log.Fatalf("error w/ rootPlan: %v", err)
+	// }
+	// prevPlans, err := rootPlan.PrevPlan(ctx)
+	// if err != nil {
+	// 	log.Fatalf("error w/ rootPlan: %v", err)
+	// }
 
-	// planPath := ""
-	var wg sync.WaitGroup
-	for _, prevPlan := range prevPlans {
-		fmt.Printf("%s\n", prevPlan.ID)
-		// wg.Add(1)
-		// go Traverse(ctx, planPath, prevPlan, &wg)
-	}
-	wg.Wait()
+	// // planPath := ""
+	// var wg sync.WaitGroup
+	// for _, prevPlan := range prevPlans {
+	// 	fmt.Printf("%s\n", prevPlan.ID)
+	// 	// wg.Add(1)
+	// 	// go Traverse(ctx, planPath, prevPlan, &wg)
+	// }
+	// wg.Wait()
 }
 
 func Traverse(ctx context.Context, planPath string, entPlan *ent.Plan, wg *sync.WaitGroup) {

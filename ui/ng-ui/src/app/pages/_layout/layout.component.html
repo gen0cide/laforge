@@ -8,18 +8,13 @@
     [ngClass]="headerMobileClasses"
   ></app-header-mobile>
   <!-- end:: Header Mobile -->
-  <div class="d-flex flex-column flex-root">
+  <div class="d-flex flex-column flex-root h-100">
     <!--begin::Page-->
     <div class="d-flex flex-row flex-column-fluid page">
       <!-- begin:: Aside Left -->
       <ng-container *ngIf="asideSelfDisplay">
         <!--begin::STATIC Aside-->
-        <app-aside
-          #ktAside
-          id="kt_aside"
-          class="aside aside-left d-flex flex-column flex-row-auto"
-          [ngClass]="asideCSSClasses"
-        ></app-aside>
+        <app-aside #ktAside id="kt_aside" class="aside aside-left d-flex flex-column flex-row-auto" [ngClass]="asideCSSClasses"></app-aside>
         <!--end::STATIC Aside-->
 
         <!--begin::DYNAMIC Aside-->
@@ -36,20 +31,11 @@
       <!--begin::Wrapper-->
       <div class="d-flex flex-column flex-row-fluid wrapper" id="kt_wrapper">
         <!-- begin:: Header -->
-        <app-header
-          #ktHeader
-          id="kt_header"
-          class="header"
-          [ngClass]="headerCSSClasses"
-        ></app-header>
+        <app-header #ktHeader id="kt_header" class="header" [ngClass]="headerCSSClasses"></app-header>
         <!-- end:: Header -->
 
         <!-- begin:: Content -->
-        <div
-          class="content d-flex flex-column flex-column-fluid"
-          id="kt_content"
-          [ngClass]="contentClasses"
-        >
+        <div class="content d-flex flex-column flex-column-fluid" id="kt_content" [ngClass]="contentClasses">
           <!-- begin:: Content Head -->
           <ng-container *ngIf="subheaderDisplay">
             <app-subheader></app-subheader>
@@ -57,31 +43,36 @@
           <!-- end:: Content Head -->
 
           <!-- begin:: Content Body -->
-          <ng-container *ngIf="contentExtended">
-            <router-outlet></router-outlet>
-          </ng-container>
+          <div class="content-body">
+            <ng-container *ngIf="contentExtended">
+              <router-outlet></router-outlet>
+            </ng-container>
 
-          <ng-container *ngIf="!contentExtended">
-            <!--begin::Entry-->
-            <div class="d-flex flex-column-fluid">
-              <!--begin::Container-->
-              <div [ngClass]="contentContainerClasses">
-                <router-outlet></router-outlet>
-                <!--end::Container-->
+            <ng-container *ngIf="!contentExtended">
+              <!--begin::Entry-->
+              <div class="d-flex flex-column-fluid">
+                <!--begin::Container-->
+                <div [ngClass]="contentContainerClasses">
+                  <router-outlet></router-outlet>
+                  <!--end::Container-->
+                </div>
               </div>
-            </div>
-            <!--end::Entry-->
-          </ng-container>
+              <!--end::Entry-->
+            </ng-container>
+          </div>
           <!-- end:: Content Body -->
+
+          <!--begin::Tasks-->
+          <!-- <div class="tasks-body">
+            <app-task-list></app-task-list>
+          </div> -->
+          <!--end::Tasks-->
         </div>
+
         <!-- end:: Content -->
         <ng-container *ngIf="footerDisplay">
           <!--begin::Footer-->
-          <app-footer
-            class="footer bg-white py-4 d-flex flex-lg-column"
-            id="kt_footer"
-            [ngClass]="footerCSSClasses"
-          ></app-footer>
+          <app-footer class="footer bg-white py-4 d-flex flex-lg-column" id="kt_footer" [ngClass]="footerCSSClasses"></app-footer>
           <!--end::Footer-->
         </ng-container>
       </div>

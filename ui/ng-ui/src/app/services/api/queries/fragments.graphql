@@ -1,0 +1,35 @@
+fragment StatusFields on Status {
+  id
+  state
+  started_at
+  ended_at
+  failed
+  completed
+  error
+}
+
+fragment AgentStatusFields on AgentStatus {
+  clientId
+  hostname
+  upTime
+  bootTime
+  numProcs
+  OS
+  hostID
+  load1
+  load5
+  load15
+  totalMem
+  freeMem
+  usedMem
+  timestamp
+}
+
+fragment PlanFields on Plan {
+  id
+  step_number
+  type
+  PlanToStatus {
+    ...StatusFields
+  }
+}

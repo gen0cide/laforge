@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/authuser"
+	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/token"
 	"github.com/google/uuid"
 )
@@ -30,6 +31,104 @@ func (auc *AuthUserCreate) SetUsername(s string) *AuthUserCreate {
 // SetPassword sets the "password" field.
 func (auc *AuthUserCreate) SetPassword(s string) *AuthUserCreate {
 	auc.mutation.SetPassword(s)
+	return auc
+}
+
+// SetFirstName sets the "first_name" field.
+func (auc *AuthUserCreate) SetFirstName(s string) *AuthUserCreate {
+	auc.mutation.SetFirstName(s)
+	return auc
+}
+
+// SetNillableFirstName sets the "first_name" field if the given value is not nil.
+func (auc *AuthUserCreate) SetNillableFirstName(s *string) *AuthUserCreate {
+	if s != nil {
+		auc.SetFirstName(*s)
+	}
+	return auc
+}
+
+// SetLastName sets the "last_name" field.
+func (auc *AuthUserCreate) SetLastName(s string) *AuthUserCreate {
+	auc.mutation.SetLastName(s)
+	return auc
+}
+
+// SetNillableLastName sets the "last_name" field if the given value is not nil.
+func (auc *AuthUserCreate) SetNillableLastName(s *string) *AuthUserCreate {
+	if s != nil {
+		auc.SetLastName(*s)
+	}
+	return auc
+}
+
+// SetEmail sets the "email" field.
+func (auc *AuthUserCreate) SetEmail(s string) *AuthUserCreate {
+	auc.mutation.SetEmail(s)
+	return auc
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (auc *AuthUserCreate) SetNillableEmail(s *string) *AuthUserCreate {
+	if s != nil {
+		auc.SetEmail(*s)
+	}
+	return auc
+}
+
+// SetPhone sets the "phone" field.
+func (auc *AuthUserCreate) SetPhone(s string) *AuthUserCreate {
+	auc.mutation.SetPhone(s)
+	return auc
+}
+
+// SetNillablePhone sets the "phone" field if the given value is not nil.
+func (auc *AuthUserCreate) SetNillablePhone(s *string) *AuthUserCreate {
+	if s != nil {
+		auc.SetPhone(*s)
+	}
+	return auc
+}
+
+// SetCompany sets the "company" field.
+func (auc *AuthUserCreate) SetCompany(s string) *AuthUserCreate {
+	auc.mutation.SetCompany(s)
+	return auc
+}
+
+// SetNillableCompany sets the "company" field if the given value is not nil.
+func (auc *AuthUserCreate) SetNillableCompany(s *string) *AuthUserCreate {
+	if s != nil {
+		auc.SetCompany(*s)
+	}
+	return auc
+}
+
+// SetOccupation sets the "occupation" field.
+func (auc *AuthUserCreate) SetOccupation(s string) *AuthUserCreate {
+	auc.mutation.SetOccupation(s)
+	return auc
+}
+
+// SetNillableOccupation sets the "occupation" field if the given value is not nil.
+func (auc *AuthUserCreate) SetNillableOccupation(s *string) *AuthUserCreate {
+	if s != nil {
+		auc.SetOccupation(*s)
+	}
+	return auc
+}
+
+// SetPrivateKeyPath sets the "private_key_path" field.
+func (auc *AuthUserCreate) SetPrivateKeyPath(s string) *AuthUserCreate {
+	auc.mutation.SetPrivateKeyPath(s)
+	return auc
+}
+
+// SetNillablePrivateKeyPath sets the "private_key_path" field if the given value is not nil.
+func (auc *AuthUserCreate) SetNillablePrivateKeyPath(s *string) *AuthUserCreate {
+	if s != nil {
+		auc.SetPrivateKeyPath(*s)
+	}
 	return auc
 }
 
@@ -64,6 +163,21 @@ func (auc *AuthUserCreate) AddAuthUserToToken(t ...*Token) *AuthUserCreate {
 		ids[i] = t[i].ID
 	}
 	return auc.AddAuthUserToTokenIDs(ids...)
+}
+
+// AddAuthUserToServerTaskIDs adds the "AuthUserToServerTasks" edge to the ServerTask entity by IDs.
+func (auc *AuthUserCreate) AddAuthUserToServerTaskIDs(ids ...uuid.UUID) *AuthUserCreate {
+	auc.mutation.AddAuthUserToServerTaskIDs(ids...)
+	return auc
+}
+
+// AddAuthUserToServerTasks adds the "AuthUserToServerTasks" edges to the ServerTask entity.
+func (auc *AuthUserCreate) AddAuthUserToServerTasks(s ...*ServerTask) *AuthUserCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return auc.AddAuthUserToServerTaskIDs(ids...)
 }
 
 // Mutation returns the AuthUserMutation object of the builder.
@@ -118,6 +232,34 @@ func (auc *AuthUserCreate) SaveX(ctx context.Context) *AuthUser {
 
 // defaults sets the default values of the builder before save.
 func (auc *AuthUserCreate) defaults() {
+	if _, ok := auc.mutation.FirstName(); !ok {
+		v := authuser.DefaultFirstName
+		auc.mutation.SetFirstName(v)
+	}
+	if _, ok := auc.mutation.LastName(); !ok {
+		v := authuser.DefaultLastName
+		auc.mutation.SetLastName(v)
+	}
+	if _, ok := auc.mutation.Email(); !ok {
+		v := authuser.DefaultEmail
+		auc.mutation.SetEmail(v)
+	}
+	if _, ok := auc.mutation.Phone(); !ok {
+		v := authuser.DefaultPhone
+		auc.mutation.SetPhone(v)
+	}
+	if _, ok := auc.mutation.Company(); !ok {
+		v := authuser.DefaultCompany
+		auc.mutation.SetCompany(v)
+	}
+	if _, ok := auc.mutation.Occupation(); !ok {
+		v := authuser.DefaultOccupation
+		auc.mutation.SetOccupation(v)
+	}
+	if _, ok := auc.mutation.PrivateKeyPath(); !ok {
+		v := authuser.DefaultPrivateKeyPath
+		auc.mutation.SetPrivateKeyPath(v)
+	}
 	if _, ok := auc.mutation.ID(); !ok {
 		v := authuser.DefaultID()
 		auc.mutation.SetID(v)
@@ -131,6 +273,27 @@ func (auc *AuthUserCreate) check() error {
 	}
 	if _, ok := auc.mutation.Password(); !ok {
 		return &ValidationError{Name: "password", err: errors.New("ent: missing required field \"password\"")}
+	}
+	if _, ok := auc.mutation.FirstName(); !ok {
+		return &ValidationError{Name: "first_name", err: errors.New("ent: missing required field \"first_name\"")}
+	}
+	if _, ok := auc.mutation.LastName(); !ok {
+		return &ValidationError{Name: "last_name", err: errors.New("ent: missing required field \"last_name\"")}
+	}
+	if _, ok := auc.mutation.Email(); !ok {
+		return &ValidationError{Name: "email", err: errors.New("ent: missing required field \"email\"")}
+	}
+	if _, ok := auc.mutation.Phone(); !ok {
+		return &ValidationError{Name: "phone", err: errors.New("ent: missing required field \"phone\"")}
+	}
+	if _, ok := auc.mutation.Company(); !ok {
+		return &ValidationError{Name: "company", err: errors.New("ent: missing required field \"company\"")}
+	}
+	if _, ok := auc.mutation.Occupation(); !ok {
+		return &ValidationError{Name: "occupation", err: errors.New("ent: missing required field \"occupation\"")}
+	}
+	if _, ok := auc.mutation.PrivateKeyPath(); !ok {
+		return &ValidationError{Name: "private_key_path", err: errors.New("ent: missing required field \"private_key_path\"")}
 	}
 	if _, ok := auc.mutation.Role(); !ok {
 		return &ValidationError{Name: "role", err: errors.New("ent: missing required field \"role\"")}
@@ -193,6 +356,62 @@ func (auc *AuthUserCreate) createSpec() (*AuthUser, *sqlgraph.CreateSpec) {
 		})
 		_node.Password = value
 	}
+	if value, ok := auc.mutation.FirstName(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldFirstName,
+		})
+		_node.FirstName = value
+	}
+	if value, ok := auc.mutation.LastName(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldLastName,
+		})
+		_node.LastName = value
+	}
+	if value, ok := auc.mutation.Email(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldEmail,
+		})
+		_node.Email = value
+	}
+	if value, ok := auc.mutation.Phone(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldPhone,
+		})
+		_node.Phone = value
+	}
+	if value, ok := auc.mutation.Company(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldCompany,
+		})
+		_node.Company = value
+	}
+	if value, ok := auc.mutation.Occupation(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldOccupation,
+		})
+		_node.Occupation = value
+	}
+	if value, ok := auc.mutation.PrivateKeyPath(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldPrivateKeyPath,
+		})
+		_node.PrivateKeyPath = value
+	}
 	if value, ok := auc.mutation.Role(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeEnum,
@@ -220,6 +439,25 @@ func (auc *AuthUserCreate) createSpec() (*AuthUser, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: token.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := auc.mutation.AuthUserToServerTasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   authuser.AuthUserToServerTasksTable,
+			Columns: []string{authuser.AuthUserToServerTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: servertask.FieldID,
 				},
 			},
 		}

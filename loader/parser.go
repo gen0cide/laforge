@@ -374,8 +374,8 @@ func main() {
 	fmt.Println(envs)
 }
 
-// LoadEnviroment Loads in enviroment at specified filepath
-func LoadEnviroment(ctx context.Context, client *ent.Client, filePath string) ([]*ent.Environment, error) {
+// LoadEnvironment Loads in enviroment at specified filepath
+func LoadEnvironment(ctx context.Context, client *ent.Client, filePath string) ([]*ent.Environment, error) {
 	tloader := NewLoader()
 	tloader.ParseConfigFile(filePath)
 	loadedConfig, err := tloader.Bind()

@@ -1,16 +1,11 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { MatSelectChange } from '@angular/material/select';
-import { LaForgeEnvironment, LaForgeGetEnvironmentInfoQuery, LaForgeGetBuildTreeQuery } from '@graphql';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
+import { LaForgeGetEnvironmentInfoQuery, LaForgeGetBuildTreeQuery } from '@graphql';
 import { RebuildService } from '@services/rebuild/rebuild.service';
 import { QueryRef } from 'apollo-angular';
 import { EmptyObject } from 'apollo-angular/types';
 import { GraphQLError } from 'graphql';
-import { interval, Observable, Subscription } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
-import { updateEnvAgentStatuses } from 'src/app/models/agent.model';
+import { Observable, Subscription } from 'rxjs';
 import { AgentStatusQueryResult, EnvironmentInfo } from 'src/app/models/api.model';
-import { ID } from 'src/app/models/common.model';
-import { Build, Environment, resolveEnvEnums } from 'src/app/models/environment.model';
 import { ApiService } from 'src/app/services/api/api.service';
 import { EnvironmentService } from 'src/app/services/environment/environment.service';
 
@@ -21,7 +16,8 @@ import { SubheaderService } from '../../_metronic/partials/layout/subheader/_ser
   templateUrl: './manage.component.html',
   styleUrls: ['./manage.component.scss']
 })
-export class ManageComponent implements OnInit {
+export class ManageComponent implements OnInit, OnDestroy {
+  private unsubscribe: Subscription[] = [];
   // corpNetwork: ProvisionedNetwork = corp_network_provisioned;
   envs: EnvironmentInfo[];
   environment: Observable<LaForgeGetEnvironmentInfoQuery['environment']>;
@@ -63,6 +59,15 @@ export class ManageComponent implements OnInit {
     // interval(10000).subscribe(() => {
     //   this.envService.updateAgentStatuses();
     // });
+    const subr = this.envService.getBuildTree().subscribe(() => {
+      this.envService.initPlanStatuses();
+      this.envService.initAgentStatuses();
+    });
+    this.unsubscribe.push(subr);
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe.forEach((sub) => sub.unsubscribe());
   }
 
   envIsSelected(): boolean {

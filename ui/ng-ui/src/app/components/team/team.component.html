@@ -6,7 +6,7 @@
   <div class="team-container">
     <div class="team-info">
       <div class="team-status-icon" [ngClass]="'bg-' + getStatusColor()">
-        <i class="fal fa-users"></i>
+        <i class="fal" [ngClass]="'fa-' + getStatusIcon()"></i>
       </div>
       <div class="team-details">
         <span class="team-number"

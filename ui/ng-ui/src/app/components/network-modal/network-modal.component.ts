@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ProvisionStatus } from 'src/app/models/common.model';
 import { ProvisionedNetwork } from 'src/app/models/network.model';

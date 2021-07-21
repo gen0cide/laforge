@@ -1,6 +1,10 @@
+:host {
+  height: 100vh;
+}
+
 app-layout {
   opacity: 0;
-  height: 100%;
+  // height: 100%;
 
   .grid-root {
     height: 100%;
@@ -13,3 +17,25 @@ app-layout {
     transition: opacity 1s ease-in-out;
   }
 }
+
+// .wrapper {
+//   height: calc(100% - 60px);
+// }
+
+// .content {
+//   width: 100%;
+//   height: calc(100% - 60px);
+//   padding: 0;
+//   margin: 0;
+
+//   .content-body {
+//     flex-grow: 1;
+//     flex-basis: 0;
+//   }
+
+//   .tasks-body {
+//     height: 30%;
+//     flex-grow: 0;
+//     flex-basis: 30%;
+//   }
+// }

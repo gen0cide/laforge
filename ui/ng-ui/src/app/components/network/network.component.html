@@ -12,7 +12,7 @@
   <div class="network-container">
     <div class="network-info" (click)="style !== 'collapsed' && viewDetails()">
       <div class="network-status-icon" [ngClass]="'bg-' + getStatusColor()">
-        <i class="fal fa-network-wired"></i>
+        <i class="fal" [ngClass]="'fa-' + getStatusIcon()"></i>
       </div>
       <div class="network-header">
         <span class="network-title"

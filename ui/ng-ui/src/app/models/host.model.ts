@@ -1,5 +1,5 @@
 import { AgentStatus } from './agent.model';
-import { ID, Plan, ProvisionStatus, Status, tagMap, varsMap } from './common.model';
+import { ID, Plan, Status, tagMap, varsMap } from './common.model';
 import { Environment } from './environment.model';
 import { ProvisionedNetwork } from './network.model';
 import { ProvisioningStep } from './step.model';

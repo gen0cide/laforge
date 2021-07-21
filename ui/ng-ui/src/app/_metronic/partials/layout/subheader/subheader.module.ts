@@ -7,11 +7,10 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { DropdownMenusModule } from '../../content/dropdown-menus/dropdown-menus.module';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { LaforgePipesModule } from 'src/app/pipes/pipes.module';
 
 @NgModule({
-  declarations: [
-    SubheaderComponent,
-  ],
+  declarations: [SubheaderComponent],
   imports: [
     CommonModule,
     RouterModule,
@@ -20,7 +19,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
     DropdownMenusModule,
     MatSelectModule,
     MatFormFieldModule,
+    LaforgePipesModule
   ],
-  exports: [SubheaderComponent],
+  exports: [SubheaderComponent]
 })
-export class SubheaderModule { }
+export class SubheaderModule {}

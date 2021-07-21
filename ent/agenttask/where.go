@@ -113,6 +113,13 @@ func Output(v string) predicate.AgentTask {
 	})
 }
 
+// ErrorMessage applies equality check predicate on the "error_message" field. It's identical to ErrorMessageEQ.
+func ErrorMessage(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldErrorMessage), v))
+	})
+}
+
 // CommandEQ applies the EQ predicate on the "command" field.
 func CommandEQ(v Command) predicate.AgentTask {
 	return predicate.AgentTask(func(s *sql.Selector) {
@@ -445,20 +452,6 @@ func OutputHasSuffix(v string) predicate.AgentTask {
 	})
 }
 
-// OutputIsNil applies the IsNil predicate on the "output" field.
-func OutputIsNil() predicate.AgentTask {
-	return predicate.AgentTask(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldOutput)))
-	})
-}
-
-// OutputNotNil applies the NotNil predicate on the "output" field.
-func OutputNotNil() predicate.AgentTask {
-	return predicate.AgentTask(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldOutput)))
-	})
-}
-
 // OutputEqualFold applies the EqualFold predicate on the "output" field.
 func OutputEqualFold(v string) predicate.AgentTask {
 	return predicate.AgentTask(func(s *sql.Selector) {
@@ -518,6 +511,117 @@ func StateNotIn(vs ...State) predicate.AgentTask {
 			return
 		}
 		s.Where(sql.NotIn(s.C(FieldState), v...))
+	})
+}
+
+// ErrorMessageEQ applies the EQ predicate on the "error_message" field.
+func ErrorMessageEQ(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldErrorMessage), v))
+	})
+}
+
+// ErrorMessageNEQ applies the NEQ predicate on the "error_message" field.
+func ErrorMessageNEQ(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldErrorMessage), v))
+	})
+}
+
+// ErrorMessageIn applies the In predicate on the "error_message" field.
+func ErrorMessageIn(vs ...string) predicate.AgentTask {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.AgentTask(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldErrorMessage), v...))
+	})
+}
+
+// ErrorMessageNotIn applies the NotIn predicate on the "error_message" field.
+func ErrorMessageNotIn(vs ...string) predicate.AgentTask {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.AgentTask(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldErrorMessage), v...))
+	})
+}
+
+// ErrorMessageGT applies the GT predicate on the "error_message" field.
+func ErrorMessageGT(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldErrorMessage), v))
+	})
+}
+
+// ErrorMessageGTE applies the GTE predicate on the "error_message" field.
+func ErrorMessageGTE(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldErrorMessage), v))
+	})
+}
+
+// ErrorMessageLT applies the LT predicate on the "error_message" field.
+func ErrorMessageLT(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldErrorMessage), v))
+	})
+}
+
+// ErrorMessageLTE applies the LTE predicate on the "error_message" field.
+func ErrorMessageLTE(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldErrorMessage), v))
+	})
+}
+
+// ErrorMessageContains applies the Contains predicate on the "error_message" field.
+func ErrorMessageContains(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldErrorMessage), v))
+	})
+}
+
+// ErrorMessageHasPrefix applies the HasPrefix predicate on the "error_message" field.
+func ErrorMessageHasPrefix(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldErrorMessage), v))
+	})
+}
+
+// ErrorMessageHasSuffix applies the HasSuffix predicate on the "error_message" field.
+func ErrorMessageHasSuffix(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldErrorMessage), v))
+	})
+}
+
+// ErrorMessageEqualFold applies the EqualFold predicate on the "error_message" field.
+func ErrorMessageEqualFold(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldErrorMessage), v))
+	})
+}
+
+// ErrorMessageContainsFold applies the ContainsFold predicate on the "error_message" field.
+func ErrorMessageContainsFold(v string) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldErrorMessage), v))
 	})
 }
 

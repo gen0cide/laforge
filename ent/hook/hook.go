@@ -334,6 +334,19 @@ func (f ScriptFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return f(ctx, mv)
 }
 
+// The ServerTaskFunc type is an adapter to allow the use of ordinary
+// function as ServerTask mutator.
+type ServerTaskFunc func(context.Context, *ent.ServerTaskMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ServerTaskFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ServerTaskMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ServerTaskMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The StatusFunc type is an adapter to allow the use of ordinary
 // function as Status mutator.
 type StatusFunc func(context.Context, *ent.StatusMutation) (ent.Value, error)

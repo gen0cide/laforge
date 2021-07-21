@@ -35,16 +35,16 @@ func (tu *TokenUpdate) SetToken(s string) *TokenUpdate {
 	return tu
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (tu *TokenUpdate) SetCreatedAt(i int) *TokenUpdate {
-	tu.mutation.ResetCreatedAt()
-	tu.mutation.SetCreatedAt(i)
+// SetExpireAt sets the "expire_at" field.
+func (tu *TokenUpdate) SetExpireAt(i int64) *TokenUpdate {
+	tu.mutation.ResetExpireAt()
+	tu.mutation.SetExpireAt(i)
 	return tu
 }
 
-// AddCreatedAt adds i to the "created_at" field.
-func (tu *TokenUpdate) AddCreatedAt(i int) *TokenUpdate {
-	tu.mutation.AddCreatedAt(i)
+// AddExpireAt adds i to the "expire_at" field.
+func (tu *TokenUpdate) AddExpireAt(i int64) *TokenUpdate {
+	tu.mutation.AddExpireAt(i)
 	return tu
 }
 
@@ -160,18 +160,18 @@ func (tu *TokenUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: token.FieldToken,
 		})
 	}
-	if value, ok := tu.mutation.CreatedAt(); ok {
+	if value, ok := tu.mutation.ExpireAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
-			Column: token.FieldCreatedAt,
+			Column: token.FieldExpireAt,
 		})
 	}
-	if value, ok := tu.mutation.AddedCreatedAt(); ok {
+	if value, ok := tu.mutation.AddedExpireAt(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
-			Column: token.FieldCreatedAt,
+			Column: token.FieldExpireAt,
 		})
 	}
 	if tu.mutation.TokenToAuthUserCleared() {
@@ -234,16 +234,16 @@ func (tuo *TokenUpdateOne) SetToken(s string) *TokenUpdateOne {
 	return tuo
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (tuo *TokenUpdateOne) SetCreatedAt(i int) *TokenUpdateOne {
-	tuo.mutation.ResetCreatedAt()
-	tuo.mutation.SetCreatedAt(i)
+// SetExpireAt sets the "expire_at" field.
+func (tuo *TokenUpdateOne) SetExpireAt(i int64) *TokenUpdateOne {
+	tuo.mutation.ResetExpireAt()
+	tuo.mutation.SetExpireAt(i)
 	return tuo
 }
 
-// AddCreatedAt adds i to the "created_at" field.
-func (tuo *TokenUpdateOne) AddCreatedAt(i int) *TokenUpdateOne {
-	tuo.mutation.AddCreatedAt(i)
+// AddExpireAt adds i to the "expire_at" field.
+func (tuo *TokenUpdateOne) AddExpireAt(i int64) *TokenUpdateOne {
+	tuo.mutation.AddExpireAt(i)
 	return tuo
 }
 
@@ -383,18 +383,18 @@ func (tuo *TokenUpdateOne) sqlSave(ctx context.Context) (_node *Token, err error
 			Column: token.FieldToken,
 		})
 	}
-	if value, ok := tuo.mutation.CreatedAt(); ok {
+	if value, ok := tuo.mutation.ExpireAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
-			Column: token.FieldCreatedAt,
+			Column: token.FieldExpireAt,
 		})
 	}
-	if value, ok := tuo.mutation.AddedCreatedAt(); ok {
+	if value, ok := tuo.mutation.AddedExpireAt(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
-			Column: token.FieldCreatedAt,
+			Column: token.FieldExpireAt,
 		})
 	}
 	if tuo.mutation.TokenToAuthUserCleared() {

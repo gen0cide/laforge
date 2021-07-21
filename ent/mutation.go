@@ -34,6 +34,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/script"
+	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
@@ -78,6 +79,7 @@ const (
 	TypeProvisionedNetwork = "ProvisionedNetwork"
 	TypeProvisioningStep   = "ProvisioningStep"
 	TypeScript             = "Script"
+	TypeServerTask         = "ServerTask"
 	TypeStatus             = "Status"
 	TypeTag                = "Tag"
 	TypeTeam               = "Team"
@@ -1494,6 +1496,7 @@ type AgentTaskMutation struct {
 	addnumber                           *int
 	output                              *string
 	state                               *agenttask.State
+	error_message                       *string
 	clearedFields                       map[string]struct{}
 	_AgentTaskToProvisioningStep        *uuid.UUID
 	cleared_AgentTaskToProvisioningStep bool
@@ -1734,7 +1737,7 @@ func (m *AgentTaskMutation) Output() (r string, exists bool) {
 // OldOutput returns the old "output" field's value of the AgentTask entity.
 // If the AgentTask object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AgentTaskMutation) OldOutput(ctx context.Context) (v *string, err error) {
+func (m *AgentTaskMutation) OldOutput(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldOutput is only allowed on UpdateOne operations")
 	}
@@ -1748,22 +1751,9 @@ func (m *AgentTaskMutation) OldOutput(ctx context.Context) (v *string, err error
 	return oldValue.Output, nil
 }
 
-// ClearOutput clears the value of the "output" field.
-func (m *AgentTaskMutation) ClearOutput() {
-	m.output = nil
-	m.clearedFields[agenttask.FieldOutput] = struct{}{}
-}
-
-// OutputCleared returns if the "output" field was cleared in this mutation.
-func (m *AgentTaskMutation) OutputCleared() bool {
-	_, ok := m.clearedFields[agenttask.FieldOutput]
-	return ok
-}
-
 // ResetOutput resets all changes to the "output" field.
 func (m *AgentTaskMutation) ResetOutput() {
 	m.output = nil
-	delete(m.clearedFields, agenttask.FieldOutput)
 }
 
 // SetState sets the "state" field.
@@ -1800,6 +1790,42 @@ func (m *AgentTaskMutation) OldState(ctx context.Context) (v agenttask.State, er
 // ResetState resets all changes to the "state" field.
 func (m *AgentTaskMutation) ResetState() {
 	m.state = nil
+}
+
+// SetErrorMessage sets the "error_message" field.
+func (m *AgentTaskMutation) SetErrorMessage(s string) {
+	m.error_message = &s
+}
+
+// ErrorMessage returns the value of the "error_message" field in the mutation.
+func (m *AgentTaskMutation) ErrorMessage() (r string, exists bool) {
+	v := m.error_message
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldErrorMessage returns the old "error_message" field's value of the AgentTask entity.
+// If the AgentTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AgentTaskMutation) OldErrorMessage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldErrorMessage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldErrorMessage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldErrorMessage: %w", err)
+	}
+	return oldValue.ErrorMessage, nil
+}
+
+// ResetErrorMessage resets all changes to the "error_message" field.
+func (m *AgentTaskMutation) ResetErrorMessage() {
+	m.error_message = nil
 }
 
 // SetAgentTaskToProvisioningStepID sets the "AgentTaskToProvisioningStep" edge to the ProvisioningStep entity by id.
@@ -1894,7 +1920,7 @@ func (m *AgentTaskMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AgentTaskMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.command != nil {
 		fields = append(fields, agenttask.FieldCommand)
 	}
@@ -1909,6 +1935,9 @@ func (m *AgentTaskMutation) Fields() []string {
 	}
 	if m.state != nil {
 		fields = append(fields, agenttask.FieldState)
+	}
+	if m.error_message != nil {
+		fields = append(fields, agenttask.FieldErrorMessage)
 	}
 	return fields
 }
@@ -1928,6 +1957,8 @@ func (m *AgentTaskMutation) Field(name string) (ent.Value, bool) {
 		return m.Output()
 	case agenttask.FieldState:
 		return m.State()
+	case agenttask.FieldErrorMessage:
+		return m.ErrorMessage()
 	}
 	return nil, false
 }
@@ -1947,6 +1978,8 @@ func (m *AgentTaskMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldOutput(ctx)
 	case agenttask.FieldState:
 		return m.OldState(ctx)
+	case agenttask.FieldErrorMessage:
+		return m.OldErrorMessage(ctx)
 	}
 	return nil, fmt.Errorf("unknown AgentTask field %s", name)
 }
@@ -1990,6 +2023,13 @@ func (m *AgentTaskMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetState(v)
+		return nil
+	case agenttask.FieldErrorMessage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetErrorMessage(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AgentTask field %s", name)
@@ -2035,11 +2075,7 @@ func (m *AgentTaskMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *AgentTaskMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(agenttask.FieldOutput) {
-		fields = append(fields, agenttask.FieldOutput)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -2052,11 +2088,6 @@ func (m *AgentTaskMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *AgentTaskMutation) ClearField(name string) error {
-	switch name {
-	case agenttask.FieldOutput:
-		m.ClearOutput()
-		return nil
-	}
 	return fmt.Errorf("unknown AgentTask nullable field %s", name)
 }
 
@@ -2078,6 +2109,9 @@ func (m *AgentTaskMutation) ResetField(name string) error {
 		return nil
 	case agenttask.FieldState:
 		m.ResetState()
+		return nil
+	case agenttask.FieldErrorMessage:
+		m.ResetErrorMessage()
 		return nil
 	}
 	return fmt.Errorf("unknown AgentTask field %s", name)
@@ -2180,20 +2214,30 @@ func (m *AgentTaskMutation) ResetEdge(name string) error {
 // AuthUserMutation represents an operation that mutates the AuthUser nodes in the graph.
 type AuthUserMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *uuid.UUID
-	username                *string
-	password                *string
-	role                    *authuser.Role
-	provider                *authuser.Provider
-	clearedFields           map[string]struct{}
-	_AuthUserToToken        map[uuid.UUID]struct{}
-	removed_AuthUserToToken map[uuid.UUID]struct{}
-	cleared_AuthUserToToken bool
-	done                    bool
-	oldValue                func(context.Context) (*AuthUser, error)
-	predicates              []predicate.AuthUser
+	op                            Op
+	typ                           string
+	id                            *uuid.UUID
+	username                      *string
+	password                      *string
+	first_name                    *string
+	last_name                     *string
+	email                         *string
+	phone                         *string
+	company                       *string
+	occupation                    *string
+	private_key_path              *string
+	role                          *authuser.Role
+	provider                      *authuser.Provider
+	clearedFields                 map[string]struct{}
+	_AuthUserToToken              map[uuid.UUID]struct{}
+	removed_AuthUserToToken       map[uuid.UUID]struct{}
+	cleared_AuthUserToToken       bool
+	_AuthUserToServerTasks        map[uuid.UUID]struct{}
+	removed_AuthUserToServerTasks map[uuid.UUID]struct{}
+	cleared_AuthUserToServerTasks bool
+	done                          bool
+	oldValue                      func(context.Context) (*AuthUser, error)
+	predicates                    []predicate.AuthUser
 }
 
 var _ ent.Mutation = (*AuthUserMutation)(nil)
@@ -2353,6 +2397,258 @@ func (m *AuthUserMutation) ResetPassword() {
 	m.password = nil
 }
 
+// SetFirstName sets the "first_name" field.
+func (m *AuthUserMutation) SetFirstName(s string) {
+	m.first_name = &s
+}
+
+// FirstName returns the value of the "first_name" field in the mutation.
+func (m *AuthUserMutation) FirstName() (r string, exists bool) {
+	v := m.first_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFirstName returns the old "first_name" field's value of the AuthUser entity.
+// If the AuthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuthUserMutation) OldFirstName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldFirstName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldFirstName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFirstName: %w", err)
+	}
+	return oldValue.FirstName, nil
+}
+
+// ResetFirstName resets all changes to the "first_name" field.
+func (m *AuthUserMutation) ResetFirstName() {
+	m.first_name = nil
+}
+
+// SetLastName sets the "last_name" field.
+func (m *AuthUserMutation) SetLastName(s string) {
+	m.last_name = &s
+}
+
+// LastName returns the value of the "last_name" field in the mutation.
+func (m *AuthUserMutation) LastName() (r string, exists bool) {
+	v := m.last_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastName returns the old "last_name" field's value of the AuthUser entity.
+// If the AuthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuthUserMutation) OldLastName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldLastName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldLastName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastName: %w", err)
+	}
+	return oldValue.LastName, nil
+}
+
+// ResetLastName resets all changes to the "last_name" field.
+func (m *AuthUserMutation) ResetLastName() {
+	m.last_name = nil
+}
+
+// SetEmail sets the "email" field.
+func (m *AuthUserMutation) SetEmail(s string) {
+	m.email = &s
+}
+
+// Email returns the value of the "email" field in the mutation.
+func (m *AuthUserMutation) Email() (r string, exists bool) {
+	v := m.email
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmail returns the old "email" field's value of the AuthUser entity.
+// If the AuthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuthUserMutation) OldEmail(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldEmail is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldEmail requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmail: %w", err)
+	}
+	return oldValue.Email, nil
+}
+
+// ResetEmail resets all changes to the "email" field.
+func (m *AuthUserMutation) ResetEmail() {
+	m.email = nil
+}
+
+// SetPhone sets the "phone" field.
+func (m *AuthUserMutation) SetPhone(s string) {
+	m.phone = &s
+}
+
+// Phone returns the value of the "phone" field in the mutation.
+func (m *AuthUserMutation) Phone() (r string, exists bool) {
+	v := m.phone
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPhone returns the old "phone" field's value of the AuthUser entity.
+// If the AuthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuthUserMutation) OldPhone(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldPhone is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldPhone requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPhone: %w", err)
+	}
+	return oldValue.Phone, nil
+}
+
+// ResetPhone resets all changes to the "phone" field.
+func (m *AuthUserMutation) ResetPhone() {
+	m.phone = nil
+}
+
+// SetCompany sets the "company" field.
+func (m *AuthUserMutation) SetCompany(s string) {
+	m.company = &s
+}
+
+// Company returns the value of the "company" field in the mutation.
+func (m *AuthUserMutation) Company() (r string, exists bool) {
+	v := m.company
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCompany returns the old "company" field's value of the AuthUser entity.
+// If the AuthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuthUserMutation) OldCompany(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCompany is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCompany requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCompany: %w", err)
+	}
+	return oldValue.Company, nil
+}
+
+// ResetCompany resets all changes to the "company" field.
+func (m *AuthUserMutation) ResetCompany() {
+	m.company = nil
+}
+
+// SetOccupation sets the "occupation" field.
+func (m *AuthUserMutation) SetOccupation(s string) {
+	m.occupation = &s
+}
+
+// Occupation returns the value of the "occupation" field in the mutation.
+func (m *AuthUserMutation) Occupation() (r string, exists bool) {
+	v := m.occupation
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOccupation returns the old "occupation" field's value of the AuthUser entity.
+// If the AuthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuthUserMutation) OldOccupation(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldOccupation is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldOccupation requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOccupation: %w", err)
+	}
+	return oldValue.Occupation, nil
+}
+
+// ResetOccupation resets all changes to the "occupation" field.
+func (m *AuthUserMutation) ResetOccupation() {
+	m.occupation = nil
+}
+
+// SetPrivateKeyPath sets the "private_key_path" field.
+func (m *AuthUserMutation) SetPrivateKeyPath(s string) {
+	m.private_key_path = &s
+}
+
+// PrivateKeyPath returns the value of the "private_key_path" field in the mutation.
+func (m *AuthUserMutation) PrivateKeyPath() (r string, exists bool) {
+	v := m.private_key_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPrivateKeyPath returns the old "private_key_path" field's value of the AuthUser entity.
+// If the AuthUser object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AuthUserMutation) OldPrivateKeyPath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldPrivateKeyPath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldPrivateKeyPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPrivateKeyPath: %w", err)
+	}
+	return oldValue.PrivateKeyPath, nil
+}
+
+// ResetPrivateKeyPath resets all changes to the "private_key_path" field.
+func (m *AuthUserMutation) ResetPrivateKeyPath() {
+	m.private_key_path = nil
+}
+
 // SetRole sets the "role" field.
 func (m *AuthUserMutation) SetRole(a authuser.Role) {
 	m.role = &a
@@ -2478,6 +2774,59 @@ func (m *AuthUserMutation) ResetAuthUserToToken() {
 	m.removed_AuthUserToToken = nil
 }
 
+// AddAuthUserToServerTaskIDs adds the "AuthUserToServerTasks" edge to the ServerTask entity by ids.
+func (m *AuthUserMutation) AddAuthUserToServerTaskIDs(ids ...uuid.UUID) {
+	if m._AuthUserToServerTasks == nil {
+		m._AuthUserToServerTasks = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m._AuthUserToServerTasks[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAuthUserToServerTasks clears the "AuthUserToServerTasks" edge to the ServerTask entity.
+func (m *AuthUserMutation) ClearAuthUserToServerTasks() {
+	m.cleared_AuthUserToServerTasks = true
+}
+
+// AuthUserToServerTasksCleared reports if the "AuthUserToServerTasks" edge to the ServerTask entity was cleared.
+func (m *AuthUserMutation) AuthUserToServerTasksCleared() bool {
+	return m.cleared_AuthUserToServerTasks
+}
+
+// RemoveAuthUserToServerTaskIDs removes the "AuthUserToServerTasks" edge to the ServerTask entity by IDs.
+func (m *AuthUserMutation) RemoveAuthUserToServerTaskIDs(ids ...uuid.UUID) {
+	if m.removed_AuthUserToServerTasks == nil {
+		m.removed_AuthUserToServerTasks = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.removed_AuthUserToServerTasks[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAuthUserToServerTasks returns the removed IDs of the "AuthUserToServerTasks" edge to the ServerTask entity.
+func (m *AuthUserMutation) RemovedAuthUserToServerTasksIDs() (ids []uuid.UUID) {
+	for id := range m.removed_AuthUserToServerTasks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AuthUserToServerTasksIDs returns the "AuthUserToServerTasks" edge IDs in the mutation.
+func (m *AuthUserMutation) AuthUserToServerTasksIDs() (ids []uuid.UUID) {
+	for id := range m._AuthUserToServerTasks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAuthUserToServerTasks resets all changes to the "AuthUserToServerTasks" edge.
+func (m *AuthUserMutation) ResetAuthUserToServerTasks() {
+	m._AuthUserToServerTasks = nil
+	m.cleared_AuthUserToServerTasks = false
+	m.removed_AuthUserToServerTasks = nil
+}
+
 // Op returns the operation name.
 func (m *AuthUserMutation) Op() Op {
 	return m.op
@@ -2492,12 +2841,33 @@ func (m *AuthUserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AuthUserMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 11)
 	if m.username != nil {
 		fields = append(fields, authuser.FieldUsername)
 	}
 	if m.password != nil {
 		fields = append(fields, authuser.FieldPassword)
+	}
+	if m.first_name != nil {
+		fields = append(fields, authuser.FieldFirstName)
+	}
+	if m.last_name != nil {
+		fields = append(fields, authuser.FieldLastName)
+	}
+	if m.email != nil {
+		fields = append(fields, authuser.FieldEmail)
+	}
+	if m.phone != nil {
+		fields = append(fields, authuser.FieldPhone)
+	}
+	if m.company != nil {
+		fields = append(fields, authuser.FieldCompany)
+	}
+	if m.occupation != nil {
+		fields = append(fields, authuser.FieldOccupation)
+	}
+	if m.private_key_path != nil {
+		fields = append(fields, authuser.FieldPrivateKeyPath)
 	}
 	if m.role != nil {
 		fields = append(fields, authuser.FieldRole)
@@ -2517,6 +2887,20 @@ func (m *AuthUserMutation) Field(name string) (ent.Value, bool) {
 		return m.Username()
 	case authuser.FieldPassword:
 		return m.Password()
+	case authuser.FieldFirstName:
+		return m.FirstName()
+	case authuser.FieldLastName:
+		return m.LastName()
+	case authuser.FieldEmail:
+		return m.Email()
+	case authuser.FieldPhone:
+		return m.Phone()
+	case authuser.FieldCompany:
+		return m.Company()
+	case authuser.FieldOccupation:
+		return m.Occupation()
+	case authuser.FieldPrivateKeyPath:
+		return m.PrivateKeyPath()
 	case authuser.FieldRole:
 		return m.Role()
 	case authuser.FieldProvider:
@@ -2534,6 +2918,20 @@ func (m *AuthUserMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldUsername(ctx)
 	case authuser.FieldPassword:
 		return m.OldPassword(ctx)
+	case authuser.FieldFirstName:
+		return m.OldFirstName(ctx)
+	case authuser.FieldLastName:
+		return m.OldLastName(ctx)
+	case authuser.FieldEmail:
+		return m.OldEmail(ctx)
+	case authuser.FieldPhone:
+		return m.OldPhone(ctx)
+	case authuser.FieldCompany:
+		return m.OldCompany(ctx)
+	case authuser.FieldOccupation:
+		return m.OldOccupation(ctx)
+	case authuser.FieldPrivateKeyPath:
+		return m.OldPrivateKeyPath(ctx)
 	case authuser.FieldRole:
 		return m.OldRole(ctx)
 	case authuser.FieldProvider:
@@ -2560,6 +2958,55 @@ func (m *AuthUserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPassword(v)
+		return nil
+	case authuser.FieldFirstName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFirstName(v)
+		return nil
+	case authuser.FieldLastName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastName(v)
+		return nil
+	case authuser.FieldEmail:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmail(v)
+		return nil
+	case authuser.FieldPhone:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPhone(v)
+		return nil
+	case authuser.FieldCompany:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCompany(v)
+		return nil
+	case authuser.FieldOccupation:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOccupation(v)
+		return nil
+	case authuser.FieldPrivateKeyPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPrivateKeyPath(v)
 		return nil
 	case authuser.FieldRole:
 		v, ok := value.(authuser.Role)
@@ -2630,6 +3077,27 @@ func (m *AuthUserMutation) ResetField(name string) error {
 	case authuser.FieldPassword:
 		m.ResetPassword()
 		return nil
+	case authuser.FieldFirstName:
+		m.ResetFirstName()
+		return nil
+	case authuser.FieldLastName:
+		m.ResetLastName()
+		return nil
+	case authuser.FieldEmail:
+		m.ResetEmail()
+		return nil
+	case authuser.FieldPhone:
+		m.ResetPhone()
+		return nil
+	case authuser.FieldCompany:
+		m.ResetCompany()
+		return nil
+	case authuser.FieldOccupation:
+		m.ResetOccupation()
+		return nil
+	case authuser.FieldPrivateKeyPath:
+		m.ResetPrivateKeyPath()
+		return nil
 	case authuser.FieldRole:
 		m.ResetRole()
 		return nil
@@ -2642,9 +3110,12 @@ func (m *AuthUserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AuthUserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m._AuthUserToToken != nil {
 		edges = append(edges, authuser.EdgeAuthUserToToken)
+	}
+	if m._AuthUserToServerTasks != nil {
+		edges = append(edges, authuser.EdgeAuthUserToServerTasks)
 	}
 	return edges
 }
@@ -2659,15 +3130,24 @@ func (m *AuthUserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case authuser.EdgeAuthUserToServerTasks:
+		ids := make([]ent.Value, 0, len(m._AuthUserToServerTasks))
+		for id := range m._AuthUserToServerTasks {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AuthUserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removed_AuthUserToToken != nil {
 		edges = append(edges, authuser.EdgeAuthUserToToken)
+	}
+	if m.removed_AuthUserToServerTasks != nil {
+		edges = append(edges, authuser.EdgeAuthUserToServerTasks)
 	}
 	return edges
 }
@@ -2682,15 +3162,24 @@ func (m *AuthUserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case authuser.EdgeAuthUserToServerTasks:
+		ids := make([]ent.Value, 0, len(m.removed_AuthUserToServerTasks))
+		for id := range m.removed_AuthUserToServerTasks {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AuthUserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.cleared_AuthUserToToken {
 		edges = append(edges, authuser.EdgeAuthUserToToken)
+	}
+	if m.cleared_AuthUserToServerTasks {
+		edges = append(edges, authuser.EdgeAuthUserToServerTasks)
 	}
 	return edges
 }
@@ -2701,6 +3190,8 @@ func (m *AuthUserMutation) EdgeCleared(name string) bool {
 	switch name {
 	case authuser.EdgeAuthUserToToken:
 		return m.cleared_AuthUserToToken
+	case authuser.EdgeAuthUserToServerTasks:
+		return m.cleared_AuthUserToServerTasks
 	}
 	return false
 }
@@ -2719,6 +3210,9 @@ func (m *AuthUserMutation) ResetEdge(name string) error {
 	switch name {
 	case authuser.EdgeAuthUserToToken:
 		m.ResetAuthUserToToken()
+		return nil
+	case authuser.EdgeAuthUserToServerTasks:
+		m.ResetAuthUserToServerTasks()
 		return nil
 	}
 	return fmt.Errorf("unknown AuthUser edge %s", name)
@@ -17909,6 +18403,7 @@ type ProvisionedHostMutation struct {
 	typ                                         string
 	id                                          *uuid.UUID
 	subnet_ip                                   *string
+	addon_type                                  *provisionedhost.AddonType
 	clearedFields                               map[string]struct{}
 	_ProvisionedHostToStatus                    *uuid.UUID
 	cleared_ProvisionedHostToStatus             bool
@@ -18055,6 +18550,55 @@ func (m *ProvisionedHostMutation) OldSubnetIP(ctx context.Context) (v string, er
 // ResetSubnetIP resets all changes to the "subnet_ip" field.
 func (m *ProvisionedHostMutation) ResetSubnetIP() {
 	m.subnet_ip = nil
+}
+
+// SetAddonType sets the "addon_type" field.
+func (m *ProvisionedHostMutation) SetAddonType(pt provisionedhost.AddonType) {
+	m.addon_type = &pt
+}
+
+// AddonType returns the value of the "addon_type" field in the mutation.
+func (m *ProvisionedHostMutation) AddonType() (r provisionedhost.AddonType, exists bool) {
+	v := m.addon_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAddonType returns the old "addon_type" field's value of the ProvisionedHost entity.
+// If the ProvisionedHost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProvisionedHostMutation) OldAddonType(ctx context.Context) (v *provisionedhost.AddonType, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldAddonType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldAddonType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAddonType: %w", err)
+	}
+	return oldValue.AddonType, nil
+}
+
+// ClearAddonType clears the value of the "addon_type" field.
+func (m *ProvisionedHostMutation) ClearAddonType() {
+	m.addon_type = nil
+	m.clearedFields[provisionedhost.FieldAddonType] = struct{}{}
+}
+
+// AddonTypeCleared returns if the "addon_type" field was cleared in this mutation.
+func (m *ProvisionedHostMutation) AddonTypeCleared() bool {
+	_, ok := m.clearedFields[provisionedhost.FieldAddonType]
+	return ok
+}
+
+// ResetAddonType resets all changes to the "addon_type" field.
+func (m *ProvisionedHostMutation) ResetAddonType() {
+	m.addon_type = nil
+	delete(m.clearedFields, provisionedhost.FieldAddonType)
 }
 
 // SetProvisionedHostToStatusID sets the "ProvisionedHostToStatus" edge to the Status entity by id.
@@ -18464,9 +19008,12 @@ func (m *ProvisionedHostMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProvisionedHostMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 2)
 	if m.subnet_ip != nil {
 		fields = append(fields, provisionedhost.FieldSubnetIP)
+	}
+	if m.addon_type != nil {
+		fields = append(fields, provisionedhost.FieldAddonType)
 	}
 	return fields
 }
@@ -18478,6 +19025,8 @@ func (m *ProvisionedHostMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case provisionedhost.FieldSubnetIP:
 		return m.SubnetIP()
+	case provisionedhost.FieldAddonType:
+		return m.AddonType()
 	}
 	return nil, false
 }
@@ -18489,6 +19038,8 @@ func (m *ProvisionedHostMutation) OldField(ctx context.Context, name string) (en
 	switch name {
 	case provisionedhost.FieldSubnetIP:
 		return m.OldSubnetIP(ctx)
+	case provisionedhost.FieldAddonType:
+		return m.OldAddonType(ctx)
 	}
 	return nil, fmt.Errorf("unknown ProvisionedHost field %s", name)
 }
@@ -18504,6 +19055,13 @@ func (m *ProvisionedHostMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSubnetIP(v)
+		return nil
+	case provisionedhost.FieldAddonType:
+		v, ok := value.(provisionedhost.AddonType)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAddonType(v)
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedHost field %s", name)
@@ -18534,7 +19092,11 @@ func (m *ProvisionedHostMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *ProvisionedHostMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(provisionedhost.FieldAddonType) {
+		fields = append(fields, provisionedhost.FieldAddonType)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -18547,6 +19109,11 @@ func (m *ProvisionedHostMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ProvisionedHostMutation) ClearField(name string) error {
+	switch name {
+	case provisionedhost.FieldAddonType:
+		m.ClearAddonType()
+		return nil
+	}
 	return fmt.Errorf("unknown ProvisionedHost nullable field %s", name)
 }
 
@@ -18556,6 +19123,9 @@ func (m *ProvisionedHostMutation) ResetField(name string) error {
 	switch name {
 	case provisionedhost.FieldSubnetIP:
 		m.ResetSubnetIP()
+		return nil
+	case provisionedhost.FieldAddonType:
+		m.ResetAddonType()
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisionedHost field %s", name)
@@ -21901,6 +22471,922 @@ func (m *ScriptMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Script edge %s", name)
 }
 
+// ServerTaskMutation represents an operation that mutates the ServerTask nodes in the graph.
+type ServerTaskMutation struct {
+	config
+	op                                    Op
+	typ                                   string
+	id                                    *uuid.UUID
+	_type                                 *servertask.Type
+	start_time                            *time.Time
+	end_time                              *time.Time
+	errors                                *[]string
+	log_file_path                         *string
+	clearedFields                         map[string]struct{}
+	_ServerTaskToAuthUser                 *uuid.UUID
+	cleared_ServerTaskToAuthUser          bool
+	_ServerTaskToStatus                   *uuid.UUID
+	cleared_ServerTaskToStatus            bool
+	_ServerTaskToEnvironment              *uuid.UUID
+	cleared_ServerTaskToEnvironment       bool
+	_ServerTaskToBuild                    *uuid.UUID
+	cleared_ServerTaskToBuild             bool
+	_ServerTaskToGinFileMiddleware        map[uuid.UUID]struct{}
+	removed_ServerTaskToGinFileMiddleware map[uuid.UUID]struct{}
+	cleared_ServerTaskToGinFileMiddleware bool
+	done                                  bool
+	oldValue                              func(context.Context) (*ServerTask, error)
+	predicates                            []predicate.ServerTask
+}
+
+var _ ent.Mutation = (*ServerTaskMutation)(nil)
+
+// servertaskOption allows management of the mutation configuration using functional options.
+type servertaskOption func(*ServerTaskMutation)
+
+// newServerTaskMutation creates new mutation for the ServerTask entity.
+func newServerTaskMutation(c config, op Op, opts ...servertaskOption) *ServerTaskMutation {
+	m := &ServerTaskMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeServerTask,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withServerTaskID sets the ID field of the mutation.
+func withServerTaskID(id uuid.UUID) servertaskOption {
+	return func(m *ServerTaskMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ServerTask
+		)
+		m.oldValue = func(ctx context.Context) (*ServerTask, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ServerTask.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withServerTask sets the old ServerTask of the mutation.
+func withServerTask(node *ServerTask) servertaskOption {
+	return func(m *ServerTaskMutation) {
+		m.oldValue = func(context.Context) (*ServerTask, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ServerTaskMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ServerTaskMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of ServerTask entities.
+func (m *ServerTaskMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID
+// is only available if it was provided to the builder.
+func (m *ServerTaskMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetType sets the "type" field.
+func (m *ServerTaskMutation) SetType(s servertask.Type) {
+	m._type = &s
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *ServerTaskMutation) GetType() (r servertask.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the ServerTask entity.
+// If the ServerTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServerTaskMutation) OldType(ctx context.Context) (v servertask.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *ServerTaskMutation) ResetType() {
+	m._type = nil
+}
+
+// SetStartTime sets the "start_time" field.
+func (m *ServerTaskMutation) SetStartTime(t time.Time) {
+	m.start_time = &t
+}
+
+// StartTime returns the value of the "start_time" field in the mutation.
+func (m *ServerTaskMutation) StartTime() (r time.Time, exists bool) {
+	v := m.start_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStartTime returns the old "start_time" field's value of the ServerTask entity.
+// If the ServerTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServerTaskMutation) OldStartTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldStartTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldStartTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStartTime: %w", err)
+	}
+	return oldValue.StartTime, nil
+}
+
+// ClearStartTime clears the value of the "start_time" field.
+func (m *ServerTaskMutation) ClearStartTime() {
+	m.start_time = nil
+	m.clearedFields[servertask.FieldStartTime] = struct{}{}
+}
+
+// StartTimeCleared returns if the "start_time" field was cleared in this mutation.
+func (m *ServerTaskMutation) StartTimeCleared() bool {
+	_, ok := m.clearedFields[servertask.FieldStartTime]
+	return ok
+}
+
+// ResetStartTime resets all changes to the "start_time" field.
+func (m *ServerTaskMutation) ResetStartTime() {
+	m.start_time = nil
+	delete(m.clearedFields, servertask.FieldStartTime)
+}
+
+// SetEndTime sets the "end_time" field.
+func (m *ServerTaskMutation) SetEndTime(t time.Time) {
+	m.end_time = &t
+}
+
+// EndTime returns the value of the "end_time" field in the mutation.
+func (m *ServerTaskMutation) EndTime() (r time.Time, exists bool) {
+	v := m.end_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEndTime returns the old "end_time" field's value of the ServerTask entity.
+// If the ServerTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServerTaskMutation) OldEndTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldEndTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldEndTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEndTime: %w", err)
+	}
+	return oldValue.EndTime, nil
+}
+
+// ClearEndTime clears the value of the "end_time" field.
+func (m *ServerTaskMutation) ClearEndTime() {
+	m.end_time = nil
+	m.clearedFields[servertask.FieldEndTime] = struct{}{}
+}
+
+// EndTimeCleared returns if the "end_time" field was cleared in this mutation.
+func (m *ServerTaskMutation) EndTimeCleared() bool {
+	_, ok := m.clearedFields[servertask.FieldEndTime]
+	return ok
+}
+
+// ResetEndTime resets all changes to the "end_time" field.
+func (m *ServerTaskMutation) ResetEndTime() {
+	m.end_time = nil
+	delete(m.clearedFields, servertask.FieldEndTime)
+}
+
+// SetErrors sets the "errors" field.
+func (m *ServerTaskMutation) SetErrors(s []string) {
+	m.errors = &s
+}
+
+// Errors returns the value of the "errors" field in the mutation.
+func (m *ServerTaskMutation) Errors() (r []string, exists bool) {
+	v := m.errors
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldErrors returns the old "errors" field's value of the ServerTask entity.
+// If the ServerTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServerTaskMutation) OldErrors(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldErrors is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldErrors requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldErrors: %w", err)
+	}
+	return oldValue.Errors, nil
+}
+
+// ClearErrors clears the value of the "errors" field.
+func (m *ServerTaskMutation) ClearErrors() {
+	m.errors = nil
+	m.clearedFields[servertask.FieldErrors] = struct{}{}
+}
+
+// ErrorsCleared returns if the "errors" field was cleared in this mutation.
+func (m *ServerTaskMutation) ErrorsCleared() bool {
+	_, ok := m.clearedFields[servertask.FieldErrors]
+	return ok
+}
+
+// ResetErrors resets all changes to the "errors" field.
+func (m *ServerTaskMutation) ResetErrors() {
+	m.errors = nil
+	delete(m.clearedFields, servertask.FieldErrors)
+}
+
+// SetLogFilePath sets the "log_file_path" field.
+func (m *ServerTaskMutation) SetLogFilePath(s string) {
+	m.log_file_path = &s
+}
+
+// LogFilePath returns the value of the "log_file_path" field in the mutation.
+func (m *ServerTaskMutation) LogFilePath() (r string, exists bool) {
+	v := m.log_file_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLogFilePath returns the old "log_file_path" field's value of the ServerTask entity.
+// If the ServerTask object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServerTaskMutation) OldLogFilePath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldLogFilePath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldLogFilePath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLogFilePath: %w", err)
+	}
+	return oldValue.LogFilePath, nil
+}
+
+// ClearLogFilePath clears the value of the "log_file_path" field.
+func (m *ServerTaskMutation) ClearLogFilePath() {
+	m.log_file_path = nil
+	m.clearedFields[servertask.FieldLogFilePath] = struct{}{}
+}
+
+// LogFilePathCleared returns if the "log_file_path" field was cleared in this mutation.
+func (m *ServerTaskMutation) LogFilePathCleared() bool {
+	_, ok := m.clearedFields[servertask.FieldLogFilePath]
+	return ok
+}
+
+// ResetLogFilePath resets all changes to the "log_file_path" field.
+func (m *ServerTaskMutation) ResetLogFilePath() {
+	m.log_file_path = nil
+	delete(m.clearedFields, servertask.FieldLogFilePath)
+}
+
+// SetServerTaskToAuthUserID sets the "ServerTaskToAuthUser" edge to the AuthUser entity by id.
+func (m *ServerTaskMutation) SetServerTaskToAuthUserID(id uuid.UUID) {
+	m._ServerTaskToAuthUser = &id
+}
+
+// ClearServerTaskToAuthUser clears the "ServerTaskToAuthUser" edge to the AuthUser entity.
+func (m *ServerTaskMutation) ClearServerTaskToAuthUser() {
+	m.cleared_ServerTaskToAuthUser = true
+}
+
+// ServerTaskToAuthUserCleared reports if the "ServerTaskToAuthUser" edge to the AuthUser entity was cleared.
+func (m *ServerTaskMutation) ServerTaskToAuthUserCleared() bool {
+	return m.cleared_ServerTaskToAuthUser
+}
+
+// ServerTaskToAuthUserID returns the "ServerTaskToAuthUser" edge ID in the mutation.
+func (m *ServerTaskMutation) ServerTaskToAuthUserID() (id uuid.UUID, exists bool) {
+	if m._ServerTaskToAuthUser != nil {
+		return *m._ServerTaskToAuthUser, true
+	}
+	return
+}
+
+// ServerTaskToAuthUserIDs returns the "ServerTaskToAuthUser" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ServerTaskToAuthUserID instead. It exists only for internal usage by the builders.
+func (m *ServerTaskMutation) ServerTaskToAuthUserIDs() (ids []uuid.UUID) {
+	if id := m._ServerTaskToAuthUser; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetServerTaskToAuthUser resets all changes to the "ServerTaskToAuthUser" edge.
+func (m *ServerTaskMutation) ResetServerTaskToAuthUser() {
+	m._ServerTaskToAuthUser = nil
+	m.cleared_ServerTaskToAuthUser = false
+}
+
+// SetServerTaskToStatusID sets the "ServerTaskToStatus" edge to the Status entity by id.
+func (m *ServerTaskMutation) SetServerTaskToStatusID(id uuid.UUID) {
+	m._ServerTaskToStatus = &id
+}
+
+// ClearServerTaskToStatus clears the "ServerTaskToStatus" edge to the Status entity.
+func (m *ServerTaskMutation) ClearServerTaskToStatus() {
+	m.cleared_ServerTaskToStatus = true
+}
+
+// ServerTaskToStatusCleared reports if the "ServerTaskToStatus" edge to the Status entity was cleared.
+func (m *ServerTaskMutation) ServerTaskToStatusCleared() bool {
+	return m.cleared_ServerTaskToStatus
+}
+
+// ServerTaskToStatusID returns the "ServerTaskToStatus" edge ID in the mutation.
+func (m *ServerTaskMutation) ServerTaskToStatusID() (id uuid.UUID, exists bool) {
+	if m._ServerTaskToStatus != nil {
+		return *m._ServerTaskToStatus, true
+	}
+	return
+}
+
+// ServerTaskToStatusIDs returns the "ServerTaskToStatus" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ServerTaskToStatusID instead. It exists only for internal usage by the builders.
+func (m *ServerTaskMutation) ServerTaskToStatusIDs() (ids []uuid.UUID) {
+	if id := m._ServerTaskToStatus; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetServerTaskToStatus resets all changes to the "ServerTaskToStatus" edge.
+func (m *ServerTaskMutation) ResetServerTaskToStatus() {
+	m._ServerTaskToStatus = nil
+	m.cleared_ServerTaskToStatus = false
+}
+
+// SetServerTaskToEnvironmentID sets the "ServerTaskToEnvironment" edge to the Environment entity by id.
+func (m *ServerTaskMutation) SetServerTaskToEnvironmentID(id uuid.UUID) {
+	m._ServerTaskToEnvironment = &id
+}
+
+// ClearServerTaskToEnvironment clears the "ServerTaskToEnvironment" edge to the Environment entity.
+func (m *ServerTaskMutation) ClearServerTaskToEnvironment() {
+	m.cleared_ServerTaskToEnvironment = true
+}
+
+// ServerTaskToEnvironmentCleared reports if the "ServerTaskToEnvironment" edge to the Environment entity was cleared.
+func (m *ServerTaskMutation) ServerTaskToEnvironmentCleared() bool {
+	return m.cleared_ServerTaskToEnvironment
+}
+
+// ServerTaskToEnvironmentID returns the "ServerTaskToEnvironment" edge ID in the mutation.
+func (m *ServerTaskMutation) ServerTaskToEnvironmentID() (id uuid.UUID, exists bool) {
+	if m._ServerTaskToEnvironment != nil {
+		return *m._ServerTaskToEnvironment, true
+	}
+	return
+}
+
+// ServerTaskToEnvironmentIDs returns the "ServerTaskToEnvironment" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ServerTaskToEnvironmentID instead. It exists only for internal usage by the builders.
+func (m *ServerTaskMutation) ServerTaskToEnvironmentIDs() (ids []uuid.UUID) {
+	if id := m._ServerTaskToEnvironment; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetServerTaskToEnvironment resets all changes to the "ServerTaskToEnvironment" edge.
+func (m *ServerTaskMutation) ResetServerTaskToEnvironment() {
+	m._ServerTaskToEnvironment = nil
+	m.cleared_ServerTaskToEnvironment = false
+}
+
+// SetServerTaskToBuildID sets the "ServerTaskToBuild" edge to the Build entity by id.
+func (m *ServerTaskMutation) SetServerTaskToBuildID(id uuid.UUID) {
+	m._ServerTaskToBuild = &id
+}
+
+// ClearServerTaskToBuild clears the "ServerTaskToBuild" edge to the Build entity.
+func (m *ServerTaskMutation) ClearServerTaskToBuild() {
+	m.cleared_ServerTaskToBuild = true
+}
+
+// ServerTaskToBuildCleared reports if the "ServerTaskToBuild" edge to the Build entity was cleared.
+func (m *ServerTaskMutation) ServerTaskToBuildCleared() bool {
+	return m.cleared_ServerTaskToBuild
+}
+
+// ServerTaskToBuildID returns the "ServerTaskToBuild" edge ID in the mutation.
+func (m *ServerTaskMutation) ServerTaskToBuildID() (id uuid.UUID, exists bool) {
+	if m._ServerTaskToBuild != nil {
+		return *m._ServerTaskToBuild, true
+	}
+	return
+}
+
+// ServerTaskToBuildIDs returns the "ServerTaskToBuild" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ServerTaskToBuildID instead. It exists only for internal usage by the builders.
+func (m *ServerTaskMutation) ServerTaskToBuildIDs() (ids []uuid.UUID) {
+	if id := m._ServerTaskToBuild; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetServerTaskToBuild resets all changes to the "ServerTaskToBuild" edge.
+func (m *ServerTaskMutation) ResetServerTaskToBuild() {
+	m._ServerTaskToBuild = nil
+	m.cleared_ServerTaskToBuild = false
+}
+
+// AddServerTaskToGinFileMiddlewareIDs adds the "ServerTaskToGinFileMiddleware" edge to the GinFileMiddleware entity by ids.
+func (m *ServerTaskMutation) AddServerTaskToGinFileMiddlewareIDs(ids ...uuid.UUID) {
+	if m._ServerTaskToGinFileMiddleware == nil {
+		m._ServerTaskToGinFileMiddleware = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m._ServerTaskToGinFileMiddleware[ids[i]] = struct{}{}
+	}
+}
+
+// ClearServerTaskToGinFileMiddleware clears the "ServerTaskToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (m *ServerTaskMutation) ClearServerTaskToGinFileMiddleware() {
+	m.cleared_ServerTaskToGinFileMiddleware = true
+}
+
+// ServerTaskToGinFileMiddlewareCleared reports if the "ServerTaskToGinFileMiddleware" edge to the GinFileMiddleware entity was cleared.
+func (m *ServerTaskMutation) ServerTaskToGinFileMiddlewareCleared() bool {
+	return m.cleared_ServerTaskToGinFileMiddleware
+}
+
+// RemoveServerTaskToGinFileMiddlewareIDs removes the "ServerTaskToGinFileMiddleware" edge to the GinFileMiddleware entity by IDs.
+func (m *ServerTaskMutation) RemoveServerTaskToGinFileMiddlewareIDs(ids ...uuid.UUID) {
+	if m.removed_ServerTaskToGinFileMiddleware == nil {
+		m.removed_ServerTaskToGinFileMiddleware = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.removed_ServerTaskToGinFileMiddleware[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedServerTaskToGinFileMiddleware returns the removed IDs of the "ServerTaskToGinFileMiddleware" edge to the GinFileMiddleware entity.
+func (m *ServerTaskMutation) RemovedServerTaskToGinFileMiddlewareIDs() (ids []uuid.UUID) {
+	for id := range m.removed_ServerTaskToGinFileMiddleware {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ServerTaskToGinFileMiddlewareIDs returns the "ServerTaskToGinFileMiddleware" edge IDs in the mutation.
+func (m *ServerTaskMutation) ServerTaskToGinFileMiddlewareIDs() (ids []uuid.UUID) {
+	for id := range m._ServerTaskToGinFileMiddleware {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetServerTaskToGinFileMiddleware resets all changes to the "ServerTaskToGinFileMiddleware" edge.
+func (m *ServerTaskMutation) ResetServerTaskToGinFileMiddleware() {
+	m._ServerTaskToGinFileMiddleware = nil
+	m.cleared_ServerTaskToGinFileMiddleware = false
+	m.removed_ServerTaskToGinFileMiddleware = nil
+}
+
+// Op returns the operation name.
+func (m *ServerTaskMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (ServerTask).
+func (m *ServerTaskMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ServerTaskMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m._type != nil {
+		fields = append(fields, servertask.FieldType)
+	}
+	if m.start_time != nil {
+		fields = append(fields, servertask.FieldStartTime)
+	}
+	if m.end_time != nil {
+		fields = append(fields, servertask.FieldEndTime)
+	}
+	if m.errors != nil {
+		fields = append(fields, servertask.FieldErrors)
+	}
+	if m.log_file_path != nil {
+		fields = append(fields, servertask.FieldLogFilePath)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ServerTaskMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case servertask.FieldType:
+		return m.GetType()
+	case servertask.FieldStartTime:
+		return m.StartTime()
+	case servertask.FieldEndTime:
+		return m.EndTime()
+	case servertask.FieldErrors:
+		return m.Errors()
+	case servertask.FieldLogFilePath:
+		return m.LogFilePath()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ServerTaskMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case servertask.FieldType:
+		return m.OldType(ctx)
+	case servertask.FieldStartTime:
+		return m.OldStartTime(ctx)
+	case servertask.FieldEndTime:
+		return m.OldEndTime(ctx)
+	case servertask.FieldErrors:
+		return m.OldErrors(ctx)
+	case servertask.FieldLogFilePath:
+		return m.OldLogFilePath(ctx)
+	}
+	return nil, fmt.Errorf("unknown ServerTask field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ServerTaskMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case servertask.FieldType:
+		v, ok := value.(servertask.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case servertask.FieldStartTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStartTime(v)
+		return nil
+	case servertask.FieldEndTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEndTime(v)
+		return nil
+	case servertask.FieldErrors:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetErrors(v)
+		return nil
+	case servertask.FieldLogFilePath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLogFilePath(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ServerTask field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ServerTaskMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ServerTaskMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ServerTaskMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown ServerTask numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ServerTaskMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(servertask.FieldStartTime) {
+		fields = append(fields, servertask.FieldStartTime)
+	}
+	if m.FieldCleared(servertask.FieldEndTime) {
+		fields = append(fields, servertask.FieldEndTime)
+	}
+	if m.FieldCleared(servertask.FieldErrors) {
+		fields = append(fields, servertask.FieldErrors)
+	}
+	if m.FieldCleared(servertask.FieldLogFilePath) {
+		fields = append(fields, servertask.FieldLogFilePath)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ServerTaskMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ServerTaskMutation) ClearField(name string) error {
+	switch name {
+	case servertask.FieldStartTime:
+		m.ClearStartTime()
+		return nil
+	case servertask.FieldEndTime:
+		m.ClearEndTime()
+		return nil
+	case servertask.FieldErrors:
+		m.ClearErrors()
+		return nil
+	case servertask.FieldLogFilePath:
+		m.ClearLogFilePath()
+		return nil
+	}
+	return fmt.Errorf("unknown ServerTask nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ServerTaskMutation) ResetField(name string) error {
+	switch name {
+	case servertask.FieldType:
+		m.ResetType()
+		return nil
+	case servertask.FieldStartTime:
+		m.ResetStartTime()
+		return nil
+	case servertask.FieldEndTime:
+		m.ResetEndTime()
+		return nil
+	case servertask.FieldErrors:
+		m.ResetErrors()
+		return nil
+	case servertask.FieldLogFilePath:
+		m.ResetLogFilePath()
+		return nil
+	}
+	return fmt.Errorf("unknown ServerTask field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ServerTaskMutation) AddedEdges() []string {
+	edges := make([]string, 0, 5)
+	if m._ServerTaskToAuthUser != nil {
+		edges = append(edges, servertask.EdgeServerTaskToAuthUser)
+	}
+	if m._ServerTaskToStatus != nil {
+		edges = append(edges, servertask.EdgeServerTaskToStatus)
+	}
+	if m._ServerTaskToEnvironment != nil {
+		edges = append(edges, servertask.EdgeServerTaskToEnvironment)
+	}
+	if m._ServerTaskToBuild != nil {
+		edges = append(edges, servertask.EdgeServerTaskToBuild)
+	}
+	if m._ServerTaskToGinFileMiddleware != nil {
+		edges = append(edges, servertask.EdgeServerTaskToGinFileMiddleware)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ServerTaskMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case servertask.EdgeServerTaskToAuthUser:
+		if id := m._ServerTaskToAuthUser; id != nil {
+			return []ent.Value{*id}
+		}
+	case servertask.EdgeServerTaskToStatus:
+		if id := m._ServerTaskToStatus; id != nil {
+			return []ent.Value{*id}
+		}
+	case servertask.EdgeServerTaskToEnvironment:
+		if id := m._ServerTaskToEnvironment; id != nil {
+			return []ent.Value{*id}
+		}
+	case servertask.EdgeServerTaskToBuild:
+		if id := m._ServerTaskToBuild; id != nil {
+			return []ent.Value{*id}
+		}
+	case servertask.EdgeServerTaskToGinFileMiddleware:
+		ids := make([]ent.Value, 0, len(m._ServerTaskToGinFileMiddleware))
+		for id := range m._ServerTaskToGinFileMiddleware {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ServerTaskMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 5)
+	if m.removed_ServerTaskToGinFileMiddleware != nil {
+		edges = append(edges, servertask.EdgeServerTaskToGinFileMiddleware)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ServerTaskMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case servertask.EdgeServerTaskToGinFileMiddleware:
+		ids := make([]ent.Value, 0, len(m.removed_ServerTaskToGinFileMiddleware))
+		for id := range m.removed_ServerTaskToGinFileMiddleware {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ServerTaskMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 5)
+	if m.cleared_ServerTaskToAuthUser {
+		edges = append(edges, servertask.EdgeServerTaskToAuthUser)
+	}
+	if m.cleared_ServerTaskToStatus {
+		edges = append(edges, servertask.EdgeServerTaskToStatus)
+	}
+	if m.cleared_ServerTaskToEnvironment {
+		edges = append(edges, servertask.EdgeServerTaskToEnvironment)
+	}
+	if m.cleared_ServerTaskToBuild {
+		edges = append(edges, servertask.EdgeServerTaskToBuild)
+	}
+	if m.cleared_ServerTaskToGinFileMiddleware {
+		edges = append(edges, servertask.EdgeServerTaskToGinFileMiddleware)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ServerTaskMutation) EdgeCleared(name string) bool {
+	switch name {
+	case servertask.EdgeServerTaskToAuthUser:
+		return m.cleared_ServerTaskToAuthUser
+	case servertask.EdgeServerTaskToStatus:
+		return m.cleared_ServerTaskToStatus
+	case servertask.EdgeServerTaskToEnvironment:
+		return m.cleared_ServerTaskToEnvironment
+	case servertask.EdgeServerTaskToBuild:
+		return m.cleared_ServerTaskToBuild
+	case servertask.EdgeServerTaskToGinFileMiddleware:
+		return m.cleared_ServerTaskToGinFileMiddleware
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ServerTaskMutation) ClearEdge(name string) error {
+	switch name {
+	case servertask.EdgeServerTaskToAuthUser:
+		m.ClearServerTaskToAuthUser()
+		return nil
+	case servertask.EdgeServerTaskToStatus:
+		m.ClearServerTaskToStatus()
+		return nil
+	case servertask.EdgeServerTaskToEnvironment:
+		m.ClearServerTaskToEnvironment()
+		return nil
+	case servertask.EdgeServerTaskToBuild:
+		m.ClearServerTaskToBuild()
+		return nil
+	}
+	return fmt.Errorf("unknown ServerTask unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ServerTaskMutation) ResetEdge(name string) error {
+	switch name {
+	case servertask.EdgeServerTaskToAuthUser:
+		m.ResetServerTaskToAuthUser()
+		return nil
+	case servertask.EdgeServerTaskToStatus:
+		m.ResetServerTaskToStatus()
+		return nil
+	case servertask.EdgeServerTaskToEnvironment:
+		m.ResetServerTaskToEnvironment()
+		return nil
+	case servertask.EdgeServerTaskToBuild:
+		m.ResetServerTaskToBuild()
+		return nil
+	case servertask.EdgeServerTaskToGinFileMiddleware:
+		m.ResetServerTaskToGinFileMiddleware()
+		return nil
+	}
+	return fmt.Errorf("unknown ServerTask edge %s", name)
+}
+
 // StatusMutation represents an operation that mutates the Status nodes in the graph.
 type StatusMutation struct {
 	config
@@ -21927,6 +23413,8 @@ type StatusMutation struct {
 	cleared_StatusToTeam               bool
 	_StatusToPlan                      *uuid.UUID
 	cleared_StatusToPlan               bool
+	_StatusToServerTask                *uuid.UUID
+	cleared_StatusToServerTask         bool
 	done                               bool
 	oldValue                           func(context.Context) (*Status, error)
 	predicates                         []predicate.Status
@@ -22542,6 +24030,45 @@ func (m *StatusMutation) ResetStatusToPlan() {
 	m.cleared_StatusToPlan = false
 }
 
+// SetStatusToServerTaskID sets the "StatusToServerTask" edge to the ServerTask entity by id.
+func (m *StatusMutation) SetStatusToServerTaskID(id uuid.UUID) {
+	m._StatusToServerTask = &id
+}
+
+// ClearStatusToServerTask clears the "StatusToServerTask" edge to the ServerTask entity.
+func (m *StatusMutation) ClearStatusToServerTask() {
+	m.cleared_StatusToServerTask = true
+}
+
+// StatusToServerTaskCleared reports if the "StatusToServerTask" edge to the ServerTask entity was cleared.
+func (m *StatusMutation) StatusToServerTaskCleared() bool {
+	return m.cleared_StatusToServerTask
+}
+
+// StatusToServerTaskID returns the "StatusToServerTask" edge ID in the mutation.
+func (m *StatusMutation) StatusToServerTaskID() (id uuid.UUID, exists bool) {
+	if m._StatusToServerTask != nil {
+		return *m._StatusToServerTask, true
+	}
+	return
+}
+
+// StatusToServerTaskIDs returns the "StatusToServerTask" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// StatusToServerTaskID instead. It exists only for internal usage by the builders.
+func (m *StatusMutation) StatusToServerTaskIDs() (ids []uuid.UUID) {
+	if id := m._StatusToServerTask; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetStatusToServerTask resets all changes to the "StatusToServerTask" edge.
+func (m *StatusMutation) ResetStatusToServerTask() {
+	m._StatusToServerTask = nil
+	m.cleared_StatusToServerTask = false
+}
+
 // Op returns the operation name.
 func (m *StatusMutation) Op() Op {
 	return m.op
@@ -22778,7 +24305,7 @@ func (m *StatusMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *StatusMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m._StatusToBuild != nil {
 		edges = append(edges, status.EdgeStatusToBuild)
 	}
@@ -22796,6 +24323,9 @@ func (m *StatusMutation) AddedEdges() []string {
 	}
 	if m._StatusToPlan != nil {
 		edges = append(edges, status.EdgeStatusToPlan)
+	}
+	if m._StatusToServerTask != nil {
+		edges = append(edges, status.EdgeStatusToServerTask)
 	}
 	return edges
 }
@@ -22828,13 +24358,17 @@ func (m *StatusMutation) AddedIDs(name string) []ent.Value {
 		if id := m._StatusToPlan; id != nil {
 			return []ent.Value{*id}
 		}
+	case status.EdgeStatusToServerTask:
+		if id := m._StatusToServerTask; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *StatusMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	return edges
 }
 
@@ -22848,7 +24382,7 @@ func (m *StatusMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *StatusMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.cleared_StatusToBuild {
 		edges = append(edges, status.EdgeStatusToBuild)
 	}
@@ -22866,6 +24400,9 @@ func (m *StatusMutation) ClearedEdges() []string {
 	}
 	if m.cleared_StatusToPlan {
 		edges = append(edges, status.EdgeStatusToPlan)
+	}
+	if m.cleared_StatusToServerTask {
+		edges = append(edges, status.EdgeStatusToServerTask)
 	}
 	return edges
 }
@@ -22886,6 +24423,8 @@ func (m *StatusMutation) EdgeCleared(name string) bool {
 		return m.cleared_StatusToTeam
 	case status.EdgeStatusToPlan:
 		return m.cleared_StatusToPlan
+	case status.EdgeStatusToServerTask:
+		return m.cleared_StatusToServerTask
 	}
 	return false
 }
@@ -22912,6 +24451,9 @@ func (m *StatusMutation) ClearEdge(name string) error {
 	case status.EdgeStatusToPlan:
 		m.ClearStatusToPlan()
 		return nil
+	case status.EdgeStatusToServerTask:
+		m.ClearStatusToServerTask()
+		return nil
 	}
 	return fmt.Errorf("unknown Status unique edge %s", name)
 }
@@ -22937,6 +24479,9 @@ func (m *StatusMutation) ResetEdge(name string) error {
 		return nil
 	case status.EdgeStatusToPlan:
 		m.ResetStatusToPlan()
+		return nil
+	case status.EdgeStatusToServerTask:
+		m.ResetStatusToServerTask()
 		return nil
 	}
 	return fmt.Errorf("unknown Status edge %s", name)
@@ -23948,8 +25493,8 @@ type TokenMutation struct {
 	typ                     string
 	id                      *uuid.UUID
 	token                   *string
-	created_at              *int
-	addcreated_at           *int
+	expire_at               *int64
+	addexpire_at            *int64
 	clearedFields           map[string]struct{}
 	_TokenToAuthUser        *uuid.UUID
 	cleared_TokenToAuthUser bool
@@ -24079,60 +25624,60 @@ func (m *TokenMutation) ResetToken() {
 	m.token = nil
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *TokenMutation) SetCreatedAt(i int) {
-	m.created_at = &i
-	m.addcreated_at = nil
+// SetExpireAt sets the "expire_at" field.
+func (m *TokenMutation) SetExpireAt(i int64) {
+	m.expire_at = &i
+	m.addexpire_at = nil
 }
 
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *TokenMutation) CreatedAt() (r int, exists bool) {
-	v := m.created_at
+// ExpireAt returns the value of the "expire_at" field in the mutation.
+func (m *TokenMutation) ExpireAt() (r int64, exists bool) {
+	v := m.expire_at
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the Token entity.
+// OldExpireAt returns the old "expire_at" field's value of the Token entity.
 // If the Token object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TokenMutation) OldCreatedAt(ctx context.Context) (v int, err error) {
+func (m *TokenMutation) OldExpireAt(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldCreatedAt is only allowed on UpdateOne operations")
+		return v, fmt.Errorf("OldExpireAt is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
+		return v, fmt.Errorf("OldExpireAt requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldExpireAt: %w", err)
 	}
-	return oldValue.CreatedAt, nil
+	return oldValue.ExpireAt, nil
 }
 
-// AddCreatedAt adds i to the "created_at" field.
-func (m *TokenMutation) AddCreatedAt(i int) {
-	if m.addcreated_at != nil {
-		*m.addcreated_at += i
+// AddExpireAt adds i to the "expire_at" field.
+func (m *TokenMutation) AddExpireAt(i int64) {
+	if m.addexpire_at != nil {
+		*m.addexpire_at += i
 	} else {
-		m.addcreated_at = &i
+		m.addexpire_at = &i
 	}
 }
 
-// AddedCreatedAt returns the value that was added to the "created_at" field in this mutation.
-func (m *TokenMutation) AddedCreatedAt() (r int, exists bool) {
-	v := m.addcreated_at
+// AddedExpireAt returns the value that was added to the "expire_at" field in this mutation.
+func (m *TokenMutation) AddedExpireAt() (r int64, exists bool) {
+	v := m.addexpire_at
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *TokenMutation) ResetCreatedAt() {
-	m.created_at = nil
-	m.addcreated_at = nil
+// ResetExpireAt resets all changes to the "expire_at" field.
+func (m *TokenMutation) ResetExpireAt() {
+	m.expire_at = nil
+	m.addexpire_at = nil
 }
 
 // SetTokenToAuthUserID sets the "TokenToAuthUser" edge to the AuthUser entity by id.
@@ -24192,8 +25737,8 @@ func (m *TokenMutation) Fields() []string {
 	if m.token != nil {
 		fields = append(fields, token.FieldToken)
 	}
-	if m.created_at != nil {
-		fields = append(fields, token.FieldCreatedAt)
+	if m.expire_at != nil {
+		fields = append(fields, token.FieldExpireAt)
 	}
 	return fields
 }
@@ -24205,8 +25750,8 @@ func (m *TokenMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case token.FieldToken:
 		return m.Token()
-	case token.FieldCreatedAt:
-		return m.CreatedAt()
+	case token.FieldExpireAt:
+		return m.ExpireAt()
 	}
 	return nil, false
 }
@@ -24218,8 +25763,8 @@ func (m *TokenMutation) OldField(ctx context.Context, name string) (ent.Value, e
 	switch name {
 	case token.FieldToken:
 		return m.OldToken(ctx)
-	case token.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
+	case token.FieldExpireAt:
+		return m.OldExpireAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Token field %s", name)
 }
@@ -24236,12 +25781,12 @@ func (m *TokenMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetToken(v)
 		return nil
-	case token.FieldCreatedAt:
-		v, ok := value.(int)
+	case token.FieldExpireAt:
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCreatedAt(v)
+		m.SetExpireAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Token field %s", name)
@@ -24251,8 +25796,8 @@ func (m *TokenMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *TokenMutation) AddedFields() []string {
 	var fields []string
-	if m.addcreated_at != nil {
-		fields = append(fields, token.FieldCreatedAt)
+	if m.addexpire_at != nil {
+		fields = append(fields, token.FieldExpireAt)
 	}
 	return fields
 }
@@ -24262,8 +25807,8 @@ func (m *TokenMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *TokenMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case token.FieldCreatedAt:
-		return m.AddedCreatedAt()
+	case token.FieldExpireAt:
+		return m.AddedExpireAt()
 	}
 	return nil, false
 }
@@ -24273,12 +25818,12 @@ func (m *TokenMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *TokenMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case token.FieldCreatedAt:
-		v, ok := value.(int)
+	case token.FieldExpireAt:
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.AddCreatedAt(v)
+		m.AddExpireAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Token numeric field %s", name)
@@ -24310,8 +25855,8 @@ func (m *TokenMutation) ResetField(name string) error {
 	case token.FieldToken:
 		m.ResetToken()
 		return nil
-	case token.FieldCreatedAt:
-		m.ResetCreatedAt()
+	case token.FieldExpireAt:
+		m.ResetExpireAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Token field %s", name)

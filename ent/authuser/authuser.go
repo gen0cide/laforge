@@ -19,12 +19,28 @@ const (
 	FieldUsername = "username"
 	// FieldPassword holds the string denoting the password field in the database.
 	FieldPassword = "password"
+	// FieldFirstName holds the string denoting the first_name field in the database.
+	FieldFirstName = "first_name"
+	// FieldLastName holds the string denoting the last_name field in the database.
+	FieldLastName = "last_name"
+	// FieldEmail holds the string denoting the email field in the database.
+	FieldEmail = "email"
+	// FieldPhone holds the string denoting the phone field in the database.
+	FieldPhone = "phone"
+	// FieldCompany holds the string denoting the company field in the database.
+	FieldCompany = "company"
+	// FieldOccupation holds the string denoting the occupation field in the database.
+	FieldOccupation = "occupation"
+	// FieldPrivateKeyPath holds the string denoting the private_key_path field in the database.
+	FieldPrivateKeyPath = "private_key_path"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
 	// FieldProvider holds the string denoting the provider field in the database.
 	FieldProvider = "provider"
 	// EdgeAuthUserToToken holds the string denoting the authusertotoken edge name in mutations.
 	EdgeAuthUserToToken = "AuthUserToToken"
+	// EdgeAuthUserToServerTasks holds the string denoting the authusertoservertasks edge name in mutations.
+	EdgeAuthUserToServerTasks = "AuthUserToServerTasks"
 	// Table holds the table name of the authuser in the database.
 	Table = "auth_users"
 	// AuthUserToTokenTable is the table the holds the AuthUserToToken relation/edge.
@@ -34,6 +50,13 @@ const (
 	AuthUserToTokenInverseTable = "tokens"
 	// AuthUserToTokenColumn is the table column denoting the AuthUserToToken relation/edge.
 	AuthUserToTokenColumn = "auth_user_auth_user_to_token"
+	// AuthUserToServerTasksTable is the table the holds the AuthUserToServerTasks relation/edge.
+	AuthUserToServerTasksTable = "server_tasks"
+	// AuthUserToServerTasksInverseTable is the table name for the ServerTask entity.
+	// It exists in this package in order to avoid circular dependency with the "servertask" package.
+	AuthUserToServerTasksInverseTable = "server_tasks"
+	// AuthUserToServerTasksColumn is the table column denoting the AuthUserToServerTasks relation/edge.
+	AuthUserToServerTasksColumn = "server_task_server_task_to_auth_user"
 )
 
 // Columns holds all SQL columns for authuser fields.
@@ -41,6 +64,13 @@ var Columns = []string{
 	FieldID,
 	FieldUsername,
 	FieldPassword,
+	FieldFirstName,
+	FieldLastName,
+	FieldEmail,
+	FieldPhone,
+	FieldCompany,
+	FieldOccupation,
+	FieldPrivateKeyPath,
 	FieldRole,
 	FieldProvider,
 }
@@ -56,6 +86,20 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultFirstName holds the default value on creation for the "first_name" field.
+	DefaultFirstName string
+	// DefaultLastName holds the default value on creation for the "last_name" field.
+	DefaultLastName string
+	// DefaultEmail holds the default value on creation for the "email" field.
+	DefaultEmail string
+	// DefaultPhone holds the default value on creation for the "phone" field.
+	DefaultPhone string
+	// DefaultCompany holds the default value on creation for the "company" field.
+	DefaultCompany string
+	// DefaultOccupation holds the default value on creation for the "occupation" field.
+	DefaultOccupation string
+	// DefaultPrivateKeyPath holds the default value on creation for the "private_key_path" field.
+	DefaultPrivateKeyPath string
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

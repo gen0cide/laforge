@@ -1,30 +1,24 @@
 import { Injectable } from '@angular/core';
-import { environment } from '@env';
 import {
   LaForgeGetBuildTreeGQL,
   LaForgeGetBuildTreeQuery,
   LaForgeGetEnvironmentGQL,
   LaForgeGetEnvironmentInfoQuery,
+  LaForgeGetEnvironmentsQuery,
   LaForgeSubscribeUpdatedAgentStatusGQL,
   LaForgeSubscribeUpdatedAgentStatusSubscription,
   LaForgeSubscribeUpdatedStatusGQL,
   LaForgeSubscribeUpdatedStatusSubscription
 } from '@graphql';
-import { ID } from '@models/common.model';
 import { ApiService } from '@services/api/api.service';
-import { QueryRef } from 'apollo-angular';
-import { EmptyObject } from 'apollo-angular/types';
-import { BehaviorSubject, Subscription, Observable } from 'rxjs';
-import { updateBuildAgentStatuses } from 'src/app/models/agent.model';
-import { AgentStatusQueryResult, EnvironmentInfo } from 'src/app/models/api.model';
-import { Build, Environment, resolveBuildEnums, updateBuildPlans } from 'src/app/models/environment.model';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EnvironmentService {
   // private currEnvironment: BehaviorSubject<Environment> = new BehaviorSubject(null);
-  private environments: BehaviorSubject<EnvironmentInfo[]>;
+  private environments: BehaviorSubject<LaForgeGetEnvironmentsQuery['environments']>;
   public envIsLoading: BehaviorSubject<boolean> = new BehaviorSubject(false);
   // private currBuild: BehaviorSubject<Build> = new BehaviorSubject(null);
   // private builds: BehaviorSubject<BuildInfo[]>
@@ -37,7 +31,7 @@ export class EnvironmentService {
   private statusMap: { [key: string]: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'] };
   public statusUpdate: BehaviorSubject<boolean>;
   private agentStatusMap: { [key: string]: LaForgeSubscribeUpdatedAgentStatusSubscription['updatedAgentStatus'] };
-  public agentStatusUpdate: Observable<boolean>;
+  public agentStatusUpdate: BehaviorSubject<boolean>;
 
   constructor(
     private api: ApiService,
@@ -51,6 +45,7 @@ export class EnvironmentService {
     this.environmentInfo = new BehaviorSubject(null);
     this.buildTree = new BehaviorSubject(null);
     this.statusUpdate = new BehaviorSubject(false);
+    this.agentStatusUpdate = new BehaviorSubject(false);
     this.statusMap = {};
     this.agentStatusMap = {};
 
@@ -76,7 +71,7 @@ export class EnvironmentService {
     return this.buildTree;
   }
 
-  public getEnvironments(): BehaviorSubject<EnvironmentInfo[]> {
+  public getEnvironments(): BehaviorSubject<LaForgeGetEnvironmentsQuery['environments']> {
     return this.environments;
   }
 
@@ -97,7 +92,34 @@ export class EnvironmentService {
     });
   }
 
-  public setCurrentEnv(envId: ID, buildId: ID): void {
+  public initPlanStatuses() {
+    if (!this.buildTree.getValue()) return;
+    this.api.pullAllPlanStatuses(this.buildTree.getValue().id).then((plans) => {
+      for (const plan of plans) {
+        this.statusMap[plan.PlanToStatus.id] = { ...plan.PlanToStatus };
+      }
+      this.statusUpdate.next(!this.statusUpdate.getValue());
+    }, console.error);
+  }
+
+  public initAgentStatuses() {
+    if (!this.buildTree.getValue()) return;
+    this.api.pullAllAgentStatuses(this.buildTree.getValue().id).then((build) => {
+      for (const team of build.buildToTeam) {
+        for (const pnet of team.TeamToProvisionedNetwork) {
+          for (const phost of pnet.ProvisionedNetworkToProvisionedHost) {
+            if (phost.ProvisionedHostToAgentStatus)
+              this.agentStatusMap[phost.ProvisionedHostToAgentStatus.clientId] = {
+                ...phost.ProvisionedHostToAgentStatus
+              };
+          }
+        }
+      }
+      this.agentStatusUpdate.next(!this.agentStatusUpdate.getValue());
+    }, console.error);
+  }
+
+  public setCurrentEnv(envId: string, buildId: string): void {
     localStorage.setItem('selected_env', `${envId}`);
     localStorage.setItem('selected_build', `${buildId}`);
     // this.pullEnvironment(envId);
@@ -105,57 +127,46 @@ export class EnvironmentService {
     this.pullBuildTree(buildId);
   }
 
-  public pullEnvironmentInfo(envId: ID) {
-    this.getEnvironmentInfoGQL
-      .fetch({
-        envId: envId as string
-      })
-      .toPromise()
-      .then((res) => {
-        if (res.error) {
-          this.environmentInfo.error(res.error);
-          return;
-        } else if (res.errors) {
-          this.environmentInfo.error(res.errors);
-          return;
-        } else if (res.data) {
-          this.environmentInfo.next(res.data.environment);
-        } else {
-          this.buildTree.error(Error('unable to retrieve environment info. unknown error.'));
+  public pullEnvironmentInfo(envId: string) {
+    this.api.pullEnvironmentInfo(envId).then(
+      (env) => {
+        if (env?.id) {
+          return this.environmentInfo.next(env);
         }
-      });
+        this.environmentInfo.error(Error('Unable to retrieve environment info. Unknown error.'));
+      },
+      (err) => {
+        localStorage.setItem('selected_env', '');
+        this.environmentInfo.error(err);
+      }
+    );
   }
 
-  public pullBuildTree(buildId: ID) {
-    this.getBuildTreeGQL
-      .fetch({
-        buildId: buildId as string
-      })
-      .toPromise()
-      .then((res) => {
-        if (res.error) {
-          this.buildTree.error(res.error);
-          return;
-        } else if (res.errors) {
-          this.buildTree.error(res.errors);
-          return;
-        } else if (res.data) {
-          this.buildTree.next(res.data.build);
-        } else {
-          this.buildTree.error(Error('unable to retrieve build tree. unknown error.'));
+  public pullBuildTree(buildId: string) {
+    this.api.pullBuildTree(buildId).then(
+      (build) => {
+        if (build?.id) {
+          return this.buildTree.next(build);
         }
-      });
+        this.buildTree.error(Error('Unable to retrieve build tree. Unknown error.'));
+      },
+      (err) => {
+        localStorage.setItem('selected_build', '');
+        this.buildTree.error(err);
+      }
+    );
   }
 
   private startStatusSubscription() {
     this.subscribeUpdatedStatus.subscribe().subscribe(({ data: { updatedStatus }, errors }) => {
+      // console.log('status subscribe');
       if (errors) {
         console.error(errors);
       } else if (updatedStatus) {
-        this.statusMap = {
-          ...this.statusMap,
-          [updatedStatus.id]: updatedStatus
+        this.statusMap[updatedStatus.id] = {
+          ...updatedStatus
         };
+        this.statusUpdate.next(!this.statusUpdate.getValue());
       }
     });
   }
@@ -165,10 +176,10 @@ export class EnvironmentService {
       if (errors) {
         console.error(errors);
       } else if (updatedAgentStatus) {
-        this.agentStatusMap = {
-          ...this.agentStatusMap,
-          [updatedAgentStatus.clientId]: updatedAgentStatus
+        this.agentStatusMap[updatedAgentStatus.clientId] = {
+          ...updatedAgentStatus
         };
+        this.agentStatusUpdate.next(!this.agentStatusUpdate.getValue());
       }
     });
   }

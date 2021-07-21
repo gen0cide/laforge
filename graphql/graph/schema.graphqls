@@ -2,6 +2,8 @@
 #
 # https://gqlgen.com/getting-started/
 
+scalar Time
+
 type varsMap {
   key: String!
   value: String!
@@ -100,6 +102,16 @@ enum AgentCommand {
   ADDTOGROUP
   EXECUTE
   VALIDATE
+  CHANGEPERMS
+  APPENDFILE
+}
+
+enum ServerTaskType {
+  LOADENV
+  CREATEBUILD
+  RENDERFILES
+  DELETEBUILD
+  REBUILD
 }
 
 type AgentStatus {
@@ -381,6 +393,19 @@ type Script {
   ScriptToEnvironment: Environment!
 }
 
+type ServerTask {
+  id: ID!
+  type: ServerTaskType!
+  start_time: Time
+  end_time: Time
+  errors: [String]
+  log_file_path: String
+  ServerTaskToAuthUser: AuthUser!
+  ServerTaskToStatus: Status!
+  ServerTaskToEnvironment: Environment
+  ServerTaskToBuild: Build
+}
+
 type Status {
   id: ID!
   state: ProvisionStatus!
@@ -413,36 +438,68 @@ type User {
 type AuthUser {
   id: ID!
   username: String!
-  password: String!
   role: RoleLevel!
   provider: ProviderType!
+  first_name: String!
+  last_name: String!
+  email: String!
+  phone: String!
+  company: String!
+  occupation: String!
 }
 
 # TODO: Can use on INPUT_FIELD_DEFINITION if wanna have auth on a per variable level
 directive @hasRole(roles: [RoleLevel!]!) on FIELD_DEFINITION
 
 type Query {
-  environments: [Environment] @hasRole(roles: [ADMIN, USER])
+  environments: [Environment]
   environment(envUUID: String!): Environment
   provisionedHost(proHostUUID: String!): ProvisionedHost
   provisionedNetwork(proNetUUID: String!): ProvisionedNetwork
   provisionedStep(proStepUUID: String!): ProvisioningStep
   plan(planUUID: String!): Plan
   build(buildUUID: String!): Build
+  status(statusUUID: String!): Status
+  agentStatus(clientId: String!): AgentStatus
+  getServerTasks: [ServerTask] @hasRole(roles: [ADMIN])
+  currentUser: AuthUser
+  getUserList: [AuthUser] @hasRole(roles: [ADMIN])
+  getCurrentUserTasks: [ServerTask]
 }
 
 type Mutation {
-  loadEnviroment(envFilePath: String!): [Environment]
+  loadEnvironment(envFilePath: String!): [Environment]
   createBuild(envUUID: String!, renderFiles: Boolean! = true): Build
-  createUser(username: String!, password: String!, role: RoleLevel!): AuthUser!
   deleteUser(userUUID: String!): Boolean!
   executePlan(buildUUID: String!): Build
   deleteBuild(buildUUID: String!): Boolean!
-  createTask(proHostUUID: String!, command: AgentCommand!, args: String!): Boolean!
+  createTask(proHostUUID: String!, command: AgentCommand!, args: String!): Boolean! @hasRole(roles: [ADMIN, USER])
   rebuild(rootPlans: [String]!): Boolean!
+
+  # User Info
+  modifySelfPassword(currentPassword: String!, newPassword: String!): Boolean! @hasRole(roles: [ADMIN, USER])
+  modifySelfUserInfo(firstName: String, lastName: String, email: String, phone: String, company: String, occupation: String): AuthUser
+    @hasRole(roles: [ADMIN, USER])
+
+  # User Admin Stuff
+  createUser(username: String!, password: String!, role: RoleLevel!, provider: ProviderType!): AuthUser @hasRole(roles: [ADMIN])
+  modifyAdminUserInfo(
+    userID: String!
+    username: String
+    firstName: String
+    lastName: String
+    email: String
+    phone: String
+    company: String
+    occupation: String
+    role: RoleLevel
+    provider: ProviderType
+  ): AuthUser @hasRole(roles: [ADMIN])
+  modifyAdminPassword(userID: String!, newPassword: String!): Boolean! @hasRole(roles: [ADMIN])
 }
 
 type Subscription {
   updatedAgentStatus: AgentStatus!
   updatedStatus: Status!
+  updatedServerTask: ServerTask!
 }

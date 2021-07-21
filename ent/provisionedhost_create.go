@@ -34,6 +34,20 @@ func (phc *ProvisionedHostCreate) SetSubnetIP(s string) *ProvisionedHostCreate {
 	return phc
 }
 
+// SetAddonType sets the "addon_type" field.
+func (phc *ProvisionedHostCreate) SetAddonType(pt provisionedhost.AddonType) *ProvisionedHostCreate {
+	phc.mutation.SetAddonType(pt)
+	return phc
+}
+
+// SetNillableAddonType sets the "addon_type" field if the given value is not nil.
+func (phc *ProvisionedHostCreate) SetNillableAddonType(pt *provisionedhost.AddonType) *ProvisionedHostCreate {
+	if pt != nil {
+		phc.SetAddonType(*pt)
+	}
+	return phc
+}
+
 // SetID sets the "id" field.
 func (phc *ProvisionedHostCreate) SetID(u uuid.UUID) *ProvisionedHostCreate {
 	phc.mutation.SetID(u)
@@ -238,6 +252,11 @@ func (phc *ProvisionedHostCreate) check() error {
 	if _, ok := phc.mutation.SubnetIP(); !ok {
 		return &ValidationError{Name: "subnet_ip", err: errors.New("ent: missing required field \"subnet_ip\"")}
 	}
+	if v, ok := phc.mutation.AddonType(); ok {
+		if err := provisionedhost.AddonTypeValidator(v); err != nil {
+			return &ValidationError{Name: "addon_type", err: fmt.Errorf("ent: validator failed for field \"addon_type\": %w", err)}
+		}
+	}
 	if _, ok := phc.mutation.ProvisionedHostToStatusID(); !ok {
 		return &ValidationError{Name: "ProvisionedHostToStatus", err: errors.New("ent: missing required edge \"ProvisionedHostToStatus\"")}
 	}
@@ -283,6 +302,14 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 			Column: provisionedhost.FieldSubnetIP,
 		})
 		_node.SubnetIP = value
+	}
+	if value, ok := phc.mutation.AddonType(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: provisionedhost.FieldAddonType,
+		})
+		_node.AddonType = &value
 	}
 	if nodes := phc.mutation.ProvisionedHostToStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

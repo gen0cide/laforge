@@ -81,6 +81,9 @@ type ProvisioningStep func(*sql.Selector)
 // Script is the predicate function for script builders.
 type Script func(*sql.Selector)
 
+// ServerTask is the predicate function for servertask builders.
+type ServerTask func(*sql.Selector)
+
 // Status is the predicate function for status builders.
 type Status func(*sql.Selector)
 

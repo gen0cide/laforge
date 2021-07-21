@@ -3,9 +3,7 @@ import { LaForgeProvisionedHost, LaForgeProvisionedNetwork, LaForgeTeam } from '
 import { RebuildPlansData, RebuildPlansMutation, RebuildPlansVars } from '@services/api/queries/rebuild';
 import { Apollo } from 'apollo-angular';
 import { GraphQLError } from 'graphql';
-import { ID, Team } from 'src/app/models/common.model';
-import { ProvisionedHost } from 'src/app/models/host.model';
-import { ProvisionedNetwork } from 'src/app/models/network.model';
+import { ID } from 'src/app/models/common.model';
 
 @Injectable({
   providedIn: 'root'

@@ -47,8 +47,9 @@ var (
 		{Name: "command", Type: field.TypeEnum, Enums: []string{"DEFAULT", "DELETE", "REBOOT", "EXTRACT", "DOWNLOAD", "CREATEUSER", "CREATEUSERPASS", "ADDTOGROUP", "EXECUTE", "VALIDATE"}},
 		{Name: "args", Type: field.TypeString},
 		{Name: "number", Type: field.TypeInt},
-		{Name: "output", Type: field.TypeString, Nullable: true},
+		{Name: "output", Type: field.TypeString, Default: ""},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"AWAITING", "INPROGRESS", "FAILED", "COMPLETE"}},
+		{Name: "error_message", Type: field.TypeString, Default: ""},
 		{Name: "agent_task_agent_task_to_provisioning_step", Type: field.TypeUUID, Nullable: true},
 		{Name: "agent_task_agent_task_to_provisioned_host", Type: field.TypeUUID, Nullable: true},
 	}
@@ -60,13 +61,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "agent_tasks_provisioning_steps_AgentTaskToProvisioningStep",
-				Columns:    []*schema.Column{AgentTasksColumns[6]},
+				Columns:    []*schema.Column{AgentTasksColumns[7]},
 				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "agent_tasks_provisioned_hosts_AgentTaskToProvisionedHost",
-				Columns:    []*schema.Column{AgentTasksColumns[7]},
+				Columns:    []*schema.Column{AgentTasksColumns[8]},
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -77,6 +78,13 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "username", Type: field.TypeString},
 		{Name: "password", Type: field.TypeString},
+		{Name: "first_name", Type: field.TypeString, Default: ""},
+		{Name: "last_name", Type: field.TypeString, Default: ""},
+		{Name: "email", Type: field.TypeString, Default: ""},
+		{Name: "phone", Type: field.TypeString, Default: ""},
+		{Name: "company", Type: field.TypeString, Default: ""},
+		{Name: "occupation", Type: field.TypeString, Default: ""},
+		{Name: "private_key_path", Type: field.TypeString, Default: ""},
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"USER", "ADMIN"}},
 		{Name: "provider", Type: field.TypeEnum, Enums: []string{"LOCAL", "GITHUB", "OPENID"}},
 	}
@@ -373,13 +381,21 @@ var (
 		{Name: "url_id", Type: field.TypeString},
 		{Name: "file_path", Type: field.TypeString},
 		{Name: "accessed", Type: field.TypeBool, Default: false},
+		{Name: "server_task_server_task_to_gin_file_middleware", Type: field.TypeUUID, Nullable: true},
 	}
 	// GinFileMiddlewaresTable holds the schema information for the "gin_file_middlewares" table.
 	GinFileMiddlewaresTable = &schema.Table{
-		Name:        "gin_file_middlewares",
-		Columns:     GinFileMiddlewaresColumns,
-		PrimaryKey:  []*schema.Column{GinFileMiddlewaresColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "gin_file_middlewares",
+		Columns:    GinFileMiddlewaresColumns,
+		PrimaryKey: []*schema.Column{GinFileMiddlewaresColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "gin_file_middlewares_server_tasks_ServerTaskToGinFileMiddleware",
+				Columns:    []*schema.Column{GinFileMiddlewaresColumns[4]},
+				RefColumns: []*schema.Column{ServerTasksColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// HostsColumns holds the columns for the "hosts" table.
 	HostsColumns = []*schema.Column{
@@ -556,6 +572,7 @@ var (
 	ProvisionedHostsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "subnet_ip", Type: field.TypeString},
+		{Name: "addon_type", Type: field.TypeEnum, Nullable: true, Enums: []string{"DNS"}},
 		{Name: "gin_file_middleware_gin_file_middleware_to_provisioned_host", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "plan_plan_to_provisioned_host", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "provisioned_host_provisioned_host_to_provisioned_network", Type: field.TypeUUID, Nullable: true},
@@ -570,31 +587,31 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "provisioned_hosts_gin_file_middlewares_GinFileMiddlewareToProvisionedHost",
-				Columns:    []*schema.Column{ProvisionedHostsColumns[2]},
+				Columns:    []*schema.Column{ProvisionedHostsColumns[3]},
 				RefColumns: []*schema.Column{GinFileMiddlewaresColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "provisioned_hosts_plans_PlanToProvisionedHost",
-				Columns:    []*schema.Column{ProvisionedHostsColumns[3]},
+				Columns:    []*schema.Column{ProvisionedHostsColumns[4]},
 				RefColumns: []*schema.Column{PlansColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "provisioned_hosts_provisioned_networks_ProvisionedHostToProvisionedNetwork",
-				Columns:    []*schema.Column{ProvisionedHostsColumns[4]},
+				Columns:    []*schema.Column{ProvisionedHostsColumns[5]},
 				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "provisioned_hosts_hosts_ProvisionedHostToHost",
-				Columns:    []*schema.Column{ProvisionedHostsColumns[5]},
+				Columns:    []*schema.Column{ProvisionedHostsColumns[6]},
 				RefColumns: []*schema.Column{HostsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "provisioned_hosts_plans_ProvisionedHostToEndStepPlan",
-				Columns:    []*schema.Column{ProvisionedHostsColumns[6]},
+				Columns:    []*schema.Column{ProvisionedHostsColumns[7]},
 				RefColumns: []*schema.Column{PlansColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -752,11 +769,49 @@ var (
 			},
 		},
 	}
+	// ServerTasksColumns holds the columns for the "server_tasks" table.
+	ServerTasksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"LOADENV", "CREATEBUILD", "RENDERFILES", "DELETEBUILD", "REBUILD"}},
+		{Name: "start_time", Type: field.TypeTime, Nullable: true},
+		{Name: "end_time", Type: field.TypeTime, Nullable: true},
+		{Name: "errors", Type: field.TypeJSON, Nullable: true},
+		{Name: "log_file_path", Type: field.TypeString, Nullable: true},
+		{Name: "server_task_server_task_to_auth_user", Type: field.TypeUUID, Nullable: true},
+		{Name: "server_task_server_task_to_environment", Type: field.TypeUUID, Nullable: true},
+		{Name: "server_task_server_task_to_build", Type: field.TypeUUID, Nullable: true},
+	}
+	// ServerTasksTable holds the schema information for the "server_tasks" table.
+	ServerTasksTable = &schema.Table{
+		Name:       "server_tasks",
+		Columns:    ServerTasksColumns,
+		PrimaryKey: []*schema.Column{ServerTasksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "server_tasks_auth_users_ServerTaskToAuthUser",
+				Columns:    []*schema.Column{ServerTasksColumns[6]},
+				RefColumns: []*schema.Column{AuthUsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "server_tasks_environments_ServerTaskToEnvironment",
+				Columns:    []*schema.Column{ServerTasksColumns[7]},
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "server_tasks_builds_ServerTaskToBuild",
+				Columns:    []*schema.Column{ServerTasksColumns[8]},
+				RefColumns: []*schema.Column{BuildsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// StatusColumns holds the columns for the "status" table.
 	StatusColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED", "TODELETE", "DELETEINPROGRESS", "DELETED"}},
-		{Name: "status_for", Type: field.TypeEnum, Enums: []string{"Build", "Team", "Plan", "ProvisionedNetwork", "ProvisionedHost", "ProvisioningStep"}},
+		{Name: "status_for", Type: field.TypeEnum, Enums: []string{"Build", "Team", "Plan", "ProvisionedNetwork", "ProvisionedHost", "ProvisioningStep", "ServerTask"}},
 		{Name: "started_at", Type: field.TypeTime, Nullable: true},
 		{Name: "ended_at", Type: field.TypeTime, Nullable: true},
 		{Name: "failed", Type: field.TypeBool, Default: false},
@@ -767,6 +822,7 @@ var (
 		{Name: "provisioned_host_provisioned_host_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "provisioned_network_provisioned_network_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "provisioning_step_provisioning_step_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "server_task_server_task_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "team_team_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}
 	// StatusTable holds the schema information for the "status" table.
@@ -806,8 +862,14 @@ var (
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "status_teams_TeamToStatus",
+				Symbol:     "status_server_tasks_ServerTaskToStatus",
 				Columns:    []*schema.Column{StatusColumns[13]},
+				RefColumns: []*schema.Column{ServerTasksColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "status_teams_TeamToStatus",
+				Columns:    []*schema.Column{StatusColumns[14]},
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -873,7 +935,7 @@ var (
 	TokensColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "token", Type: field.TypeString},
-		{Name: "created_at", Type: field.TypeInt},
+		{Name: "expire_at", Type: field.TypeInt64},
 		{Name: "auth_user_auth_user_to_token", Type: field.TypeUUID, Nullable: true},
 	}
 	// TokensTable holds the schema information for the "tokens" table.
@@ -1111,6 +1173,7 @@ var (
 		ProvisionedNetworksTable,
 		ProvisioningStepsTable,
 		ScriptsTable,
+		ServerTasksTable,
 		StatusTable,
 		TagsTable,
 		TeamsTable,
@@ -1141,6 +1204,7 @@ func init() {
 	FindingsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	FindingsTable.ForeignKeys[1].RefTable = HostsTable
 	FindingsTable.ForeignKeys[2].RefTable = ScriptsTable
+	GinFileMiddlewaresTable.ForeignKeys[0].RefTable = ServerTasksTable
 	HostsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	HostDependenciesTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	HostDependenciesTable.ForeignKeys[1].RefTable = HostsTable
@@ -1169,12 +1233,16 @@ func init() {
 	ProvisioningStepsTable.ForeignKeys[7].RefTable = FileDownloadsTable
 	ProvisioningStepsTable.ForeignKeys[8].RefTable = FileExtractsTable
 	ScriptsTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	ServerTasksTable.ForeignKeys[0].RefTable = AuthUsersTable
+	ServerTasksTable.ForeignKeys[1].RefTable = EnvironmentsTable
+	ServerTasksTable.ForeignKeys[2].RefTable = BuildsTable
 	StatusTable.ForeignKeys[0].RefTable = BuildsTable
 	StatusTable.ForeignKeys[1].RefTable = PlansTable
 	StatusTable.ForeignKeys[2].RefTable = ProvisionedHostsTable
 	StatusTable.ForeignKeys[3].RefTable = ProvisionedNetworksTable
 	StatusTable.ForeignKeys[4].RefTable = ProvisioningStepsTable
-	StatusTable.ForeignKeys[5].RefTable = TeamsTable
+	StatusTable.ForeignKeys[5].RefTable = ServerTasksTable
+	StatusTable.ForeignKeys[6].RefTable = TeamsTable
 	TagsTable.ForeignKeys[0].RefTable = IncludedNetworksTable
 	TagsTable.ForeignKeys[1].RefTable = UsersTable
 	TeamsTable.ForeignKeys[0].RefTable = PlansTable

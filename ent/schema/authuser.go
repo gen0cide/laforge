@@ -19,7 +19,14 @@ func (AuthUser) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
 		field.String("username"),
-		field.String("password"),
+		field.String("password").Sensitive(),
+		field.String("first_name").Default(""),
+		field.String("last_name").Default(""),
+		field.String("email").Default(""),
+		field.String("phone").Default(""),
+		field.String("company").Default(""),
+		field.String("occupation").Default(""),
+		field.String("private_key_path").Default(""),
 		field.Enum("role").Values("USER", "ADMIN"),
 		field.Enum("provider").Values("LOCAL", "GITHUB", "OPENID"),
 	}
@@ -29,6 +36,11 @@ func (AuthUser) Fields() []ent.Field {
 func (AuthUser) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("AuthUserToToken", Token.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.From("AuthUserToServerTasks", ServerTask.Type).
+			Ref("ServerTaskToAuthUser").
 			Annotations(entsql.Annotation{
 				OnDelete: entsql.Cascade,
 			}),

@@ -5,10 +5,11 @@ import { UserModel } from '../_models/user.model';
 import { AuthModel } from '../_models/auth.model';
 import { AuthHTTPService } from './auth-http';
 import { environment } from 'src/environments/environment';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { LaForgeAuthUser } from '@graphql';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AuthService implements OnDestroy {
   // private fields
@@ -17,65 +18,67 @@ export class AuthService implements OnDestroy {
   private authLocalStorageToken = `${environment.appVersion}-${environment.USERDATA_KEY}`;
 
   // public fields
-  currentUser$: Observable<UserModel>;
-  isLoading$: Observable<boolean>;
-  currentUserSubject: BehaviorSubject<UserModel>;
+  // currentUser$: Observable<UserModel>;
+  isLoading: Observable<boolean>;
+  currentUser: Observable<LaForgeAuthUser>;
+  currentUserSubject: BehaviorSubject<LaForgeAuthUser>;
 
-  get currentUserValue(): UserModel {
+  get currentUserValue(): LaForgeAuthUser {
     return this.currentUserSubject.value;
   }
 
-  constructor(
-    private authHttpService: AuthHTTPService,
-    private router: Router
-  ) {
+  constructor(private authHttpService: AuthHTTPService, private router: Router, private route: ActivatedRoute) {
     this.isLoadingSubject = new BehaviorSubject<boolean>(false);
-    this.currentUserSubject = new BehaviorSubject<UserModel>(undefined);
-    this.currentUser$ = this.currentUserSubject.asObservable();
-    this.isLoading$ = this.isLoadingSubject.asObservable();
-    const subscr = this.getUserByToken().subscribe();
+    this.currentUserSubject = new BehaviorSubject<LaForgeAuthUser>(undefined);
+    this.currentUser = this.currentUserSubject.asObservable();
+    this.isLoading = this.isLoadingSubject.asObservable();
+    const subscr = this.getCurrentUserFromContext().subscribe();
     this.unsubscribe.push(subscr);
   }
 
   // public methods
-  login(email: string, password: string): Observable<UserModel> {
+  localLogin(email: string, password: string): Observable<LaForgeAuthUser> {
     this.isLoadingSubject.next(true);
-    return this.authHttpService.login(email, password).pipe(
-      map((auth: AuthModel) => {
-        const result = this.setAuthFromLocalStorage(auth);
-        return result;
+    return this.authHttpService.localLogin(email, password).pipe(
+      map((auth: LaForgeAuthUser) => {
+        if (auth.id) {
+          this.currentUserSubject = new BehaviorSubject<LaForgeAuthUser>(auth);
+          return true;
+        } else return false;
       }),
-      switchMap(() => this.getUserByToken()),
       catchError((err) => {
         console.error('err', err);
         return of(undefined);
       }),
-      finalize(() => this.isLoadingSubject.next(false))
+      finalize(() => {
+        this.isLoadingSubject.next(false);
+      })
     );
   }
 
-  logout() {
-    localStorage.removeItem(this.authLocalStorageToken);
-    this.router.navigate(['/auth/login'], {
-      queryParams: {},
-    });
+  logout(): Observable<boolean> {
+    return this.authHttpService.logout().pipe(
+      map((success) => {
+        return success;
+      })
+    );
   }
 
-  getUserByToken(): Observable<UserModel> {
-    const auth = this.getAuthFromLocalStorage();
-    if (!auth || !auth.accessToken) {
-      return of(undefined);
-    }
-
+  getCurrentUserFromContext(): Observable<LaForgeAuthUser> {
     this.isLoadingSubject.next(true);
-    return this.authHttpService.getUserByToken(auth.accessToken).pipe(
-      map((user: UserModel) => {
+    return this.authHttpService.getCurrentUserFromContext().pipe(
+      map((user: LaForgeAuthUser) => {
         if (user) {
-          this.currentUserSubject = new BehaviorSubject<UserModel>(user);
+          this.currentUserSubject = new BehaviorSubject<LaForgeAuthUser>(user);
         } else {
           this.logout();
         }
         return user;
+      }),
+      catchError((err) => {
+        console.warn('err', err);
+        this.router.navigate(['auth', 'login']);
+        return of(undefined);
       }),
       finalize(() => this.isLoadingSubject.next(false))
     );
@@ -88,7 +91,7 @@ export class AuthService implements OnDestroy {
       map(() => {
         this.isLoadingSubject.next(false);
       }),
-      switchMap(() => this.login(user.email, user.password)),
+      switchMap(() => this.localLogin(user.email, user.password)),
       catchError((err) => {
         console.error('err', err);
         return of(undefined);
@@ -99,9 +102,7 @@ export class AuthService implements OnDestroy {
 
   forgotPassword(email: string): Observable<boolean> {
     this.isLoadingSubject.next(true);
-    return this.authHttpService
-      .forgotPassword(email)
-      .pipe(finalize(() => this.isLoadingSubject.next(false)));
+    return this.authHttpService.forgotPassword(email).pipe(finalize(() => this.isLoadingSubject.next(false)));
   }
   // private methods
   private setAuthFromLocalStorage(auth: AuthModel): boolean {
@@ -115,9 +116,7 @@ export class AuthService implements OnDestroy {
 
   private getAuthFromLocalStorage(): AuthModel {
     try {
-      const authData = JSON.parse(
-        localStorage.getItem(this.authLocalStorageToken)
-      );
+      const authData = JSON.parse(localStorage.getItem(this.authLocalStorageToken));
       return authData;
     } catch (error) {
       console.error(error);

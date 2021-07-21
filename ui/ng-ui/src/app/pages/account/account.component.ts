@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_services/subheader.service';
-import { User } from 'src/app/models/user.model';
 import { UserService } from 'src/app/services/user/user.service';
 
 import { AuthUser } from '../../models/user.model';

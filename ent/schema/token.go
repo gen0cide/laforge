@@ -18,7 +18,7 @@ func (Token) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
 		field.String("token"),
-		field.Int("created_at"),
+		field.Int64("expire_at"),
 	}
 }
 

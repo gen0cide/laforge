@@ -16,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
 	"github.com/google/uuid"
@@ -248,6 +249,25 @@ func (su *StatusUpdate) SetStatusToPlan(p *Plan) *StatusUpdate {
 	return su.SetStatusToPlanID(p.ID)
 }
 
+// SetStatusToServerTaskID sets the "StatusToServerTask" edge to the ServerTask entity by ID.
+func (su *StatusUpdate) SetStatusToServerTaskID(id uuid.UUID) *StatusUpdate {
+	su.mutation.SetStatusToServerTaskID(id)
+	return su
+}
+
+// SetNillableStatusToServerTaskID sets the "StatusToServerTask" edge to the ServerTask entity by ID if the given value is not nil.
+func (su *StatusUpdate) SetNillableStatusToServerTaskID(id *uuid.UUID) *StatusUpdate {
+	if id != nil {
+		su = su.SetStatusToServerTaskID(*id)
+	}
+	return su
+}
+
+// SetStatusToServerTask sets the "StatusToServerTask" edge to the ServerTask entity.
+func (su *StatusUpdate) SetStatusToServerTask(s *ServerTask) *StatusUpdate {
+	return su.SetStatusToServerTaskID(s.ID)
+}
+
 // Mutation returns the StatusMutation object of the builder.
 func (su *StatusUpdate) Mutation() *StatusMutation {
 	return su.mutation
@@ -286,6 +306,12 @@ func (su *StatusUpdate) ClearStatusToTeam() *StatusUpdate {
 // ClearStatusToPlan clears the "StatusToPlan" edge to the Plan entity.
 func (su *StatusUpdate) ClearStatusToPlan() *StatusUpdate {
 	su.mutation.ClearStatusToPlan()
+	return su
+}
+
+// ClearStatusToServerTask clears the "StatusToServerTask" edge to the ServerTask entity.
+func (su *StatusUpdate) ClearStatusToServerTask() *StatusUpdate {
+	su.mutation.ClearStatusToServerTask()
 	return su
 }
 
@@ -656,6 +682,41 @@ func (su *StatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if su.mutation.StatusToServerTaskCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToServerTaskTable,
+			Columns: []string{status.StatusToServerTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: servertask.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.StatusToServerTaskIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToServerTaskTable,
+			Columns: []string{status.StatusToServerTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: servertask.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{status.Label}
@@ -889,6 +950,25 @@ func (suo *StatusUpdateOne) SetStatusToPlan(p *Plan) *StatusUpdateOne {
 	return suo.SetStatusToPlanID(p.ID)
 }
 
+// SetStatusToServerTaskID sets the "StatusToServerTask" edge to the ServerTask entity by ID.
+func (suo *StatusUpdateOne) SetStatusToServerTaskID(id uuid.UUID) *StatusUpdateOne {
+	suo.mutation.SetStatusToServerTaskID(id)
+	return suo
+}
+
+// SetNillableStatusToServerTaskID sets the "StatusToServerTask" edge to the ServerTask entity by ID if the given value is not nil.
+func (suo *StatusUpdateOne) SetNillableStatusToServerTaskID(id *uuid.UUID) *StatusUpdateOne {
+	if id != nil {
+		suo = suo.SetStatusToServerTaskID(*id)
+	}
+	return suo
+}
+
+// SetStatusToServerTask sets the "StatusToServerTask" edge to the ServerTask entity.
+func (suo *StatusUpdateOne) SetStatusToServerTask(s *ServerTask) *StatusUpdateOne {
+	return suo.SetStatusToServerTaskID(s.ID)
+}
+
 // Mutation returns the StatusMutation object of the builder.
 func (suo *StatusUpdateOne) Mutation() *StatusMutation {
 	return suo.mutation
@@ -927,6 +1007,12 @@ func (suo *StatusUpdateOne) ClearStatusToTeam() *StatusUpdateOne {
 // ClearStatusToPlan clears the "StatusToPlan" edge to the Plan entity.
 func (suo *StatusUpdateOne) ClearStatusToPlan() *StatusUpdateOne {
 	suo.mutation.ClearStatusToPlan()
+	return suo
+}
+
+// ClearStatusToServerTask clears the "StatusToServerTask" edge to the ServerTask entity.
+func (suo *StatusUpdateOne) ClearStatusToServerTask() *StatusUpdateOne {
+	suo.mutation.ClearStatusToServerTask()
 	return suo
 }
 
@@ -1313,6 +1399,41 @@ func (suo *StatusUpdateOne) sqlSave(ctx context.Context) (_node *Status, err err
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if suo.mutation.StatusToServerTaskCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToServerTaskTable,
+			Columns: []string{status.StatusToServerTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: servertask.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.StatusToServerTaskIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToServerTaskTable,
+			Columns: []string{status.StatusToServerTaskColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: servertask.FieldID,
 				},
 			},
 		}

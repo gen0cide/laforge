@@ -60,6 +60,20 @@ func (atc *AgentTaskCreate) SetState(a agenttask.State) *AgentTaskCreate {
 	return atc
 }
 
+// SetErrorMessage sets the "error_message" field.
+func (atc *AgentTaskCreate) SetErrorMessage(s string) *AgentTaskCreate {
+	atc.mutation.SetErrorMessage(s)
+	return atc
+}
+
+// SetNillableErrorMessage sets the "error_message" field if the given value is not nil.
+func (atc *AgentTaskCreate) SetNillableErrorMessage(s *string) *AgentTaskCreate {
+	if s != nil {
+		atc.SetErrorMessage(*s)
+	}
+	return atc
+}
+
 // SetID sets the "id" field.
 func (atc *AgentTaskCreate) SetID(u uuid.UUID) *AgentTaskCreate {
 	atc.mutation.SetID(u)
@@ -148,6 +162,14 @@ func (atc *AgentTaskCreate) SaveX(ctx context.Context) *AgentTask {
 
 // defaults sets the default values of the builder before save.
 func (atc *AgentTaskCreate) defaults() {
+	if _, ok := atc.mutation.Output(); !ok {
+		v := agenttask.DefaultOutput
+		atc.mutation.SetOutput(v)
+	}
+	if _, ok := atc.mutation.ErrorMessage(); !ok {
+		v := agenttask.DefaultErrorMessage
+		atc.mutation.SetErrorMessage(v)
+	}
 	if _, ok := atc.mutation.ID(); !ok {
 		v := agenttask.DefaultID()
 		atc.mutation.SetID(v)
@@ -170,6 +192,9 @@ func (atc *AgentTaskCreate) check() error {
 	if _, ok := atc.mutation.Number(); !ok {
 		return &ValidationError{Name: "number", err: errors.New("ent: missing required field \"number\"")}
 	}
+	if _, ok := atc.mutation.Output(); !ok {
+		return &ValidationError{Name: "output", err: errors.New("ent: missing required field \"output\"")}
+	}
 	if _, ok := atc.mutation.State(); !ok {
 		return &ValidationError{Name: "state", err: errors.New("ent: missing required field \"state\"")}
 	}
@@ -177,6 +202,9 @@ func (atc *AgentTaskCreate) check() error {
 		if err := agenttask.StateValidator(v); err != nil {
 			return &ValidationError{Name: "state", err: fmt.Errorf("ent: validator failed for field \"state\": %w", err)}
 		}
+	}
+	if _, ok := atc.mutation.ErrorMessage(); !ok {
+		return &ValidationError{Name: "error_message", err: errors.New("ent: missing required field \"error_message\"")}
 	}
 	if _, ok := atc.mutation.AgentTaskToProvisionedHostID(); !ok {
 		return &ValidationError{Name: "AgentTaskToProvisionedHost", err: errors.New("ent: missing required edge \"AgentTaskToProvisionedHost\"")}
@@ -240,7 +268,7 @@ func (atc *AgentTaskCreate) createSpec() (*AgentTask, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: agenttask.FieldOutput,
 		})
-		_node.Output = &value
+		_node.Output = value
 	}
 	if value, ok := atc.mutation.State(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -249,6 +277,14 @@ func (atc *AgentTaskCreate) createSpec() (*AgentTask, *sqlgraph.CreateSpec) {
 			Column: agenttask.FieldState,
 		})
 		_node.State = value
+	}
+	if value, ok := atc.mutation.ErrorMessage(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: agenttask.FieldErrorMessage,
+		})
+		_node.ErrorMessage = value
 	}
 	if nodes := atc.mutation.AgentTaskToProvisioningStepIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

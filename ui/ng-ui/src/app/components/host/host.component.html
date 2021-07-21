@@ -23,9 +23,9 @@
     </div>
     <div class="steps" *ngIf="!shouldCollapse() && style === 'expanded'">
       <app-step
-        *ngFor="let step of provisionedHost.ProvisionedHostToProvisioningStep; let i = index"
+        *ngFor="let step of provisionedHost.ProvisionedHostToProvisioningStep | sortBy: 'asc':'step_number'; let i = index"
         [stepNumber]="i + 1"
-        [provisionedStep]="step"
+        [provisioningStep]="step"
         [showDetail]="false"
         [style]="'expanded'"
       ></app-step>

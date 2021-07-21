@@ -13,7 +13,8 @@ export const environment = {
   isMockApi: false,
   mockEnvTree: null,
   mockEnvList: null,
-  mockAgentStatuses: null
+  mockAgentStatuses: null,
+  authBaseUrl: 'http://localhost:8080/auth'
 };
 
 /*

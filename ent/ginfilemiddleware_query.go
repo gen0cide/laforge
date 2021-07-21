@@ -31,6 +31,7 @@ type GinFileMiddlewareQuery struct {
 	// eager-loading edges.
 	withGinFileMiddlewareToProvisionedHost  *ProvisionedHostQuery
 	withGinFileMiddlewareToProvisioningStep *ProvisioningStepQuery
+	withFKs                                 bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -386,12 +387,16 @@ func (gfmq *GinFileMiddlewareQuery) prepareQuery(ctx context.Context) error {
 func (gfmq *GinFileMiddlewareQuery) sqlAll(ctx context.Context) ([]*GinFileMiddleware, error) {
 	var (
 		nodes       = []*GinFileMiddleware{}
+		withFKs     = gfmq.withFKs
 		_spec       = gfmq.querySpec()
 		loadedTypes = [2]bool{
 			gfmq.withGinFileMiddlewareToProvisionedHost != nil,
 			gfmq.withGinFileMiddlewareToProvisioningStep != nil,
 		}
 	)
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, ginfilemiddleware.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &GinFileMiddleware{config: gfmq.config}
 		nodes = append(nodes, node)

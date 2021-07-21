@@ -1,5 +1,4 @@
 import { gql } from 'apollo-angular';
-import { DocumentNode } from 'graphql';
 
 const GetAgentStatusesQuery = gql`
   query($buildId: String!) {
@@ -34,4 +33,4 @@ const GetAgentStatusesQuery = gql`
   }
 `;
 
-export { GetAgentStatusesQuery };
+// export { GetAgentStatusesQuery };

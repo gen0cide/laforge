@@ -27,9 +27,9 @@ func (tc *TokenCreate) SetToken(s string) *TokenCreate {
 	return tc
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (tc *TokenCreate) SetCreatedAt(i int) *TokenCreate {
-	tc.mutation.SetCreatedAt(i)
+// SetExpireAt sets the "expire_at" field.
+func (tc *TokenCreate) SetExpireAt(i int64) *TokenCreate {
+	tc.mutation.SetExpireAt(i)
 	return tc
 }
 
@@ -113,8 +113,8 @@ func (tc *TokenCreate) check() error {
 	if _, ok := tc.mutation.Token(); !ok {
 		return &ValidationError{Name: "token", err: errors.New("ent: missing required field \"token\"")}
 	}
-	if _, ok := tc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New("ent: missing required field \"created_at\"")}
+	if _, ok := tc.mutation.ExpireAt(); !ok {
+		return &ValidationError{Name: "expire_at", err: errors.New("ent: missing required field \"expire_at\"")}
 	}
 	if _, ok := tc.mutation.TokenToAuthUserID(); !ok {
 		return &ValidationError{Name: "TokenToAuthUser", err: errors.New("ent: missing required edge \"TokenToAuthUser\"")}
@@ -156,13 +156,13 @@ func (tc *TokenCreate) createSpec() (*Token, *sqlgraph.CreateSpec) {
 		})
 		_node.Token = value
 	}
-	if value, ok := tc.mutation.CreatedAt(); ok {
+	if value, ok := tc.mutation.ExpireAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
+			Type:   field.TypeInt64,
 			Value:  value,
-			Column: token.FieldCreatedAt,
+			Column: token.FieldExpireAt,
 		})
-		_node.CreatedAt = value
+		_node.ExpireAt = value
 	}
 	if nodes := tc.mutation.TokenToAuthUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

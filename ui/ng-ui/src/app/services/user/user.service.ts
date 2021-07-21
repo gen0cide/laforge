@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
-import { AuthUser, User } from '@models/user.model';
+import { LaForgeAuthUser } from '@graphql';
+import { AuthUser } from '@models/user.model';
 
-import { ApiService } from '@services/api/api.service';
-import { PromiseType } from 'protractor/built/plugins';
+import { Observable } from 'rxjs';
+
+import { AuthService } from '../../modules/auth/_services/auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,22 +12,23 @@ import { PromiseType } from 'protractor/built/plugins';
 export class UserService {
   private user: AuthUser;
 
-  constructor(private api: ApiService) {
+  constructor(private authService: AuthService) {
     // TODO: refresh user session with refreshToken
   }
 
-  public login(email: string, password: string): Promise<boolean> {
+  public login(email: string, password: string): Observable<LaForgeAuthUser> {
     // TODO: Perform user auth
     // return Promise.reject({ message: 'Feature not implemented yet' });
-    return this.api.fakeLogin().then(
-      (user) => {
-        this.user = user;
-        return true;
-      },
-      () => {
-        return false;
-      }
-    );
+    return this.authService.localLogin(email, password);
+    // return this.api.fakeLogin().then(
+    //   (user) => {
+    //     this.user = user;
+    //     return true;
+    //   },
+    //   () => {
+    //     return false;
+    //   }
+    // );
   }
 
   public signout() {

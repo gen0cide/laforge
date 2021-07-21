@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/token"
 	"github.com/google/uuid"
 )
@@ -37,6 +38,104 @@ func (auu *AuthUserUpdate) SetUsername(s string) *AuthUserUpdate {
 // SetPassword sets the "password" field.
 func (auu *AuthUserUpdate) SetPassword(s string) *AuthUserUpdate {
 	auu.mutation.SetPassword(s)
+	return auu
+}
+
+// SetFirstName sets the "first_name" field.
+func (auu *AuthUserUpdate) SetFirstName(s string) *AuthUserUpdate {
+	auu.mutation.SetFirstName(s)
+	return auu
+}
+
+// SetNillableFirstName sets the "first_name" field if the given value is not nil.
+func (auu *AuthUserUpdate) SetNillableFirstName(s *string) *AuthUserUpdate {
+	if s != nil {
+		auu.SetFirstName(*s)
+	}
+	return auu
+}
+
+// SetLastName sets the "last_name" field.
+func (auu *AuthUserUpdate) SetLastName(s string) *AuthUserUpdate {
+	auu.mutation.SetLastName(s)
+	return auu
+}
+
+// SetNillableLastName sets the "last_name" field if the given value is not nil.
+func (auu *AuthUserUpdate) SetNillableLastName(s *string) *AuthUserUpdate {
+	if s != nil {
+		auu.SetLastName(*s)
+	}
+	return auu
+}
+
+// SetEmail sets the "email" field.
+func (auu *AuthUserUpdate) SetEmail(s string) *AuthUserUpdate {
+	auu.mutation.SetEmail(s)
+	return auu
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (auu *AuthUserUpdate) SetNillableEmail(s *string) *AuthUserUpdate {
+	if s != nil {
+		auu.SetEmail(*s)
+	}
+	return auu
+}
+
+// SetPhone sets the "phone" field.
+func (auu *AuthUserUpdate) SetPhone(s string) *AuthUserUpdate {
+	auu.mutation.SetPhone(s)
+	return auu
+}
+
+// SetNillablePhone sets the "phone" field if the given value is not nil.
+func (auu *AuthUserUpdate) SetNillablePhone(s *string) *AuthUserUpdate {
+	if s != nil {
+		auu.SetPhone(*s)
+	}
+	return auu
+}
+
+// SetCompany sets the "company" field.
+func (auu *AuthUserUpdate) SetCompany(s string) *AuthUserUpdate {
+	auu.mutation.SetCompany(s)
+	return auu
+}
+
+// SetNillableCompany sets the "company" field if the given value is not nil.
+func (auu *AuthUserUpdate) SetNillableCompany(s *string) *AuthUserUpdate {
+	if s != nil {
+		auu.SetCompany(*s)
+	}
+	return auu
+}
+
+// SetOccupation sets the "occupation" field.
+func (auu *AuthUserUpdate) SetOccupation(s string) *AuthUserUpdate {
+	auu.mutation.SetOccupation(s)
+	return auu
+}
+
+// SetNillableOccupation sets the "occupation" field if the given value is not nil.
+func (auu *AuthUserUpdate) SetNillableOccupation(s *string) *AuthUserUpdate {
+	if s != nil {
+		auu.SetOccupation(*s)
+	}
+	return auu
+}
+
+// SetPrivateKeyPath sets the "private_key_path" field.
+func (auu *AuthUserUpdate) SetPrivateKeyPath(s string) *AuthUserUpdate {
+	auu.mutation.SetPrivateKeyPath(s)
+	return auu
+}
+
+// SetNillablePrivateKeyPath sets the "private_key_path" field if the given value is not nil.
+func (auu *AuthUserUpdate) SetNillablePrivateKeyPath(s *string) *AuthUserUpdate {
+	if s != nil {
+		auu.SetPrivateKeyPath(*s)
+	}
 	return auu
 }
 
@@ -67,6 +166,21 @@ func (auu *AuthUserUpdate) AddAuthUserToToken(t ...*Token) *AuthUserUpdate {
 	return auu.AddAuthUserToTokenIDs(ids...)
 }
 
+// AddAuthUserToServerTaskIDs adds the "AuthUserToServerTasks" edge to the ServerTask entity by IDs.
+func (auu *AuthUserUpdate) AddAuthUserToServerTaskIDs(ids ...uuid.UUID) *AuthUserUpdate {
+	auu.mutation.AddAuthUserToServerTaskIDs(ids...)
+	return auu
+}
+
+// AddAuthUserToServerTasks adds the "AuthUserToServerTasks" edges to the ServerTask entity.
+func (auu *AuthUserUpdate) AddAuthUserToServerTasks(s ...*ServerTask) *AuthUserUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return auu.AddAuthUserToServerTaskIDs(ids...)
+}
+
 // Mutation returns the AuthUserMutation object of the builder.
 func (auu *AuthUserUpdate) Mutation() *AuthUserMutation {
 	return auu.mutation
@@ -91,6 +205,27 @@ func (auu *AuthUserUpdate) RemoveAuthUserToToken(t ...*Token) *AuthUserUpdate {
 		ids[i] = t[i].ID
 	}
 	return auu.RemoveAuthUserToTokenIDs(ids...)
+}
+
+// ClearAuthUserToServerTasks clears all "AuthUserToServerTasks" edges to the ServerTask entity.
+func (auu *AuthUserUpdate) ClearAuthUserToServerTasks() *AuthUserUpdate {
+	auu.mutation.ClearAuthUserToServerTasks()
+	return auu
+}
+
+// RemoveAuthUserToServerTaskIDs removes the "AuthUserToServerTasks" edge to ServerTask entities by IDs.
+func (auu *AuthUserUpdate) RemoveAuthUserToServerTaskIDs(ids ...uuid.UUID) *AuthUserUpdate {
+	auu.mutation.RemoveAuthUserToServerTaskIDs(ids...)
+	return auu
+}
+
+// RemoveAuthUserToServerTasks removes "AuthUserToServerTasks" edges to ServerTask entities.
+func (auu *AuthUserUpdate) RemoveAuthUserToServerTasks(s ...*ServerTask) *AuthUserUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return auu.RemoveAuthUserToServerTaskIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -197,6 +332,55 @@ func (auu *AuthUserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: authuser.FieldPassword,
 		})
 	}
+	if value, ok := auu.mutation.FirstName(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldFirstName,
+		})
+	}
+	if value, ok := auu.mutation.LastName(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldLastName,
+		})
+	}
+	if value, ok := auu.mutation.Email(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldEmail,
+		})
+	}
+	if value, ok := auu.mutation.Phone(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldPhone,
+		})
+	}
+	if value, ok := auu.mutation.Company(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldCompany,
+		})
+	}
+	if value, ok := auu.mutation.Occupation(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldOccupation,
+		})
+	}
+	if value, ok := auu.mutation.PrivateKeyPath(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldPrivateKeyPath,
+		})
+	}
 	if value, ok := auu.mutation.Role(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeEnum,
@@ -265,6 +449,60 @@ func (auu *AuthUserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if auu.mutation.AuthUserToServerTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   authuser.AuthUserToServerTasksTable,
+			Columns: []string{authuser.AuthUserToServerTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: servertask.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auu.mutation.RemovedAuthUserToServerTasksIDs(); len(nodes) > 0 && !auu.mutation.AuthUserToServerTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   authuser.AuthUserToServerTasksTable,
+			Columns: []string{authuser.AuthUserToServerTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: servertask.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auu.mutation.AuthUserToServerTasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   authuser.AuthUserToServerTasksTable,
+			Columns: []string{authuser.AuthUserToServerTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: servertask.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, auu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{authuser.Label}
@@ -296,6 +534,104 @@ func (auuo *AuthUserUpdateOne) SetPassword(s string) *AuthUserUpdateOne {
 	return auuo
 }
 
+// SetFirstName sets the "first_name" field.
+func (auuo *AuthUserUpdateOne) SetFirstName(s string) *AuthUserUpdateOne {
+	auuo.mutation.SetFirstName(s)
+	return auuo
+}
+
+// SetNillableFirstName sets the "first_name" field if the given value is not nil.
+func (auuo *AuthUserUpdateOne) SetNillableFirstName(s *string) *AuthUserUpdateOne {
+	if s != nil {
+		auuo.SetFirstName(*s)
+	}
+	return auuo
+}
+
+// SetLastName sets the "last_name" field.
+func (auuo *AuthUserUpdateOne) SetLastName(s string) *AuthUserUpdateOne {
+	auuo.mutation.SetLastName(s)
+	return auuo
+}
+
+// SetNillableLastName sets the "last_name" field if the given value is not nil.
+func (auuo *AuthUserUpdateOne) SetNillableLastName(s *string) *AuthUserUpdateOne {
+	if s != nil {
+		auuo.SetLastName(*s)
+	}
+	return auuo
+}
+
+// SetEmail sets the "email" field.
+func (auuo *AuthUserUpdateOne) SetEmail(s string) *AuthUserUpdateOne {
+	auuo.mutation.SetEmail(s)
+	return auuo
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (auuo *AuthUserUpdateOne) SetNillableEmail(s *string) *AuthUserUpdateOne {
+	if s != nil {
+		auuo.SetEmail(*s)
+	}
+	return auuo
+}
+
+// SetPhone sets the "phone" field.
+func (auuo *AuthUserUpdateOne) SetPhone(s string) *AuthUserUpdateOne {
+	auuo.mutation.SetPhone(s)
+	return auuo
+}
+
+// SetNillablePhone sets the "phone" field if the given value is not nil.
+func (auuo *AuthUserUpdateOne) SetNillablePhone(s *string) *AuthUserUpdateOne {
+	if s != nil {
+		auuo.SetPhone(*s)
+	}
+	return auuo
+}
+
+// SetCompany sets the "company" field.
+func (auuo *AuthUserUpdateOne) SetCompany(s string) *AuthUserUpdateOne {
+	auuo.mutation.SetCompany(s)
+	return auuo
+}
+
+// SetNillableCompany sets the "company" field if the given value is not nil.
+func (auuo *AuthUserUpdateOne) SetNillableCompany(s *string) *AuthUserUpdateOne {
+	if s != nil {
+		auuo.SetCompany(*s)
+	}
+	return auuo
+}
+
+// SetOccupation sets the "occupation" field.
+func (auuo *AuthUserUpdateOne) SetOccupation(s string) *AuthUserUpdateOne {
+	auuo.mutation.SetOccupation(s)
+	return auuo
+}
+
+// SetNillableOccupation sets the "occupation" field if the given value is not nil.
+func (auuo *AuthUserUpdateOne) SetNillableOccupation(s *string) *AuthUserUpdateOne {
+	if s != nil {
+		auuo.SetOccupation(*s)
+	}
+	return auuo
+}
+
+// SetPrivateKeyPath sets the "private_key_path" field.
+func (auuo *AuthUserUpdateOne) SetPrivateKeyPath(s string) *AuthUserUpdateOne {
+	auuo.mutation.SetPrivateKeyPath(s)
+	return auuo
+}
+
+// SetNillablePrivateKeyPath sets the "private_key_path" field if the given value is not nil.
+func (auuo *AuthUserUpdateOne) SetNillablePrivateKeyPath(s *string) *AuthUserUpdateOne {
+	if s != nil {
+		auuo.SetPrivateKeyPath(*s)
+	}
+	return auuo
+}
+
 // SetRole sets the "role" field.
 func (auuo *AuthUserUpdateOne) SetRole(a authuser.Role) *AuthUserUpdateOne {
 	auuo.mutation.SetRole(a)
@@ -323,6 +659,21 @@ func (auuo *AuthUserUpdateOne) AddAuthUserToToken(t ...*Token) *AuthUserUpdateOn
 	return auuo.AddAuthUserToTokenIDs(ids...)
 }
 
+// AddAuthUserToServerTaskIDs adds the "AuthUserToServerTasks" edge to the ServerTask entity by IDs.
+func (auuo *AuthUserUpdateOne) AddAuthUserToServerTaskIDs(ids ...uuid.UUID) *AuthUserUpdateOne {
+	auuo.mutation.AddAuthUserToServerTaskIDs(ids...)
+	return auuo
+}
+
+// AddAuthUserToServerTasks adds the "AuthUserToServerTasks" edges to the ServerTask entity.
+func (auuo *AuthUserUpdateOne) AddAuthUserToServerTasks(s ...*ServerTask) *AuthUserUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return auuo.AddAuthUserToServerTaskIDs(ids...)
+}
+
 // Mutation returns the AuthUserMutation object of the builder.
 func (auuo *AuthUserUpdateOne) Mutation() *AuthUserMutation {
 	return auuo.mutation
@@ -347,6 +698,27 @@ func (auuo *AuthUserUpdateOne) RemoveAuthUserToToken(t ...*Token) *AuthUserUpdat
 		ids[i] = t[i].ID
 	}
 	return auuo.RemoveAuthUserToTokenIDs(ids...)
+}
+
+// ClearAuthUserToServerTasks clears all "AuthUserToServerTasks" edges to the ServerTask entity.
+func (auuo *AuthUserUpdateOne) ClearAuthUserToServerTasks() *AuthUserUpdateOne {
+	auuo.mutation.ClearAuthUserToServerTasks()
+	return auuo
+}
+
+// RemoveAuthUserToServerTaskIDs removes the "AuthUserToServerTasks" edge to ServerTask entities by IDs.
+func (auuo *AuthUserUpdateOne) RemoveAuthUserToServerTaskIDs(ids ...uuid.UUID) *AuthUserUpdateOne {
+	auuo.mutation.RemoveAuthUserToServerTaskIDs(ids...)
+	return auuo
+}
+
+// RemoveAuthUserToServerTasks removes "AuthUserToServerTasks" edges to ServerTask entities.
+func (auuo *AuthUserUpdateOne) RemoveAuthUserToServerTasks(s ...*ServerTask) *AuthUserUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return auuo.RemoveAuthUserToServerTaskIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -477,6 +849,55 @@ func (auuo *AuthUserUpdateOne) sqlSave(ctx context.Context) (_node *AuthUser, er
 			Column: authuser.FieldPassword,
 		})
 	}
+	if value, ok := auuo.mutation.FirstName(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldFirstName,
+		})
+	}
+	if value, ok := auuo.mutation.LastName(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldLastName,
+		})
+	}
+	if value, ok := auuo.mutation.Email(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldEmail,
+		})
+	}
+	if value, ok := auuo.mutation.Phone(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldPhone,
+		})
+	}
+	if value, ok := auuo.mutation.Company(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldCompany,
+		})
+	}
+	if value, ok := auuo.mutation.Occupation(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldOccupation,
+		})
+	}
+	if value, ok := auuo.mutation.PrivateKeyPath(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: authuser.FieldPrivateKeyPath,
+		})
+	}
 	if value, ok := auuo.mutation.Role(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeEnum,
@@ -537,6 +958,60 @@ func (auuo *AuthUserUpdateOne) sqlSave(ctx context.Context) (_node *AuthUser, er
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: token.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auuo.mutation.AuthUserToServerTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   authuser.AuthUserToServerTasksTable,
+			Columns: []string{authuser.AuthUserToServerTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: servertask.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auuo.mutation.RemovedAuthUserToServerTasksIDs(); len(nodes) > 0 && !auuo.mutation.AuthUserToServerTasksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   authuser.AuthUserToServerTasksTable,
+			Columns: []string{authuser.AuthUserToServerTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: servertask.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auuo.mutation.AuthUserToServerTasksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   authuser.AuthUserToServerTasksTable,
+			Columns: []string{authuser.AuthUserToServerTasksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: servertask.FieldID,
 				},
 			},
 		}

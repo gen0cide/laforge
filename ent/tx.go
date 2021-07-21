@@ -62,6 +62,8 @@ type Tx struct {
 	ProvisioningStep *ProvisioningStepClient
 	// Script is the client for interacting with the Script builders.
 	Script *ScriptClient
+	// ServerTask is the client for interacting with the ServerTask builders.
+	ServerTask *ServerTaskClient
 	// Status is the client for interacting with the Status builders.
 	Status *StatusClient
 	// Tag is the client for interacting with the Tag builders.
@@ -232,6 +234,7 @@ func (tx *Tx) init() {
 	tx.ProvisionedNetwork = NewProvisionedNetworkClient(tx.config)
 	tx.ProvisioningStep = NewProvisioningStepClient(tx.config)
 	tx.Script = NewScriptClient(tx.config)
+	tx.ServerTask = NewServerTaskClient(tx.config)
 	tx.Status = NewStatusClient(tx.config)
 	tx.Tag = NewTagClient(tx.config)
 	tx.Team = NewTeamClient(tx.config)

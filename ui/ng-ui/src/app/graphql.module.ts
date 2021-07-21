@@ -11,7 +11,9 @@ export function createApollo(httpLink: HttpLink): ApolloClientOptions<any> {
   const wsClient = new WebSocketLink({
     uri: environment.wsUrl,
     options: {
-      reconnect: true
+      reconnect: true,
+      timeout: 30000,
+      minTimeout: 100000
     }
   });
 

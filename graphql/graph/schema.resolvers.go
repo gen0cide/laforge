@@ -17,11 +17,16 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/servertask"
+	"github.com/gen0cide/laforge/ent/status"
+	"github.com/gen0cide/laforge/graphql/auth"
 	"github.com/gen0cide/laforge/graphql/graph/generated"
 	"github.com/gen0cide/laforge/graphql/graph/model"
 	"github.com/gen0cide/laforge/loader"
 	"github.com/gen0cide/laforge/planner"
+	"github.com/gen0cide/laforge/server/utils"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (r *authUserResolver) ID(ctx context.Context, obj *ent.AuthUser) (string, error) {
@@ -292,11 +297,41 @@ func (r *identityResolver) Tags(ctx context.Context, obj *ent.Identity) ([]*mode
 	return results, nil
 }
 
-func (r *mutationResolver) LoadEnviroment(ctx context.Context, envFilePath string) ([]*ent.Environment, error) {
-	return loader.LoadEnviroment(ctx, r.client, envFilePath)
+func (r *mutationResolver) LoadEnvironment(ctx context.Context, envFilePath string) ([]*ent.Environment, error) {
+	currentUser, err := auth.ForContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error getting auth user from context: %v", err)
+	}
+	taskStatus, serverTask, err := utils.CreateServerTask(ctx, r.client, r.rdb, currentUser, servertask.TypeLOADENV)
+	if err != nil {
+		return nil, fmt.Errorf("error creating server task: %v", err)
+	}
+	results, err := loader.LoadEnvironment(ctx, r.client, envFilePath)
+	if err != nil {
+		taskStatus, serverTask, err = utils.FailServerTask(ctx, r.client, r.rdb, taskStatus, serverTask, err)
+		if err != nil {
+			return nil, fmt.Errorf("error failing server task: %v", err)
+		}
+		return nil, err
+	}
+	taskStatus, serverTask, err = utils.CompleteServerTask(ctx, r.client, r.rdb, taskStatus, serverTask)
+	if err != nil {
+		return nil, fmt.Errorf("error completing server task: %v", err)
+	}
+	serverTask, err = r.client.ServerTask.UpdateOne(serverTask).SetServerTaskToEnvironment(results[0]).Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error setting environment on server task: %v", err)
+	}
+	r.rdb.Publish(ctx, "updatedServerTask", serverTask.ID.String())
+	return results, nil
 }
 
 func (r *mutationResolver) CreateBuild(ctx context.Context, envUUID string, renderFiles bool) (*ent.Build, error) {
+	currentUser, err := auth.ForContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	uuid, err := uuid.Parse(envUUID)
 
 	if err != nil {
@@ -309,25 +344,14 @@ func (r *mutationResolver) CreateBuild(ctx context.Context, envUUID string, rend
 		return nil, fmt.Errorf("failed querying Environment: %v", err)
 	}
 	planner.RenderFiles = renderFiles
-
-	return planner.CreateBuild(ctx, r.client, entEnvironment)
-}
-
-func (r *mutationResolver) CreateUser(ctx context.Context, username string, password string, role model.RoleLevel) (*ent.AuthUser, error) {
-	entAuthUser, err := r.client.AuthUser.Create().
-		SetUsername(username).
-		SetPassword(password).
-		SetRole(authuser.Role(role)).
-		SetProvider(authuser.ProviderLOCAL).
-		Save(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, observer := range newUserPublishedChannel {
-		observer <- entAuthUser
+	if renderFiles {
+		planner.RenderFilesTaskStatus, planner.RenderFilesTask, err = utils.CreateServerTask(ctx, r.client, r.rdb, currentUser, servertask.TypeRENDERFILES)
+	} else {
+		planner.RenderFilesTask = nil
+		planner.RenderFilesTaskStatus = nil
 	}
 
-	return entAuthUser, nil
+	return planner.CreateBuild(ctx, r.client, r.rdb, currentUser, entEnvironment)
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context, userUUID string) (bool, error) {
@@ -376,7 +400,14 @@ func (r *mutationResolver) DeleteBuild(ctx context.Context, buildUUID string) (b
 		return false, fmt.Errorf("failed querying Build: %v", err)
 	}
 
-	return planner.DeleteBuild(ctx, r.client, b)
+	spawnedDelete := make(chan bool, 1)
+	go planner.DeleteBuild(r.client, b, spawnedDelete)
+
+	deleteIsSuccess := <-spawnedDelete
+	if deleteIsSuccess {
+		return true, nil
+	}
+	return false, nil
 }
 
 func (r *mutationResolver) CreateTask(ctx context.Context, proHostUUID string, command model.AgentCommand, args string) (bool, error) {
@@ -423,6 +454,209 @@ func (r *mutationResolver) Rebuild(ctx context.Context, rootPlans []*string) (bo
 	}
 
 	return planner.Rebuild(ctx, r.client, entPlans)
+}
+
+func (r *mutationResolver) ModifySelfPassword(ctx context.Context, currentPassword string, newPassword string) (bool, error) {
+	currentUser, err := auth.ForContext(ctx)
+	if err != nil {
+		return false, err
+	}
+	if err = bcrypt.CompareHashAndPassword([]byte(currentUser.Password), []byte(currentPassword)); err == nil {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), 8)
+		if err != nil {
+			return false, err
+		}
+		newPassword = string(hashedPassword[:])
+		err = currentUser.Update().SetPassword(newPassword).Exec(ctx)
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	} else {
+		return false, fmt.Errorf("incorrect current password")
+	}
+}
+
+func (r *mutationResolver) ModifySelfUserInfo(ctx context.Context, firstName *string, lastName *string, email *string, phone *string, company *string, occupation *string) (*ent.AuthUser, error) {
+	currentUser, err := auth.ForContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	newFirstName := ""
+	if firstName == nil {
+		newFirstName = currentUser.FirstName
+	} else {
+		newFirstName = *firstName
+	}
+	newLastName := ""
+	if lastName == nil {
+		newLastName = currentUser.LastName
+	} else {
+		newLastName = *lastName
+	}
+	newEmail := ""
+	if email == nil {
+		newEmail = currentUser.Email
+	} else {
+		newEmail = *email
+	}
+	newPhone := ""
+	if phone == nil {
+		newPhone = currentUser.Phone
+	} else {
+		newPhone = *phone
+	}
+	newCompany := ""
+	if company == nil {
+		newCompany = currentUser.Company
+	} else {
+		newCompany = *company
+	}
+	newOccupation := ""
+	if occupation == nil {
+		newOccupation = currentUser.Occupation
+	} else {
+		newOccupation = *occupation
+	}
+
+	currentUser, err = currentUser.Update().
+		SetFirstName(newFirstName).
+		SetLastName(newLastName).
+		SetEmail(newEmail).
+		SetPhone(newPhone).
+		SetCompany(newCompany).
+		SetOccupation(newOccupation).
+		Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return currentUser, nil
+}
+
+func (r *mutationResolver) CreateUser(ctx context.Context, username string, password string, role model.RoleLevel, provider model.ProviderType) (*ent.AuthUser, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 8)
+	if err != nil {
+		return nil, err
+	}
+	password = string(hashedPassword[:])
+	entAuthUser, err := r.client.AuthUser.Create().
+		SetUsername(username).
+		SetPassword(password).
+		SetRole(authuser.Role(role)).
+		SetProvider(authuser.Provider(provider)).
+		Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return entAuthUser, nil
+}
+
+func (r *mutationResolver) ModifyAdminUserInfo(ctx context.Context, userID string, username *string, firstName *string, lastName *string, email *string, phone *string, company *string, occupation *string, role *model.RoleLevel, provider *model.ProviderType) (*ent.AuthUser, error) {
+	uuid, err := uuid.Parse(userID)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
+	}
+
+	entAuthUser, err := r.client.AuthUser.Get(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+	newUsername := ""
+	if username == nil {
+		newUsername = entAuthUser.Username
+	} else {
+		newUsername = *username
+	}
+	newFirstName := ""
+	if firstName == nil {
+		newFirstName = entAuthUser.FirstName
+	} else {
+		newFirstName = *firstName
+	}
+	newLastName := ""
+	if lastName == nil {
+		newLastName = entAuthUser.LastName
+	} else {
+		newLastName = *lastName
+	}
+	newEmail := ""
+	if email == nil {
+		newEmail = entAuthUser.Email
+	} else {
+		newEmail = *email
+	}
+	newPhone := ""
+	if phone == nil {
+		newPhone = entAuthUser.Phone
+	} else {
+		newPhone = *phone
+	}
+	newCompany := ""
+	if company == nil {
+		newCompany = entAuthUser.Company
+	} else {
+		newCompany = *company
+	}
+	newOccupation := ""
+	if occupation == nil {
+		newOccupation = entAuthUser.Occupation
+	} else {
+		newOccupation = *occupation
+	}
+	newRole := authuser.RoleUSER
+	if role == nil {
+		newRole = entAuthUser.Role
+	} else {
+		newRole = authuser.Role(*role)
+	}
+	newProvider := authuser.ProviderLOCAL
+	if provider == nil {
+		newProvider = entAuthUser.Provider
+	} else {
+		newProvider = authuser.Provider(*provider)
+	}
+
+	entAuthUser, err = entAuthUser.Update().
+		SetUsername(newUsername).
+		SetFirstName(newFirstName).
+		SetLastName(newLastName).
+		SetEmail(newEmail).
+		SetPhone(newPhone).
+		SetCompany(newCompany).
+		SetOccupation(newOccupation).
+		SetRole(newRole).
+		SetProvider(newProvider).
+		Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return entAuthUser, nil
+}
+
+func (r *mutationResolver) ModifyAdminPassword(ctx context.Context, userID string, newPassword string) (bool, error) {
+	uuid, err := uuid.Parse(userID)
+
+	if err != nil {
+		return false, fmt.Errorf("failed casting UUID to UUID: %v", err)
+	}
+
+	entAuthUser, err := r.client.AuthUser.Get(ctx, uuid)
+	if err != nil {
+		return false, err
+	}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), 8)
+	if err != nil {
+		return false, err
+	}
+	newPassword = string(hashedPassword[:])
+	err = entAuthUser.Update().SetPassword(newPassword).Exec(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (r *networkResolver) ID(ctx context.Context, obj *ent.Network) (string, error) {
@@ -609,6 +843,61 @@ func (r *queryResolver) Build(ctx context.Context, buildUUID string) (*ent.Build
 	return build, nil
 }
 
+func (r *queryResolver) Status(ctx context.Context, statusUUID string) (*ent.Status, error) {
+	uuid, err := uuid.Parse(statusUUID)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed casting statusUUID to UUID: %v", err)
+	}
+
+	status, err := r.client.Status.Query().Where(status.IDEQ(uuid)).Only(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Status: %v", err)
+	}
+
+	return status, nil
+}
+
+func (r *queryResolver) AgentStatus(ctx context.Context, clientID string) (*ent.AgentStatus, error) {
+	uuid, err := uuid.Parse(clientID)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed casting clientID to UUID: %v", err)
+	}
+
+	status, err := r.client.AgentStatus.Query().
+		Where(agentstatus.HasAgentStatusToProvisionedHostWith(provisionedhost.IDEQ(uuid))).
+		Order(ent.Desc(agentstatus.FieldTimestamp)).
+		First(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying Status: %v", err)
+	}
+
+	return status, nil
+}
+
+func (r *queryResolver) GetServerTasks(ctx context.Context) ([]*ent.ServerTask, error) {
+	serverTasks, err := r.client.ServerTask.Query().All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error querying server tasks: %v", err)
+	}
+	return serverTasks, nil
+}
+
+func (r *queryResolver) CurrentUser(ctx context.Context) (*ent.AuthUser, error) {
+	return auth.ForContext(ctx)
+}
+
+func (r *queryResolver) GetUserList(ctx context.Context) ([]*ent.AuthUser, error) {
+	return r.client.AuthUser.Query().All(ctx)
+}
+
+func (r *queryResolver) GetCurrentUserTasks(ctx context.Context) ([]*ent.ServerTask, error) {
+	return r.client.AuthUser.Query().QueryAuthUserToServerTasks().All(ctx)
+}
+
 func (r *scriptResolver) ID(ctx context.Context, obj *ent.Script) (string, error) {
 	return obj.ID.String(), nil
 }
@@ -635,6 +924,14 @@ func (r *scriptResolver) Tags(ctx context.Context, obj *ent.Script) ([]*model.Ta
 		results = append(results, tempTag)
 	}
 	return results, nil
+}
+
+func (r *serverTaskResolver) ID(ctx context.Context, obj *ent.ServerTask) (string, error) {
+	return obj.ID.String(), nil
+}
+
+func (r *serverTaskResolver) Type(ctx context.Context, obj *ent.ServerTask) (model.ServerTaskType, error) {
+	return model.ServerTaskType(obj.Type), nil
 }
 
 func (r *statusResolver) ID(ctx context.Context, obj *ent.Status) (string, error) {
@@ -723,6 +1020,39 @@ func (r *subscriptionResolver) UpdatedStatus(ctx context.Context) (<-chan *ent.S
 	return newStatus, nil
 }
 
+func (r *subscriptionResolver) UpdatedServerTask(ctx context.Context) (<-chan *ent.ServerTask, error) {
+	newServerTask := make(chan *ent.ServerTask, 1)
+	go func() {
+		sub := r.rdb.Subscribe(ctx, "updatedServerTask")
+		_, err := sub.Receive(ctx)
+		if err != nil {
+			return
+		}
+		ch := sub.Channel()
+		for {
+			select {
+			case message := <-ch:
+				uuid, err := uuid.Parse(message.Payload)
+				if err != nil {
+					sub.Close()
+					return
+				}
+				entServerTask, err := r.client.ServerTask.Get(ctx, uuid)
+				if err != nil {
+					sub.Close()
+					return
+				}
+				newServerTask <- entServerTask
+			// close when context done
+			case <-ctx.Done():
+				sub.Close()
+				return
+			}
+		}
+	}()
+	return newServerTask, nil
+}
+
 func (r *teamResolver) ID(ctx context.Context, obj *ent.Team) (string, error) {
 	return obj.ID.String(), nil
 }
@@ -800,6 +1130,9 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 // Script returns generated.ScriptResolver implementation.
 func (r *Resolver) Script() generated.ScriptResolver { return &scriptResolver{r} }
 
+// ServerTask returns generated.ServerTaskResolver implementation.
+func (r *Resolver) ServerTask() generated.ServerTaskResolver { return &serverTaskResolver{r} }
+
 // Status returns generated.StatusResolver implementation.
 func (r *Resolver) Status() generated.StatusResolver { return &statusResolver{r} }
 
@@ -833,24 +1166,8 @@ type provisionedNetworkResolver struct{ *Resolver }
 type provisioningStepResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type scriptResolver struct{ *Resolver }
+type serverTaskResolver struct{ *Resolver }
 type statusResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
 type teamResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *subscriptionResolver) NewUsers(ctx context.Context) (<-chan *ent.AuthUser, error) {
-	UUID := uuid.New().String()
-
-	newUser := make(chan *ent.AuthUser, 1)
-	go func() {
-		<-ctx.Done()
-	}()
-	newUserPublishedChannel[UUID] = newUser
-	return newUser, nil
-}

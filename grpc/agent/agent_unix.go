@@ -96,14 +96,15 @@ func SystemDownloadFile(path, url string) error {
 }
 
 // SystemExecuteCommand Runs the Command that is inputted and either returns the error or output
-func SystemExecuteCommand(command string, args ...string) error {
+func SystemExecuteCommand(command string, args ...string) (string, error) {
 	var err error
 	_, err = os.Stat(command)
+	output := ""
 	if err == nil {
 		// Make sure we have rwx permissions if it's a script
 		err = os.Chmod(command, 0700)
 		if err != nil {
-			return err
+			return output, err
 		}
 	}
 	// Execute the command
@@ -112,19 +113,26 @@ func SystemExecuteCommand(command string, args ...string) error {
 	for i := 0; i < retryCount; i++ {
 		// Get the data
 		cmd := exec.Command(command, args...)
-		err = cmd.Run()
+		out, err := cmd.CombinedOutput()
 		if err == nil {
+			output = string(out)
 			break
 		}
 		time.Sleep(1 * time.Minute)
 	}
 	if err != nil {
-		return err
+		return output, err
 	}
 	// _, err = cmd.Output()
 	// if err != nil {
 	// 	return err
 	// }
 	// return string(output)
-	return nil
+	return output, nil
+}
+
+func GetSystemDependencies() []string {
+	return []string{
+		"Requires=network.target",
+		"After=network-online.target"}
 }

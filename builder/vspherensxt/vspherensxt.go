@@ -394,19 +394,31 @@ func (builder VSphereNSXTBuilder) TeardownHost(ctx context.Context, provisionedH
 	}
 
 	vmName := builder.generateVmName(competition, team, host, build)
-	vsphereErr := builder.VSphereClient.DeleteVM(vmName)
-	if err != nil {
-		return fmt.Errorf("error while tearing down VM \"%s\": %v", vmName, vsphereErr)
-	}
 	guestCustomizationName := (vmName + "-Customization-Spec")
-	err = builder.VSphereClient.DeleteGuestCustomization(ctx, guestCustomizationName)
+
+	specExists, err := builder.VSphereClient.GuestCustomizationExists(ctx, guestCustomizationName)
 	if err != nil {
-		return fmt.Errorf("error while deleting guest customization spec: %v", err)
+		return fmt.Errorf("error while checking if guest customization spec exists: %v", err)
+	}
+	if specExists {
+		err = builder.VSphereClient.DeleteGuestCustomization(ctx, guestCustomizationName)
+		if err != nil {
+			return fmt.Errorf("error while deleting guest customization spec: %v", err)
+		}
 	}
 
-	// Let vSphere sync with NSX-T
-	time.Sleep(1 * time.Minute)
-
+	_, vmExists, err := builder.VSphereClient.GetVm(vmName)
+	if err != nil {
+		return fmt.Errorf("error while checking if vm exists: %v", err)
+	}
+	if vmExists {
+		vsphereErr := builder.VSphereClient.DeleteVM(vmName)
+		if err != nil {
+			return fmt.Errorf("error while tearing down VM \"%s\": %v", vmName, vsphereErr)
+		}
+		// Let vSphere sync with NSX-T
+		time.Sleep(1 * time.Minute)
+	}
 	return
 }
 

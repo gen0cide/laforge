@@ -23,6 +23,8 @@ type ProvisionedHost struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// SubnetIP holds the value of the "subnet_ip" field.
 	SubnetIP string `json:"subnet_ip,omitempty"`
+	// AddonType holds the value of the "addon_type" field.
+	AddonType *provisionedhost.AddonType `json:"addon_type,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProvisionedHostQuery when eager-loading is set.
 	Edges ProvisionedHostEdges `json:"edges"`
@@ -195,7 +197,7 @@ func (*ProvisionedHost) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case provisionedhost.FieldSubnetIP:
+		case provisionedhost.FieldSubnetIP, provisionedhost.FieldAddonType:
 			values[i] = new(sql.NullString)
 		case provisionedhost.FieldID:
 			values[i] = new(uuid.UUID)
@@ -235,6 +237,13 @@ func (ph *ProvisionedHost) assignValues(columns []string, values []interface{}) 
 				return fmt.Errorf("unexpected type %T for field subnet_ip", values[i])
 			} else if value.Valid {
 				ph.SubnetIP = value.String
+			}
+		case provisionedhost.FieldAddonType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field addon_type", values[i])
+			} else if value.Valid {
+				ph.AddonType = new(provisionedhost.AddonType)
+				*ph.AddonType = provisionedhost.AddonType(value.String)
 			}
 		case provisionedhost.ForeignKeys[0]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -341,6 +350,10 @@ func (ph *ProvisionedHost) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", ph.ID))
 	builder.WriteString(", subnet_ip=")
 	builder.WriteString(ph.SubnetIP)
+	if v := ph.AddonType; v != nil {
+		builder.WriteString(", addon_type=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

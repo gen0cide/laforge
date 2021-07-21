@@ -818,7 +818,8 @@ func (vs *VSphere) GetVm(name string) (vm VirtualMachine, exists bool, err error
 		return
 	}
 	if len(vmList) <= 0 {
-		err = fmt.Errorf("no vm's were found for the name \"%s\"", name)
+		// err = fmt.Errorf("no vm's were found for the name \"%s\"", name)
+		exists = false
 		return
 	}
 	vm = vmList[0]
@@ -1600,8 +1601,8 @@ func (vs *VSphere) GenerateGuestCustomization(ctx context.Context, specName stri
 				CommandList: []string{
 					"powershell -Command mkdir $env:PROGRAMDATA\\Laforge -Force",
 					fmt.Sprintf("powershell -Command Invoke-WebRequest \"%s\" -OutFile \"$env:PROGRAMDATA\\Laforge\\laforge.exe\"", agentUrl),
-					"powershell -Command New-Service -Name laforge -DisplayName 'Tool used for monitoring hosts. NOT IN COMPETITION SCOPE' -BinaryPathName $env:PROGRAMDATA\\Laforge\\laforge.exe -StartupType Automatic",
-					"powershell -Command Start-Service -Name laforge",
+					"powershell -Command %PROGRAMDATA%\\Laforge\\laforge.exe -service install",
+					"powershell -Command %PROGRAMDATA%\\Laforge\\laforge.exe -service start",
 					"powershell -Command logoff",
 				},
 			},
@@ -1630,24 +1631,33 @@ func (vs *VSphere) GenerateGuestCustomization(ctx context.Context, specName stri
 if [ x$1 == x"postcustomization" ]; then
 curl -sL -o /laforge.bin %s
 chmod +x /laforge.bin
-cat << EOF > /etc/systemd/system/laforge.service
-[Unit]
-Description=Tool used for monitoring hosts. NOT IN COMPETITION SCOPE
-After=network.target
-[Service]
-Environment=HOME=/
-Environment=USER=root
-User=root
-Group=root
-ExecStart=/laforge.bin
-[Install]
-WantedBy=multi-user.target
-EOF
-systemctl daemon-reload
-systemctl enable laforge
-systemctl start laforge
+cd /
+./laforge.bin -service install
+./laforge.bin -service start
 usermod --password $(echo %s | openssl passwd -1 -stdin) laforge
 fi`, agentUrl, linuxPassword)
+		// 		configScript := fmt.Sprintf(`#!/bin/bash
+		// if [ x$1 == x"postcustomization" ]; then
+		// curl -sL -o /laforge.bin %s
+		// chmod +x /laforge.bin
+		// cat << EOF > /etc/systemd/system/laforge.service
+		// [Unit]
+		// Description=Tool used for monitoring hosts. NOT IN COMPETITION SCOPE
+		// After=network.target
+		// [Service]
+		// Environment=HOME=/
+		// Environment=USER=root
+		// User=root
+		// Group=root
+		// ExecStart=/laforge.bin
+		// [Install]
+		// WantedBy=multi-user.target
+		// EOF
+		// systemctl daemon-reload
+		// systemctl enable laforge
+		// systemctl start laforge
+		// usermod --password $(echo %s | openssl passwd -1 -stdin) laforge
+		// fi`, agentUrl, linuxPassword)
 		nope := false
 		linuxIdentity = &types.CustomizationLinuxPrep{
 			CustomizationIdentitySettings: types.CustomizationIdentitySettings{},

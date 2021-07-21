@@ -35,6 +35,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/script"
+	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
@@ -101,6 +102,8 @@ type Client struct {
 	ProvisioningStep *ProvisioningStepClient
 	// Script is the client for interacting with the Script builders.
 	Script *ScriptClient
+	// ServerTask is the client for interacting with the ServerTask builders.
+	ServerTask *ServerTaskClient
 	// Status is the client for interacting with the Status builders.
 	Status *StatusClient
 	// Tag is the client for interacting with the Tag builders.
@@ -149,6 +152,7 @@ func (c *Client) init() {
 	c.ProvisionedNetwork = NewProvisionedNetworkClient(c.config)
 	c.ProvisioningStep = NewProvisioningStepClient(c.config)
 	c.Script = NewScriptClient(c.config)
+	c.ServerTask = NewServerTaskClient(c.config)
 	c.Status = NewStatusClient(c.config)
 	c.Tag = NewTagClient(c.config)
 	c.Team = NewTeamClient(c.config)
@@ -212,6 +216,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ProvisionedNetwork: NewProvisionedNetworkClient(cfg),
 		ProvisioningStep:   NewProvisioningStepClient(cfg),
 		Script:             NewScriptClient(cfg),
+		ServerTask:         NewServerTaskClient(cfg),
 		Status:             NewStatusClient(cfg),
 		Tag:                NewTagClient(cfg),
 		Team:               NewTeamClient(cfg),
@@ -260,6 +265,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ProvisionedNetwork: NewProvisionedNetworkClient(cfg),
 		ProvisioningStep:   NewProvisioningStepClient(cfg),
 		Script:             NewScriptClient(cfg),
+		ServerTask:         NewServerTaskClient(cfg),
 		Status:             NewStatusClient(cfg),
 		Tag:                NewTagClient(cfg),
 		Team:               NewTeamClient(cfg),
@@ -319,6 +325,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.ProvisionedNetwork.Use(hooks...)
 	c.ProvisioningStep.Use(hooks...)
 	c.Script.Use(hooks...)
+	c.ServerTask.Use(hooks...)
 	c.Status.Use(hooks...)
 	c.Tag.Use(hooks...)
 	c.Team.Use(hooks...)
@@ -648,6 +655,22 @@ func (c *AuthUserClient) QueryAuthUserToToken(au *AuthUser) *TokenQuery {
 			sqlgraph.From(authuser.Table, authuser.FieldID, id),
 			sqlgraph.To(token.Table, token.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, authuser.AuthUserToTokenTable, authuser.AuthUserToTokenColumn),
+		)
+		fromV = sqlgraph.Neighbors(au.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAuthUserToServerTasks queries the AuthUserToServerTasks edge of a AuthUser.
+func (c *AuthUserClient) QueryAuthUserToServerTasks(au *AuthUser) *ServerTaskQuery {
+	query := &ServerTaskQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := au.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(authuser.Table, authuser.FieldID, id),
+			sqlgraph.To(servertask.Table, servertask.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, authuser.AuthUserToServerTasksTable, authuser.AuthUserToServerTasksColumn),
 		)
 		fromV = sqlgraph.Neighbors(au.driver.Dialect(), step)
 		return fromV, nil
@@ -4160,6 +4183,176 @@ func (c *ScriptClient) Hooks() []Hook {
 	return c.hooks.Script
 }
 
+// ServerTaskClient is a client for the ServerTask schema.
+type ServerTaskClient struct {
+	config
+}
+
+// NewServerTaskClient returns a client for the ServerTask from the given config.
+func NewServerTaskClient(c config) *ServerTaskClient {
+	return &ServerTaskClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `servertask.Hooks(f(g(h())))`.
+func (c *ServerTaskClient) Use(hooks ...Hook) {
+	c.hooks.ServerTask = append(c.hooks.ServerTask, hooks...)
+}
+
+// Create returns a create builder for ServerTask.
+func (c *ServerTaskClient) Create() *ServerTaskCreate {
+	mutation := newServerTaskMutation(c.config, OpCreate)
+	return &ServerTaskCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ServerTask entities.
+func (c *ServerTaskClient) CreateBulk(builders ...*ServerTaskCreate) *ServerTaskCreateBulk {
+	return &ServerTaskCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ServerTask.
+func (c *ServerTaskClient) Update() *ServerTaskUpdate {
+	mutation := newServerTaskMutation(c.config, OpUpdate)
+	return &ServerTaskUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ServerTaskClient) UpdateOne(st *ServerTask) *ServerTaskUpdateOne {
+	mutation := newServerTaskMutation(c.config, OpUpdateOne, withServerTask(st))
+	return &ServerTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ServerTaskClient) UpdateOneID(id uuid.UUID) *ServerTaskUpdateOne {
+	mutation := newServerTaskMutation(c.config, OpUpdateOne, withServerTaskID(id))
+	return &ServerTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ServerTask.
+func (c *ServerTaskClient) Delete() *ServerTaskDelete {
+	mutation := newServerTaskMutation(c.config, OpDelete)
+	return &ServerTaskDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *ServerTaskClient) DeleteOne(st *ServerTask) *ServerTaskDeleteOne {
+	return c.DeleteOneID(st.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *ServerTaskClient) DeleteOneID(id uuid.UUID) *ServerTaskDeleteOne {
+	builder := c.Delete().Where(servertask.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ServerTaskDeleteOne{builder}
+}
+
+// Query returns a query builder for ServerTask.
+func (c *ServerTaskClient) Query() *ServerTaskQuery {
+	return &ServerTaskQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a ServerTask entity by its id.
+func (c *ServerTaskClient) Get(ctx context.Context, id uuid.UUID) (*ServerTask, error) {
+	return c.Query().Where(servertask.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ServerTaskClient) GetX(ctx context.Context, id uuid.UUID) *ServerTask {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryServerTaskToAuthUser queries the ServerTaskToAuthUser edge of a ServerTask.
+func (c *ServerTaskClient) QueryServerTaskToAuthUser(st *ServerTask) *AuthUserQuery {
+	query := &AuthUserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := st.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(servertask.Table, servertask.FieldID, id),
+			sqlgraph.To(authuser.Table, authuser.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, servertask.ServerTaskToAuthUserTable, servertask.ServerTaskToAuthUserColumn),
+		)
+		fromV = sqlgraph.Neighbors(st.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryServerTaskToStatus queries the ServerTaskToStatus edge of a ServerTask.
+func (c *ServerTaskClient) QueryServerTaskToStatus(st *ServerTask) *StatusQuery {
+	query := &StatusQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := st.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(servertask.Table, servertask.FieldID, id),
+			sqlgraph.To(status.Table, status.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, servertask.ServerTaskToStatusTable, servertask.ServerTaskToStatusColumn),
+		)
+		fromV = sqlgraph.Neighbors(st.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryServerTaskToEnvironment queries the ServerTaskToEnvironment edge of a ServerTask.
+func (c *ServerTaskClient) QueryServerTaskToEnvironment(st *ServerTask) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := st.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(servertask.Table, servertask.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, servertask.ServerTaskToEnvironmentTable, servertask.ServerTaskToEnvironmentColumn),
+		)
+		fromV = sqlgraph.Neighbors(st.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryServerTaskToBuild queries the ServerTaskToBuild edge of a ServerTask.
+func (c *ServerTaskClient) QueryServerTaskToBuild(st *ServerTask) *BuildQuery {
+	query := &BuildQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := st.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(servertask.Table, servertask.FieldID, id),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, servertask.ServerTaskToBuildTable, servertask.ServerTaskToBuildColumn),
+		)
+		fromV = sqlgraph.Neighbors(st.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryServerTaskToGinFileMiddleware queries the ServerTaskToGinFileMiddleware edge of a ServerTask.
+func (c *ServerTaskClient) QueryServerTaskToGinFileMiddleware(st *ServerTask) *GinFileMiddlewareQuery {
+	query := &GinFileMiddlewareQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := st.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(servertask.Table, servertask.FieldID, id),
+			sqlgraph.To(ginfilemiddleware.Table, ginfilemiddleware.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, servertask.ServerTaskToGinFileMiddlewareTable, servertask.ServerTaskToGinFileMiddlewareColumn),
+		)
+		fromV = sqlgraph.Neighbors(st.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ServerTaskClient) Hooks() []Hook {
+	return c.hooks.ServerTask
+}
+
 // StatusClient is a client for the Status schema.
 type StatusClient struct {
 	config
@@ -4334,6 +4527,22 @@ func (c *StatusClient) QueryStatusToPlan(s *Status) *PlanQuery {
 			sqlgraph.From(status.Table, status.FieldID, id),
 			sqlgraph.To(plan.Table, plan.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToPlanTable, status.StatusToPlanColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStatusToServerTask queries the StatusToServerTask edge of a Status.
+func (c *StatusClient) QueryStatusToServerTask(s *Status) *ServerTaskQuery {
+	query := &ServerTaskQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, id),
+			sqlgraph.To(servertask.Table, servertask.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToServerTaskTable, status.StatusToServerTaskColumn),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil

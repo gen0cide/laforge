@@ -1,9 +1,9 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { MatCheckboxChange } from '@angular/material/checkbox';
+import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { LaForgeProvisionedNetwork } from '@graphql';
-import { networkChildrenCompleted } from '@util';
-import { ProvisionStatus, Status } from 'src/app/models/common.model';
+import { LaForgeProvisionedNetwork, LaForgeProvisionStatus, LaForgeSubscribeUpdatedStatusSubscription } from '@graphql';
+import { EnvironmentService } from '@services/environment/environment.service';
+import { Subscription } from 'rxjs';
+import { Status } from 'src/app/models/common.model';
 import { RebuildService } from 'src/app/services/rebuild/rebuild.service';
 
 import { NetworkModalComponent } from '../network-modal/network-modal.component';
@@ -13,21 +13,46 @@ import { NetworkModalComponent } from '../network-modal/network-modal.component'
   templateUrl: './network.component.html',
   styleUrls: ['./network.component.scss']
 })
-export class NetworkComponent implements OnInit {
+export class NetworkComponent implements OnInit, OnDestroy {
+  private unsubscribe: Subscription[] = [];
   @Input() provisionedNetwork: LaForgeProvisionedNetwork;
   @Input() status: Status;
   @Input() style: 'compact' | 'collapsed' | 'expanded';
   @Input() selectable: boolean;
   @Input() parentSelected: boolean;
   isSelectedState = false;
+  planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
 
-  constructor(public dialog: MatDialog, private rebuild: RebuildService) {
+  constructor(
+    public dialog: MatDialog,
+    private rebuild: RebuildService,
+    private envService: EnvironmentService,
+    private cdRef: ChangeDetectorRef
+  ) {
     if (!this.style) this.style = 'compact';
     if (!this.selectable) this.selectable = false;
     if (!this.parentSelected) this.parentSelected = false;
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    const sub1 = this.envService.statusUpdate.asObservable().subscribe(() => {
+      this.checkPlanStatus();
+      this.cdRef.detectChanges();
+    });
+    this.unsubscribe.push(sub1);
+    const sub2 = this.envService.agentStatusUpdate.asObservable().subscribe(() => {
+      this.cdRef.detectChanges();
+    });
+    this.unsubscribe.push(sub2);
+  }
+
+  ngOnDestroy() {
+    this.unsubscribe.forEach((s) => s.unsubscribe());
+  }
+
+  checkPlanStatus(): void {
+    this.planStatus = this.envService.getStatus(this.provisionedNetwork.ProvisionedNetworkToPlan.PlanToStatus.id) || this.planStatus;
+  }
 
   viewDetails(): void {
     this.dialog.open(NetworkModalComponent, {
@@ -37,26 +62,54 @@ export class NetworkComponent implements OnInit {
     });
   }
 
-  getStatus(): ProvisionStatus {
+  allAgentsResponding(): boolean {
     let numWithAgentData = 0;
     let totalAgents = 0;
     for (const host of this.provisionedNetwork.ProvisionedNetworkToProvisionedHost) {
       totalAgents++;
       if (host.ProvisionedHostToAgentStatus?.clientId) numWithAgentData++;
     }
-    if (numWithAgentData === totalAgents) return ProvisionStatus.COMPLETE;
-    else if (numWithAgentData === 0) return ProvisionStatus.FAILED;
-    else return ProvisionStatus.INPROGRESS;
+    return numWithAgentData === totalAgents;
+  }
+
+  getStatusIcon(): string {
+    if (!this.planStatus) return 'minus-circle';
+
+    switch (this.planStatus.state) {
+      case LaForgeProvisionStatus.Planning:
+        return 'ruler-triangle fas';
+      case LaForgeProvisionStatus.Todelete:
+        return 'recycle fas';
+      case LaForgeProvisionStatus.Deleteinprogress:
+        return 'trash-restore fas';
+      case LaForgeProvisionStatus.Deleted:
+        return 'trash fas';
+      default:
+        return 'network-wired';
+    }
   }
 
   getStatusColor(): string {
-    switch (this.getStatus()) {
-      case ProvisionStatus.COMPLETE:
-        return 'success';
-      case ProvisionStatus.INPROGRESS:
-        return 'warning';
-      case ProvisionStatus.FAILED:
+    if (!this.planStatus) return 'dark';
+    switch (this.planStatus.state) {
+      case LaForgeProvisionStatus.Complete:
+        if (this.allAgentsResponding()) {
+          return 'success';
+        } else {
+          return 'warning';
+        }
+      case LaForgeProvisionStatus.Inprogress:
+        return 'info';
+      case LaForgeProvisionStatus.Tainted:
         return 'danger';
+      case LaForgeProvisionStatus.Failed:
+        return 'danger';
+      case LaForgeProvisionStatus.Todelete:
+        return 'primary';
+      case LaForgeProvisionStatus.Deleteinprogress:
+        return 'info';
+      case LaForgeProvisionStatus.Planning:
+        return 'primary';
       default:
         return 'dark';
     }
@@ -81,6 +134,6 @@ export class NetworkComponent implements OnInit {
   }
 
   shouldCollapse(): boolean {
-    return networkChildrenCompleted(this.provisionedNetwork);
+    return this.planStatus && this.planStatus.state === LaForgeProvisionStatus.Complete && this.allAgentsResponding();
   }
 }

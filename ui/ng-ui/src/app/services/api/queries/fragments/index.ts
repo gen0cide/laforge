@@ -1,6 +1,6 @@
 import { gql } from 'apollo-angular';
 
-export const StatusFields = gql`
+const StatusFields = gql`
   fragment StatusFields on Status {
     state
     started_at
@@ -11,7 +11,7 @@ export const StatusFields = gql`
   }
 `;
 
-export const PlanFields = gql`
+const PlanFields = gql`
   fragment PlanFields on Plan {
     id
     step_number

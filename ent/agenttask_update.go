@@ -69,15 +69,23 @@ func (atu *AgentTaskUpdate) SetNillableOutput(s *string) *AgentTaskUpdate {
 	return atu
 }
 
-// ClearOutput clears the value of the "output" field.
-func (atu *AgentTaskUpdate) ClearOutput() *AgentTaskUpdate {
-	atu.mutation.ClearOutput()
-	return atu
-}
-
 // SetState sets the "state" field.
 func (atu *AgentTaskUpdate) SetState(a agenttask.State) *AgentTaskUpdate {
 	atu.mutation.SetState(a)
+	return atu
+}
+
+// SetErrorMessage sets the "error_message" field.
+func (atu *AgentTaskUpdate) SetErrorMessage(s string) *AgentTaskUpdate {
+	atu.mutation.SetErrorMessage(s)
+	return atu
+}
+
+// SetNillableErrorMessage sets the "error_message" field if the given value is not nil.
+func (atu *AgentTaskUpdate) SetNillableErrorMessage(s *string) *AgentTaskUpdate {
+	if s != nil {
+		atu.SetErrorMessage(*s)
+	}
 	return atu
 }
 
@@ -256,17 +264,18 @@ func (atu *AgentTaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: agenttask.FieldOutput,
 		})
 	}
-	if atu.mutation.OutputCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: agenttask.FieldOutput,
-		})
-	}
 	if value, ok := atu.mutation.State(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeEnum,
 			Value:  value,
 			Column: agenttask.FieldState,
+		})
+	}
+	if value, ok := atu.mutation.ErrorMessage(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: agenttask.FieldErrorMessage,
 		})
 	}
 	if atu.mutation.AgentTaskToProvisioningStepCleared() {
@@ -397,15 +406,23 @@ func (atuo *AgentTaskUpdateOne) SetNillableOutput(s *string) *AgentTaskUpdateOne
 	return atuo
 }
 
-// ClearOutput clears the value of the "output" field.
-func (atuo *AgentTaskUpdateOne) ClearOutput() *AgentTaskUpdateOne {
-	atuo.mutation.ClearOutput()
-	return atuo
-}
-
 // SetState sets the "state" field.
 func (atuo *AgentTaskUpdateOne) SetState(a agenttask.State) *AgentTaskUpdateOne {
 	atuo.mutation.SetState(a)
+	return atuo
+}
+
+// SetErrorMessage sets the "error_message" field.
+func (atuo *AgentTaskUpdateOne) SetErrorMessage(s string) *AgentTaskUpdateOne {
+	atuo.mutation.SetErrorMessage(s)
+	return atuo
+}
+
+// SetNillableErrorMessage sets the "error_message" field if the given value is not nil.
+func (atuo *AgentTaskUpdateOne) SetNillableErrorMessage(s *string) *AgentTaskUpdateOne {
+	if s != nil {
+		atuo.SetErrorMessage(*s)
+	}
 	return atuo
 }
 
@@ -608,17 +625,18 @@ func (atuo *AgentTaskUpdateOne) sqlSave(ctx context.Context) (_node *AgentTask, 
 			Column: agenttask.FieldOutput,
 		})
 	}
-	if atuo.mutation.OutputCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: agenttask.FieldOutput,
-		})
-	}
 	if value, ok := atuo.mutation.State(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeEnum,
 			Value:  value,
 			Column: agenttask.FieldState,
+		})
+	}
+	if value, ok := atuo.mutation.ErrorMessage(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: agenttask.FieldErrorMessage,
 		})
 	}
 	if atuo.mutation.AgentTaskToProvisioningStepCleared() {

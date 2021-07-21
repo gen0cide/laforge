@@ -15,11 +15,22 @@ import { HostComponent } from './host/host.component';
 import { NetworkModalComponent } from './network-modal/network-modal.component';
 import { NetworkComponent } from './network/network.component';
 import { StepComponent } from './step/step.component';
+import { TaskListComponent } from './task-list/task-list.component';
+import { TaskComponent } from './task/task.component';
 import { TeamComponent } from './team/team.component';
 
 @NgModule({
-  declarations: [NetworkComponent, HostComponent, TeamComponent, HostModalComponent, NetworkModalComponent, StepComponent],
+  declarations: [
+    NetworkComponent,
+    HostComponent,
+    TeamComponent,
+    HostModalComponent,
+    NetworkModalComponent,
+    StepComponent,
+    TaskListComponent,
+    TaskComponent
+  ],
   imports: [CommonModule, MatDialogModule, MatTableModule, MatButtonModule, MatCheckboxModule, MomentModule, LaforgePipesModule],
-  exports: [NetworkComponent, HostComponent, TeamComponent]
+  exports: [NetworkComponent, HostComponent, TeamComponent, TaskListComponent, TaskComponent]
 })
 export class ViewComponentsModule {}

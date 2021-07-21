@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -16,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/graphql/auth"
 	"github.com/gen0cide/laforge/graphql/graph"
@@ -28,6 +28,7 @@ import (
 	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -117,6 +118,33 @@ func playgroundHandler() gin.HandlerFunc {
 	}
 }
 
+func createDefaultAdminUser(client *ent.Client, ctx context.Context) error {
+	adminUsername, usernameOK := os.LookupEnv("ADMIN_USER")
+	adminPassword, passwordOK := os.LookupEnv("ADMIN_PASS")
+	if !usernameOK || !passwordOK {
+		return fmt.Errorf("ENVs ADMIN_USER or ADMIN_PASS are not set")
+	}
+	entAuthUserExsist, _ := client.AuthUser.Query().Where(
+		authuser.And(
+			authuser.UsernameEQ(adminUsername),
+			authuser.ProviderEQ(authuser.ProviderLOCAL),
+		)).Exist(ctx)
+	if !entAuthUserExsist {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(adminPassword), 8)
+		if err != nil {
+			return err
+		}
+		password := string(hashedPassword[:])
+		client.AuthUser.Create().
+			SetUsername(adminUsername).
+			SetPassword(password).
+			SetRole(authuser.RoleADMIN).
+			SetProvider(authuser.ProviderLOCAL).
+			Save(ctx)
+	}
+	return nil
+}
+
 func main() {
 	// Start logging all Logrus output to files
 	ginMode := os.Getenv("GIN_MODE")
@@ -160,48 +188,47 @@ func main() {
 
 	// Run the auto migration tool.
 	if err := client.Schema.Create(ctx); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
+		logrus.Fatalf("failed creating schema resources: %v", err)
 	}
+
+	if err := createDefaultAdminUser(client, ctx); err != nil {
+		logrus.Fatal(err)
+	}
+
+	go func(client *ent.Client, ctx context.Context) {
+		ticker := time.NewTicker(time.Minute)
+		for {
+			<-ticker.C
+			go auth.ClearTokens(client, ctx)
+
+		}
+	}(client, ctx)
 
 	lis, err := net.Listen("tcp", server.Port)
 
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		logrus.Fatalf("failed to listen: %v", err)
 	}
 
 	redisHost, okRS := os.LookupEnv("REDIS_SERVER")
-	redisPass, okRP := os.LookupEnv("REDIS_PASSWORD")
 
 	rdb := &redis.Client{}
 	if okRS {
-		if okRP {
-			rdb = redis.NewClient(&redis.Options{
-				Addr:     redisHost,
-				Password: redisPass,
-				DB:       0, // use default DB
-			})
-		} else {
-			rdb = redis.NewClient(&redis.Options{
-				Addr:     redisHost,
-				Password: "", // no password set
-				DB:       0,  // use default DB
-			})
-		}
+		rdb = redis.NewClient(&redis.Options{
+			Addr:     redisHost,
+			Password: os.Getenv("REDIS_PASSWORD"),
+			DB:       0, // use default DB
+		})
+
 	} else {
-		if okRP {
-			rdb = redis.NewClient(&redis.Options{
-				Addr:     "localhost:6379",
-				Password: redisPass,
-				DB:       0, // use default DB
-			})
-		} else {
-			rdb = redis.NewClient(&redis.Options{
-				Addr:     "localhost:6379",
-				Password: "", // no password set
-				DB:       0,  // use default DB
-			})
-		}
+		rdb = redis.NewClient(&redis.Options{
+			Addr:     "localhost:6379",
+			Password: os.Getenv("REDIS_PASSWORD"),
+			DB:       0, // use default DB
+		})
 	}
+
+	auth.InitGoth()
 
 	router := gin.Default()
 
@@ -236,15 +263,15 @@ func main() {
 	router.Static("/assets/", "./dist/assets")
 	router.GET("/playground", playgroundHandler())
 
+	authGroup := router.Group("/auth")
+	authGroup.POST("/local/login", auth.LocalLogin(client))
+	authGroup.GET("/:provider/login", auth.GothicBeginAuth())
+	authGroup.GET("/:provider/callback", auth.GothicCallbackHandler(client))
+	authGroup.GET("/logout", auth.Logout(client))
+
 	api := router.Group("/api")
 	api.Use(auth.Middleware(client))
-	api.POST("/local/login", auth.Login(client))
 
-	// TODO: Remove Get Path once Testing is done
-	api.GET("/local/login", auth.Login(client))
-	//
-
-	api.GET("/local/logout", auth.Logout(client))
 	api.POST("/query", gqlHandler)
 	api.GET("/query", gqlHandler)
 	api.GET("/download/:url_id", tempURLHandler(client))
@@ -271,7 +298,7 @@ func main() {
 	creds := credentials.NewServerTLSFromCert(&cert)
 	s := grpc.NewServer(grpc.Creds(creds))
 
-	log.Printf("Starting Laforge Server on port " + server.Port)
+	logrus.Infof("Starting Laforge Server on port " + server.Port)
 
 	pb.RegisterLaforgeServer(s, &server.Server{
 		Client:                     client,
@@ -279,6 +306,6 @@ func main() {
 		RDB:                        rdb,
 	})
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		logrus.Fatalf("failed to serve: %v", err)
 	}
 }

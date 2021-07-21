@@ -9,7 +9,6 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gen0cide/laforge/ent"
-	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/token"
 	"github.com/gin-gonic/gin"
 )
@@ -21,11 +20,6 @@ var jwtKey = []byte("TReZCts6dZgXF6PJYHZ8jrdunbFquYnU9FJ6FDgoVGkdMPpvUc")
 
 type contextKey struct {
 	name string
-}
-
-type login struct {
-	Username string `form:"username" json:"username" binding:"required"`
-	Password string `form:"password" json:"password" binding:"required"`
 }
 
 // Claims Create a struct that will be encoded to a JWT.
@@ -45,6 +39,8 @@ func Middleware(client *ent.Client) gin.HandlerFunc {
 
 		authCookie, err := ctx.Cookie("auth-cookie")
 		if err != nil || authCookie == "" {
+			// TODO: Change Cookie to be secure
+			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
 			return
 		}
 
@@ -89,74 +85,14 @@ func Middleware(client *ent.Client) gin.HandlerFunc {
 
 		entAuthUser, err := entToken.QueryTokenToAuthUser().Only(ctx)
 		if err != nil {
+			// TODO: Change Cookie to be secure
+			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err})
 			return
 		}
 		// put it in context
 		c := context.WithValue(ctx.Request.Context(), userCtxKey, entAuthUser)
 		ctx.Request = ctx.Request.WithContext(c)
-
-		ctx.Next()
-	}
-}
-
-// Login decodes the share session cookie and packs the session into context
-func Login(client *ent.Client) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		hostname, ok := os.LookupEnv("GRAPHQL_HOSTNAME")
-		if !ok {
-			hostname = "localhost"
-		}
-		var loginVals login
-		username := ""
-		password := ""
-
-		// TODO: Remove test login
-		if err := ctx.ShouldBind(&loginVals); err != nil {
-			username = "test"
-			password = "test"
-		} else {
-			username = loginVals.Username
-			password = loginVals.Password
-		}
-
-		entAuthUser, err := client.AuthUser.Query().Where(
-			authuser.And(
-				authuser.UsernameEQ(username),
-				authuser.PasswordEQ(password),
-			),
-		).Only(ctx)
-		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
-			return
-		}
-
-		expiresAt := time.Now().Add(time.Hour * time.Duration(1)).Unix()
-
-		claims := &Claims{
-			IssuedAt: time.Now().Unix(),
-			StandardClaims: jwt.StandardClaims{
-				ExpiresAt: expiresAt,
-			},
-		}
-
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-		tokenString, err := token.SignedString(jwtKey)
-		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Error signing token"})
-			return
-		}
-
-		_, err = client.Token.Create().SetTokenToAuthUser(entAuthUser).SetCreatedAt(int(expiresAt)).SetToken(tokenString).Save(ctx)
-		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Error updating token"})
-			return
-		}
-
-		// TODO: Change Cookie to be secure
-		ctx.SetCookie("auth-cookie", tokenString, 60*60, "/", hostname, false, false)
-		ctx.JSON(200, entAuthUser)
 
 		ctx.Next()
 	}
@@ -174,6 +110,8 @@ func Logout(client *ent.Client) gin.HandlerFunc {
 
 		// Allow unauthenticated users in
 		if err != nil || authCookie == "" {
+			// TODO: Change Cookie to be secure
+			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
 			return
 		}
 
@@ -210,11 +148,15 @@ func Logout(client *ent.Client) gin.HandlerFunc {
 
 		_, err = client.Token.Delete().Where(token.TokenEQ(authCookie)).Exec(ctx)
 		if err != nil {
+			// TODO: Change Cookie to be secure
+			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err})
 			return
 		}
 
 		if err != nil {
+			// TODO: Change Cookie to be secure
+			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Error updating token"})
 			return
 		}
@@ -233,4 +175,9 @@ func ForContext(ctx context.Context) (*ent.AuthUser, error) {
 	}
 	return nil, errors.New("unable to get authuser from context")
 
+}
+
+// ClearTokens Clears Old tokens from DB
+func ClearTokens(client *ent.Client, ctx context.Context) {
+	client.Token.Delete().Where(token.ExpireAtLT(time.Now().Unix())).Exec(ctx)
 }

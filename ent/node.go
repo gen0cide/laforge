@@ -34,6 +34,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/script"
+	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
@@ -207,7 +208,7 @@ func (at *AgentTask) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     at.ID,
 		Type:   "AgentTask",
-		Fields: make([]*Field, 5),
+		Fields: make([]*Field, 6),
 		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
@@ -251,6 +252,14 @@ func (at *AgentTask) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "state",
 		Value: string(buf),
 	}
+	if buf, err = json.Marshal(at.ErrorMessage); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "string",
+		Name:  "error_message",
+		Value: string(buf),
+	}
 	node.Edges[0] = &Edge{
 		Type: "ProvisioningStep",
 		Name: "AgentTaskToProvisioningStep",
@@ -278,8 +287,8 @@ func (au *AuthUser) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     au.ID,
 		Type:   "AuthUser",
-		Fields: make([]*Field, 4),
-		Edges:  make([]*Edge, 1),
+		Fields: make([]*Field, 11),
+		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(au.Username); err != nil {
@@ -298,10 +307,66 @@ func (au *AuthUser) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "password",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(au.Role); err != nil {
+	if buf, err = json.Marshal(au.FirstName); err != nil {
 		return nil, err
 	}
 	node.Fields[2] = &Field{
+		Type:  "string",
+		Name:  "first_name",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(au.LastName); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "string",
+		Name:  "last_name",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(au.Email); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "string",
+		Name:  "email",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(au.Phone); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "string",
+		Name:  "phone",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(au.Company); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
+		Type:  "string",
+		Name:  "company",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(au.Occupation); err != nil {
+		return nil, err
+	}
+	node.Fields[7] = &Field{
+		Type:  "string",
+		Name:  "occupation",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(au.PrivateKeyPath); err != nil {
+		return nil, err
+	}
+	node.Fields[8] = &Field{
+		Type:  "string",
+		Name:  "private_key_path",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(au.Role); err != nil {
+		return nil, err
+	}
+	node.Fields[9] = &Field{
 		Type:  "authuser.Role",
 		Name:  "role",
 		Value: string(buf),
@@ -309,7 +374,7 @@ func (au *AuthUser) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(au.Provider); err != nil {
 		return nil, err
 	}
-	node.Fields[3] = &Field{
+	node.Fields[10] = &Field{
 		Type:  "authuser.Provider",
 		Name:  "provider",
 		Value: string(buf),
@@ -321,6 +386,16 @@ func (au *AuthUser) Node(ctx context.Context) (node *Node, err error) {
 	err = au.QueryAuthUserToToken().
 		Select(token.FieldID).
 		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "ServerTask",
+		Name: "AuthUserToServerTasks",
+	}
+	err = au.QueryAuthUserToServerTasks().
+		Select(servertask.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2029,7 +2104,7 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     ph.ID,
 		Type:   "ProvisionedHost",
-		Fields: make([]*Field, 1),
+		Fields: make([]*Field, 2),
 		Edges:  make([]*Edge, 9),
 	}
 	var buf []byte
@@ -2039,6 +2114,14 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[0] = &Field{
 		Type:  "string",
 		Name:  "subnet_ip",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(ph.AddonType); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "provisionedhost.AddonType",
+		Name:  "addon_type",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
@@ -2511,12 +2594,113 @@ func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
+func (st *ServerTask) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     st.ID,
+		Type:   "ServerTask",
+		Fields: make([]*Field, 5),
+		Edges:  make([]*Edge, 5),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(st.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "servertask.Type",
+		Name:  "type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(st.StartTime); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "time.Time",
+		Name:  "start_time",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(st.EndTime); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "time.Time",
+		Name:  "end_time",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(st.Errors); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "[]string",
+		Name:  "errors",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(st.LogFilePath); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "string",
+		Name:  "log_file_path",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "AuthUser",
+		Name: "ServerTaskToAuthUser",
+	}
+	err = st.QueryServerTaskToAuthUser().
+		Select(authuser.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Status",
+		Name: "ServerTaskToStatus",
+	}
+	err = st.QueryServerTaskToStatus().
+		Select(status.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[2] = &Edge{
+		Type: "Environment",
+		Name: "ServerTaskToEnvironment",
+	}
+	err = st.QueryServerTaskToEnvironment().
+		Select(environment.FieldID).
+		Scan(ctx, &node.Edges[2].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[3] = &Edge{
+		Type: "Build",
+		Name: "ServerTaskToBuild",
+	}
+	err = st.QueryServerTaskToBuild().
+		Select(build.FieldID).
+		Scan(ctx, &node.Edges[3].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[4] = &Edge{
+		Type: "GinFileMiddleware",
+		Name: "ServerTaskToGinFileMiddleware",
+	}
+	err = st.QueryServerTaskToGinFileMiddleware().
+		Select(ginfilemiddleware.FieldID).
+		Scan(ctx, &node.Edges[4].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
 func (s *Status) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     s.ID,
 		Type:   "Status",
 		Fields: make([]*Field, 7),
-		Edges:  make([]*Edge, 6),
+		Edges:  make([]*Edge, 7),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(s.State); err != nil {
@@ -2635,6 +2819,16 @@ func (s *Status) Node(ctx context.Context) (node *Node, err error) {
 	if err != nil {
 		return nil, err
 	}
+	node.Edges[6] = &Edge{
+		Type: "ServerTask",
+		Name: "StatusToServerTask",
+	}
+	err = s.QueryStatusToServerTask().
+		Select(servertask.FieldID).
+		Scan(ctx, &node.Edges[6].IDs)
+	if err != nil {
+		return nil, err
+	}
 	return node, nil
 }
 
@@ -2748,12 +2942,12 @@ func (t *Token) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "token",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(t.CreatedAt); err != nil {
+	if buf, err = json.Marshal(t.ExpireAt); err != nil {
 		return nil, err
 	}
 	node.Fields[1] = &Field{
-		Type:  "int",
-		Name:  "created_at",
+		Type:  "int64",
+		Name:  "expire_at",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
@@ -3119,6 +3313,15 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 		n, err := c.Script.Query().
 			Where(script.ID(id)).
 			CollectFields(ctx, "Script").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case servertask.Table:
+		n, err := c.ServerTask.Query().
+			Where(servertask.ID(id)).
+			CollectFields(ctx, "ServerTask").
 			Only(ctx)
 		if err != nil {
 			return nil, err
@@ -3558,6 +3761,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		nodes, err := c.Script.Query().
 			Where(script.IDIn(ids...)).
 			CollectFields(ctx, "Script").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case servertask.Table:
+		nodes, err := c.ServerTask.Query().
+			Where(servertask.IDIn(ids...)).
+			CollectFields(ctx, "ServerTask").
 			All(ctx)
 		if err != nil {
 			return nil, err

@@ -36,6 +36,8 @@ const (
 	AgentCommandAddtogroup     AgentCommand = "ADDTOGROUP"
 	AgentCommandExecute        AgentCommand = "EXECUTE"
 	AgentCommandValidate       AgentCommand = "VALIDATE"
+	AgentCommandChangeperms    AgentCommand = "CHANGEPERMS"
+	AgentCommandAppendfile     AgentCommand = "APPENDFILE"
 )
 
 var AllAgentCommand = []AgentCommand{
@@ -49,11 +51,13 @@ var AllAgentCommand = []AgentCommand{
 	AgentCommandAddtogroup,
 	AgentCommandExecute,
 	AgentCommandValidate,
+	AgentCommandChangeperms,
+	AgentCommandAppendfile,
 }
 
 func (e AgentCommand) IsValid() bool {
 	switch e {
-	case AgentCommandDefault, AgentCommandDelete, AgentCommandReboot, AgentCommandExtract, AgentCommandDownload, AgentCommandCreateuser, AgentCommandCreateuserpass, AgentCommandAddtogroup, AgentCommandExecute, AgentCommandValidate:
+	case AgentCommandDefault, AgentCommandDelete, AgentCommandReboot, AgentCommandExtract, AgentCommandDownload, AgentCommandCreateuser, AgentCommandCreateuserpass, AgentCommandAddtogroup, AgentCommandExecute, AgentCommandValidate, AgentCommandChangeperms, AgentCommandAppendfile:
 		return true
 	}
 	return false
@@ -469,5 +473,52 @@ func (e *RoleLevel) UnmarshalGQL(v interface{}) error {
 }
 
 func (e RoleLevel) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type ServerTaskType string
+
+const (
+	ServerTaskTypeLoadenv     ServerTaskType = "LOADENV"
+	ServerTaskTypeCreatebuild ServerTaskType = "CREATEBUILD"
+	ServerTaskTypeRenderfiles ServerTaskType = "RENDERFILES"
+	ServerTaskTypeDeletebuild ServerTaskType = "DELETEBUILD"
+	ServerTaskTypeRebuild     ServerTaskType = "REBUILD"
+)
+
+var AllServerTaskType = []ServerTaskType{
+	ServerTaskTypeLoadenv,
+	ServerTaskTypeCreatebuild,
+	ServerTaskTypeRenderfiles,
+	ServerTaskTypeDeletebuild,
+	ServerTaskTypeRebuild,
+}
+
+func (e ServerTaskType) IsValid() bool {
+	switch e {
+	case ServerTaskTypeLoadenv, ServerTaskTypeCreatebuild, ServerTaskTypeRenderfiles, ServerTaskTypeDeletebuild, ServerTaskTypeRebuild:
+		return true
+	}
+	return false
+}
+
+func (e ServerTaskType) String() string {
+	return string(e)
+}
+
+func (e *ServerTaskType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ServerTaskType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ServerTaskType", str)
+	}
+	return nil
+}
+
+func (e ServerTaskType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

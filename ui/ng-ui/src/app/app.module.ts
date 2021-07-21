@@ -7,7 +7,6 @@ import { environment } from '@env';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
 import { HttpClientInMemoryWebApiModule } from 'angular-in-memory-web-api';
-import highlight from 'highlight.js/lib/highlight';
 import json from 'highlight.js/lib/languages/json';
 import scss from 'highlight.js/lib/languages/scss';
 import typescript from 'highlight.js/lib/languages/typescript';
@@ -28,7 +27,7 @@ import { AuthService } from './modules/auth/_services/auth.service';
 function appInitializer(authService: AuthService) {
   return () => {
     return new Promise((resolve) => {
-      authService.getUserByToken().subscribe().add(resolve);
+      authService.getCurrentUserFromContext().subscribe().add(resolve);
     });
   };
 }

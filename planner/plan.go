@@ -29,44 +29,47 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/script"
+	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
 	"github.com/gen0cide/laforge/grpc"
 	"github.com/gen0cide/laforge/server/utils"
-	"github.com/google/uuid"
+	"github.com/go-redis/redis/v8"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
 )
 
 var RenderFiles = false
+var RenderFilesTask *ent.ServerTask = nil
+var RenderFilesTaskStatus *ent.Status = nil
 
-func main() {
+// func main() {
 
-	client := ent.SQLLiteOpen("file:test.sqlite?_loc=auto&cache=shared&_fk=1")
-	ctx := context.Background()
-	defer client.Close()
+// 	client := ent.SQLLiteOpen("file:test.sqlite?_loc=auto&cache=shared&_fk=1")
+// 	ctx := context.Background()
+// 	defer client.Close()
 
-	// Run the auto migration tool.
-	if err := client.Schema.Create(ctx); err != nil {
-		logrus.Errorf("failed creating schema resources: %v", err)
-	}
-	uuidString := "36579b83-cc50-4f9f-a007-6da25467dc8a"
-	envID, err := uuid.Parse(uuidString)
-	if err != nil {
-		logrus.Errorf("Unable to parse UUID %v. Err: %v", uuidString, err)
-	}
+// 	// Run the auto migration tool.
+// 	if err := client.Schema.Create(ctx); err != nil {
+// 		logrus.Errorf("failed creating schema resources: %v", err)
+// 	}
+// 	uuidString := "36579b83-cc50-4f9f-a007-6da25467dc8a"
+// 	envID, err := uuid.Parse(uuidString)
+// 	if err != nil {
+// 		logrus.Errorf("Unable to parse UUID %v. Err: %v", uuidString, err)
+// 	}
 
-	entEnvironment, err := client.Environment.Query().Where(environment.ID(envID)).WithEnvironmentToBuild().Only(ctx)
-	if err != nil {
-		logrus.Errorf("Failed to find Environment %v. Err: %v", uuidString, err)
-	}
+// 	entEnvironment, err := client.Environment.Query().Where(environment.ID(envID)).WithEnvironmentToBuild().Only(ctx)
+// 	if err != nil {
+// 		logrus.Errorf("Failed to find Environment %v. Err: %v", uuidString, err)
+// 	}
 
-	entBuild, _ := CreateBuild(ctx, client, entEnvironment)
-	if err != nil {
-		logrus.Errorf("Failed to create Build for Enviroment %v. Err: %v", 1, err)
-	}
-	fmt.Println(entBuild)
-}
+// 	entBuild, _ := CreateBuild(ctx, client, entEnvironment)
+// 	if err != nil {
+// 		logrus.Errorf("Failed to create Build for Enviroment %v. Err: %v", 1, err)
+// 	}
+// 	fmt.Println(entBuild)
+// }
 
 func createPlanningStatus(ctx context.Context, client *ent.Client, statusFor status.StatusFor) (*ent.Status, error) {
 	entStatus, err := client.Status.Create().SetState(status.StatePLANNING).SetStatusFor(statusFor).Save(ctx)
@@ -77,15 +80,40 @@ func createPlanningStatus(ctx context.Context, client *ent.Client, statusFor sta
 	return entStatus, nil
 }
 
-func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.Environment) (*ent.Build, error) {
+func CreateBuild(ctx context.Context, client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUser, entEnvironment *ent.Environment) (*ent.Build, error) {
+	taskStatus, serverTask, err := utils.CreateServerTask(ctx, client, rdb, currentUser, servertask.TypeCREATEBUILD)
+	if err != nil {
+		return nil, fmt.Errorf("error creating server task: %v", err)
+	}
+	serverTask, err = client.ServerTask.UpdateOne(serverTask).SetServerTaskToEnvironment(entEnvironment).Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error assigning environment to create build server task: %v", err)
+	}
+	if RenderFiles {
+		RenderFilesTask, err = client.ServerTask.UpdateOne(RenderFilesTask).SetServerTaskToEnvironment(entEnvironment).Save(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error assigning environment to render files server task: %v", err)
+		}
+		rdb.Publish(ctx, "updatedServerTask", RenderFilesTask.ID.String())
+	}
+	rdb.Publish(ctx, "updatedServerTask", serverTask.ID.String())
+
 	var wg sync.WaitGroup
 	entStatus, err := createPlanningStatus(ctx, client, status.StatusForBuild)
 	if err != nil {
+		_, _, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask, err)
+		if err != nil {
+			return nil, fmt.Errorf("error failing server task: %v", err)
+		}
 		return nil, err
 	}
 	entCompetition, err := client.Competition.Query().Where(competition.HclIDEQ(entEnvironment.CompetitionID)).Only(ctx)
 	if err != nil {
 		logrus.Errorf("Failed to Query Competition %v for Enviroment %v. Err: %v", len(entEnvironment.CompetitionID), entEnvironment.HclID, err)
+		_, _, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask, err)
+		if err != nil {
+			return nil, fmt.Errorf("error failing server task: %v", err)
+		}
 		return nil, err
 	}
 	entBuild, err := client.Build.Create().
@@ -96,10 +124,30 @@ func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.En
 		Save(ctx)
 	if err != nil {
 		logrus.Errorf("Failed to create Build %v for Enviroment %v. Err: %v", len(entEnvironment.Edges.EnvironmentToBuild), entEnvironment.HclID, err)
+		_, _, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask, err)
+		if err != nil {
+			return nil, fmt.Errorf("error failing server task: %v", err)
+		}
 		return nil, err
+	}
+	serverTask, err = client.ServerTask.UpdateOne(serverTask).SetServerTaskToBuild(entBuild).Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error assigning environment to create build server task: %v", err)
+	}
+	rdb.Publish(ctx, "updatedServerTask", serverTask.ID.String())
+	if RenderFiles {
+		RenderFilesTask, err = client.ServerTask.UpdateOne(RenderFilesTask).SetServerTaskToBuild(entBuild).Save(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error linking build to render files server task: %v", err)
+		}
+		rdb.Publish(ctx, "updatedServerTask", RenderFilesTask.ID.String())
 	}
 	entPlanStatus, err := createPlanningStatus(ctx, client, status.StatusForPlan)
 	if err != nil {
+		_, _, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask, err)
+		if err != nil {
+			return nil, fmt.Errorf("error failing server task: %v", err)
+		}
 		return nil, err
 	}
 
@@ -112,6 +160,10 @@ func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.En
 		Save(ctx)
 	if err != nil {
 		logrus.Errorf("Failed to create Plan Node for Build %v. Err: %v", entBuild.ID, err)
+		_, _, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask, err)
+		if err != nil {
+			return nil, fmt.Errorf("error failing server task: %v", err)
+		}
 		return nil, err
 	}
 	for teamNumber := 0; teamNumber < entEnvironment.TeamCount; teamNumber++ {
@@ -123,8 +175,23 @@ func CreateBuild(ctx context.Context, client *ent.Client, entEnvironment *ent.En
 		wg.Wait()
 		ctx := context.Background()
 		defer ctx.Done()
-		entBuild.Update().SetCompletedPlan(true).SaveX(ctx)
+		if RenderFilesTask != nil {
+			RenderFilesTaskStatus, RenderFilesTask, err = utils.CompleteServerTask(ctx, client, rdb, RenderFilesTaskStatus, RenderFilesTask)
+			if err != nil {
+				return
+			}
+		}
+		_, serverTask, err = utils.CompleteServerTask(ctx, client, rdb, taskStatus, serverTask)
+		if err != nil {
+			return
+		}
+		serverTask, err = client.ServerTask.UpdateOne(serverTask).SetServerTaskToBuild(entBuild).Save(ctx)
+		if err != nil {
+			return
+		}
+		rdb.Publish(ctx, "updatedServerTask", serverTask.ID.String())
 		rdb.Publish(ctx, "updatedBuild", entBuild.ID.String())
+		entBuild.Update().SetCompletedPlan(true).SaveX(ctx)
 	}(&wg, entBuild)
 
 	return entBuild, nil
@@ -359,6 +426,13 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		SetProvisionedHostToHost(entHost).
 		Save(ctx)
 
+	if entHost.Tags["root-dns"] == "true" {
+		entProvisionedHost, err = entProvisionedHost.Update().SetAddonType(provisionedhost.AddonTypeDNS).Save(ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	entPlanStatus, err := createPlanningStatus(ctx, client, status.StatusForPlan)
 	if err != nil {
 		return nil, err
@@ -410,6 +484,12 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		if err != nil {
 			return nil, err
 		}
+		if RenderFilesTask != nil {
+			RenderFilesTask, err = RenderFilesTask.Update().AddServerTaskToGinFileMiddleware(entTmpUrl).Save(ctx)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 	userDataScriptID, ok := entHost.Vars["user_data_script_id"]
 	if ok {
@@ -446,6 +526,12 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 			_, err = entTmpUrl.Update().SetGinFileMiddlewareToProvisioningStep(entUserDataProvisioningStep).Save(ctx)
 			if err != nil {
 				return nil, err
+			}
+			if RenderFilesTask != nil {
+				RenderFilesTask, err = RenderFilesTask.Update().AddServerTaskToGinFileMiddleware(entTmpUrl).Save(ctx)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 
@@ -624,6 +710,12 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 							if err != nil {
 								return nil, err
 							}
+							if RenderFilesTask != nil {
+								RenderFilesTask, err = RenderFilesTask.Update().AddServerTaskToGinFileMiddleware(entTmpUrl).Save(ctx)
+								if err != nil {
+									return nil, err
+								}
+							}
 						}
 					}
 				}
@@ -665,6 +757,12 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, hclID strin
 			_, err = entTmpUrl.Update().SetGinFileMiddlewareToProvisioningStep(entProvisioningStep).Save(ctx)
 			if err != nil {
 				return nil, err
+			}
+			if RenderFilesTask != nil {
+				RenderFilesTask, err = RenderFilesTask.Update().AddServerTaskToGinFileMiddleware(entTmpUrl).Save(ctx)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 	}
@@ -729,7 +827,6 @@ func renderScript(ctx context.Context, client *ent.Client, pStep *ent.Provisioni
 		logrus.Errorf("Failed to Parse template for script %v. Err: %v", currentScript.Name, err)
 		return "", err
 	}
-	// t.Funcs(TemplateFuncLib)
 	fileRelativePath := path.Join(currentEnvironment.Name, fmt.Sprint(currentBuild.Revision), fmt.Sprint(currentTeam.TeamNumber), currentProvisionedNetwork.Name, currentHost.Hostname)
 	os.MkdirAll(fileRelativePath, 0755)
 	fileName := filepath.Base(currentScript.Source)
@@ -778,6 +875,7 @@ func renderFileDownload(ctx context.Context, pStep *ent.ProvisioningStep) (strin
 	}
 	defer destFile.Close()
 
+	// TODO: SOMETHING
 	if currentFileDownload.SourceType == "remote" {
 		// http.Get(currentFileDownload.Source)
 	} else {

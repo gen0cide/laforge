@@ -49,6 +49,7 @@ type hooks struct {
 	ProvisionedNetwork []ent.Hook
 	ProvisioningStep   []ent.Hook
 	Script             []ent.Hook
+	ServerTask         []ent.Hook
 	Status             []ent.Hook
 	Tag                []ent.Hook
 	Team               []ent.Hook

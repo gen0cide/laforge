@@ -55,6 +55,8 @@ message TaskReply {
     ADDTOGROUP = 7;
     EXECUTE = 8;
     VALIDATE = 9;
+    CHANGEPERMS = 10;
+    APPENDFILE = 11;
   }
   Command command = 2;
   string args = 3;
@@ -63,6 +65,8 @@ message TaskReply {
 message TaskStatusRequest {
     string task_id = 1;
     string status = 2;
+    string error_message = 3;
+    string output = 4;
 }
 
 message TaskStatusReply {

@@ -26,26 +26,20 @@ query GetEnvironment($envId: String!) {
       id
       revision
       buildToStatus {
-        completed
-        failed
-        state
+        ...StatusFields
       }
       buildToTeam {
         id
         team_number
         TeamToStatus {
-          completed
-          failed
-          state
+          ...StatusFields
         }
         TeamToProvisionedNetwork {
           id
           name
           cidr
           ProvisionedNetworkToStatus {
-            completed
-            failed
-            state
+            ...StatusFields
           }
           ProvisionedNetworkToNetwork {
             id
@@ -63,9 +57,7 @@ query GetEnvironment($envId: String!) {
             id
             subnet_ip
             ProvisionedHostToStatus {
-              completed
-              failed
-              state
+              ...StatusFields
             }
             ProvisionedHostToHost {
               id
@@ -90,9 +82,7 @@ query GetEnvironment($envId: String!) {
               id
               type
               ProvisioningStepToStatus {
-                completed
-                failed
-                state
+                ...StatusFields
               }
               ProvisioningStepToScript {
                 id

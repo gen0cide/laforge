@@ -447,7 +447,7 @@ func execStep(client *ent.Client, ctx context.Context, entStep *ent.Provisioning
 		}
 		_, err = client.AgentTask.Create().
 			SetCommand(agenttask.CommandDOWNLOAD).
-			SetArgs(entScript.Source + "," + downloadURL + entGinMiddleware.URLID).
+			SetArgs(entScript.Source + "💔" + downloadURL + entGinMiddleware.URLID).
 			SetNumber(taskCount).
 			SetState(agenttask.StateAWAITING).
 			SetAgentTaskToProvisionedHost(entPorovisionedHost).
@@ -459,7 +459,7 @@ func execStep(client *ent.Client, ctx context.Context, entStep *ent.Provisioning
 		// TODO: Add the Ability to change permissions of a file into the agent
 		_, err = client.AgentTask.Create().
 			SetCommand(agenttask.CommandEXECUTE).
-			SetArgs(entScript.Source + " " + strings.Join(entScript.Args, " ")).
+			SetArgs(entScript.Source + "💔" + strings.Join(entScript.Args, " ")).
 			SetNumber(taskCount + 1).
 			SetState(agenttask.StateAWAITING).
 			SetAgentTaskToProvisionedHost(entPorovisionedHost).
@@ -500,7 +500,7 @@ func execStep(client *ent.Client, ctx context.Context, entStep *ent.Provisioning
 		} else {
 			_, err = client.AgentTask.Create().
 				SetCommand(agenttask.CommandEXECUTE).
-				SetArgs(entCommand.Program + " " + strings.Join(entCommand.Args, " ")).
+				SetArgs(entCommand.Program + "💔" + strings.Join(entCommand.Args, " ")).
 				SetNumber(taskCount).
 				SetState(agenttask.StateAWAITING).
 				SetAgentTaskToProvisionedHost(entPorovisionedHost).
@@ -537,7 +537,7 @@ func execStep(client *ent.Client, ctx context.Context, entStep *ent.Provisioning
 		}
 		_, err = client.AgentTask.Create().
 			SetCommand(agenttask.CommandDOWNLOAD).
-			SetArgs(entFileDownload.Destination + "," + downloadURL + entGinMiddleware.URLID).
+			SetArgs(entFileDownload.Destination + "💔" + downloadURL + entGinMiddleware.URLID).
 			SetNumber(taskCount).
 			SetState(agenttask.StateAWAITING).
 			SetAgentTaskToProvisionedHost(entPorovisionedHost).
@@ -553,7 +553,7 @@ func execStep(client *ent.Client, ctx context.Context, entStep *ent.Provisioning
 		}
 		_, err = client.AgentTask.Create().
 			SetCommand(agenttask.CommandEXTRACT).
-			SetArgs(entFileExtract.Source + "," + entFileExtract.Destination).
+			SetArgs(entFileExtract.Source + "💔" + entFileExtract.Destination).
 			SetNumber(taskCount).
 			SetState(agenttask.StateAWAITING).
 			SetAgentTaskToProvisionedHost(entPorovisionedHost).

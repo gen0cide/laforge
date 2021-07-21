@@ -52,7 +52,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.unsubscribe.push(routerSubscription);
 
     // TODO: remove the autologin helper here:
-    this.user.login('', '');
+
+    // this.user.login('', '');
+    // this.user.
   }
 
   ngOnDestroy() {

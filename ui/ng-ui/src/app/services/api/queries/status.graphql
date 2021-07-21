@@ -1,0 +1,41 @@
+query GetStatus($statusId: String!) {
+  status(statusUUID: $statusId) {
+    ...StatusFields
+  }
+}
+
+query GetAgentStatus($clientId: String!) {
+  agentStatus(clientId: $clientId) {
+    ...AgentStatusFields
+  }
+}
+
+query PullPlanStatuses($buildId: String!) {
+  build(buildUUID: $buildId) {
+    id
+    buildToPlan {
+      id
+      PlanToStatus {
+        ...StatusFields
+      }
+    }
+  }
+}
+
+query PullAgentStatuses($buildId: String!) {
+  build(buildUUID: $buildId) {
+    id
+    buildToTeam {
+      id
+      TeamToProvisionedNetwork {
+        id
+        ProvisionedNetworkToProvisionedHost {
+          id
+          ProvisionedHostToAgentStatus {
+            ...AgentStatusFields
+          }
+        }
+      }
+    }
+  }
+}

@@ -10,3 +10,6 @@ src/app/modules
 src/assets
 src/data
 src/environments
+
+# Ignore generated files
+src/generate

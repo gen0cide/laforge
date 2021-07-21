@@ -1,4 +1,4 @@
-import { ID, tagMap, User, varsMap } from './common.model';
+import { ID, tagMap, varsMap } from './common.model';
 import { Environment } from './environment.model';
 import { Finding } from './finding.model';
 

@@ -210,6 +210,68 @@ func SubnetIPContainsFold(v string) predicate.ProvisionedHost {
 	})
 }
 
+// AddonTypeEQ applies the EQ predicate on the "addon_type" field.
+func AddonTypeEQ(v AddonType) predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldAddonType), v))
+	})
+}
+
+// AddonTypeNEQ applies the NEQ predicate on the "addon_type" field.
+func AddonTypeNEQ(v AddonType) predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldAddonType), v))
+	})
+}
+
+// AddonTypeIn applies the In predicate on the "addon_type" field.
+func AddonTypeIn(vs ...AddonType) predicate.ProvisionedHost {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldAddonType), v...))
+	})
+}
+
+// AddonTypeNotIn applies the NotIn predicate on the "addon_type" field.
+func AddonTypeNotIn(vs ...AddonType) predicate.ProvisionedHost {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldAddonType), v...))
+	})
+}
+
+// AddonTypeIsNil applies the IsNil predicate on the "addon_type" field.
+func AddonTypeIsNil() predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldAddonType)))
+	})
+}
+
+// AddonTypeNotNil applies the NotNil predicate on the "addon_type" field.
+func AddonTypeNotNil() predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldAddonType)))
+	})
+}
+
 // HasProvisionedHostToStatus applies the HasEdge predicate on the "ProvisionedHostToStatus" edge.
 func HasProvisionedHostToStatus() predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {

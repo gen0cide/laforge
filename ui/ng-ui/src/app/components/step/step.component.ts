@@ -1,31 +1,74 @@
-import { Component, Input } from '@angular/core';
-import { ProvisionStatus } from 'src/app/models/common.model';
-import { ProvisioningStep, ProvisioningStepType } from 'src/app/models/step.model';
+import { Component, Input, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import {
+  LaForgeGetBuildTreeQuery,
+  LaForgeProvisioningStepType,
+  LaForgeSubscribeUpdatedStatusSubscription,
+  LaForgeProvisionStatus
+} from '@graphql';
+import { Subscription } from 'rxjs';
+import { ApiService } from 'src/app/services/api/api.service';
+import { EnvironmentService } from 'src/app/services/environment/environment.service';
 
 @Component({
   selector: 'app-step',
   templateUrl: './step.component.html',
   styleUrls: ['./step.component.scss']
 })
-export class StepComponent {
+export class StepComponent implements OnInit, OnDestroy {
+  private unsubscribe: Subscription[] = [];
   @Input() stepNumber: number;
-  @Input() provisionedStep: ProvisioningStep;
+  @Input()
+  // eslint-disable-next-line max-len
+  provisioningStep: LaForgeGetBuildTreeQuery['build']['buildToTeam'][0]['TeamToProvisionedNetwork'][0]['ProvisionedNetworkToProvisionedHost'][0]['ProvisionedHostToProvisioningStep'][0];
   @Input() showDetail: boolean;
   @Input() style: 'compact' | 'expanded';
+  planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
+  provisioningStepStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
+
+  constructor(private api: ApiService, private cdRef: ChangeDetectorRef, private envService: EnvironmentService) {}
+
+  ngOnInit() {
+    const sub = this.envService.statusUpdate.asObservable().subscribe(() => {
+      this.checkPlanStatus();
+      this.checkprovisioningStepStatus();
+    });
+    this.unsubscribe.push(sub);
+  }
+
+  ngOnDestroy() {
+    this.unsubscribe.forEach((sub) => sub.unsubscribe());
+  }
+
+  checkPlanStatus(): void {
+    if (!this.provisioningStep.ProvisioningStepToPlan) return;
+    const updatedStatus = this.envService.getStatus(this.provisioningStep.ProvisioningStepToPlan.PlanToStatus.id);
+    if (updatedStatus) {
+      this.planStatus = updatedStatus;
+      this.cdRef.markForCheck();
+    }
+  }
+
+  checkprovisioningStepStatus(): void {
+    const updatedStatus = this.envService.getStatus(this.provisioningStep.ProvisioningStepToStatus.id);
+    if (updatedStatus) {
+      this.provisioningStepStatus = updatedStatus;
+      this.cdRef.markForCheck();
+    }
+  }
 
   getStatusIcon(): string {
-    switch (this.provisionedStep.type) {
-      case ProvisioningStepType.Script:
+    switch (this.provisioningStep.type) {
+      case LaForgeProvisioningStepType.Script:
         return 'file-code';
-      case ProvisioningStepType.Command:
+      case LaForgeProvisioningStepType.Command:
         return 'terminal';
-      case ProvisioningStepType.DNSRecord:
+      case LaForgeProvisioningStepType.DnsRecord:
         return 'globe';
-      case ProvisioningStepType.FileDownload:
+      case LaForgeProvisioningStepType.FileDownload:
         return 'download';
-      case ProvisioningStepType.FileDelete:
+      case LaForgeProvisioningStepType.FileDelete:
         return 'trash';
-      case ProvisioningStepType.FileExtract:
+      case LaForgeProvisioningStepType.FileExtract:
         return 'file-archive';
       default:
         return 'minus-circle';
@@ -34,39 +77,46 @@ export class StepComponent {
 
   getStatusColor(): string {
     // const status = this.provisionedStep.ProvisioningStepToPlan?.PlanToStatus ?? this.provisionedStep.ProvisioningStepToStatus;
-    const status = this.provisionedStep.ProvisioningStepToStatus;
+    const status = this.planStatus ?? this.provisioningStepStatus;
+    if (!status?.state) {
+      return 'black';
+    }
     switch (status.state) {
-      case ProvisionStatus.COMPLETE:
+      case LaForgeProvisionStatus.Complete:
         return 'success';
-      case ProvisionStatus.TODELETE:
+      case LaForgeProvisionStatus.Todelete:
         return 'warning';
-      case ProvisionStatus.DELETEINPROGRESS:
+      case LaForgeProvisionStatus.Deleteinprogress:
         return 'warning';
-      case ProvisionStatus.DELETED:
+      case LaForgeProvisionStatus.Deleted:
         return 'dark';
-      case ProvisionStatus.FAILED:
+      case LaForgeProvisionStatus.Failed:
         return 'danger';
-      case ProvisionStatus.INPROGRESS:
+      case LaForgeProvisionStatus.Inprogress:
         return 'info';
+      case LaForgeProvisionStatus.Planning:
+        return 'primary';
       default:
         return 'dark';
     }
   }
 
   getText(): string {
-    switch (this.provisionedStep.type) {
-      case ProvisioningStepType.Script:
-        return `${this.provisionedStep.ProvisioningStepToScript.source} ${this.provisionedStep.ProvisioningStepToScript.args.join(' ')}`;
-      case ProvisioningStepType.Command:
-        return `${this.provisionedStep.ProvisioningStepToCommand.program} ${this.provisionedStep.ProvisioningStepToCommand.args.join(' ')}`;
-      case ProvisioningStepType.DNSRecord:
+    switch (this.provisioningStep.type) {
+      case LaForgeProvisioningStepType.Script:
+        return `${this.provisioningStep.ProvisioningStepToScript.source} ${this.provisioningStep.ProvisioningStepToScript.args.join(' ')}`;
+      case LaForgeProvisioningStepType.Command:
+        return `${this.provisioningStep.ProvisioningStepToCommand.program} ${this.provisioningStep.ProvisioningStepToCommand.args.join(
+          ' '
+        )}`;
+      case LaForgeProvisioningStepType.DnsRecord:
         return 'DNSRecord';
-      case ProvisioningStepType.FileDownload:
+      case LaForgeProvisioningStepType.FileDownload:
         // eslint-disable-next-line max-len
-        return `${this.provisionedStep.ProvisioningStepToFileDownload.source} -> ${this.provisionedStep.ProvisioningStepToFileDownload.destination}`;
-      case ProvisioningStepType.FileDelete:
+        return `${this.provisioningStep.ProvisioningStepToFileDownload.source} -> ${this.provisioningStep.ProvisioningStepToFileDownload.destination}`;
+      case LaForgeProvisioningStepType.FileDelete:
         return 'FileDelete';
-      case ProvisioningStepType.FileExtract:
+      case LaForgeProvisioningStepType.FileExtract:
         return 'FileExtract';
       default:
         return 'Step';

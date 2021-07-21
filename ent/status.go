@@ -13,6 +13,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
 	"github.com/google/uuid"
@@ -54,12 +55,15 @@ type Status struct {
 	HCLStatusToTeam *Team `json:"StatusToTeam,omitempty"`
 	// StatusToPlan holds the value of the StatusToPlan edge.
 	HCLStatusToPlan *Plan `json:"StatusToPlan,omitempty"`
+	// StatusToServerTask holds the value of the StatusToServerTask edge.
+	HCLStatusToServerTask *ServerTask `json:"StatusToServerTask,omitempty"`
 	//
 	build_build_to_status                             *uuid.UUID
 	plan_plan_to_status                               *uuid.UUID
 	provisioned_host_provisioned_host_to_status       *uuid.UUID
 	provisioned_network_provisioned_network_to_status *uuid.UUID
 	provisioning_step_provisioning_step_to_status     *uuid.UUID
+	server_task_server_task_to_status                 *uuid.UUID
 	team_team_to_status                               *uuid.UUID
 }
 
@@ -77,9 +81,11 @@ type StatusEdges struct {
 	StatusToTeam *Team `json:"StatusToTeam,omitempty"`
 	// StatusToPlan holds the value of the StatusToPlan edge.
 	StatusToPlan *Plan `json:"StatusToPlan,omitempty"`
+	// StatusToServerTask holds the value of the StatusToServerTask edge.
+	StatusToServerTask *ServerTask `json:"StatusToServerTask,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [7]bool
 }
 
 // StatusToBuildOrErr returns the StatusToBuild value or an error if the edge
@@ -166,6 +172,20 @@ func (e StatusEdges) StatusToPlanOrErr() (*Plan, error) {
 	return nil, &NotLoadedError{edge: "StatusToPlan"}
 }
 
+// StatusToServerTaskOrErr returns the StatusToServerTask value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e StatusEdges) StatusToServerTaskOrErr() (*ServerTask, error) {
+	if e.loadedTypes[6] {
+		if e.StatusToServerTask == nil {
+			// The edge StatusToServerTask was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: servertask.Label}
+		}
+		return e.StatusToServerTask, nil
+	}
+	return nil, &NotLoadedError{edge: "StatusToServerTask"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Status) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -189,7 +209,9 @@ func (*Status) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(uuid.UUID)
 		case status.ForeignKeys[4]: // provisioning_step_provisioning_step_to_status
 			values[i] = new(uuid.UUID)
-		case status.ForeignKeys[5]: // team_team_to_status
+		case status.ForeignKeys[5]: // server_task_server_task_to_status
+			values[i] = new(uuid.UUID)
+		case status.ForeignKeys[6]: // team_team_to_status
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Status", columns[i])
@@ -286,6 +308,12 @@ func (s *Status) assignValues(columns []string, values []interface{}) error {
 			}
 		case status.ForeignKeys[5]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field server_task_server_task_to_status", values[i])
+			} else if value != nil {
+				s.server_task_server_task_to_status = value
+			}
+		case status.ForeignKeys[6]:
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field team_team_to_status", values[i])
 			} else if value != nil {
 				s.team_team_to_status = value
@@ -323,6 +351,11 @@ func (s *Status) QueryStatusToTeam() *TeamQuery {
 // QueryStatusToPlan queries the "StatusToPlan" edge of the Status entity.
 func (s *Status) QueryStatusToPlan() *PlanQuery {
 	return (&StatusClient{config: s.config}).QueryStatusToPlan(s)
+}
+
+// QueryStatusToServerTask queries the "StatusToServerTask" edge of the Status entity.
+func (s *Status) QueryStatusToServerTask() *ServerTaskQuery {
+	return (&StatusClient{config: s.config}).QueryStatusToServerTask(s)
 }
 
 // Update returns a builder for updating this Status.
