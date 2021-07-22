@@ -2,7 +2,7 @@ import { ElementRef, Injectable } from '@angular/core';
 import { animate, AnimationBuilder, style } from '@angular/animations';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class SplashScreenService {
   // Private properties

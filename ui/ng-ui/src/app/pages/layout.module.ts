@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ViewComponentsModule } from '@components/view-components.module';
 import { NgbDropdownModule, NgbProgressbarModule } from '@ng-bootstrap/ng-bootstrap';
 import { InlineSVGModule } from 'ng-inline-svg';
@@ -45,7 +46,8 @@ import { PagesRoutingModule } from './pages-routing.module';
     NgbProgressbarModule,
     CoreModule,
     SubheaderModule,
-    ViewComponentsModule
+    ViewComponentsModule,
+    MatSlideToggleModule
   ]
 })
 export class LayoutModule {}

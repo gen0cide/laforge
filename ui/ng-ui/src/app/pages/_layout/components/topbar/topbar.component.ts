@@ -1,6 +1,7 @@
 import { Component, OnInit, AfterViewInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { LaForgeAuthUser } from '@graphql';
 import { TaskService } from '@services/task/task.service';
+import { ThemeService } from '@services/theme/theme.service';
 import { Observable, Subscription } from 'rxjs';
 
 import { KTUtil } from '../../../../../assets/js/components/util';
@@ -41,7 +42,8 @@ export class TopbarComponent implements OnInit, AfterViewInit, OnDestroy {
     private layout: LayoutService,
     private auth: AuthService,
     private taskService: TaskService,
-    private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef,
+    public themeService: ThemeService
   ) {
     this.user$ = this.auth.currentUserSubject.asObservable();
   }
@@ -116,5 +118,9 @@ export class TopbarComponent implements OnInit, AfterViewInit, OnDestroy {
 
   clearNotification(isOpen: boolean): void {
     if (isOpen) this.taskService.clearUserNotification();
+  }
+
+  toggleTheme() {
+    this.themeService.setTheme(this.themeService.getTheme() === 'dark' ? 'light' : 'dark');
   }
 }

@@ -10,6 +10,7 @@ export class ThemeService {
 
   constructor() {
     this.currentTheme = 'dark';
+    this.initTheme();
   }
 
   public getTheme(): Theme {
@@ -18,5 +19,13 @@ export class ThemeService {
 
   public setTheme(theme: Theme): void {
     this.currentTheme = theme;
+    this.initTheme();
+  }
+
+  private initTheme(): void {
+    document.body.classList.remove('theme-light');
+    document.body.classList.remove('theme-dark');
+
+    document.body.classList.add(`theme-${this.currentTheme}`);
   }
 }

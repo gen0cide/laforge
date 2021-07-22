@@ -1,5 +1,13 @@
 <!--begin::Topbar-->
 
+<ng-container>
+  <div class="theme-selector">
+    <i class="fad fa-sun text-dark theme-label"></i>
+    <mat-slide-toggle color="primary" (toggleChange)="toggleTheme()" [checked]="themeService.getTheme() === 'dark'"> </mat-slide-toggle>
+    <i class="fad fa-moon text-dark theme-label"></i>
+  </div>
+</ng-container>
+
 <ng-container *ngIf="extrasNotificationsDisplay">
   <ng-container>
     <!--begin::Notifications-->

@@ -48,6 +48,10 @@ const routes: Routes = [
         loadChildren: () => import('./account/account.module').then((m) => m.AccountModule)
       },
       {
+        path: 'splash',
+        loadChildren: () => import('../_metronic/partials/layout/splash-screen/splash-screen.module').then((m) => m.SplashScreenModule)
+      },
+      {
         path: 'user-management',
         loadChildren: () => import('../modules/user-management/user-management.module').then((m) => m.UserManagementModule)
       },
