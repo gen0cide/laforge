@@ -84,6 +84,51 @@ func (e AgentCommand) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type AgentTaskState string
+
+const (
+	AgentTaskStateAwaiting   AgentTaskState = "AWAITING"
+	AgentTaskStateInprogress AgentTaskState = "INPROGRESS"
+	AgentTaskStateFailed     AgentTaskState = "FAILED"
+	AgentTaskStateComplete   AgentTaskState = "COMPLETE"
+)
+
+var AllAgentTaskState = []AgentTaskState{
+	AgentTaskStateAwaiting,
+	AgentTaskStateInprogress,
+	AgentTaskStateFailed,
+	AgentTaskStateComplete,
+}
+
+func (e AgentTaskState) IsValid() bool {
+	switch e {
+	case AgentTaskStateAwaiting, AgentTaskStateInprogress, AgentTaskStateFailed, AgentTaskStateComplete:
+		return true
+	}
+	return false
+}
+
+func (e AgentTaskState) String() string {
+	return string(e)
+}
+
+func (e *AgentTaskState) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AgentTaskState(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AgentTaskState", str)
+	}
+	return nil
+}
+
+func (e AgentTaskState) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type FindingDifficulty string
 
 const (
@@ -479,11 +524,12 @@ func (e RoleLevel) MarshalGQL(w io.Writer) {
 type ServerTaskType string
 
 const (
-	ServerTaskTypeLoadenv     ServerTaskType = "LOADENV"
-	ServerTaskTypeCreatebuild ServerTaskType = "CREATEBUILD"
-	ServerTaskTypeRenderfiles ServerTaskType = "RENDERFILES"
-	ServerTaskTypeDeletebuild ServerTaskType = "DELETEBUILD"
-	ServerTaskTypeRebuild     ServerTaskType = "REBUILD"
+	ServerTaskTypeLoadenv      ServerTaskType = "LOADENV"
+	ServerTaskTypeCreatebuild  ServerTaskType = "CREATEBUILD"
+	ServerTaskTypeRenderfiles  ServerTaskType = "RENDERFILES"
+	ServerTaskTypeDeletebuild  ServerTaskType = "DELETEBUILD"
+	ServerTaskTypeRebuild      ServerTaskType = "REBUILD"
+	ServerTaskTypeExecutebuild ServerTaskType = "EXECUTEBUILD"
 )
 
 var AllServerTaskType = []ServerTaskType{
@@ -492,11 +538,12 @@ var AllServerTaskType = []ServerTaskType{
 	ServerTaskTypeRenderfiles,
 	ServerTaskTypeDeletebuild,
 	ServerTaskTypeRebuild,
+	ServerTaskTypeExecutebuild,
 }
 
 func (e ServerTaskType) IsValid() bool {
 	switch e {
-	case ServerTaskTypeLoadenv, ServerTaskTypeCreatebuild, ServerTaskTypeRenderfiles, ServerTaskTypeDeletebuild, ServerTaskTypeRebuild:
+	case ServerTaskTypeLoadenv, ServerTaskTypeCreatebuild, ServerTaskTypeRenderfiles, ServerTaskTypeDeletebuild, ServerTaskTypeRebuild, ServerTaskTypeExecutebuild:
 		return true
 	}
 	return false

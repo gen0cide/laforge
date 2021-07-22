@@ -27,6 +27,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/repository"
 	"github.com/gen0cide/laforge/ent/schema"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/servertask"
@@ -242,6 +243,20 @@ func init() {
 	provisioningstepDescID := provisioningstepFields[0].Descriptor()
 	// provisioningstep.DefaultID holds the default value on creation for the id field.
 	provisioningstep.DefaultID = provisioningstepDescID.Default.(func() uuid.UUID)
+	repositoryFields := schema.Repository{}.Fields()
+	_ = repositoryFields
+	// repositoryDescBranchName is the schema descriptor for branch_name field.
+	repositoryDescBranchName := repositoryFields[2].Descriptor()
+	// repository.DefaultBranchName holds the default value on creation for the branch_name field.
+	repository.DefaultBranchName = repositoryDescBranchName.Default.(string)
+	// repositoryDescCommitInfo is the schema descriptor for commit_info field.
+	repositoryDescCommitInfo := repositoryFields[5].Descriptor()
+	// repository.DefaultCommitInfo holds the default value on creation for the commit_info field.
+	repository.DefaultCommitInfo = repositoryDescCommitInfo.Default.(string)
+	// repositoryDescID is the schema descriptor for id field.
+	repositoryDescID := repositoryFields[0].Descriptor()
+	// repository.DefaultID holds the default value on creation for the id field.
+	repository.DefaultID = repositoryDescID.Default.(func() uuid.UUID)
 	scriptFields := schema.Script{}.Fields()
 	_ = scriptFields
 	// scriptDescID is the schema descriptor for id field.

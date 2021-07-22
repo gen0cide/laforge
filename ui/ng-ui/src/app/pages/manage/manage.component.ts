@@ -1,15 +1,19 @@
 import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
-import { LaForgeGetEnvironmentInfoQuery, LaForgeGetBuildTreeQuery } from '@graphql';
+import { MatDialog } from '@angular/material/dialog';
+import {
+  LaForgeGetEnvironmentInfoQuery,
+  LaForgeGetBuildTreeQuery,
+  LaForgeSubscribeUpdatedStatusSubscription,
+  LaForgeProvisionStatus
+} from '@graphql';
 import { RebuildService } from '@services/rebuild/rebuild.service';
-import { QueryRef } from 'apollo-angular';
-import { EmptyObject } from 'apollo-angular/types';
 import { GraphQLError } from 'graphql';
 import { Observable, Subscription } from 'rxjs';
-import { AgentStatusQueryResult, EnvironmentInfo } from 'src/app/models/api.model';
-import { ApiService } from 'src/app/services/api/api.service';
 import { EnvironmentService } from 'src/app/services/environment/environment.service';
 
 import { SubheaderService } from '../../_metronic/partials/layout/subheader/_services/subheader.service';
+
+import { DeleteBuildModalComponent } from '@components/delete-build-modal/delete-build-modal.component';
 
 @Component({
   selector: 'app-manage',
@@ -18,27 +22,18 @@ import { SubheaderService } from '../../_metronic/partials/layout/subheader/_ser
 })
 export class ManageComponent implements OnInit, OnDestroy {
   private unsubscribe: Subscription[] = [];
-  // corpNetwork: ProvisionedNetwork = corp_network_provisioned;
-  envs: EnvironmentInfo[];
   environment: Observable<LaForgeGetEnvironmentInfoQuery['environment']>;
   build: Observable<LaForgeGetBuildTreeQuery['build']>;
   envIsLoading: Observable<boolean>;
-  loaded = false;
   environmentDetailsCols: string[] = ['TeamCount', 'AdminCIDRs', 'ExposedVDIPorts'];
-  agentPollingInterval: NodeJS.Timeout;
-  pollingInterval = 60;
-  loading = false;
-  intervalOptions = [10, 30, 60, 120];
   selectionMode = false;
-  envLoaded = false;
-  agentStatusQuery: QueryRef<AgentStatusQueryResult, EmptyObject>;
-  agentStatusSubscription: Subscription;
-  apolloError: any = {};
   isRebuildLoading = false;
   rebuildErrors: (GraphQLError | Error)[] = [];
+  confirmDeleteBuild = false;
+  buildStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
 
   constructor(
-    private api: ApiService,
+    private dialog: MatDialog,
     private cdRef: ChangeDetectorRef,
     private subheader: SubheaderService,
     private envService: EnvironmentService,
@@ -47,27 +42,33 @@ export class ManageComponent implements OnInit, OnDestroy {
     this.subheader.setTitle('Environment');
     this.subheader.setDescription('Manage your currently running environment');
 
-    // this.environment = this.envService.getCurrentEnv().asObservable();
-    // this.build = this.envService.getCurrentBuild().asObservable();
-    // this.envIsLoading = this.envService.envIsLoading.asObservable();
     this.environment = this.envService.getEnvironmentInfo().asObservable();
     this.build = this.envService.getBuildTree().asObservable();
   }
 
   ngOnInit(): void {
-    // pull the statuses on load and then poll every 10 secs
-    // interval(10000).subscribe(() => {
-    //   this.envService.updateAgentStatuses();
-    // });
-    const subr = this.envService.getBuildTree().subscribe(() => {
+    const sub1 = this.envService.getBuildTree().subscribe(() => {
       this.envService.initPlanStatuses();
       this.envService.initAgentStatuses();
     });
-    this.unsubscribe.push(subr);
+    this.unsubscribe.push(sub1);
+    const sub2 = this.envService.statusUpdate.asObservable().subscribe(() => {
+      this.checkBuildStatus();
+      this.cdRef.detectChanges();
+    });
+    this.unsubscribe.push(sub2);
   }
 
   ngOnDestroy(): void {
     this.unsubscribe.forEach((sub) => sub.unsubscribe());
+  }
+
+  checkBuildStatus(): void {
+    if (!this.envService.getBuildTree().getValue()) return;
+    const updatedStatus = this.envService.getStatus(this.envService.getBuildTree().getValue().buildToStatus.id);
+    if (updatedStatus) {
+      this.buildStatus = { ...updatedStatus };
+    }
   }
 
   envIsSelected(): boolean {
@@ -98,5 +99,24 @@ export class ManageComponent implements OnInit, OnDestroy {
 
   toggleSelectionMode(): void {
     //   this.selectionMode = !this.selectionMode;
+  }
+
+  toggleDeleteBuildModal(): void {
+    this.dialog.open(DeleteBuildModalComponent, {
+      width: '50%',
+      data: {
+        buildName: `${this.envService.getEnvironmentInfo().getValue().name} v${this.envService.getBuildTree().getValue().revision}`,
+        buildId: this.envService.getBuildTree().getValue().id
+      }
+    });
+  }
+
+  canDeleteBuild(): boolean {
+    return (
+      this.buildStatus &&
+      (this.buildStatus.state === LaForgeProvisionStatus.Complete ||
+        this.buildStatus.state === LaForgeProvisionStatus.Failed ||
+        this.buildStatus.state === LaForgeProvisionStatus.Tainted)
+    );
   }
 }

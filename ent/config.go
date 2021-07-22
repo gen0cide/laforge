@@ -48,6 +48,7 @@ type hooks struct {
 	ProvisionedHost    []ent.Hook
 	ProvisionedNetwork []ent.Hook
 	ProvisioningStep   []ent.Hook
+	Repository         []ent.Hook
 	Script             []ent.Hook
 	ServerTask         []ent.Hook
 	Status             []ent.Hook

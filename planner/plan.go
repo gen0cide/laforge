@@ -89,6 +89,7 @@ func CreateBuild(ctx context.Context, client *ent.Client, rdb *redis.Client, cur
 	if err != nil {
 		return nil, fmt.Errorf("error assigning environment to create build server task: %v", err)
 	}
+	rdb.Publish(ctx, "updatedServerTask", serverTask.ID.String())
 	if RenderFiles {
 		RenderFilesTask, err = client.ServerTask.UpdateOne(RenderFilesTask).SetServerTaskToEnvironment(entEnvironment).Save(ctx)
 		if err != nil {
@@ -96,7 +97,6 @@ func CreateBuild(ctx context.Context, client *ent.Client, rdb *redis.Client, cur
 		}
 		rdb.Publish(ctx, "updatedServerTask", RenderFilesTask.ID.String())
 	}
-	rdb.Publish(ctx, "updatedServerTask", serverTask.ID.String())
 
 	var wg sync.WaitGroup
 	entStatus, err := createPlanningStatus(ctx, client, status.StatusForBuild)
@@ -463,7 +463,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		isWindowsHost = true
 	}
 
-	binaryPath := path.Join(currentBuild.Edges.BuildToEnvironment.Name, fmt.Sprint(currentBuild.Revision), fmt.Sprint(currentTeam.TeamNumber), pNetwork.Name, entHost.Hostname)
+	binaryPath := path.Join("builds", currentBuild.Edges.BuildToEnvironment.Name, fmt.Sprint(currentBuild.Revision), fmt.Sprint(currentTeam.TeamNumber), pNetwork.Name, entHost.Hostname)
 	os.MkdirAll(binaryPath, 0755)
 	binaryName := path.Join(binaryPath, "laforgeAgent")
 	if isWindowsHost {
@@ -827,7 +827,7 @@ func renderScript(ctx context.Context, client *ent.Client, pStep *ent.Provisioni
 		logrus.Errorf("Failed to Parse template for script %v. Err: %v", currentScript.Name, err)
 		return "", err
 	}
-	fileRelativePath := path.Join(currentEnvironment.Name, fmt.Sprint(currentBuild.Revision), fmt.Sprint(currentTeam.TeamNumber), currentProvisionedNetwork.Name, currentHost.Hostname)
+	fileRelativePath := path.Join("builds", currentEnvironment.Name, fmt.Sprint(currentBuild.Revision), fmt.Sprint(currentTeam.TeamNumber), currentProvisionedNetwork.Name, currentHost.Hostname)
 	os.MkdirAll(fileRelativePath, 0755)
 	fileName := filepath.Base(currentScript.Source)
 	fileName = path.Join(fileRelativePath, fileName)
@@ -860,7 +860,7 @@ func renderFileDownload(ctx context.Context, pStep *ent.ProvisioningStep) (strin
 	currentBuild := currentTeam.QueryTeamToBuild().OnlyX(ctx)
 	currentEnvironment := currentBuild.QueryBuildToEnvironment().OnlyX(ctx)
 
-	fileRelativePath := path.Join(currentEnvironment.Name, fmt.Sprint(currentBuild.Revision), fmt.Sprint(currentTeam.TeamNumber), currentProvisionedNetwork.Name, currentHost.Hostname)
+	fileRelativePath := path.Join("builds", currentEnvironment.Name, fmt.Sprint(currentBuild.Revision), fmt.Sprint(currentTeam.TeamNumber), currentProvisionedNetwork.Name, currentHost.Hostname)
 	os.MkdirAll(fileRelativePath, 0755)
 	fileName := filepath.Base(currentFileDownload.Source)
 	fileName = path.Join(fileRelativePath, fileName)

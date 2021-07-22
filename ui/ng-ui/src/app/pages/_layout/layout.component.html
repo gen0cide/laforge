@@ -8,7 +8,7 @@
     [ngClass]="headerMobileClasses"
   ></app-header-mobile>
   <!-- end:: Header Mobile -->
-  <div class="d-flex flex-column flex-root h-100">
+  <div class="d-flex flex-column flex-root h-100" [ngClass]="'theme-' + themeService.getTheme()">
     <!--begin::Page-->
     <div class="d-flex flex-row flex-column-fluid page">
       <!-- begin:: Aside Left -->

@@ -22,6 +22,7 @@ export class NetworkComponent implements OnInit, OnDestroy {
   @Input() parentSelected: boolean;
   isSelectedState = false;
   planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
+  expandOverride = false;
 
   constructor(
     public dialog: MatDialog,
@@ -62,14 +63,27 @@ export class NetworkComponent implements OnInit, OnDestroy {
     });
   }
 
-  allAgentsResponding(): boolean {
+  allChildrenResponding(): boolean {
     let numWithAgentData = 0;
-    let totalAgents = 0;
+    let numWithCompletedSteps = 0;
+    let totalHosts = 0;
     for (const host of this.provisionedNetwork.ProvisionedNetworkToProvisionedHost) {
-      totalAgents++;
+      totalHosts++;
       if (host.ProvisionedHostToAgentStatus?.clientId) numWithAgentData++;
+      let totalSteps = 0;
+      let totalCompletedSteps = 0;
+      for (const step of host.ProvisionedHostToProvisioningStep) {
+        if (step.step_number === 0) continue;
+        totalSteps++;
+        if (
+          step.ProvisioningStepToStatus.id &&
+          this.envService.getStatus(step.ProvisioningStepToPlan.PlanToStatus.id)?.state === LaForgeProvisionStatus.Complete
+        )
+          totalCompletedSteps++;
+      }
+      if (totalSteps === totalCompletedSteps) numWithCompletedSteps++;
     }
-    return numWithAgentData === totalAgents;
+    return numWithAgentData === totalHosts && numWithCompletedSteps === totalHosts;
   }
 
   getStatusIcon(): string {
@@ -93,7 +107,7 @@ export class NetworkComponent implements OnInit, OnDestroy {
     if (!this.planStatus) return 'dark';
     switch (this.planStatus.state) {
       case LaForgeProvisionStatus.Complete:
-        if (this.allAgentsResponding()) {
+        if (this.allChildrenResponding()) {
           return 'success';
         } else {
           return 'warning';
@@ -134,6 +148,21 @@ export class NetworkComponent implements OnInit, OnDestroy {
   }
 
   shouldCollapse(): boolean {
-    return this.planStatus && this.planStatus.state === LaForgeProvisionStatus.Complete && this.allAgentsResponding();
+    return (
+      this.planStatus &&
+      (this.planStatus.state === LaForgeProvisionStatus.Deleted ||
+        (this.planStatus.state === LaForgeProvisionStatus.Complete && this.allChildrenResponding()))
+    );
+  }
+
+  canOverrideExpand(): boolean {
+    return (
+      this.planStatus &&
+      (this.planStatus.state === LaForgeProvisionStatus.Complete || this.planStatus.state === LaForgeProvisionStatus.Deleted)
+    );
+  }
+
+  toggleCollapse(): void {
+    this.expandOverride = !this.expandOverride;
   }
 }

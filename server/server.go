@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -22,6 +23,7 @@ import (
 	pb "github.com/gen0cide/laforge/grpc/proto"
 	"github.com/gen0cide/laforge/grpc/server"
 	"github.com/gen0cide/laforge/grpc/server/static"
+	"github.com/gen0cide/laforge/server/utils"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
@@ -130,6 +132,16 @@ func createDefaultAdminUser(client *ent.Client, ctx context.Context) error {
 			authuser.ProviderEQ(authuser.ProviderLOCAL),
 		)).Exist(ctx)
 	if !entAuthUserExsist {
+		sshFolderPath := fmt.Sprintf(utils.UserKeyPath, strings.ToLower(authuser.ProviderLOCAL.String()), adminUsername)
+		err := os.MkdirAll(sshFolderPath, os.ModeAppend|os.ModePerm)
+		if err != nil {
+			return err
+		}
+		sshPrivateFile := fmt.Sprintf("%s/id_rsa", sshFolderPath)
+		err = utils.MakeSSHKeyPair(sshPrivateFile)
+		if err != nil {
+			return err
+		}
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(adminPassword), 8)
 		if err != nil {
 			return err
@@ -140,6 +152,7 @@ func createDefaultAdminUser(client *ent.Client, ctx context.Context) error {
 			SetPassword(password).
 			SetRole(authuser.RoleADMIN).
 			SetProvider(authuser.ProviderLOCAL).
+			SetPrivateKeyPath(sshPrivateFile).
 			Save(ctx)
 	}
 	return nil

@@ -33,6 +33,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/repository"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
@@ -78,6 +79,7 @@ const (
 	TypeProvisionedHost    = "ProvisionedHost"
 	TypeProvisionedNetwork = "ProvisionedNetwork"
 	TypeProvisioningStep   = "ProvisioningStep"
+	TypeRepository         = "Repository"
 	TypeScript             = "Script"
 	TypeServerTask         = "ServerTask"
 	TypeStatus             = "Status"
@@ -7718,6 +7720,9 @@ type EnvironmentMutation struct {
 	_EnvironmentToBuild                  map[uuid.UUID]struct{}
 	removed_EnvironmentToBuild           map[uuid.UUID]struct{}
 	cleared_EnvironmentToBuild           bool
+	_EnvironmentToRepository             map[uuid.UUID]struct{}
+	removed_EnvironmentToRepository      map[uuid.UUID]struct{}
+	cleared_EnvironmentToRepository      bool
 	done                                 bool
 	oldValue                             func(context.Context) (*Environment, error)
 	predicates                           []predicate.Environment
@@ -9092,6 +9097,59 @@ func (m *EnvironmentMutation) ResetEnvironmentToBuild() {
 	m.removed_EnvironmentToBuild = nil
 }
 
+// AddEnvironmentToRepositoryIDs adds the "EnvironmentToRepository" edge to the Repository entity by ids.
+func (m *EnvironmentMutation) AddEnvironmentToRepositoryIDs(ids ...uuid.UUID) {
+	if m._EnvironmentToRepository == nil {
+		m._EnvironmentToRepository = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m._EnvironmentToRepository[ids[i]] = struct{}{}
+	}
+}
+
+// ClearEnvironmentToRepository clears the "EnvironmentToRepository" edge to the Repository entity.
+func (m *EnvironmentMutation) ClearEnvironmentToRepository() {
+	m.cleared_EnvironmentToRepository = true
+}
+
+// EnvironmentToRepositoryCleared reports if the "EnvironmentToRepository" edge to the Repository entity was cleared.
+func (m *EnvironmentMutation) EnvironmentToRepositoryCleared() bool {
+	return m.cleared_EnvironmentToRepository
+}
+
+// RemoveEnvironmentToRepositoryIDs removes the "EnvironmentToRepository" edge to the Repository entity by IDs.
+func (m *EnvironmentMutation) RemoveEnvironmentToRepositoryIDs(ids ...uuid.UUID) {
+	if m.removed_EnvironmentToRepository == nil {
+		m.removed_EnvironmentToRepository = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.removed_EnvironmentToRepository[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedEnvironmentToRepository returns the removed IDs of the "EnvironmentToRepository" edge to the Repository entity.
+func (m *EnvironmentMutation) RemovedEnvironmentToRepositoryIDs() (ids []uuid.UUID) {
+	for id := range m.removed_EnvironmentToRepository {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// EnvironmentToRepositoryIDs returns the "EnvironmentToRepository" edge IDs in the mutation.
+func (m *EnvironmentMutation) EnvironmentToRepositoryIDs() (ids []uuid.UUID) {
+	for id := range m._EnvironmentToRepository {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetEnvironmentToRepository resets all changes to the "EnvironmentToRepository" edge.
+func (m *EnvironmentMutation) ResetEnvironmentToRepository() {
+	m._EnvironmentToRepository = nil
+	m.cleared_EnvironmentToRepository = false
+	m.removed_EnvironmentToRepository = nil
+}
+
 // Op returns the operation name.
 func (m *EnvironmentMutation) Op() Op {
 	return m.op
@@ -9402,7 +9460,7 @@ func (m *EnvironmentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *EnvironmentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 17)
 	if m._EnvironmentToUser != nil {
 		edges = append(edges, environment.EdgeEnvironmentToUser)
 	}
@@ -9450,6 +9508,9 @@ func (m *EnvironmentMutation) AddedEdges() []string {
 	}
 	if m._EnvironmentToBuild != nil {
 		edges = append(edges, environment.EdgeEnvironmentToBuild)
+	}
+	if m._EnvironmentToRepository != nil {
+		edges = append(edges, environment.EdgeEnvironmentToRepository)
 	}
 	return edges
 }
@@ -9554,13 +9615,19 @@ func (m *EnvironmentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case environment.EdgeEnvironmentToRepository:
+		ids := make([]ent.Value, 0, len(m._EnvironmentToRepository))
+		for id := range m._EnvironmentToRepository {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *EnvironmentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 17)
 	if m.removed_EnvironmentToUser != nil {
 		edges = append(edges, environment.EdgeEnvironmentToUser)
 	}
@@ -9608,6 +9675,9 @@ func (m *EnvironmentMutation) RemovedEdges() []string {
 	}
 	if m.removed_EnvironmentToBuild != nil {
 		edges = append(edges, environment.EdgeEnvironmentToBuild)
+	}
+	if m.removed_EnvironmentToRepository != nil {
+		edges = append(edges, environment.EdgeEnvironmentToRepository)
 	}
 	return edges
 }
@@ -9712,13 +9782,19 @@ func (m *EnvironmentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case environment.EdgeEnvironmentToRepository:
+		ids := make([]ent.Value, 0, len(m.removed_EnvironmentToRepository))
+		for id := range m.removed_EnvironmentToRepository {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *EnvironmentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 17)
 	if m.cleared_EnvironmentToUser {
 		edges = append(edges, environment.EdgeEnvironmentToUser)
 	}
@@ -9767,6 +9843,9 @@ func (m *EnvironmentMutation) ClearedEdges() []string {
 	if m.cleared_EnvironmentToBuild {
 		edges = append(edges, environment.EdgeEnvironmentToBuild)
 	}
+	if m.cleared_EnvironmentToRepository {
+		edges = append(edges, environment.EdgeEnvironmentToRepository)
+	}
 	return edges
 }
 
@@ -9806,6 +9885,8 @@ func (m *EnvironmentMutation) EdgeCleared(name string) bool {
 		return m.cleared_EnvironmentToHostDependency
 	case environment.EdgeEnvironmentToBuild:
 		return m.cleared_EnvironmentToBuild
+	case environment.EdgeEnvironmentToRepository:
+		return m.cleared_EnvironmentToRepository
 	}
 	return false
 }
@@ -9869,6 +9950,9 @@ func (m *EnvironmentMutation) ResetEdge(name string) error {
 		return nil
 	case environment.EdgeEnvironmentToBuild:
 		m.ResetEnvironmentToBuild()
+		return nil
+	case environment.EdgeEnvironmentToRepository:
+		m.ResetEnvironmentToRepository()
 		return nil
 	}
 	return fmt.Errorf("unknown Environment edge %s", name)
@@ -21172,6 +21256,607 @@ func (m *ProvisioningStepMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown ProvisioningStep edge %s", name)
+}
+
+// RepositoryMutation represents an operation that mutates the Repository nodes in the graph.
+type RepositoryMutation struct {
+	config
+	op                              Op
+	typ                             string
+	id                              *uuid.UUID
+	repo_url                        *string
+	branch_name                     *string
+	enviroment_filepath             *string
+	folder_path                     *string
+	commit_info                     *string
+	clearedFields                   map[string]struct{}
+	_RepositoryToEnvironment        map[uuid.UUID]struct{}
+	removed_RepositoryToEnvironment map[uuid.UUID]struct{}
+	cleared_RepositoryToEnvironment bool
+	done                            bool
+	oldValue                        func(context.Context) (*Repository, error)
+	predicates                      []predicate.Repository
+}
+
+var _ ent.Mutation = (*RepositoryMutation)(nil)
+
+// repositoryOption allows management of the mutation configuration using functional options.
+type repositoryOption func(*RepositoryMutation)
+
+// newRepositoryMutation creates new mutation for the Repository entity.
+func newRepositoryMutation(c config, op Op, opts ...repositoryOption) *RepositoryMutation {
+	m := &RepositoryMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeRepository,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withRepositoryID sets the ID field of the mutation.
+func withRepositoryID(id uuid.UUID) repositoryOption {
+	return func(m *RepositoryMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Repository
+		)
+		m.oldValue = func(ctx context.Context) (*Repository, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Repository.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withRepository sets the old Repository of the mutation.
+func withRepository(node *Repository) repositoryOption {
+	return func(m *RepositoryMutation) {
+		m.oldValue = func(context.Context) (*Repository, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m RepositoryMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m RepositoryMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Repository entities.
+func (m *RepositoryMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID
+// is only available if it was provided to the builder.
+func (m *RepositoryMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetRepoURL sets the "repo_url" field.
+func (m *RepositoryMutation) SetRepoURL(s string) {
+	m.repo_url = &s
+}
+
+// RepoURL returns the value of the "repo_url" field in the mutation.
+func (m *RepositoryMutation) RepoURL() (r string, exists bool) {
+	v := m.repo_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRepoURL returns the old "repo_url" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldRepoURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldRepoURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldRepoURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRepoURL: %w", err)
+	}
+	return oldValue.RepoURL, nil
+}
+
+// ResetRepoURL resets all changes to the "repo_url" field.
+func (m *RepositoryMutation) ResetRepoURL() {
+	m.repo_url = nil
+}
+
+// SetBranchName sets the "branch_name" field.
+func (m *RepositoryMutation) SetBranchName(s string) {
+	m.branch_name = &s
+}
+
+// BranchName returns the value of the "branch_name" field in the mutation.
+func (m *RepositoryMutation) BranchName() (r string, exists bool) {
+	v := m.branch_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBranchName returns the old "branch_name" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldBranchName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldBranchName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldBranchName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBranchName: %w", err)
+	}
+	return oldValue.BranchName, nil
+}
+
+// ResetBranchName resets all changes to the "branch_name" field.
+func (m *RepositoryMutation) ResetBranchName() {
+	m.branch_name = nil
+}
+
+// SetEnviromentFilepath sets the "enviroment_filepath" field.
+func (m *RepositoryMutation) SetEnviromentFilepath(s string) {
+	m.enviroment_filepath = &s
+}
+
+// EnviromentFilepath returns the value of the "enviroment_filepath" field in the mutation.
+func (m *RepositoryMutation) EnviromentFilepath() (r string, exists bool) {
+	v := m.enviroment_filepath
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnviromentFilepath returns the old "enviroment_filepath" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldEnviromentFilepath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldEnviromentFilepath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldEnviromentFilepath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnviromentFilepath: %w", err)
+	}
+	return oldValue.EnviromentFilepath, nil
+}
+
+// ResetEnviromentFilepath resets all changes to the "enviroment_filepath" field.
+func (m *RepositoryMutation) ResetEnviromentFilepath() {
+	m.enviroment_filepath = nil
+}
+
+// SetFolderPath sets the "folder_path" field.
+func (m *RepositoryMutation) SetFolderPath(s string) {
+	m.folder_path = &s
+}
+
+// FolderPath returns the value of the "folder_path" field in the mutation.
+func (m *RepositoryMutation) FolderPath() (r string, exists bool) {
+	v := m.folder_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFolderPath returns the old "folder_path" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldFolderPath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldFolderPath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldFolderPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFolderPath: %w", err)
+	}
+	return oldValue.FolderPath, nil
+}
+
+// ResetFolderPath resets all changes to the "folder_path" field.
+func (m *RepositoryMutation) ResetFolderPath() {
+	m.folder_path = nil
+}
+
+// SetCommitInfo sets the "commit_info" field.
+func (m *RepositoryMutation) SetCommitInfo(s string) {
+	m.commit_info = &s
+}
+
+// CommitInfo returns the value of the "commit_info" field in the mutation.
+func (m *RepositoryMutation) CommitInfo() (r string, exists bool) {
+	v := m.commit_info
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCommitInfo returns the old "commit_info" field's value of the Repository entity.
+// If the Repository object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RepositoryMutation) OldCommitInfo(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCommitInfo is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCommitInfo requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCommitInfo: %w", err)
+	}
+	return oldValue.CommitInfo, nil
+}
+
+// ResetCommitInfo resets all changes to the "commit_info" field.
+func (m *RepositoryMutation) ResetCommitInfo() {
+	m.commit_info = nil
+}
+
+// AddRepositoryToEnvironmentIDs adds the "RepositoryToEnvironment" edge to the Environment entity by ids.
+func (m *RepositoryMutation) AddRepositoryToEnvironmentIDs(ids ...uuid.UUID) {
+	if m._RepositoryToEnvironment == nil {
+		m._RepositoryToEnvironment = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m._RepositoryToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRepositoryToEnvironment clears the "RepositoryToEnvironment" edge to the Environment entity.
+func (m *RepositoryMutation) ClearRepositoryToEnvironment() {
+	m.cleared_RepositoryToEnvironment = true
+}
+
+// RepositoryToEnvironmentCleared reports if the "RepositoryToEnvironment" edge to the Environment entity was cleared.
+func (m *RepositoryMutation) RepositoryToEnvironmentCleared() bool {
+	return m.cleared_RepositoryToEnvironment
+}
+
+// RemoveRepositoryToEnvironmentIDs removes the "RepositoryToEnvironment" edge to the Environment entity by IDs.
+func (m *RepositoryMutation) RemoveRepositoryToEnvironmentIDs(ids ...uuid.UUID) {
+	if m.removed_RepositoryToEnvironment == nil {
+		m.removed_RepositoryToEnvironment = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.removed_RepositoryToEnvironment[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRepositoryToEnvironment returns the removed IDs of the "RepositoryToEnvironment" edge to the Environment entity.
+func (m *RepositoryMutation) RemovedRepositoryToEnvironmentIDs() (ids []uuid.UUID) {
+	for id := range m.removed_RepositoryToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RepositoryToEnvironmentIDs returns the "RepositoryToEnvironment" edge IDs in the mutation.
+func (m *RepositoryMutation) RepositoryToEnvironmentIDs() (ids []uuid.UUID) {
+	for id := range m._RepositoryToEnvironment {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRepositoryToEnvironment resets all changes to the "RepositoryToEnvironment" edge.
+func (m *RepositoryMutation) ResetRepositoryToEnvironment() {
+	m._RepositoryToEnvironment = nil
+	m.cleared_RepositoryToEnvironment = false
+	m.removed_RepositoryToEnvironment = nil
+}
+
+// Op returns the operation name.
+func (m *RepositoryMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Repository).
+func (m *RepositoryMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *RepositoryMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.repo_url != nil {
+		fields = append(fields, repository.FieldRepoURL)
+	}
+	if m.branch_name != nil {
+		fields = append(fields, repository.FieldBranchName)
+	}
+	if m.enviroment_filepath != nil {
+		fields = append(fields, repository.FieldEnviromentFilepath)
+	}
+	if m.folder_path != nil {
+		fields = append(fields, repository.FieldFolderPath)
+	}
+	if m.commit_info != nil {
+		fields = append(fields, repository.FieldCommitInfo)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *RepositoryMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case repository.FieldRepoURL:
+		return m.RepoURL()
+	case repository.FieldBranchName:
+		return m.BranchName()
+	case repository.FieldEnviromentFilepath:
+		return m.EnviromentFilepath()
+	case repository.FieldFolderPath:
+		return m.FolderPath()
+	case repository.FieldCommitInfo:
+		return m.CommitInfo()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *RepositoryMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case repository.FieldRepoURL:
+		return m.OldRepoURL(ctx)
+	case repository.FieldBranchName:
+		return m.OldBranchName(ctx)
+	case repository.FieldEnviromentFilepath:
+		return m.OldEnviromentFilepath(ctx)
+	case repository.FieldFolderPath:
+		return m.OldFolderPath(ctx)
+	case repository.FieldCommitInfo:
+		return m.OldCommitInfo(ctx)
+	}
+	return nil, fmt.Errorf("unknown Repository field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RepositoryMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case repository.FieldRepoURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRepoURL(v)
+		return nil
+	case repository.FieldBranchName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBranchName(v)
+		return nil
+	case repository.FieldEnviromentFilepath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnviromentFilepath(v)
+		return nil
+	case repository.FieldFolderPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFolderPath(v)
+		return nil
+	case repository.FieldCommitInfo:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCommitInfo(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Repository field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *RepositoryMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *RepositoryMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RepositoryMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Repository numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *RepositoryMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *RepositoryMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *RepositoryMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Repository nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *RepositoryMutation) ResetField(name string) error {
+	switch name {
+	case repository.FieldRepoURL:
+		m.ResetRepoURL()
+		return nil
+	case repository.FieldBranchName:
+		m.ResetBranchName()
+		return nil
+	case repository.FieldEnviromentFilepath:
+		m.ResetEnviromentFilepath()
+		return nil
+	case repository.FieldFolderPath:
+		m.ResetFolderPath()
+		return nil
+	case repository.FieldCommitInfo:
+		m.ResetCommitInfo()
+		return nil
+	}
+	return fmt.Errorf("unknown Repository field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *RepositoryMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m._RepositoryToEnvironment != nil {
+		edges = append(edges, repository.EdgeRepositoryToEnvironment)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *RepositoryMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case repository.EdgeRepositoryToEnvironment:
+		ids := make([]ent.Value, 0, len(m._RepositoryToEnvironment))
+		for id := range m._RepositoryToEnvironment {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *RepositoryMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removed_RepositoryToEnvironment != nil {
+		edges = append(edges, repository.EdgeRepositoryToEnvironment)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *RepositoryMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case repository.EdgeRepositoryToEnvironment:
+		ids := make([]ent.Value, 0, len(m.removed_RepositoryToEnvironment))
+		for id := range m.removed_RepositoryToEnvironment {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *RepositoryMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleared_RepositoryToEnvironment {
+		edges = append(edges, repository.EdgeRepositoryToEnvironment)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *RepositoryMutation) EdgeCleared(name string) bool {
+	switch name {
+	case repository.EdgeRepositoryToEnvironment:
+		return m.cleared_RepositoryToEnvironment
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *RepositoryMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Repository unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *RepositoryMutation) ResetEdge(name string) error {
+	switch name {
+	case repository.EdgeRepositoryToEnvironment:
+		m.ResetRepositoryToEnvironment()
+		return nil
+	}
+	return fmt.Errorf("unknown Repository edge %s", name)
 }
 
 // ScriptMutation represents an operation that mutates the Script nodes in the graph.

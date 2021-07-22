@@ -10,11 +10,11 @@
     ></mat-checkbox>
   </div>
   <div class="network-container">
-    <div class="network-info" (click)="style !== 'collapsed' && viewDetails()">
+    <div class="network-info">
       <div class="network-status-icon" [ngClass]="'bg-' + getStatusColor()">
         <i class="fal" [ngClass]="'fa-' + getStatusIcon()"></i>
       </div>
-      <div class="network-header">
+      <div class="network-header" (click)="style !== 'collapsed' && viewDetails()">
         <span class="network-title"
           ><b>{{ provisionedNetwork.name }}</b></span
         >
@@ -24,8 +24,11 @@
           ></span
         >
       </div>
+      <div class="toggle-collapse" *ngIf="shouldCollapse()">
+        <i class="fas cursor-pointer" [ngClass]="'fa-' + (expandOverride ? 'chevron-up' : 'chevron-down')" (click)="toggleCollapse()"></i>
+      </div>
     </div>
-    <div class="hosts" *ngIf="(!shouldCollapse() && style === 'expanded') || style === 'compact'">
+    <div class="hosts" *ngIf="expandOverride || (!shouldCollapse() && style === 'expanded') || style === 'compact'">
       <app-host
         *ngFor="let provHost of provisionedNetwork.ProvisionedNetworkToProvisionedHost"
         [provisionedHost]="provHost"

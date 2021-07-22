@@ -6,6 +6,9 @@ package graph
 import (
 	"context"
 	"fmt"
+	"os"
+	"path"
+	"strings"
 
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/agentstatus"
@@ -28,6 +31,18 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
+
+func (r *agentTaskResolver) ID(ctx context.Context, obj *ent.AgentTask) (string, error) {
+	return obj.ID.String(), nil
+}
+
+func (r *agentTaskResolver) Command(ctx context.Context, obj *ent.AgentTask) (model.AgentCommand, error) {
+	return model.AgentCommand(obj.Command), nil
+}
+
+func (r *agentTaskResolver) State(ctx context.Context, obj *ent.AgentTask) (model.AgentTaskState, error) {
+	return model.AgentTaskState(obj.State), nil
+}
 
 func (r *authUserResolver) ID(ctx context.Context, obj *ent.AuthUser) (string, error) {
 	return obj.ID.String(), nil
@@ -370,6 +385,11 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, userUUID string) (boo
 }
 
 func (r *mutationResolver) ExecutePlan(ctx context.Context, buildUUID string) (*ent.Build, error) {
+	currentUser, err := auth.ForContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	uuid, err := uuid.Parse(buildUUID)
 
 	if err != nil {
@@ -382,12 +402,17 @@ func (r *mutationResolver) ExecutePlan(ctx context.Context, buildUUID string) (*
 		return nil, fmt.Errorf("failed querying Build: %v", err)
 	}
 
-	go planner.StartBuild(r.client, b)
+	go planner.StartBuild(r.client, currentUser, b)
 
 	return b, nil
 }
 
 func (r *mutationResolver) DeleteBuild(ctx context.Context, buildUUID string) (bool, error) {
+	currentUser, err := auth.ForContext(ctx)
+	if err != nil {
+		return false, err
+	}
+
 	uuid, err := uuid.Parse(buildUUID)
 
 	if err != nil {
@@ -401,7 +426,7 @@ func (r *mutationResolver) DeleteBuild(ctx context.Context, buildUUID string) (b
 	}
 
 	spawnedDelete := make(chan bool, 1)
-	go planner.DeleteBuild(r.client, b, spawnedDelete)
+	go planner.DeleteBuild(r.client, currentUser, b, spawnedDelete)
 
 	deleteIsSuccess := <-spawnedDelete
 	if deleteIsSuccess {
@@ -454,6 +479,73 @@ func (r *mutationResolver) Rebuild(ctx context.Context, rootPlans []*string) (bo
 	}
 
 	return planner.Rebuild(ctx, r.client, entPlans)
+}
+
+func (r *mutationResolver) CreateEnviromentFromRepo(ctx context.Context, repoURL string, branchName string, repoName string, envFilePath string) ([]*ent.Environment, error) {
+	currentUser, err := auth.ForContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	repoFolderPath := fmt.Sprintf(utils.RepoPath, strings.ToLower(string(currentUser.Provider)), currentUser.Username, repoName, branchName)
+
+	commit_info, err := utils.CloneGit(repoURL, repoFolderPath, currentUser.PrivateKeyPath, branchName)
+	if err != nil {
+		return nil, err
+	}
+
+	envPath := path.Join(repoFolderPath, envFilePath)
+
+	loadedEnviroments, err := r.LoadEnvironment(ctx, envPath)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = r.client.Repository.Create().
+		SetRepoURL(repoURL).
+		SetBranchName(branchName).
+		SetEnviromentFilepath(envFilePath).
+		SetFolderPath(repoFolderPath).
+		SetCommitInfo(commit_info).
+		AddRepositoryToEnvironment(loadedEnviroments...).
+		Save(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return loadedEnviroments, nil
+}
+
+func (r *mutationResolver) UpdateEnviromentViaPull(ctx context.Context, repoUUID string) ([]*ent.Environment, error) {
+	currentUser, err := auth.ForContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	uuid, err := uuid.Parse(repoUUID)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
+	}
+
+	entRepo, err := r.client.Repository.Get(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	commit_info, err := utils.PullGit(entRepo.FolderPath, currentUser.PrivateKeyPath)
+	if err != nil {
+		return nil, err
+	}
+
+	entRepo, err = entRepo.Update().SetCommitInfo(commit_info).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	envPath := path.Join(entRepo.FolderPath, entRepo.EnviromentFilepath)
+
+	return r.LoadEnvironment(ctx, envPath)
 }
 
 func (r *mutationResolver) ModifySelfPassword(ctx context.Context, currentPassword string, newPassword string) (bool, error) {
@@ -534,6 +626,17 @@ func (r *mutationResolver) ModifySelfUserInfo(ctx context.Context, firstName *st
 }
 
 func (r *mutationResolver) CreateUser(ctx context.Context, username string, password string, role model.RoleLevel, provider model.ProviderType) (*ent.AuthUser, error) {
+	sshFolderPath := fmt.Sprintf(utils.UserKeyPath, strings.ToLower(authuser.ProviderLOCAL.String()), username)
+
+	err := os.MkdirAll(sshFolderPath, os.ModeAppend|os.ModePerm)
+	if err != nil {
+		return nil, err
+	}
+	sshPrivateFile := fmt.Sprintf("%s/id_rsa", sshFolderPath)
+	err = utils.MakeSSHKeyPair(sshPrivateFile)
+	if err != nil {
+		return nil, err
+	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 8)
 	if err != nil {
 		return nil, err
@@ -544,6 +647,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, username string, pass
 		SetPassword(password).
 		SetRole(authuser.Role(role)).
 		SetProvider(authuser.Provider(provider)).
+		SetPrivateKeyPath(sshPrivateFile).
 		Save(ctx)
 	if err != nil {
 		return nil, err
@@ -898,6 +1002,25 @@ func (r *queryResolver) GetCurrentUserTasks(ctx context.Context) ([]*ent.ServerT
 	return r.client.AuthUser.Query().QueryAuthUserToServerTasks().All(ctx)
 }
 
+func (r *queryResolver) GetAgentTasks(ctx context.Context, proStepUUID string) ([]*ent.AgentTask, error) {
+	uuid, err := uuid.Parse(proStepUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	entProStep, err := r.client.ProvisioningStep.Query().Where(provisioningstep.IDEQ(uuid)).Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	agentTasks, err := entProStep.QueryProvisioningStepToAgentTask().All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return agentTasks, err
+}
+
 func (r *scriptResolver) ID(ctx context.Context, obj *ent.Script) (string, error) {
 	return obj.ID.String(), nil
 }
@@ -1061,6 +1184,9 @@ func (r *userResolver) ID(ctx context.Context, obj *ent.User) (string, error) {
 	return obj.ID.String(), nil
 }
 
+// AgentTask returns generated.AgentTaskResolver implementation.
+func (r *Resolver) AgentTask() generated.AgentTaskResolver { return &agentTaskResolver{r} }
+
 // AuthUser returns generated.AuthUserResolver implementation.
 func (r *Resolver) AuthUser() generated.AuthUserResolver { return &authUserResolver{r} }
 
@@ -1145,6 +1271,7 @@ func (r *Resolver) Team() generated.TeamResolver { return &teamResolver{r} }
 // User returns generated.UserResolver implementation.
 func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
 
+type agentTaskResolver struct{ *Resolver }
 type authUserResolver struct{ *Resolver }
 type buildResolver struct{ *Resolver }
 type commandResolver struct{ *Resolver }

@@ -13,17 +13,43 @@ import (
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/gen0cide/laforge/server/utils"
 	"github.com/sirupsen/logrus"
 )
 
-func StartBuild(client *ent.Client, entBuild *ent.Build) error {
+func StartBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Build) error {
 	ctx := context.Background()
 	defer ctx.Done()
+
+	entEnvironment, err := entBuild.QueryBuildToEnvironment().Only(ctx)
+	if err != nil {
+		logrus.Errorf("failed to query environment from build: %v", err)
+		return err
+	}
+
+	taskStatus, serverTask, err := utils.CreateServerTask(ctx, client, rdb, currentUser, servertask.TypeEXECUTEBUILD)
+	if err != nil {
+		return fmt.Errorf("error creating server task: %v", err)
+	}
+	serverTask, err = client.ServerTask.UpdateOne(serverTask).SetServerTaskToBuild(entBuild).SetServerTaskToEnvironment(entEnvironment).Save(ctx)
+	if err != nil {
+		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
+		if err != nil {
+			return fmt.Errorf("error failing execute build server task: %v", err)
+		}
+		return fmt.Errorf("error assigning environment and build to execute build server task: %v", err)
+	}
+	rdb.Publish(ctx, "updatedServerTask", serverTask.ID.String())
 
 	entPlans, err := entBuild.QueryBuildToPlan().Where(plan.HasPlanToStatusWith(status.StateEQ(status.StatePLANNING))).All(ctx)
 
 	if err != nil {
+		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
+		if err != nil {
+			return fmt.Errorf("error failing execute build server task: %v", err)
+		}
 		logrus.Errorf("Failed to Query Plan Nodes %v. Err: %v", entPlans, err)
 		return err
 	}
@@ -119,11 +145,19 @@ func StartBuild(client *ent.Client, entBuild *ent.Build) error {
 
 	rootPlans, err := entBuild.QueryBuildToPlan().Where(plan.TypeEQ(plan.TypeStartBuild)).All(ctx)
 	if err != nil {
+		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
+		if err != nil {
+			return fmt.Errorf("error failing execute build server task: %v", err)
+		}
 		logrus.Errorf("Failed to Query Start Plan Nodes. Err: %v", err)
 		return err
 	}
 	environment, err := entBuild.QueryBuildToEnvironment().Only(ctx)
 	if err != nil {
+		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
+		if err != nil {
+			return fmt.Errorf("error failing execute build server task: %v", err)
+		}
 		logrus.Errorf("Failed to Query Environment. Err: %v", err)
 		return err
 	}
@@ -141,6 +175,10 @@ func StartBuild(client *ent.Client, entBuild *ent.Build) error {
 
 	genericBuilder, err := builder.BuilderFromEnvironment(environment)
 	if err != nil {
+		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
+		if err != nil {
+			return fmt.Errorf("error failing execute build server task: %v", err)
+		}
 		logrus.Errorf("error generating builder: %v", err)
 		return err
 	}
@@ -151,6 +189,11 @@ func StartBuild(client *ent.Client, entBuild *ent.Build) error {
 	}
 
 	wg.Wait()
+
+	taskStatus, serverTask, err = utils.CompleteServerTask(ctx, client, rdb, taskStatus, serverTask)
+	if err != nil {
+		return fmt.Errorf("error completing execute build server task: %v", err)
+	}
 
 	return nil
 }

@@ -106,12 +106,20 @@ enum AgentCommand {
   APPENDFILE
 }
 
+enum AgentTaskState {
+  AWAITING
+  INPROGRESS
+  FAILED
+  COMPLETE
+}
+
 enum ServerTaskType {
   LOADENV
   CREATEBUILD
   RENDERFILES
   DELETEBUILD
   REBUILD
+  EXECUTEBUILD
 }
 
 type AgentStatus {
@@ -129,6 +137,16 @@ type AgentStatus {
   freeMem: Int!
   usedMem: Int!
   timestamp: Int!
+}
+
+type AgentTask {
+  id: ID!
+  args: String
+  command: AgentCommand!
+  number: Int!
+  output: String
+  state: AgentTaskState!
+  error_message: String
 }
 
 type Build {
@@ -465,6 +483,7 @@ type Query {
   currentUser: AuthUser
   getUserList: [AuthUser] @hasRole(roles: [ADMIN])
   getCurrentUserTasks: [ServerTask]
+  getAgentTasks(proStepUUID: String!): [AgentTask]
 }
 
 type Mutation {
@@ -473,16 +492,42 @@ type Mutation {
   deleteUser(userUUID: String!): Boolean!
   executePlan(buildUUID: String!): Build
   deleteBuild(buildUUID: String!): Boolean!
-  createTask(proHostUUID: String!, command: AgentCommand!, args: String!): Boolean! @hasRole(roles: [ADMIN, USER])
+  createTask(
+    proHostUUID: String!
+    command: AgentCommand!
+    args: String!
+  ): Boolean! @hasRole(roles: [ADMIN, USER])
   rebuild(rootPlans: [String]!): Boolean!
 
-  # User Info
-  modifySelfPassword(currentPassword: String!, newPassword: String!): Boolean! @hasRole(roles: [ADMIN, USER])
-  modifySelfUserInfo(firstName: String, lastName: String, email: String, phone: String, company: String, occupation: String): AuthUser
+  createEnviromentFromRepo(
+    repoURL: String!
+    branchName: String! = "master"
+    repoName: String!
+    envFilePath: String!
+  ): [Environment]! @hasRole(roles: [ADMIN, USER])
+
+  updateEnviromentViaPull(repoUUID: String!): [Environment]!
     @hasRole(roles: [ADMIN, USER])
 
+  # User Info
+  modifySelfPassword(currentPassword: String!, newPassword: String!): Boolean!
+    @hasRole(roles: [ADMIN, USER])
+  modifySelfUserInfo(
+    firstName: String
+    lastName: String
+    email: String
+    phone: String
+    company: String
+    occupation: String
+  ): AuthUser @hasRole(roles: [ADMIN, USER])
+
   # User Admin Stuff
-  createUser(username: String!, password: String!, role: RoleLevel!, provider: ProviderType!): AuthUser @hasRole(roles: [ADMIN])
+  createUser(
+    username: String!
+    password: String!
+    role: RoleLevel!
+    provider: ProviderType!
+  ): AuthUser @hasRole(roles: [ADMIN])
   modifyAdminUserInfo(
     userID: String!
     username: String
@@ -495,7 +540,8 @@ type Mutation {
     role: RoleLevel
     provider: ProviderType
   ): AuthUser @hasRole(roles: [ADMIN])
-  modifyAdminPassword(userID: String!, newPassword: String!): Boolean! @hasRole(roles: [ADMIN])
+  modifyAdminPassword(userID: String!, newPassword: String!): Boolean!
+    @hasRole(roles: [ADMIN])
 }
 
 type Subscription {

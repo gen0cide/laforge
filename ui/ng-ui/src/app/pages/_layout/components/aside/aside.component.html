@@ -36,7 +36,7 @@
     <!-- begin::Menu Nav -->
     <ul class="menu-nav" [ngClass]="ulCSSClasses">
       <!-- begin::1 Level -->
-        <li class="menu-item" aria-haspopup="true" routerLinkActive="menu-item-active">
+      <li class="menu-item" aria-haspopup="true" routerLinkActive="menu-item-active">
         <a class="menu-link" routerLink="/dashboard" routerLinkActive="active">
           <span [inlineSVG]="'/assets/media/svg/icons/Home/Home.svg'" cacheSVG="true" class="svg-icon menu-icon"></span>
           <span class="menu-text">Dashboard</span>
@@ -78,7 +78,7 @@
 
       <!-- Material-UI -->
       <!-- begin::1 Level -->
-        <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover" routerLinkActive="menu-item-open">
+      <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover" routerLinkActive="menu-item-open">
         <a class="menu-link menu-toggle" routerLink="/manage" routerLinkActive="active">
           <span [inlineSVG]="'/assets/media/svg/icons/Devices/Server.svg'" cacheSVG="true" class="svg-icon menu-icon"></span>
           <span class="menu-text">Environment</span>
@@ -86,12 +86,12 @@
       </li>
       <!-- end::1 Level -->
       <!-- begin::1 Level -->
-      <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover" routerLinkActive="menu-item-open">
+      <!-- <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover" routerLinkActive="menu-item-open">
         <a class="menu-link menu-toggle" routerLink="/monitor" routerLinkActive="active">
           <span [inlineSVG]="'/assets/media/svg/icons/Code/Spy.svg'" cacheSVG="true" class="svg-icon menu-icon"></span>
           <span class="menu-text">Monitor Agents</span>
         </a>
-      </li>
+      </li> -->
       <!-- end::1 Level -->
     </ul>
     <!-- end::Menu Nav -->

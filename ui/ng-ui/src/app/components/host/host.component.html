@@ -10,18 +10,21 @@
     ></mat-checkbox>
   </div>
   <div class="host-container">
-    <div class="host-info" (click)="style !== 'compact' && viewDetails()">
+    <div class="host-info">
       <div class="host-status-icon" [ngClass]="'text-' + getStatusColor()" *ngIf="style === 'compact'">
         <i class="fas fa-1x" [ngClass]="'fa-' + getStatusIcon()"></i>
       </div>
       <div class="host-status-icon" [ngClass]="'bg-' + getStatusColor()" *ngIf="style !== 'compact'">
         <i class="fas" [ngClass]="'fa-' + getStatusIcon()"></i>
       </div>
-      <div class="host-preview">
+      <div class="host-preview" (click)="style !== 'compact' && viewDetails()">
         <span class="host-hostname">{{ provisionedHost ? provisionedHost.ProvisionedHostToHost.hostname : '' }}</span>
       </div>
+      <div class="toggle-collapse" *ngIf="style !== 'compact' && shouldCollapse()">
+        <i class="fas cursor-pointer" [ngClass]="'fa-' + (expandOverride ? 'chevron-up' : 'chevron-down')" (click)="toggleCollapse()"></i>
+      </div>
     </div>
-    <div class="steps" *ngIf="!shouldCollapse() && style === 'expanded'">
+    <div class="steps" *ngIf="expandOverride || (!shouldCollapse() && style === 'expanded')">
       <app-step
         *ngFor="let step of provisionedHost.ProvisionedHostToProvisioningStep | sortBy: 'asc':'step_number'; let i = index"
         [stepNumber]="i + 1"

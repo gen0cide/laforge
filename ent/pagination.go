@@ -38,6 +38,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/repository"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
@@ -5708,6 +5709,233 @@ func (ps *ProvisioningStep) ToEdge(order *ProvisioningStepOrder) *ProvisioningSt
 	return &ProvisioningStepEdge{
 		Node:   ps,
 		Cursor: order.Field.toCursor(ps),
+	}
+}
+
+// RepositoryEdge is the edge representation of Repository.
+type RepositoryEdge struct {
+	Node   *Repository `json:"node"`
+	Cursor Cursor      `json:"cursor"`
+}
+
+// RepositoryConnection is the connection containing edges to Repository.
+type RepositoryConnection struct {
+	Edges      []*RepositoryEdge `json:"edges"`
+	PageInfo   PageInfo          `json:"pageInfo"`
+	TotalCount int               `json:"totalCount"`
+}
+
+// RepositoryPaginateOption enables pagination customization.
+type RepositoryPaginateOption func(*repositoryPager) error
+
+// WithRepositoryOrder configures pagination ordering.
+func WithRepositoryOrder(order *RepositoryOrder) RepositoryPaginateOption {
+	if order == nil {
+		order = DefaultRepositoryOrder
+	}
+	o := *order
+	return func(pager *repositoryPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultRepositoryOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithRepositoryFilter configures pagination filter.
+func WithRepositoryFilter(filter func(*RepositoryQuery) (*RepositoryQuery, error)) RepositoryPaginateOption {
+	return func(pager *repositoryPager) error {
+		if filter == nil {
+			return errors.New("RepositoryQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type repositoryPager struct {
+	order  *RepositoryOrder
+	filter func(*RepositoryQuery) (*RepositoryQuery, error)
+}
+
+func newRepositoryPager(opts []RepositoryPaginateOption) (*repositoryPager, error) {
+	pager := &repositoryPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultRepositoryOrder
+	}
+	return pager, nil
+}
+
+func (p *repositoryPager) applyFilter(query *RepositoryQuery) (*RepositoryQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *repositoryPager) toCursor(r *Repository) Cursor {
+	return p.order.Field.toCursor(r)
+}
+
+func (p *repositoryPager) applyCursors(query *RepositoryQuery, after, before *Cursor) *RepositoryQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultRepositoryOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *repositoryPager) applyOrder(query *RepositoryQuery, reverse bool) *RepositoryQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultRepositoryOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultRepositoryOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Repository.
+func (r *RepositoryQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...RepositoryPaginateOption,
+) (*RepositoryConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newRepositoryPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if r, err = pager.applyFilter(r); err != nil {
+		return nil, err
+	}
+
+	conn := &RepositoryConnection{Edges: []*RepositoryEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := r.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := r.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	r = pager.applyCursors(r, after, before)
+	r = pager.applyOrder(r, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		r = r.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		r = r.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := r.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *Repository
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Repository {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Repository {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*RepositoryEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &RepositoryEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+// RepositoryOrderField defines the ordering field of Repository.
+type RepositoryOrderField struct {
+	field    string
+	toCursor func(*Repository) Cursor
+}
+
+// RepositoryOrder defines the ordering of Repository.
+type RepositoryOrder struct {
+	Direction OrderDirection        `json:"direction"`
+	Field     *RepositoryOrderField `json:"field"`
+}
+
+// DefaultRepositoryOrder is the default ordering of Repository.
+var DefaultRepositoryOrder = &RepositoryOrder{
+	Direction: OrderDirectionAsc,
+	Field: &RepositoryOrderField{
+		field: repository.FieldID,
+		toCursor: func(r *Repository) Cursor {
+			return Cursor{ID: r.ID}
+		},
+	},
+}
+
+// ToEdge converts Repository into RepositoryEdge.
+func (r *Repository) ToEdge(order *RepositoryOrder) *RepositoryEdge {
+	if order == nil {
+		order = DefaultRepositoryOrder
+	}
+	return &RepositoryEdge{
+		Node:   r,
+		Cursor: order.Field.toCursor(r),
 	}
 }
 

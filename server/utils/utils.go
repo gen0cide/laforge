@@ -15,6 +15,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	UserKeyPath = path.Join("users", "%s", "%s", "keys")
+	RepoPath    = path.Join("repos", "%s", "%s", "%s", "%s")
+)
+
 func CreateTempURL(ctx context.Context, client *ent.Client, filePath string) (*ent.GinFileMiddleware, error) {
 	entGinURL, err := client.GinFileMiddleware.Create().
 		SetFilePath(filePath).

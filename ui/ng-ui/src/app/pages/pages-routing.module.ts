@@ -31,10 +31,10 @@ const routes: Routes = [
         path: 'manage',
         loadChildren: () => import('./manage/manage.module').then((m) => m.ManageModule)
       },
-      {
-        path: 'monitor',
-        loadChildren: () => import('./monitor/monitor.module').then((m) => m.MonitorModule)
-      },
+      // {
+      //   path: 'monitor',
+      //   loadChildren: () => import('./monitor/monitor.module').then((m) => m.MonitorModule)
+      // },
       {
         path: 'plan',
         loadChildren: () => import('./plan/plan.module').then((m) => m.PlanModule)

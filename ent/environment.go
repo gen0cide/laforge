@@ -76,6 +76,8 @@ type Environment struct {
 	HCLEnvironmentToHostDependency []*HostDependency `json:"EnvironmentToHostDependency,omitempty"`
 	// EnvironmentToBuild holds the value of the EnvironmentToBuild edge.
 	HCLEnvironmentToBuild []*Build `json:"EnvironmentToBuild,omitempty"`
+	// EnvironmentToRepository holds the value of the EnvironmentToRepository edge.
+	HCLEnvironmentToRepository []*Repository `json:"EnvironmentToRepository,omitempty"`
 	//
 
 }
@@ -114,9 +116,11 @@ type EnvironmentEdges struct {
 	EnvironmentToHostDependency []*HostDependency `json:"EnvironmentToHostDependency,omitempty"`
 	// EnvironmentToBuild holds the value of the EnvironmentToBuild edge.
 	EnvironmentToBuild []*Build `json:"EnvironmentToBuild,omitempty"`
+	// EnvironmentToRepository holds the value of the EnvironmentToRepository edge.
+	EnvironmentToRepository []*Repository `json:"EnvironmentToRepository,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [16]bool
+	loadedTypes [17]bool
 }
 
 // EnvironmentToUserOrErr returns the EnvironmentToUser value or an error if the edge
@@ -261,6 +265,15 @@ func (e EnvironmentEdges) EnvironmentToBuildOrErr() ([]*Build, error) {
 		return e.EnvironmentToBuild, nil
 	}
 	return nil, &NotLoadedError{edge: "EnvironmentToBuild"}
+}
+
+// EnvironmentToRepositoryOrErr returns the EnvironmentToRepository value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) EnvironmentToRepositoryOrErr() ([]*Repository, error) {
+	if e.loadedTypes[16] {
+		return e.EnvironmentToRepository, nil
+	}
+	return nil, &NotLoadedError{edge: "EnvironmentToRepository"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -458,6 +471,11 @@ func (e *Environment) QueryEnvironmentToHostDependency() *HostDependencyQuery {
 // QueryEnvironmentToBuild queries the "EnvironmentToBuild" edge of the Environment entity.
 func (e *Environment) QueryEnvironmentToBuild() *BuildQuery {
 	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToBuild(e)
+}
+
+// QueryEnvironmentToRepository queries the "EnvironmentToRepository" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToRepository() *RepositoryQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToRepository(e)
 }
 
 // Update returns a builder for updating this Environment.

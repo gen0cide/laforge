@@ -65,6 +65,8 @@ const (
 	EdgeEnvironmentToHostDependency = "EnvironmentToHostDependency"
 	// EdgeEnvironmentToBuild holds the string denoting the environmenttobuild edge name in mutations.
 	EdgeEnvironmentToBuild = "EnvironmentToBuild"
+	// EdgeEnvironmentToRepository holds the string denoting the environmenttorepository edge name in mutations.
+	EdgeEnvironmentToRepository = "EnvironmentToRepository"
 	// Table holds the table name of the environment in the database.
 	Table = "environments"
 	// EnvironmentToUserTable is the table the holds the EnvironmentToUser relation/edge. The primary key declared below.
@@ -173,6 +175,11 @@ const (
 	EnvironmentToBuildInverseTable = "builds"
 	// EnvironmentToBuildColumn is the table column denoting the EnvironmentToBuild relation/edge.
 	EnvironmentToBuildColumn = "build_build_to_environment"
+	// EnvironmentToRepositoryTable is the table the holds the EnvironmentToRepository relation/edge. The primary key declared below.
+	EnvironmentToRepositoryTable = "repository_RepositoryToEnvironment"
+	// EnvironmentToRepositoryInverseTable is the table name for the Repository entity.
+	// It exists in this package in order to avoid circular dependency with the "repository" package.
+	EnvironmentToRepositoryInverseTable = "repositories"
 )
 
 // Columns holds all SQL columns for environment fields.
@@ -201,6 +208,9 @@ var (
 	// EnvironmentToDNSPrimaryKey and EnvironmentToDNSColumn2 are the table columns denoting the
 	// primary key for the EnvironmentToDNS relation (M2M).
 	EnvironmentToDNSPrimaryKey = []string{"environment_id", "dns_id"}
+	// EnvironmentToRepositoryPrimaryKey and EnvironmentToRepositoryColumn2 are the table columns denoting the
+	// primary key for the EnvironmentToRepository relation (M2M).
+	EnvironmentToRepositoryPrimaryKey = []string{"repository_id", "environment_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

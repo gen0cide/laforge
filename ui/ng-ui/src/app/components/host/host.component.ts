@@ -34,6 +34,7 @@ export class HostComponent implements OnInit, OnDestroy {
   planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
   provisionedHostStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
   agentStatus: LaForgeSubscribeUpdatedAgentStatusSubscription['updatedAgentStatus'];
+  expandOverride = false;
 
   constructor(
     public dialog: MatDialog,
@@ -193,10 +194,10 @@ export class HostComponent implements OnInit, OnDestroy {
   }
 
   shouldCollapse(): boolean {
+    if (this.planStatus && this.planStatus.state === LaForgeProvisionStatus.Deleted) return true;
     // return hostChildrenCompleted(this.provisionedHost as LaForgeProvisionedHost, this.envService.getStatus);
     let numCompleted = 0;
     let numAwaiting = 0;
-    let numDeleted = 0;
     let totalSteps = 0;
     for (const step of this.provisionedHost.ProvisionedHostToProvisioningStep) {
       if (step.step_number === 0) continue;
@@ -204,13 +205,15 @@ export class HostComponent implements OnInit, OnDestroy {
       const stepStatus = this.envService.getStatus(step.ProvisioningStepToPlan.PlanToStatus.id);
       if (stepStatus?.state === LaForgeProvisionStatus.Complete) numCompleted++;
       if (stepStatus?.state === LaForgeProvisionStatus.Awaiting) numAwaiting++;
-      if (stepStatus?.state === LaForgeProvisionStatus.Deleted) numDeleted++;
       // if (step.ProvisioningStepToStatus.state === LaForgeProvisionStatus.Complete) numCompleted++;
     }
     // console.log(this.provisionedHost.ProvisionedHostToHost.hostname, totalSteps, numCompleted);
     if (numCompleted === totalSteps) return true;
     if (numAwaiting === totalSteps) return true;
-    if (numDeleted === totalSteps) return true;
     else return false;
+  }
+
+  toggleCollapse(): void {
+    this.expandOverride = !this.expandOverride;
   }
 }

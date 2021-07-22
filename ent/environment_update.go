@@ -25,6 +25,7 @@ import (
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/gen0cide/laforge/ent/repository"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/user"
 	"github.com/google/uuid"
@@ -361,6 +362,21 @@ func (eu *EnvironmentUpdate) AddEnvironmentToBuild(b ...*Build) *EnvironmentUpda
 		ids[i] = b[i].ID
 	}
 	return eu.AddEnvironmentToBuildIDs(ids...)
+}
+
+// AddEnvironmentToRepositoryIDs adds the "EnvironmentToRepository" edge to the Repository entity by IDs.
+func (eu *EnvironmentUpdate) AddEnvironmentToRepositoryIDs(ids ...uuid.UUID) *EnvironmentUpdate {
+	eu.mutation.AddEnvironmentToRepositoryIDs(ids...)
+	return eu
+}
+
+// AddEnvironmentToRepository adds the "EnvironmentToRepository" edges to the Repository entity.
+func (eu *EnvironmentUpdate) AddEnvironmentToRepository(r ...*Repository) *EnvironmentUpdate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return eu.AddEnvironmentToRepositoryIDs(ids...)
 }
 
 // Mutation returns the EnvironmentMutation object of the builder.
@@ -702,6 +718,27 @@ func (eu *EnvironmentUpdate) RemoveEnvironmentToBuild(b ...*Build) *EnvironmentU
 		ids[i] = b[i].ID
 	}
 	return eu.RemoveEnvironmentToBuildIDs(ids...)
+}
+
+// ClearEnvironmentToRepository clears all "EnvironmentToRepository" edges to the Repository entity.
+func (eu *EnvironmentUpdate) ClearEnvironmentToRepository() *EnvironmentUpdate {
+	eu.mutation.ClearEnvironmentToRepository()
+	return eu
+}
+
+// RemoveEnvironmentToRepositoryIDs removes the "EnvironmentToRepository" edge to Repository entities by IDs.
+func (eu *EnvironmentUpdate) RemoveEnvironmentToRepositoryIDs(ids ...uuid.UUID) *EnvironmentUpdate {
+	eu.mutation.RemoveEnvironmentToRepositoryIDs(ids...)
+	return eu
+}
+
+// RemoveEnvironmentToRepository removes "EnvironmentToRepository" edges to Repository entities.
+func (eu *EnvironmentUpdate) RemoveEnvironmentToRepository(r ...*Repository) *EnvironmentUpdate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return eu.RemoveEnvironmentToRepositoryIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -1728,6 +1765,60 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if eu.mutation.EnvironmentToRepositoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.EnvironmentToRepositoryTable,
+			Columns: environment.EnvironmentToRepositoryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: repository.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.RemovedEnvironmentToRepositoryIDs(); len(nodes) > 0 && !eu.mutation.EnvironmentToRepositoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.EnvironmentToRepositoryTable,
+			Columns: environment.EnvironmentToRepositoryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: repository.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := eu.mutation.EnvironmentToRepositoryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.EnvironmentToRepositoryTable,
+			Columns: environment.EnvironmentToRepositoryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: repository.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, eu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{environment.Label}
@@ -2065,6 +2156,21 @@ func (euo *EnvironmentUpdateOne) AddEnvironmentToBuild(b ...*Build) *Environment
 		ids[i] = b[i].ID
 	}
 	return euo.AddEnvironmentToBuildIDs(ids...)
+}
+
+// AddEnvironmentToRepositoryIDs adds the "EnvironmentToRepository" edge to the Repository entity by IDs.
+func (euo *EnvironmentUpdateOne) AddEnvironmentToRepositoryIDs(ids ...uuid.UUID) *EnvironmentUpdateOne {
+	euo.mutation.AddEnvironmentToRepositoryIDs(ids...)
+	return euo
+}
+
+// AddEnvironmentToRepository adds the "EnvironmentToRepository" edges to the Repository entity.
+func (euo *EnvironmentUpdateOne) AddEnvironmentToRepository(r ...*Repository) *EnvironmentUpdateOne {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return euo.AddEnvironmentToRepositoryIDs(ids...)
 }
 
 // Mutation returns the EnvironmentMutation object of the builder.
@@ -2406,6 +2512,27 @@ func (euo *EnvironmentUpdateOne) RemoveEnvironmentToBuild(b ...*Build) *Environm
 		ids[i] = b[i].ID
 	}
 	return euo.RemoveEnvironmentToBuildIDs(ids...)
+}
+
+// ClearEnvironmentToRepository clears all "EnvironmentToRepository" edges to the Repository entity.
+func (euo *EnvironmentUpdateOne) ClearEnvironmentToRepository() *EnvironmentUpdateOne {
+	euo.mutation.ClearEnvironmentToRepository()
+	return euo
+}
+
+// RemoveEnvironmentToRepositoryIDs removes the "EnvironmentToRepository" edge to Repository entities by IDs.
+func (euo *EnvironmentUpdateOne) RemoveEnvironmentToRepositoryIDs(ids ...uuid.UUID) *EnvironmentUpdateOne {
+	euo.mutation.RemoveEnvironmentToRepositoryIDs(ids...)
+	return euo
+}
+
+// RemoveEnvironmentToRepository removes "EnvironmentToRepository" edges to Repository entities.
+func (euo *EnvironmentUpdateOne) RemoveEnvironmentToRepository(r ...*Repository) *EnvironmentUpdateOne {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return euo.RemoveEnvironmentToRepositoryIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -3448,6 +3575,60 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: build.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if euo.mutation.EnvironmentToRepositoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.EnvironmentToRepositoryTable,
+			Columns: environment.EnvironmentToRepositoryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: repository.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.RemovedEnvironmentToRepositoryIDs(); len(nodes) > 0 && !euo.mutation.EnvironmentToRepositoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.EnvironmentToRepositoryTable,
+			Columns: environment.EnvironmentToRepositoryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: repository.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := euo.mutation.EnvironmentToRepositoryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   environment.EnvironmentToRepositoryTable,
+			Columns: environment.EnvironmentToRepositoryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: repository.FieldID,
 				},
 			},
 		}

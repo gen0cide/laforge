@@ -292,6 +292,14 @@ func (e *Environment) EnvironmentToBuild(ctx context.Context) ([]*Build, error) 
 	return result, err
 }
 
+func (e *Environment) EnvironmentToRepository(ctx context.Context) ([]*Repository, error) {
+	result, err := e.Edges.EnvironmentToRepositoryOrErr()
+	if IsNotLoaded(err) {
+		result, err = e.QueryEnvironmentToRepository().All(ctx)
+	}
+	return result, err
+}
+
 func (fd *FileDelete) FileDeleteToEnvironment(ctx context.Context) (*Environment, error) {
 	result, err := fd.Edges.FileDeleteToEnvironmentOrErr()
 	if IsNotLoaded(err) {
@@ -778,6 +786,14 @@ func (ps *ProvisioningStep) ProvisioningStepToGinFileMiddleware(ctx context.Cont
 		result, err = ps.QueryProvisioningStepToGinFileMiddleware().Only(ctx)
 	}
 	return result, MaskNotFound(err)
+}
+
+func (r *Repository) RepositoryToEnvironment(ctx context.Context) ([]*Environment, error) {
+	result, err := r.Edges.RepositoryToEnvironmentOrErr()
+	if IsNotLoaded(err) {
+		result, err = r.QueryRepositoryToEnvironment().All(ctx)
+	}
+	return result, err
 }
 
 func (s *Script) ScriptToUser(ctx context.Context) ([]*User, error) {

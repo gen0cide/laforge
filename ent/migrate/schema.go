@@ -736,6 +736,22 @@ var (
 			},
 		},
 	}
+	// RepositoriesColumns holds the columns for the "repositories" table.
+	RepositoriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "repo_url", Type: field.TypeString},
+		{Name: "branch_name", Type: field.TypeString, Default: "master"},
+		{Name: "enviroment_filepath", Type: field.TypeString},
+		{Name: "folder_path", Type: field.TypeString},
+		{Name: "commit_info", Type: field.TypeString, Default: "N/A"},
+	}
+	// RepositoriesTable holds the schema information for the "repositories" table.
+	RepositoriesTable = &schema.Table{
+		Name:        "repositories",
+		Columns:     RepositoriesColumns,
+		PrimaryKey:  []*schema.Column{RepositoriesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
+	}
 	// ScriptsColumns holds the columns for the "scripts" table.
 	ScriptsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -772,7 +788,7 @@ var (
 	// ServerTasksColumns holds the columns for the "server_tasks" table.
 	ServerTasksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"LOADENV", "CREATEBUILD", "RENDERFILES", "DELETEBUILD", "REBUILD"}},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"LOADENV", "CREATEBUILD", "RENDERFILES", "DELETEBUILD", "REBUILD", "EXECUTEBUILD"}},
 		{Name: "start_time", Type: field.TypeTime, Nullable: true},
 		{Name: "end_time", Type: field.TypeTime, Nullable: true},
 		{Name: "errors", Type: field.TypeJSON, Nullable: true},
@@ -1146,6 +1162,31 @@ var (
 			},
 		},
 	}
+	// RepositoryRepositoryToEnvironmentColumns holds the columns for the "repository_RepositoryToEnvironment" table.
+	RepositoryRepositoryToEnvironmentColumns = []*schema.Column{
+		{Name: "repository_id", Type: field.TypeUUID},
+		{Name: "environment_id", Type: field.TypeUUID},
+	}
+	// RepositoryRepositoryToEnvironmentTable holds the schema information for the "repository_RepositoryToEnvironment" table.
+	RepositoryRepositoryToEnvironmentTable = &schema.Table{
+		Name:       "repository_RepositoryToEnvironment",
+		Columns:    RepositoryRepositoryToEnvironmentColumns,
+		PrimaryKey: []*schema.Column{RepositoryRepositoryToEnvironmentColumns[0], RepositoryRepositoryToEnvironmentColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "repository_RepositoryToEnvironment_repository_id",
+				Columns:    []*schema.Column{RepositoryRepositoryToEnvironmentColumns[0]},
+				RefColumns: []*schema.Column{RepositoriesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "repository_RepositoryToEnvironment_environment_id",
+				Columns:    []*schema.Column{RepositoryRepositoryToEnvironmentColumns[1]},
+				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AgentStatusTable,
@@ -1172,6 +1213,7 @@ var (
 		ProvisionedHostsTable,
 		ProvisionedNetworksTable,
 		ProvisioningStepsTable,
+		RepositoriesTable,
 		ScriptsTable,
 		ServerTasksTable,
 		StatusTable,
@@ -1185,6 +1227,7 @@ var (
 		EnvironmentEnvironmentToDNSTable,
 		IncludedNetworkIncludedNetworkToHostTable,
 		PlanNextPlanTable,
+		RepositoryRepositoryToEnvironmentTable,
 	}
 )
 
@@ -1264,4 +1307,6 @@ func init() {
 	IncludedNetworkIncludedNetworkToHostTable.ForeignKeys[1].RefTable = HostsTable
 	PlanNextPlanTable.ForeignKeys[0].RefTable = PlansTable
 	PlanNextPlanTable.ForeignKeys[1].RefTable = PlansTable
+	RepositoryRepositoryToEnvironmentTable.ForeignKeys[0].RefTable = RepositoriesTable
+	RepositoryRepositoryToEnvironmentTable.ForeignKeys[1].RefTable = EnvironmentsTable
 }

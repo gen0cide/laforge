@@ -4,7 +4,7 @@ import { BreadcrumbItemModel } from '../_models/breadcrumb-item.model';
 import { LayoutService } from '../../../../core';
 import { SubheaderService } from '../_services/subheader.service';
 
-import { PlanService } from '../../../../../plan.service';
+import { PlanService } from '@services/plan/plan.service';
 import { MatSelectChange } from '@angular/material/select';
 import { EnvironmentService } from 'src/app/services/environment/environment.service';
 import { Build, Environment } from 'src/app/models/environment.model';
@@ -37,6 +37,7 @@ export class SubheaderComponent implements OnInit {
   environment: LaForgeGetEnvironmentInfoQuery['environment'];
   build: LaForgeGetBuildTreeQuery['build'];
   envIsLoading: Observable<boolean>;
+  buildIsLoading: Observable<boolean>;
 
   constructor(
     private layout: LayoutService,
@@ -62,6 +63,7 @@ export class SubheaderComponent implements OnInit {
       .asObservable()
       .subscribe((env) => (this.build = env));
     this.envIsLoading = this.envService.envIsLoading.asObservable();
+    this.buildIsLoading = this.envService.buildIsLoading.asObservable();
   }
 
   ngOnInit() {

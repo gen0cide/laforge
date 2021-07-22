@@ -17,8 +17,10 @@
 .glide/
 
 dist/
-finals/
-fred/
+builds/
+logs/
+users/
+repos/
 
 session.cache
 .env

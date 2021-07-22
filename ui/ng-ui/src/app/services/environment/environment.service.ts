@@ -20,6 +20,7 @@ export class EnvironmentService {
   // private currEnvironment: BehaviorSubject<Environment> = new BehaviorSubject(null);
   private environments: BehaviorSubject<LaForgeGetEnvironmentsQuery['environments']>;
   public envIsLoading: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  public buildIsLoading: BehaviorSubject<boolean> = new BehaviorSubject(false);
   // private currBuild: BehaviorSubject<Build> = new BehaviorSubject(null);
   // private builds: BehaviorSubject<BuildInfo[]>
   // private agentStatusQuery: QueryRef<AgentStatusQueryResult, EmptyObject>;
@@ -42,6 +43,7 @@ export class EnvironmentService {
   ) {
     this.environments = new BehaviorSubject([]);
     this.envIsLoading = new BehaviorSubject(false);
+    this.buildIsLoading = new BehaviorSubject(false);
     this.environmentInfo = new BehaviorSubject(null);
     this.buildTree = new BehaviorSubject(null);
     this.statusUpdate = new BehaviorSubject(false);
@@ -122,39 +124,48 @@ export class EnvironmentService {
   public setCurrentEnv(envId: string, buildId: string): void {
     localStorage.setItem('selected_env', `${envId}`);
     localStorage.setItem('selected_build', `${buildId}`);
-    // this.pullEnvironment(envId);
     this.pullEnvironmentInfo(envId);
     this.pullBuildTree(buildId);
   }
 
   public pullEnvironmentInfo(envId: string) {
-    this.api.pullEnvironmentInfo(envId).then(
-      (env) => {
-        if (env?.id) {
-          return this.environmentInfo.next(env);
+    this.envIsLoading.next(true);
+    this.api
+      .pullEnvironmentInfo(envId)
+      .then(
+        (env) => {
+          if (env?.id) {
+            return this.environmentInfo.next(env);
+          }
+          this.environmentInfo.error(Error('Unable to retrieve environment info. Unknown error.'));
+        },
+        (err) => {
+          localStorage.setItem('selected_env', '');
+          this.environmentInfo.error(err);
         }
-        this.environmentInfo.error(Error('Unable to retrieve environment info. Unknown error.'));
-      },
-      (err) => {
-        localStorage.setItem('selected_env', '');
-        this.environmentInfo.error(err);
-      }
-    );
+      )
+      .finally(() => this.envIsLoading.next(false));
   }
 
   public pullBuildTree(buildId: string) {
-    this.api.pullBuildTree(buildId).then(
-      (build) => {
-        if (build?.id) {
-          return this.buildTree.next(build);
+    this.buildIsLoading.next(true);
+    this.api
+      .pullBuildTree(buildId)
+      .then(
+        (build) => {
+          if (build?.id) {
+            this.statusMap[build.buildToStatus.id] = { ...build.buildToStatus };
+            this.statusUpdate.next(!this.statusUpdate.getValue());
+            return this.buildTree.next(build);
+          }
+          this.buildTree.error(Error('Unable to retrieve build tree. Unknown error.'));
+        },
+        (err) => {
+          localStorage.setItem('selected_build', '');
+          this.buildTree.error(err);
         }
-        this.buildTree.error(Error('Unable to retrieve build tree. Unknown error.'));
-      },
-      (err) => {
-        localStorage.setItem('selected_build', '');
-        this.buildTree.error(err);
-      }
-    );
+      )
+      .finally(() => this.buildIsLoading.next(false));
   }
 
   private startStatusSubscription() {

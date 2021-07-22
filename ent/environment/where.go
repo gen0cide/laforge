@@ -1296,6 +1296,34 @@ func HasEnvironmentToBuildWith(preds ...predicate.Build) predicate.Environment {
 	})
 }
 
+// HasEnvironmentToRepository applies the HasEdge predicate on the "EnvironmentToRepository" edge.
+func HasEnvironmentToRepository() predicate.Environment {
+	return predicate.Environment(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(EnvironmentToRepositoryTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, EnvironmentToRepositoryTable, EnvironmentToRepositoryPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEnvironmentToRepositoryWith applies the HasEdge predicate on the "EnvironmentToRepository" edge with a given conditions (other predicates).
+func HasEnvironmentToRepositoryWith(preds ...predicate.Repository) predicate.Environment {
+	return predicate.Environment(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(EnvironmentToRepositoryInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, EnvironmentToRepositoryTable, EnvironmentToRepositoryPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Environment) predicate.Environment {
 	return predicate.Environment(func(s *sql.Selector) {

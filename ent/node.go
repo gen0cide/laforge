@@ -33,6 +33,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/repository"
 	"github.com/gen0cide/laforge/ent/script"
 	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
@@ -879,7 +880,7 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 		ID:     e.ID,
 		Type:   "Environment",
 		Fields: make([]*Field, 11),
-		Edges:  make([]*Edge, 16),
+		Edges:  make([]*Edge, 17),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(e.HclID); err != nil {
@@ -1127,6 +1128,16 @@ func (e *Environment) Node(ctx context.Context) (node *Node, err error) {
 	err = e.QueryEnvironmentToBuild().
 		Select(build.FieldID).
 		Scan(ctx, &node.Edges[15].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[16] = &Edge{
+		Type: "Repository",
+		Name: "EnvironmentToRepository",
+	}
+	err = e.QueryEnvironmentToRepository().
+		Select(repository.FieldID).
+		Scan(ctx, &node.Edges[16].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2441,6 +2452,67 @@ func (ps *ProvisioningStep) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
+func (r *Repository) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     r.ID,
+		Type:   "Repository",
+		Fields: make([]*Field, 5),
+		Edges:  make([]*Edge, 1),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(r.RepoURL); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "repo_url",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(r.BranchName); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "branch_name",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(r.EnviromentFilepath); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "string",
+		Name:  "enviroment_filepath",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(r.FolderPath); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "string",
+		Name:  "folder_path",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(r.CommitInfo); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "string",
+		Name:  "commit_info",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Environment",
+		Name: "RepositoryToEnvironment",
+	}
+	err = r.QueryRepositoryToEnvironment().
+		Select(environment.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
 func (s *Script) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     s.ID,
@@ -3309,6 +3381,15 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 			return nil, err
 		}
 		return n, nil
+	case repository.Table:
+		n, err := c.Repository.Query().
+			Where(repository.ID(id)).
+			CollectFields(ctx, "Repository").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case script.Table:
 		n, err := c.Script.Query().
 			Where(script.ID(id)).
@@ -3748,6 +3829,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		nodes, err := c.ProvisioningStep.Query().
 			Where(provisioningstep.IDIn(ids...)).
 			CollectFields(ctx, "ProvisioningStep").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case repository.Table:
+		nodes, err := c.Repository.Query().
+			Where(repository.IDIn(ids...)).
+			CollectFields(ctx, "Repository").
 			All(ctx)
 		if err != nil {
 			return nil, err

@@ -1,7 +1,6 @@
 import { Component, Input, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { LaForgeProvisionStatus, LaForgeSubscribeUpdatedStatusSubscription, LaForgeTeam } from '@graphql';
 import { EnvironmentService } from '@services/environment/environment.service';
-import { teamChildrenCompleted } from '@util';
 import { Subscription } from 'rxjs';
 
 import { RebuildService } from '../../services/rebuild/rebuild.service';
@@ -20,6 +19,7 @@ export class TeamComponent implements OnInit, OnDestroy {
   @Input() mode: 'plan' | 'build' | 'manage';
   isSelectedState = false;
   planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
+  expandOverride = false;
 
   constructor(private rebuild: RebuildService, private envService: EnvironmentService, private cdRef: ChangeDetectorRef) {
     if (!this.mode) this.mode = 'manage';
@@ -58,16 +58,29 @@ export class TeamComponent implements OnInit, OnDestroy {
   //   else return ProvisionStatus.INPROGRESS;
   // }
 
-  allAgentsResponding(): boolean {
+  allChildrenResponding(): boolean {
     let numWithAgentData = 0;
-    let totalAgents = 0;
+    let numWithCompletedSteps = 0;
+    let totalHosts = 0;
     for (const pnet of this.team.TeamToProvisionedNetwork) {
       for (const host of pnet.ProvisionedNetworkToProvisionedHost) {
-        totalAgents++;
+        totalHosts++;
         if (host.ProvisionedHostToAgentStatus?.clientId) numWithAgentData++;
+        let totalSteps = 0;
+        let totalCompletedSteps = 0;
+        for (const step of host.ProvisionedHostToProvisioningStep) {
+          if (step.step_number === 0) continue;
+          totalSteps++;
+          if (
+            step.ProvisioningStepToStatus.id &&
+            this.envService.getStatus(step.ProvisioningStepToPlan.PlanToStatus.id)?.state === LaForgeProvisionStatus.Complete
+          )
+            totalCompletedSteps++;
+        }
+        if (totalSteps === totalCompletedSteps) numWithCompletedSteps++;
       }
     }
-    return numWithAgentData === totalAgents;
+    return numWithAgentData === totalHosts && numWithCompletedSteps === totalHosts;
   }
 
   getStatusIcon(): string {
@@ -91,7 +104,7 @@ export class TeamComponent implements OnInit, OnDestroy {
     if (!this.planStatus) return 'dark';
     switch (this.planStatus.state) {
       case LaForgeProvisionStatus.Complete:
-        if (this.allAgentsResponding()) {
+        if (this.allChildrenResponding()) {
           return 'success';
         } else {
           return 'warning';
@@ -141,6 +154,21 @@ export class TeamComponent implements OnInit, OnDestroy {
   }
 
   shouldCollapse(): boolean {
-    return teamChildrenCompleted(this.team, this.envService.getStatus);
+    return (
+      this.planStatus &&
+      (this.planStatus.state === LaForgeProvisionStatus.Deleted ||
+        (this.planStatus.state === LaForgeProvisionStatus.Complete && this.allChildrenResponding()))
+    );
+  }
+
+  canOverrideExpand(): boolean {
+    return (
+      this.planStatus &&
+      (this.planStatus.state === LaForgeProvisionStatus.Complete || this.planStatus.state === LaForgeProvisionStatus.Deleted)
+    );
+  }
+
+  toggleCollapse(): void {
+    this.expandOverride = !this.expandOverride;
   }
 }

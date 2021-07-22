@@ -35,7 +35,10 @@
         <div class="navi-text">
           <!-- <div class="font-weight-bold">Build of 'test-win-vdi' has been completed.</div> -->
           <div class="font-weight-bold">{{ getMessage(task) }}</div>
-          <div class="text-muted">{{ task.end_time || task.start_time | dateAgo }}</div>
+          <div class="text-muted">
+            {{ task.end_time || task.start_time | dateAgo
+            }}<span *ngIf="task.end_time">, took {{ task.end_time | dateBetween: task.start_time }}</span>
+          </div>
         </div>
       </div>
     </a>

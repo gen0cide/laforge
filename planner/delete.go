@@ -14,16 +14,43 @@ import (
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/gen0cide/laforge/server/utils"
 	"github.com/sirupsen/logrus"
 )
 
-func DeleteBuild(client *ent.Client, entBuild *ent.Build, spawnedDelete chan bool) (bool, error) {
+func DeleteBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Build, spawnedDelete chan bool) (bool, error) {
 	deleteContext := context.Background()
+	defer deleteContext.Done()
+
+	entEnvironment, err := entBuild.QueryBuildToEnvironment().Only(deleteContext)
+	if err != nil {
+		logrus.Errorf("failed to query environment from build: %v", err)
+		return false, err
+	}
+
+	taskStatus, serverTask, err := utils.CreateServerTask(deleteContext, client, rdb, currentUser, servertask.TypeDELETEBUILD)
+	if err != nil {
+		return false, fmt.Errorf("error creating server task: %v", err)
+	}
+	serverTask, err = client.ServerTask.UpdateOne(serverTask).SetServerTaskToBuild(entBuild).SetServerTaskToEnvironment(entEnvironment).Save(deleteContext)
+	if err != nil {
+		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
+		if err != nil {
+			return false, fmt.Errorf("error failing execute build server task: %v", err)
+		}
+		return false, fmt.Errorf("error assigning environment and build to execute build server task: %v", err)
+	}
+	rdb.Publish(deleteContext, "updatedServerTask", serverTask.ID.String())
 
 	entPlans, err := entBuild.QueryBuildToPlan().All(deleteContext)
 	if err != nil {
 		spawnedDelete <- false
+		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
+		if err != nil {
+			return false, fmt.Errorf("error failing execute build server task: %v", err)
+		}
 		return false, err
 	}
 
@@ -32,6 +59,10 @@ func DeleteBuild(client *ent.Client, entBuild *ent.Build, spawnedDelete chan boo
 		planStatus, err := entPlan.PlanToStatus(deleteContext)
 		if err != nil {
 			spawnedDelete <- false
+			taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
+			if err != nil {
+				return false, fmt.Errorf("error failing execute build server task: %v", err)
+			}
 			return false, err
 		}
 
@@ -50,6 +81,10 @@ func DeleteBuild(client *ent.Client, entBuild *ent.Build, spawnedDelete chan boo
 	if err != nil {
 		logrus.Errorf("error querying root plans from build: %v", err)
 		spawnedDelete <- false
+		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
+		if err != nil {
+			return false, fmt.Errorf("error failing execute build server task: %v", err)
+		}
 		return false, err
 	}
 	logrus.Infof("ROOT PLANS: %v", rootPlans)
@@ -57,6 +92,10 @@ func DeleteBuild(client *ent.Client, entBuild *ent.Build, spawnedDelete chan boo
 	if err != nil {
 		logrus.Errorf("error querying environment from build: %v", err)
 		spawnedDelete <- false
+		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
+		if err != nil {
+			return false, fmt.Errorf("error failing execute build server task: %v", err)
+		}
 		return false, err
 	}
 
@@ -64,6 +103,10 @@ func DeleteBuild(client *ent.Client, entBuild *ent.Build, spawnedDelete chan boo
 	if err != nil {
 		logrus.Errorf("error generating builder: %v", err)
 		spawnedDelete <- false
+		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
+		if err != nil {
+			return false, fmt.Errorf("error failing execute build server task: %v", err)
+		}
 		return false, err
 	}
 
@@ -86,12 +129,21 @@ func DeleteBuild(client *ent.Client, entBuild *ent.Build, spawnedDelete chan boo
 	// Remove all rendered files
 	err = os.RemoveAll(environment.Name + "/" + fmt.Sprint(entBuild.Revision))
 	if err != nil {
+		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
+		if err != nil {
+			return false, fmt.Errorf("error failing execute build server task: %v", err)
+		}
 		return false, fmt.Errorf("error deleting rendered files: %v", err)
 	}
 	// err = client.Build.DeleteOne(entBuild).Exec(ctx)
 	// if err != nil {
 	// 	return false, err
 	// }
+
+	taskStatus, serverTask, err = utils.CompleteServerTask(deleteContext, client, rdb, taskStatus, serverTask)
+	if err != nil {
+		return false, fmt.Errorf("error completing execute build server task: %v", err)
+	}
 	return true, nil
 }
 

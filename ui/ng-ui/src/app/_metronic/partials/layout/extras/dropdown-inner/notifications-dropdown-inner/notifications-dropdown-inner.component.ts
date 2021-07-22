@@ -63,6 +63,8 @@ export class NotificationsDropdownInnerComponent implements OnInit {
           return `Render files for '${task.ServerTaskToEnvironment?.name} v${task.ServerTaskToBuild?.revision}'`;
         else if (task.ServerTaskToEnvironment) return `Render files for '${task.ServerTaskToEnvironment?.name}'`;
         else return `Rendering files`;
+      case LaForgeServerTaskType.Executebuild:
+        return `Execute build '${task.ServerTaskToEnvironment?.name} v${task.ServerTaskToBuild?.revision}'`;
       default:
         return 'Unknown task';
     }
@@ -104,6 +106,8 @@ export class NotificationsDropdownInnerComponent implements OnInit {
         return 'redo-alt';
       case LaForgeServerTaskType.Renderfiles:
         return 'print';
+      case LaForgeServerTaskType.Executebuild:
+        return 'rocket-launch';
       default:
         return 'question';
     }

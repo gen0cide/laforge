@@ -48,6 +48,24 @@ export type LaForgeAgentStatus = {
   timestamp: Scalars['Int'];
 };
 
+export type LaForgeAgentTask = {
+  __typename?: 'AgentTask';
+  id: Scalars['ID'];
+  args?: Maybe<Scalars['String']>;
+  command: LaForgeAgentCommand;
+  number: Scalars['Int'];
+  output?: Maybe<Scalars['String']>;
+  state: LaForgeAgentTaskState;
+  error_message?: Maybe<Scalars['String']>;
+};
+
+export enum LaForgeAgentTaskState {
+  Awaiting = 'AWAITING',
+  Inprogress = 'INPROGRESS',
+  Failed = 'FAILED',
+  Complete = 'COMPLETE'
+}
+
 export type LaForgeAuthUser = {
   __typename?: 'AuthUser';
   id: Scalars['ID'];
@@ -487,6 +505,7 @@ export type LaForgeQuery = {
   currentUser?: Maybe<LaForgeAuthUser>;
   getUserList?: Maybe<Array<Maybe<LaForgeAuthUser>>>;
   getCurrentUserTasks?: Maybe<Array<Maybe<LaForgeServerTask>>>;
+  getAgentTasks?: Maybe<Array<Maybe<LaForgeAgentTask>>>;
 };
 
 export type LaForgeQueryEnvironmentArgs = {
@@ -519,6 +538,10 @@ export type LaForgeQueryStatusArgs = {
 
 export type LaForgeQueryAgentStatusArgs = {
   clientId: Scalars['String'];
+};
+
+export type LaForgeQueryGetAgentTasksArgs = {
+  proStepUUID: Scalars['String'];
 };
 
 export enum LaForgeRoleLevel {
@@ -567,7 +590,8 @@ export enum LaForgeServerTaskType {
   Createbuild = 'CREATEBUILD',
   Renderfiles = 'RENDERFILES',
   Deletebuild = 'DELETEBUILD',
-  Rebuild = 'REBUILD'
+  Rebuild = 'REBUILD',
+  Executebuild = 'EXECUTEBUILD'
 }
 
 export type LaForgeStatus = {
@@ -625,6 +649,20 @@ export type LaForgeVarsMap = {
   value: Scalars['String'];
 };
 
+export type LaForgeGetAgentTasksQueryVariables = Exact<{
+  proStepId: Scalars['String'];
+}>;
+
+export type LaForgeGetAgentTasksQuery = { __typename?: 'Query' } & {
+  getAgentTasks?: Maybe<
+    Array<
+      Maybe<
+        { __typename?: 'AgentTask' } & Pick<LaForgeAgentTask, 'id' | 'state' | 'command' | 'args' | 'number' | 'output' | 'error_message'>
+      >
+    >
+  >;
+};
+
 export type LaForgeGetCurrentUserQueryVariables = Exact<{ [key: string]: never }>;
 
 export type LaForgeGetCurrentUserQuery = { __typename?: 'Query' } & {
@@ -643,7 +681,7 @@ export type LaForgeGetBuildTreeQueryVariables = Exact<{
 export type LaForgeGetBuildTreeQuery = { __typename?: 'Query' } & {
   build?: Maybe<
     { __typename?: 'Build' } & Pick<LaForgeBuild, 'id' | 'revision'> & {
-        buildToStatus: { __typename?: 'Status' } & Pick<LaForgeStatus, 'id'>;
+        buildToStatus: { __typename?: 'Status' } & LaForgeStatusFieldsFragment;
         buildToTeam: Array<
           Maybe<
             { __typename?: 'Team' } & Pick<LaForgeTeam, 'id' | 'team_number'> & {
@@ -998,6 +1036,20 @@ export type LaForgeRebuildMutationVariables = Exact<{
 
 export type LaForgeRebuildMutation = { __typename?: 'Mutation' } & Pick<LaForgeMutation, 'rebuild'>;
 
+export type LaForgeDeleteBuildMutationVariables = Exact<{
+  buildId: Scalars['String'];
+}>;
+
+export type LaForgeDeleteBuildMutation = { __typename?: 'Mutation' } & Pick<LaForgeMutation, 'deleteBuild'>;
+
+export type LaForgeExecuteBuildMutationVariables = Exact<{
+  buildId: Scalars['String'];
+}>;
+
+export type LaForgeExecuteBuildMutation = { __typename?: 'Mutation' } & {
+  executePlan?: Maybe<{ __typename?: 'Build' } & Pick<LaForgeBuild, 'id'>>;
+};
+
 export type LaForgeGetStatusQueryVariables = Exact<{
   statusId: Scalars['String'];
 }>;
@@ -1153,6 +1205,30 @@ export const ServerTaskFieldsFragmentDoc = gql`
   }
   ${StatusFieldsFragmentDoc}
 `;
+export const GetAgentTasksDocument = gql`
+  query GetAgentTasks($proStepId: String!) {
+    getAgentTasks(proStepUUID: $proStepId) {
+      id
+      state
+      command
+      args
+      number
+      output
+      error_message
+    }
+  }
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeGetAgentTasksGQL extends Apollo.Query<LaForgeGetAgentTasksQuery, LaForgeGetAgentTasksQueryVariables> {
+  document = GetAgentTasksDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
 export const GetCurrentUserDocument = gql`
   query GetCurrentUser {
     currentUser {
@@ -1186,7 +1262,7 @@ export const GetBuildTreeDocument = gql`
       id
       revision
       buildToStatus {
-        id
+        ...StatusFields
       }
       buildToTeam {
         id
@@ -1357,6 +1433,7 @@ export const GetBuildTreeDocument = gql`
       }
     }
   }
+  ${StatusFieldsFragmentDoc}
 `;
 
 @Injectable({
@@ -1676,6 +1753,40 @@ export const RebuildDocument = gql`
 })
 export class LaForgeRebuildGQL extends Apollo.Mutation<LaForgeRebuildMutation, LaForgeRebuildMutationVariables> {
   document = RebuildDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const DeleteBuildDocument = gql`
+  mutation DeleteBuild($buildId: String!) {
+    deleteBuild(buildUUID: $buildId)
+  }
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeDeleteBuildGQL extends Apollo.Mutation<LaForgeDeleteBuildMutation, LaForgeDeleteBuildMutationVariables> {
+  document = DeleteBuildDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const ExecuteBuildDocument = gql`
+  mutation ExecuteBuild($buildId: String!) {
+    executePlan(buildUUID: $buildId) {
+      id
+    }
+  }
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeExecuteBuildGQL extends Apollo.Mutation<LaForgeExecuteBuildMutation, LaForgeExecuteBuildMutationVariables> {
+  document = ExecuteBuildDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);

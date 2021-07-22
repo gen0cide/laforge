@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import {
   LaForgeGetBuildTreeQuery,
   LaForgeProvisioningStepType,
@@ -8,6 +9,8 @@ import {
 import { Subscription } from 'rxjs';
 import { ApiService } from 'src/app/services/api/api.service';
 import { EnvironmentService } from 'src/app/services/environment/environment.service';
+
+import { StepModalComponent } from '@components/step-modal/step-modal.component';
 
 @Component({
   selector: 'app-step',
@@ -25,7 +28,12 @@ export class StepComponent implements OnInit, OnDestroy {
   planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
   provisioningStepStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
 
-  constructor(private api: ApiService, private cdRef: ChangeDetectorRef, private envService: EnvironmentService) {}
+  constructor(
+    private api: ApiService,
+    private cdRef: ChangeDetectorRef,
+    private envService: EnvironmentService,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit() {
     const sub = this.envService.statusUpdate.asObservable().subscribe(() => {
@@ -37,6 +45,23 @@ export class StepComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.unsubscribe.forEach((sub) => sub.unsubscribe());
+  }
+
+  viewDetails(): void {
+    if (
+      this.planStatus.state === LaForgeProvisionStatus.Awaiting ||
+      this.planStatus.state === LaForgeProvisionStatus.Deleted ||
+      this.planStatus.state === LaForgeProvisionStatus.Planning
+    )
+      return;
+    this.dialog.open(StepModalComponent, {
+      width: '50%',
+      height: '80%',
+      data: {
+        provisioningStep: this.provisioningStep,
+        planStatus: this.planStatus
+      }
+    });
   }
 
   checkPlanStatus(): void {
