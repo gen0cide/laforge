@@ -43,6 +43,8 @@ const (
 	EdgeStatusToPlan = "StatusToPlan"
 	// EdgeStatusToServerTask holds the string denoting the statustoservertask edge name in mutations.
 	EdgeStatusToServerTask = "StatusToServerTask"
+	// EdgeStatusToAdhocPlan holds the string denoting the statustoadhocplan edge name in mutations.
+	EdgeStatusToAdhocPlan = "StatusToAdhocPlan"
 	// Table holds the table name of the status in the database.
 	Table = "status"
 	// StatusToBuildTable is the table the holds the StatusToBuild relation/edge.
@@ -94,6 +96,13 @@ const (
 	StatusToServerTaskInverseTable = "server_tasks"
 	// StatusToServerTaskColumn is the table column denoting the StatusToServerTask relation/edge.
 	StatusToServerTaskColumn = "server_task_server_task_to_status"
+	// StatusToAdhocPlanTable is the table the holds the StatusToAdhocPlan relation/edge.
+	StatusToAdhocPlanTable = "status"
+	// StatusToAdhocPlanInverseTable is the table name for the AdhocPlan entity.
+	// It exists in this package in order to avoid circular dependency with the "adhocplan" package.
+	StatusToAdhocPlanInverseTable = "adhoc_plans"
+	// StatusToAdhocPlanColumn is the table column denoting the StatusToAdhocPlan relation/edge.
+	StatusToAdhocPlanColumn = "adhoc_plan_adhoc_plan_to_status"
 )
 
 // Columns holds all SQL columns for status fields.
@@ -111,6 +120,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "status"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
+	"adhoc_plan_adhoc_plan_to_status",
 	"build_build_to_status",
 	"plan_plan_to_status",
 	"provisioned_host_provisioned_host_to_status",

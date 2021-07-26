@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/adhocplan"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -40,6 +41,7 @@ type StatusQuery struct {
 	withStatusToTeam               *TeamQuery
 	withStatusToPlan               *PlanQuery
 	withStatusToServerTask         *ServerTaskQuery
+	withStatusToAdhocPlan          *AdhocPlanQuery
 	withFKs                        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -224,6 +226,28 @@ func (sq *StatusQuery) QueryStatusToServerTask() *ServerTaskQuery {
 			sqlgraph.From(status.Table, status.FieldID, selector),
 			sqlgraph.To(servertask.Table, servertask.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToServerTaskTable, status.StatusToServerTaskColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryStatusToAdhocPlan chains the current query on the "StatusToAdhocPlan" edge.
+func (sq *StatusQuery) QueryStatusToAdhocPlan() *AdhocPlanQuery {
+	query := &AdhocPlanQuery{config: sq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, selector),
+			sqlgraph.To(adhocplan.Table, adhocplan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToAdhocPlanTable, status.StatusToAdhocPlanColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -419,6 +443,7 @@ func (sq *StatusQuery) Clone() *StatusQuery {
 		withStatusToTeam:               sq.withStatusToTeam.Clone(),
 		withStatusToPlan:               sq.withStatusToPlan.Clone(),
 		withStatusToServerTask:         sq.withStatusToServerTask.Clone(),
+		withStatusToAdhocPlan:          sq.withStatusToAdhocPlan.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
@@ -502,6 +527,17 @@ func (sq *StatusQuery) WithStatusToServerTask(opts ...func(*ServerTaskQuery)) *S
 	return sq
 }
 
+// WithStatusToAdhocPlan tells the query-builder to eager-load the nodes that are connected to
+// the "StatusToAdhocPlan" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *StatusQuery) WithStatusToAdhocPlan(opts ...func(*AdhocPlanQuery)) *StatusQuery {
+	query := &AdhocPlanQuery{config: sq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withStatusToAdhocPlan = query
+	return sq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -568,7 +604,7 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 		nodes       = []*Status{}
 		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [8]bool{
 			sq.withStatusToBuild != nil,
 			sq.withStatusToProvisionedNetwork != nil,
 			sq.withStatusToProvisionedHost != nil,
@@ -576,9 +612,10 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 			sq.withStatusToTeam != nil,
 			sq.withStatusToPlan != nil,
 			sq.withStatusToServerTask != nil,
+			sq.withStatusToAdhocPlan != nil,
 		}
 	)
-	if sq.withStatusToBuild != nil || sq.withStatusToProvisionedNetwork != nil || sq.withStatusToProvisionedHost != nil || sq.withStatusToProvisioningStep != nil || sq.withStatusToTeam != nil || sq.withStatusToPlan != nil || sq.withStatusToServerTask != nil {
+	if sq.withStatusToBuild != nil || sq.withStatusToProvisionedNetwork != nil || sq.withStatusToProvisionedHost != nil || sq.withStatusToProvisioningStep != nil || sq.withStatusToTeam != nil || sq.withStatusToPlan != nil || sq.withStatusToServerTask != nil || sq.withStatusToAdhocPlan != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -803,6 +840,35 @@ func (sq *StatusQuery) sqlAll(ctx context.Context) ([]*Status, error) {
 			}
 			for i := range nodes {
 				nodes[i].Edges.StatusToServerTask = n
+			}
+		}
+	}
+
+	if query := sq.withStatusToAdhocPlan; query != nil {
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Status)
+		for i := range nodes {
+			if nodes[i].adhoc_plan_adhoc_plan_to_status == nil {
+				continue
+			}
+			fk := *nodes[i].adhoc_plan_adhoc_plan_to_status
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(adhocplan.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "adhoc_plan_adhoc_plan_to_status" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.StatusToAdhocPlan = n
 			}
 		}
 	}

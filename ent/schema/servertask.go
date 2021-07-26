@@ -8,12 +8,12 @@ import (
 	"github.com/google/uuid"
 )
 
-// AgentTask holds the schema definition for the AgentTask entity.
+// ServerTask holds the schema definition for the AgentTask entity.
 type ServerTask struct {
 	ent.Schema
 }
 
-// Fields of the AgentTask.
+// Fields of the ServerTask.
 func (ServerTask) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -33,7 +33,7 @@ func (ServerTask) Fields() []ent.Field {
 	}
 }
 
-// Edges of the AgentTask.
+// Edges of the ServerTask.
 func (ServerTask) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("ServerTaskToAuthUser", AuthUser.Type).Unique().Required(),

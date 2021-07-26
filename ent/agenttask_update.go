@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/adhocplan"
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -119,6 +120,21 @@ func (atu *AgentTaskUpdate) SetAgentTaskToProvisionedHost(p *ProvisionedHost) *A
 	return atu.SetAgentTaskToProvisionedHostID(p.ID)
 }
 
+// AddAgentTaskToAdhocPlanIDs adds the "AgentTaskToAdhocPlan" edge to the AdhocPlan entity by IDs.
+func (atu *AgentTaskUpdate) AddAgentTaskToAdhocPlanIDs(ids ...uuid.UUID) *AgentTaskUpdate {
+	atu.mutation.AddAgentTaskToAdhocPlanIDs(ids...)
+	return atu
+}
+
+// AddAgentTaskToAdhocPlan adds the "AgentTaskToAdhocPlan" edges to the AdhocPlan entity.
+func (atu *AgentTaskUpdate) AddAgentTaskToAdhocPlan(a ...*AdhocPlan) *AgentTaskUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return atu.AddAgentTaskToAdhocPlanIDs(ids...)
+}
+
 // Mutation returns the AgentTaskMutation object of the builder.
 func (atu *AgentTaskUpdate) Mutation() *AgentTaskMutation {
 	return atu.mutation
@@ -134,6 +150,27 @@ func (atu *AgentTaskUpdate) ClearAgentTaskToProvisioningStep() *AgentTaskUpdate 
 func (atu *AgentTaskUpdate) ClearAgentTaskToProvisionedHost() *AgentTaskUpdate {
 	atu.mutation.ClearAgentTaskToProvisionedHost()
 	return atu
+}
+
+// ClearAgentTaskToAdhocPlan clears all "AgentTaskToAdhocPlan" edges to the AdhocPlan entity.
+func (atu *AgentTaskUpdate) ClearAgentTaskToAdhocPlan() *AgentTaskUpdate {
+	atu.mutation.ClearAgentTaskToAdhocPlan()
+	return atu
+}
+
+// RemoveAgentTaskToAdhocPlanIDs removes the "AgentTaskToAdhocPlan" edge to AdhocPlan entities by IDs.
+func (atu *AgentTaskUpdate) RemoveAgentTaskToAdhocPlanIDs(ids ...uuid.UUID) *AgentTaskUpdate {
+	atu.mutation.RemoveAgentTaskToAdhocPlanIDs(ids...)
+	return atu
+}
+
+// RemoveAgentTaskToAdhocPlan removes "AgentTaskToAdhocPlan" edges to AdhocPlan entities.
+func (atu *AgentTaskUpdate) RemoveAgentTaskToAdhocPlan(a ...*AdhocPlan) *AgentTaskUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return atu.RemoveAgentTaskToAdhocPlanIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -348,6 +385,60 @@ func (atu *AgentTaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if atu.mutation.AgentTaskToAdhocPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agenttask.AgentTaskToAdhocPlanTable,
+			Columns: []string{agenttask.AgentTaskToAdhocPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: adhocplan.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := atu.mutation.RemovedAgentTaskToAdhocPlanIDs(); len(nodes) > 0 && !atu.mutation.AgentTaskToAdhocPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agenttask.AgentTaskToAdhocPlanTable,
+			Columns: []string{agenttask.AgentTaskToAdhocPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: adhocplan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := atu.mutation.AgentTaskToAdhocPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agenttask.AgentTaskToAdhocPlanTable,
+			Columns: []string{agenttask.AgentTaskToAdhocPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: adhocplan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, atu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{agenttask.Label}
@@ -456,6 +547,21 @@ func (atuo *AgentTaskUpdateOne) SetAgentTaskToProvisionedHost(p *ProvisionedHost
 	return atuo.SetAgentTaskToProvisionedHostID(p.ID)
 }
 
+// AddAgentTaskToAdhocPlanIDs adds the "AgentTaskToAdhocPlan" edge to the AdhocPlan entity by IDs.
+func (atuo *AgentTaskUpdateOne) AddAgentTaskToAdhocPlanIDs(ids ...uuid.UUID) *AgentTaskUpdateOne {
+	atuo.mutation.AddAgentTaskToAdhocPlanIDs(ids...)
+	return atuo
+}
+
+// AddAgentTaskToAdhocPlan adds the "AgentTaskToAdhocPlan" edges to the AdhocPlan entity.
+func (atuo *AgentTaskUpdateOne) AddAgentTaskToAdhocPlan(a ...*AdhocPlan) *AgentTaskUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return atuo.AddAgentTaskToAdhocPlanIDs(ids...)
+}
+
 // Mutation returns the AgentTaskMutation object of the builder.
 func (atuo *AgentTaskUpdateOne) Mutation() *AgentTaskMutation {
 	return atuo.mutation
@@ -471,6 +577,27 @@ func (atuo *AgentTaskUpdateOne) ClearAgentTaskToProvisioningStep() *AgentTaskUpd
 func (atuo *AgentTaskUpdateOne) ClearAgentTaskToProvisionedHost() *AgentTaskUpdateOne {
 	atuo.mutation.ClearAgentTaskToProvisionedHost()
 	return atuo
+}
+
+// ClearAgentTaskToAdhocPlan clears all "AgentTaskToAdhocPlan" edges to the AdhocPlan entity.
+func (atuo *AgentTaskUpdateOne) ClearAgentTaskToAdhocPlan() *AgentTaskUpdateOne {
+	atuo.mutation.ClearAgentTaskToAdhocPlan()
+	return atuo
+}
+
+// RemoveAgentTaskToAdhocPlanIDs removes the "AgentTaskToAdhocPlan" edge to AdhocPlan entities by IDs.
+func (atuo *AgentTaskUpdateOne) RemoveAgentTaskToAdhocPlanIDs(ids ...uuid.UUID) *AgentTaskUpdateOne {
+	atuo.mutation.RemoveAgentTaskToAdhocPlanIDs(ids...)
+	return atuo
+}
+
+// RemoveAgentTaskToAdhocPlan removes "AgentTaskToAdhocPlan" edges to AdhocPlan entities.
+func (atuo *AgentTaskUpdateOne) RemoveAgentTaskToAdhocPlan(a ...*AdhocPlan) *AgentTaskUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return atuo.RemoveAgentTaskToAdhocPlanIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -701,6 +828,60 @@ func (atuo *AgentTaskUpdateOne) sqlSave(ctx context.Context) (_node *AgentTask, 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if atuo.mutation.AgentTaskToAdhocPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agenttask.AgentTaskToAdhocPlanTable,
+			Columns: []string{agenttask.AgentTaskToAdhocPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: adhocplan.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := atuo.mutation.RemovedAgentTaskToAdhocPlanIDs(); len(nodes) > 0 && !atuo.mutation.AgentTaskToAdhocPlanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agenttask.AgentTaskToAdhocPlanTable,
+			Columns: []string{agenttask.AgentTaskToAdhocPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: adhocplan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := atuo.mutation.AgentTaskToAdhocPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agenttask.AgentTaskToAdhocPlanTable,
+			Columns: []string{agenttask.AgentTaskToAdhocPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: adhocplan.FieldID,
 				},
 			},
 		}

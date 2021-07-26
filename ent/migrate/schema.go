@@ -8,6 +8,32 @@ import (
 )
 
 var (
+	// AdhocPlansColumns holds the columns for the "adhoc_plans" table.
+	AdhocPlansColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "adhoc_plan_adhoc_plan_to_build", Type: field.TypeUUID, Nullable: true},
+		{Name: "adhoc_plan_adhoc_plan_to_agent_task", Type: field.TypeUUID, Nullable: true},
+	}
+	// AdhocPlansTable holds the schema information for the "adhoc_plans" table.
+	AdhocPlansTable = &schema.Table{
+		Name:       "adhoc_plans",
+		Columns:    AdhocPlansColumns,
+		PrimaryKey: []*schema.Column{AdhocPlansColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "adhoc_plans_builds_AdhocPlanToBuild",
+				Columns:    []*schema.Column{AdhocPlansColumns[1]},
+				RefColumns: []*schema.Column{BuildsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "adhoc_plans_agent_tasks_AdhocPlanToAgentTask",
+				Columns:    []*schema.Column{AdhocPlansColumns[2]},
+				RefColumns: []*schema.Column{AgentTasksColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// AgentStatusColumns holds the columns for the "agent_status" table.
 	AgentStatusColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -103,6 +129,7 @@ var (
 		{Name: "completed_plan", Type: field.TypeBool, Default: false},
 		{Name: "build_build_to_environment", Type: field.TypeUUID, Nullable: true},
 		{Name: "build_build_to_competition", Type: field.TypeUUID, Nullable: true},
+		{Name: "build_build_to_latest_commit", Type: field.TypeUUID, Nullable: true},
 	}
 	// BuildsTable holds the schema information for the "builds" table.
 	BuildsTable = &schema.Table{
@@ -120,6 +147,12 @@ var (
 				Symbol:     "builds_competitions_BuildToCompetition",
 				Columns:    []*schema.Column{BuildsColumns[5]},
 				RefColumns: []*schema.Column{CompetitionsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "builds_commits_BuildToLatestCommit",
+				Columns:    []*schema.Column{BuildsColumns[6]},
+				RefColumns: []*schema.Column{CommitsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -151,6 +184,28 @@ var (
 				Columns:    []*schema.Column{CommandsColumns[12]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
 				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// CommitsColumns holds the columns for the "commits" table.
+	CommitsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"ROOT", "REBUILD", "DELETE"}},
+		{Name: "revision", Type: field.TypeInt},
+		{Name: "commit_state", Type: field.TypeEnum, Enums: []string{"PLANNING", "INPROGRESS", "APPLIED"}},
+		{Name: "commit_commit_to_build", Type: field.TypeUUID, Nullable: true},
+	}
+	// CommitsTable holds the schema information for the "commits" table.
+	CommitsTable = &schema.Table{
+		Name:       "commits",
+		Columns:    CommitsColumns,
+		PrimaryKey: []*schema.Column{CommitsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "commits_builds_CommitToBuild",
+				Columns:    []*schema.Column{CommitsColumns[4]},
+				RefColumns: []*schema.Column{BuildsColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -569,6 +624,34 @@ var (
 			},
 		},
 	}
+	// PlanDiffsColumns holds the columns for the "plan_diffs" table.
+	PlanDiffsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "revision", Type: field.TypeInt},
+		{Name: "new_state", Type: field.TypeEnum, Enums: []string{"PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED", "TODELETE", "DELETEINPROGRESS", "DELETED"}},
+		{Name: "plan_diff_plan_diff_to_commit", Type: field.TypeUUID, Nullable: true},
+		{Name: "plan_diff_plan_diff_to_plan", Type: field.TypeUUID, Nullable: true},
+	}
+	// PlanDiffsTable holds the schema information for the "plan_diffs" table.
+	PlanDiffsTable = &schema.Table{
+		Name:       "plan_diffs",
+		Columns:    PlanDiffsColumns,
+		PrimaryKey: []*schema.Column{PlanDiffsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "plan_diffs_commits_PlanDiffToCommit",
+				Columns:    []*schema.Column{PlanDiffsColumns[3]},
+				RefColumns: []*schema.Column{CommitsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "plan_diffs_plans_PlanDiffToPlan",
+				Columns:    []*schema.Column{PlanDiffsColumns[4]},
+				RefColumns: []*schema.Column{PlansColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// ProvisionedHostsColumns holds the columns for the "provisioned_hosts" table.
 	ProvisionedHostsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -834,6 +917,7 @@ var (
 		{Name: "failed", Type: field.TypeBool, Default: false},
 		{Name: "completed", Type: field.TypeBool, Default: false},
 		{Name: "error", Type: field.TypeString, Nullable: true},
+		{Name: "adhoc_plan_adhoc_plan_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "build_build_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "plan_plan_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "provisioned_host_provisioned_host_to_status", Type: field.TypeUUID, Unique: true, Nullable: true},
@@ -849,44 +933,50 @@ var (
 		PrimaryKey: []*schema.Column{StatusColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "status_builds_BuildToStatus",
+				Symbol:     "status_adhoc_plans_AdhocPlanToStatus",
 				Columns:    []*schema.Column{StatusColumns[8]},
+				RefColumns: []*schema.Column{AdhocPlansColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "status_builds_BuildToStatus",
+				Columns:    []*schema.Column{StatusColumns[9]},
 				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "status_plans_PlanToStatus",
-				Columns:    []*schema.Column{StatusColumns[9]},
+				Columns:    []*schema.Column{StatusColumns[10]},
 				RefColumns: []*schema.Column{PlansColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "status_provisioned_hosts_ProvisionedHostToStatus",
-				Columns:    []*schema.Column{StatusColumns[10]},
+				Columns:    []*schema.Column{StatusColumns[11]},
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "status_provisioned_networks_ProvisionedNetworkToStatus",
-				Columns:    []*schema.Column{StatusColumns[11]},
+				Columns:    []*schema.Column{StatusColumns[12]},
 				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "status_provisioning_steps_ProvisioningStepToStatus",
-				Columns:    []*schema.Column{StatusColumns[12]},
+				Columns:    []*schema.Column{StatusColumns[13]},
 				RefColumns: []*schema.Column{ProvisioningStepsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "status_server_tasks_ServerTaskToStatus",
-				Columns:    []*schema.Column{StatusColumns[13]},
+				Columns:    []*schema.Column{StatusColumns[14]},
 				RefColumns: []*schema.Column{ServerTasksColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "status_teams_TeamToStatus",
-				Columns:    []*schema.Column{StatusColumns[14]},
+				Columns:    []*schema.Column{StatusColumns[15]},
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -1010,6 +1100,31 @@ var (
 				Columns:    []*schema.Column{UsersColumns[8]},
 				RefColumns: []*schema.Column{ScriptsColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// AdhocPlanNextAdhocPlanColumns holds the columns for the "adhoc_plan_NextAdhocPlan" table.
+	AdhocPlanNextAdhocPlanColumns = []*schema.Column{
+		{Name: "adhoc_plan_id", Type: field.TypeUUID},
+		{Name: "PrevAdhocPlan_id", Type: field.TypeUUID},
+	}
+	// AdhocPlanNextAdhocPlanTable holds the schema information for the "adhoc_plan_NextAdhocPlan" table.
+	AdhocPlanNextAdhocPlanTable = &schema.Table{
+		Name:       "adhoc_plan_NextAdhocPlan",
+		Columns:    AdhocPlanNextAdhocPlanColumns,
+		PrimaryKey: []*schema.Column{AdhocPlanNextAdhocPlanColumns[0], AdhocPlanNextAdhocPlanColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "adhoc_plan_NextAdhocPlan_adhoc_plan_id",
+				Columns:    []*schema.Column{AdhocPlanNextAdhocPlanColumns[0]},
+				RefColumns: []*schema.Column{AdhocPlansColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "adhoc_plan_NextAdhocPlan_PrevAdhocPlan_id",
+				Columns:    []*schema.Column{AdhocPlanNextAdhocPlanColumns[1]},
+				RefColumns: []*schema.Column{AdhocPlansColumns[0]},
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -1190,11 +1305,13 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AdhocPlansTable,
 		AgentStatusTable,
 		AgentTasksTable,
 		AuthUsersTable,
 		BuildsTable,
 		CommandsTable,
+		CommitsTable,
 		CompetitionsTable,
 		DnSsTable,
 		DNSRecordsTable,
@@ -1211,6 +1328,7 @@ var (
 		IncludedNetworksTable,
 		NetworksTable,
 		PlansTable,
+		PlanDiffsTable,
 		ProvisionedHostsTable,
 		ProvisionedNetworksTable,
 		ProvisioningStepsTable,
@@ -1222,6 +1340,7 @@ var (
 		TeamsTable,
 		TokensTable,
 		UsersTable,
+		AdhocPlanNextAdhocPlanTable,
 		CompetitionCompetitionToDNSTable,
 		EnvironmentEnvironmentToUserTable,
 		EnvironmentEnvironmentToIncludedNetworkTable,
@@ -1233,12 +1352,16 @@ var (
 )
 
 func init() {
+	AdhocPlansTable.ForeignKeys[0].RefTable = BuildsTable
+	AdhocPlansTable.ForeignKeys[1].RefTable = AgentTasksTable
 	AgentStatusTable.ForeignKeys[0].RefTable = ProvisionedHostsTable
 	AgentTasksTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	AgentTasksTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
 	BuildsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	BuildsTable.ForeignKeys[1].RefTable = CompetitionsTable
+	BuildsTable.ForeignKeys[2].RefTable = CommitsTable
 	CommandsTable.ForeignKeys[0].RefTable = EnvironmentsTable
+	CommitsTable.ForeignKeys[0].RefTable = BuildsTable
 	CompetitionsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	DNSRecordsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	DisksTable.ForeignKeys[0].RefTable = HostsTable
@@ -1258,6 +1381,8 @@ func init() {
 	IncludedNetworksTable.ForeignKeys[0].RefTable = NetworksTable
 	NetworksTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	PlansTable.ForeignKeys[0].RefTable = BuildsTable
+	PlanDiffsTable.ForeignKeys[0].RefTable = CommitsTable
+	PlanDiffsTable.ForeignKeys[1].RefTable = PlansTable
 	ProvisionedHostsTable.ForeignKeys[0].RefTable = GinFileMiddlewaresTable
 	ProvisionedHostsTable.ForeignKeys[1].RefTable = PlansTable
 	ProvisionedHostsTable.ForeignKeys[2].RefTable = ProvisionedNetworksTable
@@ -1280,13 +1405,14 @@ func init() {
 	ServerTasksTable.ForeignKeys[0].RefTable = AuthUsersTable
 	ServerTasksTable.ForeignKeys[1].RefTable = EnvironmentsTable
 	ServerTasksTable.ForeignKeys[2].RefTable = BuildsTable
-	StatusTable.ForeignKeys[0].RefTable = BuildsTable
-	StatusTable.ForeignKeys[1].RefTable = PlansTable
-	StatusTable.ForeignKeys[2].RefTable = ProvisionedHostsTable
-	StatusTable.ForeignKeys[3].RefTable = ProvisionedNetworksTable
-	StatusTable.ForeignKeys[4].RefTable = ProvisioningStepsTable
-	StatusTable.ForeignKeys[5].RefTable = ServerTasksTable
-	StatusTable.ForeignKeys[6].RefTable = TeamsTable
+	StatusTable.ForeignKeys[0].RefTable = AdhocPlansTable
+	StatusTable.ForeignKeys[1].RefTable = BuildsTable
+	StatusTable.ForeignKeys[2].RefTable = PlansTable
+	StatusTable.ForeignKeys[3].RefTable = ProvisionedHostsTable
+	StatusTable.ForeignKeys[4].RefTable = ProvisionedNetworksTable
+	StatusTable.ForeignKeys[5].RefTable = ProvisioningStepsTable
+	StatusTable.ForeignKeys[6].RefTable = ServerTasksTable
+	StatusTable.ForeignKeys[7].RefTable = TeamsTable
 	TagsTable.ForeignKeys[0].RefTable = IncludedNetworksTable
 	TagsTable.ForeignKeys[1].RefTable = UsersTable
 	TeamsTable.ForeignKeys[0].RefTable = PlansTable
@@ -1296,6 +1422,8 @@ func init() {
 	UsersTable.ForeignKeys[1].RefTable = FindingsTable
 	UsersTable.ForeignKeys[2].RefTable = HostsTable
 	UsersTable.ForeignKeys[3].RefTable = ScriptsTable
+	AdhocPlanNextAdhocPlanTable.ForeignKeys[0].RefTable = AdhocPlansTable
+	AdhocPlanNextAdhocPlanTable.ForeignKeys[1].RefTable = AdhocPlansTable
 	CompetitionCompetitionToDNSTable.ForeignKeys[0].RefTable = CompetitionsTable
 	CompetitionCompetitionToDNSTable.ForeignKeys[1].RefTable = DnSsTable
 	EnvironmentEnvironmentToUserTable.ForeignKeys[0].RefTable = EnvironmentsTable

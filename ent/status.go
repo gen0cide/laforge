@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/gen0cide/laforge/ent/adhocplan"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -57,7 +58,10 @@ type Status struct {
 	HCLStatusToPlan *Plan `json:"StatusToPlan,omitempty"`
 	// StatusToServerTask holds the value of the StatusToServerTask edge.
 	HCLStatusToServerTask *ServerTask `json:"StatusToServerTask,omitempty"`
+	// StatusToAdhocPlan holds the value of the StatusToAdhocPlan edge.
+	HCLStatusToAdhocPlan *AdhocPlan `json:"StatusToAdhocPlan,omitempty"`
 	//
+	adhoc_plan_adhoc_plan_to_status                   *uuid.UUID
 	build_build_to_status                             *uuid.UUID
 	plan_plan_to_status                               *uuid.UUID
 	provisioned_host_provisioned_host_to_status       *uuid.UUID
@@ -83,9 +87,11 @@ type StatusEdges struct {
 	StatusToPlan *Plan `json:"StatusToPlan,omitempty"`
 	// StatusToServerTask holds the value of the StatusToServerTask edge.
 	StatusToServerTask *ServerTask `json:"StatusToServerTask,omitempty"`
+	// StatusToAdhocPlan holds the value of the StatusToAdhocPlan edge.
+	StatusToAdhocPlan *AdhocPlan `json:"StatusToAdhocPlan,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // StatusToBuildOrErr returns the StatusToBuild value or an error if the edge
@@ -186,6 +192,20 @@ func (e StatusEdges) StatusToServerTaskOrErr() (*ServerTask, error) {
 	return nil, &NotLoadedError{edge: "StatusToServerTask"}
 }
 
+// StatusToAdhocPlanOrErr returns the StatusToAdhocPlan value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e StatusEdges) StatusToAdhocPlanOrErr() (*AdhocPlan, error) {
+	if e.loadedTypes[7] {
+		if e.StatusToAdhocPlan == nil {
+			// The edge StatusToAdhocPlan was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: adhocplan.Label}
+		}
+		return e.StatusToAdhocPlan, nil
+	}
+	return nil, &NotLoadedError{edge: "StatusToAdhocPlan"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Status) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -199,19 +219,21 @@ func (*Status) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullTime)
 		case status.FieldID:
 			values[i] = new(uuid.UUID)
-		case status.ForeignKeys[0]: // build_build_to_status
+		case status.ForeignKeys[0]: // adhoc_plan_adhoc_plan_to_status
 			values[i] = new(uuid.UUID)
-		case status.ForeignKeys[1]: // plan_plan_to_status
+		case status.ForeignKeys[1]: // build_build_to_status
 			values[i] = new(uuid.UUID)
-		case status.ForeignKeys[2]: // provisioned_host_provisioned_host_to_status
+		case status.ForeignKeys[2]: // plan_plan_to_status
 			values[i] = new(uuid.UUID)
-		case status.ForeignKeys[3]: // provisioned_network_provisioned_network_to_status
+		case status.ForeignKeys[3]: // provisioned_host_provisioned_host_to_status
 			values[i] = new(uuid.UUID)
-		case status.ForeignKeys[4]: // provisioning_step_provisioning_step_to_status
+		case status.ForeignKeys[4]: // provisioned_network_provisioned_network_to_status
 			values[i] = new(uuid.UUID)
-		case status.ForeignKeys[5]: // server_task_server_task_to_status
+		case status.ForeignKeys[5]: // provisioning_step_provisioning_step_to_status
 			values[i] = new(uuid.UUID)
-		case status.ForeignKeys[6]: // team_team_to_status
+		case status.ForeignKeys[6]: // server_task_server_task_to_status
+			values[i] = new(uuid.UUID)
+		case status.ForeignKeys[7]: // team_team_to_status
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Status", columns[i])
@@ -278,41 +300,47 @@ func (s *Status) assignValues(columns []string, values []interface{}) error {
 			}
 		case status.ForeignKeys[0]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field adhoc_plan_adhoc_plan_to_status", values[i])
+			} else if value != nil {
+				s.adhoc_plan_adhoc_plan_to_status = value
+			}
+		case status.ForeignKeys[1]:
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field build_build_to_status", values[i])
 			} else if value != nil {
 				s.build_build_to_status = value
 			}
-		case status.ForeignKeys[1]:
+		case status.ForeignKeys[2]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field plan_plan_to_status", values[i])
 			} else if value != nil {
 				s.plan_plan_to_status = value
 			}
-		case status.ForeignKeys[2]:
+		case status.ForeignKeys[3]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioned_host_provisioned_host_to_status", values[i])
 			} else if value != nil {
 				s.provisioned_host_provisioned_host_to_status = value
 			}
-		case status.ForeignKeys[3]:
+		case status.ForeignKeys[4]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioned_network_provisioned_network_to_status", values[i])
 			} else if value != nil {
 				s.provisioned_network_provisioned_network_to_status = value
 			}
-		case status.ForeignKeys[4]:
+		case status.ForeignKeys[5]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioning_step_provisioning_step_to_status", values[i])
 			} else if value != nil {
 				s.provisioning_step_provisioning_step_to_status = value
 			}
-		case status.ForeignKeys[5]:
+		case status.ForeignKeys[6]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field server_task_server_task_to_status", values[i])
 			} else if value != nil {
 				s.server_task_server_task_to_status = value
 			}
-		case status.ForeignKeys[6]:
+		case status.ForeignKeys[7]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field team_team_to_status", values[i])
 			} else if value != nil {
@@ -356,6 +384,11 @@ func (s *Status) QueryStatusToPlan() *PlanQuery {
 // QueryStatusToServerTask queries the "StatusToServerTask" edge of the Status entity.
 func (s *Status) QueryStatusToServerTask() *ServerTaskQuery {
 	return (&StatusClient{config: s.config}).QueryStatusToServerTask(s)
+}
+
+// QueryStatusToAdhocPlan queries the "StatusToAdhocPlan" edge of the Status entity.
+func (s *Status) QueryStatusToAdhocPlan() *AdhocPlanQuery {
+	return (&StatusClient{config: s.config}).QueryStatusToAdhocPlan(s)
 }
 
 // Update returns a builder for updating this Status.

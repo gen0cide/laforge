@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/plan"
+	"github.com/gen0cide/laforge/ent/plandiff"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
@@ -195,6 +196,21 @@ func (pu *PlanUpdate) SetPlanToStatus(s *Status) *PlanUpdate {
 	return pu.SetPlanToStatusID(s.ID)
 }
 
+// AddPlanToPlanDiffIDs adds the "PlanToPlanDiffs" edge to the PlanDiff entity by IDs.
+func (pu *PlanUpdate) AddPlanToPlanDiffIDs(ids ...uuid.UUID) *PlanUpdate {
+	pu.mutation.AddPlanToPlanDiffIDs(ids...)
+	return pu
+}
+
+// AddPlanToPlanDiffs adds the "PlanToPlanDiffs" edges to the PlanDiff entity.
+func (pu *PlanUpdate) AddPlanToPlanDiffs(p ...*PlanDiff) *PlanUpdate {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.AddPlanToPlanDiffIDs(ids...)
+}
+
 // Mutation returns the PlanMutation object of the builder.
 func (pu *PlanUpdate) Mutation() *PlanMutation {
 	return pu.mutation
@@ -276,6 +292,27 @@ func (pu *PlanUpdate) ClearPlanToProvisioningStep() *PlanUpdate {
 func (pu *PlanUpdate) ClearPlanToStatus() *PlanUpdate {
 	pu.mutation.ClearPlanToStatus()
 	return pu
+}
+
+// ClearPlanToPlanDiffs clears all "PlanToPlanDiffs" edges to the PlanDiff entity.
+func (pu *PlanUpdate) ClearPlanToPlanDiffs() *PlanUpdate {
+	pu.mutation.ClearPlanToPlanDiffs()
+	return pu
+}
+
+// RemovePlanToPlanDiffIDs removes the "PlanToPlanDiffs" edge to PlanDiff entities by IDs.
+func (pu *PlanUpdate) RemovePlanToPlanDiffIDs(ids ...uuid.UUID) *PlanUpdate {
+	pu.mutation.RemovePlanToPlanDiffIDs(ids...)
+	return pu
+}
+
+// RemovePlanToPlanDiffs removes "PlanToPlanDiffs" edges to PlanDiff entities.
+func (pu *PlanUpdate) RemovePlanToPlanDiffs(p ...*PlanDiff) *PlanUpdate {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pu.RemovePlanToPlanDiffIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -712,6 +749,60 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if pu.mutation.PlanToPlanDiffsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   plan.PlanToPlanDiffsTable,
+			Columns: []string{plan.PlanToPlanDiffsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: plandiff.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedPlanToPlanDiffsIDs(); len(nodes) > 0 && !pu.mutation.PlanToPlanDiffsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   plan.PlanToPlanDiffsTable,
+			Columns: []string{plan.PlanToPlanDiffsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: plandiff.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.PlanToPlanDiffsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   plan.PlanToPlanDiffsTable,
+			Columns: []string{plan.PlanToPlanDiffsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: plandiff.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{plan.Label}
@@ -892,6 +983,21 @@ func (puo *PlanUpdateOne) SetPlanToStatus(s *Status) *PlanUpdateOne {
 	return puo.SetPlanToStatusID(s.ID)
 }
 
+// AddPlanToPlanDiffIDs adds the "PlanToPlanDiffs" edge to the PlanDiff entity by IDs.
+func (puo *PlanUpdateOne) AddPlanToPlanDiffIDs(ids ...uuid.UUID) *PlanUpdateOne {
+	puo.mutation.AddPlanToPlanDiffIDs(ids...)
+	return puo
+}
+
+// AddPlanToPlanDiffs adds the "PlanToPlanDiffs" edges to the PlanDiff entity.
+func (puo *PlanUpdateOne) AddPlanToPlanDiffs(p ...*PlanDiff) *PlanUpdateOne {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.AddPlanToPlanDiffIDs(ids...)
+}
+
 // Mutation returns the PlanMutation object of the builder.
 func (puo *PlanUpdateOne) Mutation() *PlanMutation {
 	return puo.mutation
@@ -973,6 +1079,27 @@ func (puo *PlanUpdateOne) ClearPlanToProvisioningStep() *PlanUpdateOne {
 func (puo *PlanUpdateOne) ClearPlanToStatus() *PlanUpdateOne {
 	puo.mutation.ClearPlanToStatus()
 	return puo
+}
+
+// ClearPlanToPlanDiffs clears all "PlanToPlanDiffs" edges to the PlanDiff entity.
+func (puo *PlanUpdateOne) ClearPlanToPlanDiffs() *PlanUpdateOne {
+	puo.mutation.ClearPlanToPlanDiffs()
+	return puo
+}
+
+// RemovePlanToPlanDiffIDs removes the "PlanToPlanDiffs" edge to PlanDiff entities by IDs.
+func (puo *PlanUpdateOne) RemovePlanToPlanDiffIDs(ids ...uuid.UUID) *PlanUpdateOne {
+	puo.mutation.RemovePlanToPlanDiffIDs(ids...)
+	return puo
+}
+
+// RemovePlanToPlanDiffs removes "PlanToPlanDiffs" edges to PlanDiff entities.
+func (puo *PlanUpdateOne) RemovePlanToPlanDiffs(p ...*PlanDiff) *PlanUpdateOne {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return puo.RemovePlanToPlanDiffIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -1425,6 +1552,60 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: status.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.PlanToPlanDiffsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   plan.PlanToPlanDiffsTable,
+			Columns: []string{plan.PlanToPlanDiffsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: plandiff.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedPlanToPlanDiffsIDs(); len(nodes) > 0 && !puo.mutation.PlanToPlanDiffsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   plan.PlanToPlanDiffsTable,
+			Columns: []string{plan.PlanToPlanDiffsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: plandiff.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.PlanToPlanDiffsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   plan.PlanToPlanDiffsTable,
+			Columns: []string{plan.PlanToPlanDiffsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: plandiff.FieldID,
 				},
 			},
 		}

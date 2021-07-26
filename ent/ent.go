@@ -10,11 +10,13 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/gen0cide/laforge/ent/adhocplan"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
+	"github.com/gen0cide/laforge/ent/commit"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/dns"
@@ -31,6 +33,7 @@ import (
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/plan"
+	"github.com/gen0cide/laforge/ent/plandiff"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
@@ -62,11 +65,13 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
+		adhocplan.Table:          adhocplan.ValidColumn,
 		agentstatus.Table:        agentstatus.ValidColumn,
 		agenttask.Table:          agenttask.ValidColumn,
 		authuser.Table:           authuser.ValidColumn,
 		build.Table:              build.ValidColumn,
 		command.Table:            command.ValidColumn,
+		commit.Table:             commit.ValidColumn,
 		competition.Table:        competition.ValidColumn,
 		dns.Table:                dns.ValidColumn,
 		dnsrecord.Table:          dnsrecord.ValidColumn,
@@ -83,6 +88,7 @@ func columnChecker(table string) func(string) error {
 		includednetwork.Table:    includednetwork.ValidColumn,
 		network.Table:            network.ValidColumn,
 		plan.Table:               plan.ValidColumn,
+		plandiff.Table:           plandiff.ValidColumn,
 		provisionedhost.Table:    provisionedhost.ValidColumn,
 		provisionednetwork.Table: provisionednetwork.ValidColumn,
 		provisioningstep.Table:   provisioningstep.ValidColumn,

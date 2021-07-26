@@ -39,11 +39,18 @@ func (Build) Edges() []ent.Edge {
 		edge.To("BuildToCompetition", Competition.Type).
 			Unique().
 			Required(),
+		edge.To("BuildToLatestCommit", Commit.Type).
+			Unique().
+			Required(),
 		edge.From("BuildToProvisionedNetwork", ProvisionedNetwork.Type).
 			Ref("ProvisionedNetworkToBuild"),
 		edge.From("BuildToTeam", Team.Type).
 			Ref("TeamToBuild"),
 		edge.From("BuildToPlan", Plan.Type).
 			Ref("PlanToBuild"),
+		edge.From("BuildToCommits", Commit.Type).
+			Ref("CommitToBuild"),
+		edge.From("BuildToAdhocPlans", AdhocPlan.Type).
+			Ref("AdhocPlanToBuild"),
 	}
 }

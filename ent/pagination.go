@@ -14,11 +14,13 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
+	"github.com/gen0cide/laforge/ent/adhocplan"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
+	"github.com/gen0cide/laforge/ent/commit"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/dns"
@@ -35,6 +37,7 @@ import (
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/plan"
+	"github.com/gen0cide/laforge/ent/plandiff"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
@@ -263,6 +266,233 @@ const (
 	pageInfoField   = "pageInfo"
 	totalCountField = "totalCount"
 )
+
+// AdhocPlanEdge is the edge representation of AdhocPlan.
+type AdhocPlanEdge struct {
+	Node   *AdhocPlan `json:"node"`
+	Cursor Cursor     `json:"cursor"`
+}
+
+// AdhocPlanConnection is the connection containing edges to AdhocPlan.
+type AdhocPlanConnection struct {
+	Edges      []*AdhocPlanEdge `json:"edges"`
+	PageInfo   PageInfo         `json:"pageInfo"`
+	TotalCount int              `json:"totalCount"`
+}
+
+// AdhocPlanPaginateOption enables pagination customization.
+type AdhocPlanPaginateOption func(*adhocPlanPager) error
+
+// WithAdhocPlanOrder configures pagination ordering.
+func WithAdhocPlanOrder(order *AdhocPlanOrder) AdhocPlanPaginateOption {
+	if order == nil {
+		order = DefaultAdhocPlanOrder
+	}
+	o := *order
+	return func(pager *adhocPlanPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultAdhocPlanOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithAdhocPlanFilter configures pagination filter.
+func WithAdhocPlanFilter(filter func(*AdhocPlanQuery) (*AdhocPlanQuery, error)) AdhocPlanPaginateOption {
+	return func(pager *adhocPlanPager) error {
+		if filter == nil {
+			return errors.New("AdhocPlanQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type adhocPlanPager struct {
+	order  *AdhocPlanOrder
+	filter func(*AdhocPlanQuery) (*AdhocPlanQuery, error)
+}
+
+func newAdhocPlanPager(opts []AdhocPlanPaginateOption) (*adhocPlanPager, error) {
+	pager := &adhocPlanPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultAdhocPlanOrder
+	}
+	return pager, nil
+}
+
+func (p *adhocPlanPager) applyFilter(query *AdhocPlanQuery) (*AdhocPlanQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *adhocPlanPager) toCursor(ap *AdhocPlan) Cursor {
+	return p.order.Field.toCursor(ap)
+}
+
+func (p *adhocPlanPager) applyCursors(query *AdhocPlanQuery, after, before *Cursor) *AdhocPlanQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultAdhocPlanOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *adhocPlanPager) applyOrder(query *AdhocPlanQuery, reverse bool) *AdhocPlanQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultAdhocPlanOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultAdhocPlanOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to AdhocPlan.
+func (ap *AdhocPlanQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...AdhocPlanPaginateOption,
+) (*AdhocPlanConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newAdhocPlanPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if ap, err = pager.applyFilter(ap); err != nil {
+		return nil, err
+	}
+
+	conn := &AdhocPlanConnection{Edges: []*AdhocPlanEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := ap.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := ap.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	ap = pager.applyCursors(ap, after, before)
+	ap = pager.applyOrder(ap, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		ap = ap.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		ap = ap.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := ap.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *AdhocPlan
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *AdhocPlan {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *AdhocPlan {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*AdhocPlanEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &AdhocPlanEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+// AdhocPlanOrderField defines the ordering field of AdhocPlan.
+type AdhocPlanOrderField struct {
+	field    string
+	toCursor func(*AdhocPlan) Cursor
+}
+
+// AdhocPlanOrder defines the ordering of AdhocPlan.
+type AdhocPlanOrder struct {
+	Direction OrderDirection       `json:"direction"`
+	Field     *AdhocPlanOrderField `json:"field"`
+}
+
+// DefaultAdhocPlanOrder is the default ordering of AdhocPlan.
+var DefaultAdhocPlanOrder = &AdhocPlanOrder{
+	Direction: OrderDirectionAsc,
+	Field: &AdhocPlanOrderField{
+		field: adhocplan.FieldID,
+		toCursor: func(ap *AdhocPlan) Cursor {
+			return Cursor{ID: ap.ID}
+		},
+	},
+}
+
+// ToEdge converts AdhocPlan into AdhocPlanEdge.
+func (ap *AdhocPlan) ToEdge(order *AdhocPlanOrder) *AdhocPlanEdge {
+	if order == nil {
+		order = DefaultAdhocPlanOrder
+	}
+	return &AdhocPlanEdge{
+		Node:   ap,
+		Cursor: order.Field.toCursor(ap),
+	}
+}
 
 // AgentStatusEdge is the edge representation of AgentStatus.
 type AgentStatusEdge struct {
@@ -1394,6 +1624,233 @@ func (c *Command) ToEdge(order *CommandOrder) *CommandEdge {
 		order = DefaultCommandOrder
 	}
 	return &CommandEdge{
+		Node:   c,
+		Cursor: order.Field.toCursor(c),
+	}
+}
+
+// CommitEdge is the edge representation of Commit.
+type CommitEdge struct {
+	Node   *Commit `json:"node"`
+	Cursor Cursor  `json:"cursor"`
+}
+
+// CommitConnection is the connection containing edges to Commit.
+type CommitConnection struct {
+	Edges      []*CommitEdge `json:"edges"`
+	PageInfo   PageInfo      `json:"pageInfo"`
+	TotalCount int           `json:"totalCount"`
+}
+
+// CommitPaginateOption enables pagination customization.
+type CommitPaginateOption func(*commitPager) error
+
+// WithCommitOrder configures pagination ordering.
+func WithCommitOrder(order *CommitOrder) CommitPaginateOption {
+	if order == nil {
+		order = DefaultCommitOrder
+	}
+	o := *order
+	return func(pager *commitPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultCommitOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithCommitFilter configures pagination filter.
+func WithCommitFilter(filter func(*CommitQuery) (*CommitQuery, error)) CommitPaginateOption {
+	return func(pager *commitPager) error {
+		if filter == nil {
+			return errors.New("CommitQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type commitPager struct {
+	order  *CommitOrder
+	filter func(*CommitQuery) (*CommitQuery, error)
+}
+
+func newCommitPager(opts []CommitPaginateOption) (*commitPager, error) {
+	pager := &commitPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultCommitOrder
+	}
+	return pager, nil
+}
+
+func (p *commitPager) applyFilter(query *CommitQuery) (*CommitQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *commitPager) toCursor(c *Commit) Cursor {
+	return p.order.Field.toCursor(c)
+}
+
+func (p *commitPager) applyCursors(query *CommitQuery, after, before *Cursor) *CommitQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultCommitOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *commitPager) applyOrder(query *CommitQuery, reverse bool) *CommitQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultCommitOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultCommitOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Commit.
+func (c *CommitQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...CommitPaginateOption,
+) (*CommitConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newCommitPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if c, err = pager.applyFilter(c); err != nil {
+		return nil, err
+	}
+
+	conn := &CommitConnection{Edges: []*CommitEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := c.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := c.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	c = pager.applyCursors(c, after, before)
+	c = pager.applyOrder(c, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		c = c.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		c = c.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := c.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *Commit
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Commit {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Commit {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*CommitEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &CommitEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+// CommitOrderField defines the ordering field of Commit.
+type CommitOrderField struct {
+	field    string
+	toCursor func(*Commit) Cursor
+}
+
+// CommitOrder defines the ordering of Commit.
+type CommitOrder struct {
+	Direction OrderDirection    `json:"direction"`
+	Field     *CommitOrderField `json:"field"`
+}
+
+// DefaultCommitOrder is the default ordering of Commit.
+var DefaultCommitOrder = &CommitOrder{
+	Direction: OrderDirectionAsc,
+	Field: &CommitOrderField{
+		field: commit.FieldID,
+		toCursor: func(c *Commit) Cursor {
+			return Cursor{ID: c.ID}
+		},
+	},
+}
+
+// ToEdge converts Commit into CommitEdge.
+func (c *Commit) ToEdge(order *CommitOrder) *CommitEdge {
+	if order == nil {
+		order = DefaultCommitOrder
+	}
+	return &CommitEdge{
 		Node:   c,
 		Cursor: order.Field.toCursor(c),
 	}
@@ -5028,6 +5485,233 @@ func (pl *Plan) ToEdge(order *PlanOrder) *PlanEdge {
 	return &PlanEdge{
 		Node:   pl,
 		Cursor: order.Field.toCursor(pl),
+	}
+}
+
+// PlanDiffEdge is the edge representation of PlanDiff.
+type PlanDiffEdge struct {
+	Node   *PlanDiff `json:"node"`
+	Cursor Cursor    `json:"cursor"`
+}
+
+// PlanDiffConnection is the connection containing edges to PlanDiff.
+type PlanDiffConnection struct {
+	Edges      []*PlanDiffEdge `json:"edges"`
+	PageInfo   PageInfo        `json:"pageInfo"`
+	TotalCount int             `json:"totalCount"`
+}
+
+// PlanDiffPaginateOption enables pagination customization.
+type PlanDiffPaginateOption func(*planDiffPager) error
+
+// WithPlanDiffOrder configures pagination ordering.
+func WithPlanDiffOrder(order *PlanDiffOrder) PlanDiffPaginateOption {
+	if order == nil {
+		order = DefaultPlanDiffOrder
+	}
+	o := *order
+	return func(pager *planDiffPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultPlanDiffOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithPlanDiffFilter configures pagination filter.
+func WithPlanDiffFilter(filter func(*PlanDiffQuery) (*PlanDiffQuery, error)) PlanDiffPaginateOption {
+	return func(pager *planDiffPager) error {
+		if filter == nil {
+			return errors.New("PlanDiffQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type planDiffPager struct {
+	order  *PlanDiffOrder
+	filter func(*PlanDiffQuery) (*PlanDiffQuery, error)
+}
+
+func newPlanDiffPager(opts []PlanDiffPaginateOption) (*planDiffPager, error) {
+	pager := &planDiffPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultPlanDiffOrder
+	}
+	return pager, nil
+}
+
+func (p *planDiffPager) applyFilter(query *PlanDiffQuery) (*PlanDiffQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *planDiffPager) toCursor(pd *PlanDiff) Cursor {
+	return p.order.Field.toCursor(pd)
+}
+
+func (p *planDiffPager) applyCursors(query *PlanDiffQuery, after, before *Cursor) *PlanDiffQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultPlanDiffOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *planDiffPager) applyOrder(query *PlanDiffQuery, reverse bool) *PlanDiffQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultPlanDiffOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultPlanDiffOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to PlanDiff.
+func (pd *PlanDiffQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...PlanDiffPaginateOption,
+) (*PlanDiffConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newPlanDiffPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if pd, err = pager.applyFilter(pd); err != nil {
+		return nil, err
+	}
+
+	conn := &PlanDiffConnection{Edges: []*PlanDiffEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := pd.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := pd.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	pd = pager.applyCursors(pd, after, before)
+	pd = pager.applyOrder(pd, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		pd = pd.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		pd = pd.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := pd.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *PlanDiff
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *PlanDiff {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *PlanDiff {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*PlanDiffEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &PlanDiffEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+// PlanDiffOrderField defines the ordering field of PlanDiff.
+type PlanDiffOrderField struct {
+	field    string
+	toCursor func(*PlanDiff) Cursor
+}
+
+// PlanDiffOrder defines the ordering of PlanDiff.
+type PlanDiffOrder struct {
+	Direction OrderDirection      `json:"direction"`
+	Field     *PlanDiffOrderField `json:"field"`
+}
+
+// DefaultPlanDiffOrder is the default ordering of PlanDiff.
+var DefaultPlanDiffOrder = &PlanDiffOrder{
+	Direction: OrderDirectionAsc,
+	Field: &PlanDiffOrderField{
+		field: plandiff.FieldID,
+		toCursor: func(pd *PlanDiff) Cursor {
+			return Cursor{ID: pd.ID}
+		},
+	},
+}
+
+// ToEdge converts PlanDiff into PlanDiffEdge.
+func (pd *PlanDiff) ToEdge(order *PlanDiffOrder) *PlanDiffEdge {
+	if order == nil {
+		order = DefaultPlanDiffOrder
+	}
+	return &PlanDiffEdge{
+		Node:   pd,
+		Cursor: order.Field.toCursor(pd),
 	}
 }
 

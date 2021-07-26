@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/adhocplan"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -247,6 +248,25 @@ func (sc *StatusCreate) SetNillableStatusToServerTaskID(id *uuid.UUID) *StatusCr
 // SetStatusToServerTask sets the "StatusToServerTask" edge to the ServerTask entity.
 func (sc *StatusCreate) SetStatusToServerTask(s *ServerTask) *StatusCreate {
 	return sc.SetStatusToServerTaskID(s.ID)
+}
+
+// SetStatusToAdhocPlanID sets the "StatusToAdhocPlan" edge to the AdhocPlan entity by ID.
+func (sc *StatusCreate) SetStatusToAdhocPlanID(id uuid.UUID) *StatusCreate {
+	sc.mutation.SetStatusToAdhocPlanID(id)
+	return sc
+}
+
+// SetNillableStatusToAdhocPlanID sets the "StatusToAdhocPlan" edge to the AdhocPlan entity by ID if the given value is not nil.
+func (sc *StatusCreate) SetNillableStatusToAdhocPlanID(id *uuid.UUID) *StatusCreate {
+	if id != nil {
+		sc = sc.SetStatusToAdhocPlanID(*id)
+	}
+	return sc
+}
+
+// SetStatusToAdhocPlan sets the "StatusToAdhocPlan" edge to the AdhocPlan entity.
+func (sc *StatusCreate) SetStatusToAdhocPlan(a *AdhocPlan) *StatusCreate {
+	return sc.SetStatusToAdhocPlanID(a.ID)
 }
 
 // Mutation returns the StatusMutation object of the builder.
@@ -562,6 +582,26 @@ func (sc *StatusCreate) createSpec() (*Status, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.server_task_server_task_to_status = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.StatusToAdhocPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   status.StatusToAdhocPlanTable,
+			Columns: []string{status.StatusToAdhocPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: adhocplan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.adhoc_plan_adhoc_plan_to_status = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

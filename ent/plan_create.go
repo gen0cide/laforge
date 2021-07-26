@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/plan"
+	"github.com/gen0cide/laforge/ent/plandiff"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
@@ -184,6 +185,21 @@ func (pc *PlanCreate) SetPlanToStatusID(id uuid.UUID) *PlanCreate {
 // SetPlanToStatus sets the "PlanToStatus" edge to the Status entity.
 func (pc *PlanCreate) SetPlanToStatus(s *Status) *PlanCreate {
 	return pc.SetPlanToStatusID(s.ID)
+}
+
+// AddPlanToPlanDiffIDs adds the "PlanToPlanDiffs" edge to the PlanDiff entity by IDs.
+func (pc *PlanCreate) AddPlanToPlanDiffIDs(ids ...uuid.UUID) *PlanCreate {
+	pc.mutation.AddPlanToPlanDiffIDs(ids...)
+	return pc
+}
+
+// AddPlanToPlanDiffs adds the "PlanToPlanDiffs" edges to the PlanDiff entity.
+func (pc *PlanCreate) AddPlanToPlanDiffs(p ...*PlanDiff) *PlanCreate {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pc.AddPlanToPlanDiffIDs(ids...)
 }
 
 // Mutation returns the PlanMutation object of the builder.
@@ -461,6 +477,25 @@ func (pc *PlanCreate) createSpec() (*Plan, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: status.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.PlanToPlanDiffsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   plan.PlanToPlanDiffsTable,
+			Columns: []string{plan.PlanToPlanDiffsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: plandiff.FieldID,
 				},
 			},
 		}

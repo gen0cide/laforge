@@ -37,6 +37,8 @@ const (
 	EdgePlanToProvisioningStep = "PlanToProvisioningStep"
 	// EdgePlanToStatus holds the string denoting the plantostatus edge name in mutations.
 	EdgePlanToStatus = "PlanToStatus"
+	// EdgePlanToPlanDiffs holds the string denoting the plantoplandiffs edge name in mutations.
+	EdgePlanToPlanDiffs = "PlanToPlanDiffs"
 	// Table holds the table name of the plan in the database.
 	Table = "plans"
 	// PrevPlanTable is the table the holds the PrevPlan relation/edge. The primary key declared below.
@@ -85,6 +87,13 @@ const (
 	PlanToStatusInverseTable = "status"
 	// PlanToStatusColumn is the table column denoting the PlanToStatus relation/edge.
 	PlanToStatusColumn = "plan_plan_to_status"
+	// PlanToPlanDiffsTable is the table the holds the PlanToPlanDiffs relation/edge.
+	PlanToPlanDiffsTable = "plan_diffs"
+	// PlanToPlanDiffsInverseTable is the table name for the PlanDiff entity.
+	// It exists in this package in order to avoid circular dependency with the "plandiff" package.
+	PlanToPlanDiffsInverseTable = "plan_diffs"
+	// PlanToPlanDiffsColumn is the table column denoting the PlanToPlanDiffs relation/edge.
+	PlanToPlanDiffsColumn = "plan_diff_plan_diff_to_plan"
 )
 
 // Columns holds all SQL columns for plan fields.

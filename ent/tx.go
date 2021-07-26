@@ -12,6 +12,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// AdhocPlan is the client for interacting with the AdhocPlan builders.
+	AdhocPlan *AdhocPlanClient
 	// AgentStatus is the client for interacting with the AgentStatus builders.
 	AgentStatus *AgentStatusClient
 	// AgentTask is the client for interacting with the AgentTask builders.
@@ -22,6 +24,8 @@ type Tx struct {
 	Build *BuildClient
 	// Command is the client for interacting with the Command builders.
 	Command *CommandClient
+	// Commit is the client for interacting with the Commit builders.
+	Commit *CommitClient
 	// Competition is the client for interacting with the Competition builders.
 	Competition *CompetitionClient
 	// DNS is the client for interacting with the DNS builders.
@@ -54,6 +58,8 @@ type Tx struct {
 	Network *NetworkClient
 	// Plan is the client for interacting with the Plan builders.
 	Plan *PlanClient
+	// PlanDiff is the client for interacting with the PlanDiff builders.
+	PlanDiff *PlanDiffClient
 	// ProvisionedHost is the client for interacting with the ProvisionedHost builders.
 	ProvisionedHost *ProvisionedHostClient
 	// ProvisionedNetwork is the client for interacting with the ProvisionedNetwork builders.
@@ -211,11 +217,13 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.AdhocPlan = NewAdhocPlanClient(tx.config)
 	tx.AgentStatus = NewAgentStatusClient(tx.config)
 	tx.AgentTask = NewAgentTaskClient(tx.config)
 	tx.AuthUser = NewAuthUserClient(tx.config)
 	tx.Build = NewBuildClient(tx.config)
 	tx.Command = NewCommandClient(tx.config)
+	tx.Commit = NewCommitClient(tx.config)
 	tx.Competition = NewCompetitionClient(tx.config)
 	tx.DNS = NewDNSClient(tx.config)
 	tx.DNSRecord = NewDNSRecordClient(tx.config)
@@ -232,6 +240,7 @@ func (tx *Tx) init() {
 	tx.IncludedNetwork = NewIncludedNetworkClient(tx.config)
 	tx.Network = NewNetworkClient(tx.config)
 	tx.Plan = NewPlanClient(tx.config)
+	tx.PlanDiff = NewPlanDiffClient(tx.config)
 	tx.ProvisionedHost = NewProvisionedHostClient(tx.config)
 	tx.ProvisionedNetwork = NewProvisionedNetworkClient(tx.config)
 	tx.ProvisioningStep = NewProvisioningStepClient(tx.config)
@@ -252,7 +261,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: AgentStatus.QueryXXX(), the query will be executed
+// applies a query, for example: AdhocPlan.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

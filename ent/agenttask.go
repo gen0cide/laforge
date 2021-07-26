@@ -39,6 +39,8 @@ type AgentTask struct {
 	HCLAgentTaskToProvisioningStep *ProvisioningStep `json:"AgentTaskToProvisioningStep,omitempty"`
 	// AgentTaskToProvisionedHost holds the value of the AgentTaskToProvisionedHost edge.
 	HCLAgentTaskToProvisionedHost *ProvisionedHost `json:"AgentTaskToProvisionedHost,omitempty"`
+	// AgentTaskToAdhocPlan holds the value of the AgentTaskToAdhocPlan edge.
+	HCLAgentTaskToAdhocPlan []*AdhocPlan `json:"AgentTaskToAdhocPlan,omitempty"`
 	//
 	agent_task_agent_task_to_provisioning_step *uuid.UUID
 	agent_task_agent_task_to_provisioned_host  *uuid.UUID
@@ -50,9 +52,11 @@ type AgentTaskEdges struct {
 	AgentTaskToProvisioningStep *ProvisioningStep `json:"AgentTaskToProvisioningStep,omitempty"`
 	// AgentTaskToProvisionedHost holds the value of the AgentTaskToProvisionedHost edge.
 	AgentTaskToProvisionedHost *ProvisionedHost `json:"AgentTaskToProvisionedHost,omitempty"`
+	// AgentTaskToAdhocPlan holds the value of the AgentTaskToAdhocPlan edge.
+	AgentTaskToAdhocPlan []*AdhocPlan `json:"AgentTaskToAdhocPlan,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // AgentTaskToProvisioningStepOrErr returns the AgentTaskToProvisioningStep value or an error if the edge
@@ -81,6 +85,15 @@ func (e AgentTaskEdges) AgentTaskToProvisionedHostOrErr() (*ProvisionedHost, err
 		return e.AgentTaskToProvisionedHost, nil
 	}
 	return nil, &NotLoadedError{edge: "AgentTaskToProvisionedHost"}
+}
+
+// AgentTaskToAdhocPlanOrErr returns the AgentTaskToAdhocPlan value or an error if the edge
+// was not loaded in eager-loading.
+func (e AgentTaskEdges) AgentTaskToAdhocPlanOrErr() ([]*AdhocPlan, error) {
+	if e.loadedTypes[2] {
+		return e.AgentTaskToAdhocPlan, nil
+	}
+	return nil, &NotLoadedError{edge: "AgentTaskToAdhocPlan"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -180,6 +193,11 @@ func (at *AgentTask) QueryAgentTaskToProvisioningStep() *ProvisioningStepQuery {
 // QueryAgentTaskToProvisionedHost queries the "AgentTaskToProvisionedHost" edge of the AgentTask entity.
 func (at *AgentTask) QueryAgentTaskToProvisionedHost() *ProvisionedHostQuery {
 	return (&AgentTaskClient{config: at.config}).QueryAgentTaskToProvisionedHost(at)
+}
+
+// QueryAgentTaskToAdhocPlan queries the "AgentTaskToAdhocPlan" edge of the AgentTask entity.
+func (at *AgentTask) QueryAgentTaskToAdhocPlan() *AdhocPlanQuery {
+	return (&AgentTaskClient{config: at.config}).QueryAgentTaskToAdhocPlan(at)
 }
 
 // Update returns a builder for updating this AgentTask.

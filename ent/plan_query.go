@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/plan"
+	"github.com/gen0cide/laforge/ent/plandiff"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
@@ -41,6 +42,7 @@ type PlanQuery struct {
 	withPlanToProvisionedHost    *ProvisionedHostQuery
 	withPlanToProvisioningStep   *ProvisioningStepQuery
 	withPlanToStatus             *StatusQuery
+	withPlanToPlanDiffs          *PlanDiffQuery
 	withFKs                      bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -254,6 +256,28 @@ func (pq *PlanQuery) QueryPlanToStatus() *StatusQuery {
 	return query
 }
 
+// QueryPlanToPlanDiffs chains the current query on the "PlanToPlanDiffs" edge.
+func (pq *PlanQuery) QueryPlanToPlanDiffs() *PlanDiffQuery {
+	query := &PlanDiffQuery{config: pq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, selector),
+			sqlgraph.To(plandiff.Table, plandiff.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, plan.PlanToPlanDiffsTable, plan.PlanToPlanDiffsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // First returns the first Plan entity from the query.
 // Returns a *NotFoundError when no Plan was found.
 func (pq *PlanQuery) First(ctx context.Context) (*Plan, error) {
@@ -443,6 +467,7 @@ func (pq *PlanQuery) Clone() *PlanQuery {
 		withPlanToProvisionedHost:    pq.withPlanToProvisionedHost.Clone(),
 		withPlanToProvisioningStep:   pq.withPlanToProvisioningStep.Clone(),
 		withPlanToStatus:             pq.withPlanToStatus.Clone(),
+		withPlanToPlanDiffs:          pq.withPlanToPlanDiffs.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
@@ -537,6 +562,17 @@ func (pq *PlanQuery) WithPlanToStatus(opts ...func(*StatusQuery)) *PlanQuery {
 	return pq
 }
 
+// WithPlanToPlanDiffs tells the query-builder to eager-load the nodes that are connected to
+// the "PlanToPlanDiffs" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *PlanQuery) WithPlanToPlanDiffs(opts ...func(*PlanDiffQuery)) *PlanQuery {
+	query := &PlanDiffQuery{config: pq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withPlanToPlanDiffs = query
+	return pq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -603,7 +639,7 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 		nodes       = []*Plan{}
 		withFKs     = pq.withFKs
 		_spec       = pq.querySpec()
-		loadedTypes = [8]bool{
+		loadedTypes = [9]bool{
 			pq.withPrevPlan != nil,
 			pq.withNextPlan != nil,
 			pq.withPlanToBuild != nil,
@@ -612,6 +648,7 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 			pq.withPlanToProvisionedHost != nil,
 			pq.withPlanToProvisioningStep != nil,
 			pq.withPlanToStatus != nil,
+			pq.withPlanToPlanDiffs != nil,
 		}
 	)
 	if pq.withPlanToBuild != nil {
@@ -936,6 +973,35 @@ func (pq *PlanQuery) sqlAll(ctx context.Context) ([]*Plan, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "plan_plan_to_status" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.PlanToStatus = n
+		}
+	}
+
+	if query := pq.withPlanToPlanDiffs; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*Plan)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.PlanToPlanDiffs = []*PlanDiff{}
+		}
+		query.withFKs = true
+		query.Where(predicate.PlanDiff(func(s *sql.Selector) {
+			s.Where(sql.InValues(plan.PlanToPlanDiffsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.plan_diff_plan_diff_to_plan
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "plan_diff_plan_diff_to_plan" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "plan_diff_plan_diff_to_plan" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.PlanToPlanDiffs = append(node.Edges.PlanToPlanDiffs, n)
 		}
 	}
 

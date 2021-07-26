@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// AdhocPlan is the predicate function for adhocplan builders.
+type AdhocPlan func(*sql.Selector)
+
 // AgentStatus is the predicate function for agentstatus builders.
 type AgentStatus func(*sql.Selector)
 
@@ -20,6 +23,9 @@ type Build func(*sql.Selector)
 
 // Command is the predicate function for command builders.
 type Command func(*sql.Selector)
+
+// Commit is the predicate function for commit builders.
+type Commit func(*sql.Selector)
 
 // Competition is the predicate function for competition builders.
 type Competition func(*sql.Selector)
@@ -68,6 +74,9 @@ type Network func(*sql.Selector)
 
 // Plan is the predicate function for plan builders.
 type Plan func(*sql.Selector)
+
+// PlanDiff is the predicate function for plandiff builders.
+type PlanDiff func(*sql.Selector)
 
 // ProvisionedHost is the predicate function for provisionedhost builders.
 type ProvisionedHost func(*sql.Selector)

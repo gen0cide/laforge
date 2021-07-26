@@ -9,6 +9,19 @@ import (
 	"github.com/gen0cide/laforge/ent"
 )
 
+// The AdhocPlanFunc type is an adapter to allow the use of ordinary
+// function as AdhocPlan mutator.
+type AdhocPlanFunc func(context.Context, *ent.AdhocPlanMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AdhocPlanFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.AdhocPlanMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AdhocPlanMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The AgentStatusFunc type is an adapter to allow the use of ordinary
 // function as AgentStatus mutator.
 type AgentStatusFunc func(context.Context, *ent.AgentStatusMutation) (ent.Value, error)
@@ -70,6 +83,19 @@ func (f CommandFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	mv, ok := m.(*ent.CommandMutation)
 	if !ok {
 		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CommandMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The CommitFunc type is an adapter to allow the use of ordinary
+// function as Commit mutator.
+type CommitFunc func(context.Context, *ent.CommitMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CommitFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.CommitMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CommitMutation", m)
 	}
 	return f(ctx, mv)
 }
@@ -278,6 +304,19 @@ func (f PlanFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	mv, ok := m.(*ent.PlanMutation)
 	if !ok {
 		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PlanMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The PlanDiffFunc type is an adapter to allow the use of ordinary
+// function as PlanDiff mutator.
+type PlanDiffFunc func(context.Context, *ent.PlanDiffMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PlanDiffFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.PlanDiffMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PlanDiffMutation", m)
 	}
 	return f(ctx, mv)
 }

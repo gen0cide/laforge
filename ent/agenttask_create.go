@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/adhocplan"
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
@@ -108,6 +109,21 @@ func (atc *AgentTaskCreate) SetAgentTaskToProvisionedHostID(id uuid.UUID) *Agent
 // SetAgentTaskToProvisionedHost sets the "AgentTaskToProvisionedHost" edge to the ProvisionedHost entity.
 func (atc *AgentTaskCreate) SetAgentTaskToProvisionedHost(p *ProvisionedHost) *AgentTaskCreate {
 	return atc.SetAgentTaskToProvisionedHostID(p.ID)
+}
+
+// AddAgentTaskToAdhocPlanIDs adds the "AgentTaskToAdhocPlan" edge to the AdhocPlan entity by IDs.
+func (atc *AgentTaskCreate) AddAgentTaskToAdhocPlanIDs(ids ...uuid.UUID) *AgentTaskCreate {
+	atc.mutation.AddAgentTaskToAdhocPlanIDs(ids...)
+	return atc
+}
+
+// AddAgentTaskToAdhocPlan adds the "AgentTaskToAdhocPlan" edges to the AdhocPlan entity.
+func (atc *AgentTaskCreate) AddAgentTaskToAdhocPlan(a ...*AdhocPlan) *AgentTaskCreate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return atc.AddAgentTaskToAdhocPlanIDs(ids...)
 }
 
 // Mutation returns the AgentTaskMutation object of the builder.
@@ -324,6 +340,25 @@ func (atc *AgentTaskCreate) createSpec() (*AgentTask, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.agent_task_agent_task_to_provisioned_host = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := atc.mutation.AgentTaskToAdhocPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agenttask.AgentTaskToAdhocPlanTable,
+			Columns: []string{agenttask.AgentTaskToAdhocPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: adhocplan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

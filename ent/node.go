@@ -9,11 +9,13 @@ import (
 
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/gen0cide/laforge/ent/adhocplan"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
+	"github.com/gen0cide/laforge/ent/commit"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/dns"
@@ -30,6 +32,7 @@ import (
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/plan"
+	"github.com/gen0cide/laforge/ent/plandiff"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
@@ -70,6 +73,66 @@ type Edge struct {
 	Type string      `json:"type,omitempty"` // edge type.
 	Name string      `json:"name,omitempty"` // edge name.
 	IDs  []uuid.UUID `json:"ids,omitempty"`  // node ids (where this edge point to).
+}
+
+func (ap *AdhocPlan) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     ap.ID,
+		Type:   "AdhocPlan",
+		Fields: make([]*Field, 0),
+		Edges:  make([]*Edge, 5),
+	}
+	node.Edges[0] = &Edge{
+		Type: "AdhocPlan",
+		Name: "PrevAdhocPlan",
+	}
+	err = ap.QueryPrevAdhocPlan().
+		Select(adhocplan.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "AdhocPlan",
+		Name: "NextAdhocPlan",
+	}
+	err = ap.QueryNextAdhocPlan().
+		Select(adhocplan.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[2] = &Edge{
+		Type: "Build",
+		Name: "AdhocPlanToBuild",
+	}
+	err = ap.QueryAdhocPlanToBuild().
+		Select(build.FieldID).
+		Scan(ctx, &node.Edges[2].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[3] = &Edge{
+		Type: "Status",
+		Name: "AdhocPlanToStatus",
+	}
+	err = ap.QueryAdhocPlanToStatus().
+		Select(status.FieldID).
+		Scan(ctx, &node.Edges[3].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[4] = &Edge{
+		Type: "AgentTask",
+		Name: "AdhocPlanToAgentTask",
+	}
+	err = ap.QueryAdhocPlanToAgentTask().
+		Select(agenttask.FieldID).
+		Scan(ctx, &node.Edges[4].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
 }
 
 func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
@@ -210,7 +273,7 @@ func (at *AgentTask) Node(ctx context.Context) (node *Node, err error) {
 		ID:     at.ID,
 		Type:   "AgentTask",
 		Fields: make([]*Field, 6),
-		Edges:  make([]*Edge, 2),
+		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(at.Command); err != nil {
@@ -278,6 +341,16 @@ func (at *AgentTask) Node(ctx context.Context) (node *Node, err error) {
 	err = at.QueryAgentTaskToProvisionedHost().
 		Select(provisionedhost.FieldID).
 		Scan(ctx, &node.Edges[1].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[2] = &Edge{
+		Type: "AdhocPlan",
+		Name: "AgentTaskToAdhocPlan",
+	}
+	err = at.QueryAgentTaskToAdhocPlan().
+		Select(adhocplan.FieldID).
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -408,7 +481,7 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 		ID:     b.ID,
 		Type:   "Build",
 		Fields: make([]*Field, 3),
-		Edges:  make([]*Edge, 6),
+		Edges:  make([]*Edge, 9),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(b.Revision); err != nil {
@@ -466,32 +539,62 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Edges[3] = &Edge{
-		Type: "ProvisionedNetwork",
-		Name: "BuildToProvisionedNetwork",
+		Type: "Commit",
+		Name: "BuildToLatestCommit",
 	}
-	err = b.QueryBuildToProvisionedNetwork().
-		Select(provisionednetwork.FieldID).
+	err = b.QueryBuildToLatestCommit().
+		Select(commit.FieldID).
 		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[4] = &Edge{
-		Type: "Team",
-		Name: "BuildToTeam",
+		Type: "ProvisionedNetwork",
+		Name: "BuildToProvisionedNetwork",
 	}
-	err = b.QueryBuildToTeam().
-		Select(team.FieldID).
+	err = b.QueryBuildToProvisionedNetwork().
+		Select(provisionednetwork.FieldID).
 		Scan(ctx, &node.Edges[4].IDs)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[5] = &Edge{
+		Type: "Team",
+		Name: "BuildToTeam",
+	}
+	err = b.QueryBuildToTeam().
+		Select(team.FieldID).
+		Scan(ctx, &node.Edges[5].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[6] = &Edge{
 		Type: "Plan",
 		Name: "BuildToPlan",
 	}
 	err = b.QueryBuildToPlan().
 		Select(plan.FieldID).
-		Scan(ctx, &node.Edges[5].IDs)
+		Scan(ctx, &node.Edges[6].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[7] = &Edge{
+		Type: "Commit",
+		Name: "BuildToCommits",
+	}
+	err = b.QueryBuildToCommits().
+		Select(commit.FieldID).
+		Scan(ctx, &node.Edges[7].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[8] = &Edge{
+		Type: "AdhocPlan",
+		Name: "BuildToAdhocPlans",
+	}
+	err = b.QueryBuildToAdhocPlans().
+		Select(adhocplan.FieldID).
+		Scan(ctx, &node.Edges[8].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -610,6 +713,61 @@ func (c *Command) Node(ctx context.Context) (node *Node, err error) {
 	}
 	err = c.QueryCommandToEnvironment().
 		Select(environment.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (c *Commit) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     c.ID,
+		Type:   "Commit",
+		Fields: make([]*Field, 3),
+		Edges:  make([]*Edge, 2),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(c.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "commit.Type",
+		Name:  "type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.Revision); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "int",
+		Name:  "revision",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.CommitState); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "commit.CommitState",
+		Name:  "commit_state",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Build",
+		Name: "CommitToBuild",
+	}
+	err = c.QueryCommitToBuild().
+		Select(build.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "PlanDiff",
+		Name: "CommitToPlanDiffs",
+	}
+	err = c.QueryCommitToPlanDiffs().
+		Select(plandiff.FieldID).
 		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
@@ -2009,7 +2167,7 @@ func (pl *Plan) Node(ctx context.Context) (node *Node, err error) {
 		ID:     pl.ID,
 		Type:   "Plan",
 		Fields: make([]*Field, 3),
-		Edges:  make([]*Edge, 8),
+		Edges:  make([]*Edge, 9),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(pl.StepNumber); err != nil {
@@ -2113,6 +2271,63 @@ func (pl *Plan) Node(ctx context.Context) (node *Node, err error) {
 	err = pl.QueryPlanToStatus().
 		Select(status.FieldID).
 		Scan(ctx, &node.Edges[7].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[8] = &Edge{
+		Type: "PlanDiff",
+		Name: "PlanToPlanDiffs",
+	}
+	err = pl.QueryPlanToPlanDiffs().
+		Select(plandiff.FieldID).
+		Scan(ctx, &node.Edges[8].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (pd *PlanDiff) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     pd.ID,
+		Type:   "PlanDiff",
+		Fields: make([]*Field, 2),
+		Edges:  make([]*Edge, 2),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(pd.Revision); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "int",
+		Name:  "revision",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(pd.NewState); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "plandiff.NewState",
+		Name:  "new_state",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Commit",
+		Name: "PlanDiffToCommit",
+	}
+	err = pd.QueryPlanDiffToCommit().
+		Select(commit.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Plan",
+		Name: "PlanDiffToPlan",
+	}
+	err = pd.QueryPlanDiffToPlan().
+		Select(plan.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2780,7 +2995,7 @@ func (s *Status) Node(ctx context.Context) (node *Node, err error) {
 		ID:     s.ID,
 		Type:   "Status",
 		Fields: make([]*Field, 7),
-		Edges:  make([]*Edge, 7),
+		Edges:  make([]*Edge, 8),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(s.State); err != nil {
@@ -2906,6 +3121,16 @@ func (s *Status) Node(ctx context.Context) (node *Node, err error) {
 	err = s.QueryStatusToServerTask().
 		Select(servertask.FieldID).
 		Scan(ctx, &node.Edges[6].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[7] = &Edge{
+		Type: "AdhocPlan",
+		Name: "StatusToAdhocPlan",
+	}
+	err = s.QueryStatusToAdhocPlan().
+		Select(adhocplan.FieldID).
+		Scan(ctx, &node.Edges[7].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -3173,6 +3398,15 @@ func (c *Client) Noder(ctx context.Context, id uuid.UUID, opts ...NodeOption) (_
 
 func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, error) {
 	switch table {
+	case adhocplan.Table:
+		n, err := c.AdhocPlan.Query().
+			Where(adhocplan.ID(id)).
+			CollectFields(ctx, "AdhocPlan").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case agentstatus.Table:
 		n, err := c.AgentStatus.Query().
 			Where(agentstatus.ID(id)).
@@ -3213,6 +3447,15 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 		n, err := c.Command.Query().
 			Where(command.ID(id)).
 			CollectFields(ctx, "Command").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case commit.Table:
+		n, err := c.Commit.Query().
+			Where(commit.ID(id)).
+			CollectFields(ctx, "Commit").
 			Only(ctx)
 		if err != nil {
 			return nil, err
@@ -3357,6 +3600,15 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 		n, err := c.Plan.Query().
 			Where(plan.ID(id)).
 			CollectFields(ctx, "Plan").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case plandiff.Table:
+		n, err := c.PlanDiff.Query().
+			Where(plandiff.ID(id)).
+			CollectFields(ctx, "PlanDiff").
 			Only(ctx)
 		if err != nil {
 			return nil, err
@@ -3534,6 +3786,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		idmap[id] = append(idmap[id], &noders[i])
 	}
 	switch table {
+	case adhocplan.Table:
+		nodes, err := c.AdhocPlan.Query().
+			Where(adhocplan.IDIn(ids...)).
+			CollectFields(ctx, "AdhocPlan").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
 	case agentstatus.Table:
 		nodes, err := c.AgentStatus.Query().
 			Where(agentstatus.IDIn(ids...)).
@@ -3590,6 +3855,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		nodes, err := c.Command.Query().
 			Where(command.IDIn(ids...)).
 			CollectFields(ctx, "Command").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case commit.Table:
+		nodes, err := c.Commit.Query().
+			Where(commit.IDIn(ids...)).
+			CollectFields(ctx, "Commit").
 			All(ctx)
 		if err != nil {
 			return nil, err
@@ -3798,6 +4076,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		nodes, err := c.Plan.Query().
 			Where(plan.IDIn(ids...)).
 			CollectFields(ctx, "Plan").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case plandiff.Table:
+		nodes, err := c.PlanDiff.Query().
+			Where(plandiff.IDIn(ids...)).
+			CollectFields(ctx, "PlanDiff").
 			All(ctx)
 		if err != nil {
 			return nil, err

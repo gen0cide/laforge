@@ -23,12 +23,18 @@ const (
 	EdgeBuildToEnvironment = "BuildToEnvironment"
 	// EdgeBuildToCompetition holds the string denoting the buildtocompetition edge name in mutations.
 	EdgeBuildToCompetition = "BuildToCompetition"
+	// EdgeBuildToLatestCommit holds the string denoting the buildtolatestcommit edge name in mutations.
+	EdgeBuildToLatestCommit = "BuildToLatestCommit"
 	// EdgeBuildToProvisionedNetwork holds the string denoting the buildtoprovisionednetwork edge name in mutations.
 	EdgeBuildToProvisionedNetwork = "BuildToProvisionedNetwork"
 	// EdgeBuildToTeam holds the string denoting the buildtoteam edge name in mutations.
 	EdgeBuildToTeam = "BuildToTeam"
 	// EdgeBuildToPlan holds the string denoting the buildtoplan edge name in mutations.
 	EdgeBuildToPlan = "BuildToPlan"
+	// EdgeBuildToCommits holds the string denoting the buildtocommits edge name in mutations.
+	EdgeBuildToCommits = "BuildToCommits"
+	// EdgeBuildToAdhocPlans holds the string denoting the buildtoadhocplans edge name in mutations.
+	EdgeBuildToAdhocPlans = "BuildToAdhocPlans"
 	// Table holds the table name of the build in the database.
 	Table = "builds"
 	// BuildToStatusTable is the table the holds the BuildToStatus relation/edge.
@@ -52,6 +58,13 @@ const (
 	BuildToCompetitionInverseTable = "competitions"
 	// BuildToCompetitionColumn is the table column denoting the BuildToCompetition relation/edge.
 	BuildToCompetitionColumn = "build_build_to_competition"
+	// BuildToLatestCommitTable is the table the holds the BuildToLatestCommit relation/edge.
+	BuildToLatestCommitTable = "builds"
+	// BuildToLatestCommitInverseTable is the table name for the Commit entity.
+	// It exists in this package in order to avoid circular dependency with the "commit" package.
+	BuildToLatestCommitInverseTable = "commits"
+	// BuildToLatestCommitColumn is the table column denoting the BuildToLatestCommit relation/edge.
+	BuildToLatestCommitColumn = "build_build_to_latest_commit"
 	// BuildToProvisionedNetworkTable is the table the holds the BuildToProvisionedNetwork relation/edge.
 	BuildToProvisionedNetworkTable = "provisioned_networks"
 	// BuildToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
@@ -73,6 +86,20 @@ const (
 	BuildToPlanInverseTable = "plans"
 	// BuildToPlanColumn is the table column denoting the BuildToPlan relation/edge.
 	BuildToPlanColumn = "plan_plan_to_build"
+	// BuildToCommitsTable is the table the holds the BuildToCommits relation/edge.
+	BuildToCommitsTable = "commits"
+	// BuildToCommitsInverseTable is the table name for the Commit entity.
+	// It exists in this package in order to avoid circular dependency with the "commit" package.
+	BuildToCommitsInverseTable = "commits"
+	// BuildToCommitsColumn is the table column denoting the BuildToCommits relation/edge.
+	BuildToCommitsColumn = "commit_commit_to_build"
+	// BuildToAdhocPlansTable is the table the holds the BuildToAdhocPlans relation/edge.
+	BuildToAdhocPlansTable = "adhoc_plans"
+	// BuildToAdhocPlansInverseTable is the table name for the AdhocPlan entity.
+	// It exists in this package in order to avoid circular dependency with the "adhocplan" package.
+	BuildToAdhocPlansInverseTable = "adhoc_plans"
+	// BuildToAdhocPlansColumn is the table column denoting the BuildToAdhocPlans relation/edge.
+	BuildToAdhocPlansColumn = "adhoc_plan_adhoc_plan_to_build"
 )
 
 // Columns holds all SQL columns for build fields.
@@ -88,6 +115,7 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"build_build_to_environment",
 	"build_build_to_competition",
+	"build_build_to_latest_commit",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

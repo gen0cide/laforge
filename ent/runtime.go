@@ -3,11 +3,13 @@
 package ent
 
 import (
+	"github.com/gen0cide/laforge/ent/adhocplan"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/command"
+	"github.com/gen0cide/laforge/ent/commit"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/dns"
@@ -24,6 +26,7 @@ import (
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/plan"
+	"github.com/gen0cide/laforge/ent/plandiff"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
@@ -43,6 +46,12 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	adhocplanFields := schema.AdhocPlan{}.Fields()
+	_ = adhocplanFields
+	// adhocplanDescID is the schema descriptor for id field.
+	adhocplanDescID := adhocplanFields[0].Descriptor()
+	// adhocplan.DefaultID holds the default value on creation for the id field.
+	adhocplan.DefaultID = adhocplanDescID.Default.(func() uuid.UUID)
 	agentstatusFields := schema.AgentStatus{}.Fields()
 	_ = agentstatusFields
 	// agentstatusDescID is the schema descriptor for id field.
@@ -121,6 +130,12 @@ func init() {
 	commandDescID := commandFields[0].Descriptor()
 	// command.DefaultID holds the default value on creation for the id field.
 	command.DefaultID = commandDescID.Default.(func() uuid.UUID)
+	commitFields := schema.Commit{}.Fields()
+	_ = commitFields
+	// commitDescID is the schema descriptor for id field.
+	commitDescID := commitFields[0].Descriptor()
+	// commit.DefaultID holds the default value on creation for the id field.
+	commit.DefaultID = commitDescID.Default.(func() uuid.UUID)
 	competitionFields := schema.Competition{}.Fields()
 	_ = competitionFields
 	// competitionDescID is the schema descriptor for id field.
@@ -225,6 +240,12 @@ func init() {
 	planDescID := planFields[0].Descriptor()
 	// plan.DefaultID holds the default value on creation for the id field.
 	plan.DefaultID = planDescID.Default.(func() uuid.UUID)
+	plandiffFields := schema.PlanDiff{}.Fields()
+	_ = plandiffFields
+	// plandiffDescID is the schema descriptor for id field.
+	plandiffDescID := plandiffFields[0].Descriptor()
+	// plandiff.DefaultID holds the default value on creation for the id field.
+	plandiff.DefaultID = plandiffDescID.Default.(func() uuid.UUID)
 	provisionedhostFields := schema.ProvisionedHost{}.Fields()
 	_ = provisionedhostFields
 	// provisionedhostDescID is the schema descriptor for id field.

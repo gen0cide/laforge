@@ -8,6 +8,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/commit"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/status"
@@ -36,15 +37,22 @@ type Build struct {
 	HCLBuildToEnvironment *Environment `json:"BuildToEnvironment,omitempty"`
 	// BuildToCompetition holds the value of the BuildToCompetition edge.
 	HCLBuildToCompetition *Competition `json:"BuildToCompetition,omitempty"`
+	// BuildToLatestCommit holds the value of the BuildToLatestCommit edge.
+	HCLBuildToLatestCommit *Commit `json:"BuildToLatestCommit,omitempty"`
 	// BuildToProvisionedNetwork holds the value of the BuildToProvisionedNetwork edge.
 	HCLBuildToProvisionedNetwork []*ProvisionedNetwork `json:"BuildToProvisionedNetwork,omitempty"`
 	// BuildToTeam holds the value of the BuildToTeam edge.
 	HCLBuildToTeam []*Team `json:"BuildToTeam,omitempty"`
 	// BuildToPlan holds the value of the BuildToPlan edge.
 	HCLBuildToPlan []*Plan `json:"BuildToPlan,omitempty"`
+	// BuildToCommits holds the value of the BuildToCommits edge.
+	HCLBuildToCommits []*Commit `json:"BuildToCommits,omitempty"`
+	// BuildToAdhocPlans holds the value of the BuildToAdhocPlans edge.
+	HCLBuildToAdhocPlans []*AdhocPlan `json:"BuildToAdhocPlans,omitempty"`
 	//
-	build_build_to_environment *uuid.UUID
-	build_build_to_competition *uuid.UUID
+	build_build_to_environment   *uuid.UUID
+	build_build_to_competition   *uuid.UUID
+	build_build_to_latest_commit *uuid.UUID
 }
 
 // BuildEdges holds the relations/edges for other nodes in the graph.
@@ -55,15 +63,21 @@ type BuildEdges struct {
 	BuildToEnvironment *Environment `json:"BuildToEnvironment,omitempty"`
 	// BuildToCompetition holds the value of the BuildToCompetition edge.
 	BuildToCompetition *Competition `json:"BuildToCompetition,omitempty"`
+	// BuildToLatestCommit holds the value of the BuildToLatestCommit edge.
+	BuildToLatestCommit *Commit `json:"BuildToLatestCommit,omitempty"`
 	// BuildToProvisionedNetwork holds the value of the BuildToProvisionedNetwork edge.
 	BuildToProvisionedNetwork []*ProvisionedNetwork `json:"BuildToProvisionedNetwork,omitempty"`
 	// BuildToTeam holds the value of the BuildToTeam edge.
 	BuildToTeam []*Team `json:"BuildToTeam,omitempty"`
 	// BuildToPlan holds the value of the BuildToPlan edge.
 	BuildToPlan []*Plan `json:"BuildToPlan,omitempty"`
+	// BuildToCommits holds the value of the BuildToCommits edge.
+	BuildToCommits []*Commit `json:"BuildToCommits,omitempty"`
+	// BuildToAdhocPlans holds the value of the BuildToAdhocPlans edge.
+	BuildToAdhocPlans []*AdhocPlan `json:"BuildToAdhocPlans,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [9]bool
 }
 
 // BuildToStatusOrErr returns the BuildToStatus value or an error if the edge
@@ -108,10 +122,24 @@ func (e BuildEdges) BuildToCompetitionOrErr() (*Competition, error) {
 	return nil, &NotLoadedError{edge: "BuildToCompetition"}
 }
 
+// BuildToLatestCommitOrErr returns the BuildToLatestCommit value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e BuildEdges) BuildToLatestCommitOrErr() (*Commit, error) {
+	if e.loadedTypes[3] {
+		if e.BuildToLatestCommit == nil {
+			// The edge BuildToLatestCommit was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: commit.Label}
+		}
+		return e.BuildToLatestCommit, nil
+	}
+	return nil, &NotLoadedError{edge: "BuildToLatestCommit"}
+}
+
 // BuildToProvisionedNetworkOrErr returns the BuildToProvisionedNetwork value or an error if the edge
 // was not loaded in eager-loading.
 func (e BuildEdges) BuildToProvisionedNetworkOrErr() ([]*ProvisionedNetwork, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.BuildToProvisionedNetwork, nil
 	}
 	return nil, &NotLoadedError{edge: "BuildToProvisionedNetwork"}
@@ -120,7 +148,7 @@ func (e BuildEdges) BuildToProvisionedNetworkOrErr() ([]*ProvisionedNetwork, err
 // BuildToTeamOrErr returns the BuildToTeam value or an error if the edge
 // was not loaded in eager-loading.
 func (e BuildEdges) BuildToTeamOrErr() ([]*Team, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.BuildToTeam, nil
 	}
 	return nil, &NotLoadedError{edge: "BuildToTeam"}
@@ -129,10 +157,28 @@ func (e BuildEdges) BuildToTeamOrErr() ([]*Team, error) {
 // BuildToPlanOrErr returns the BuildToPlan value or an error if the edge
 // was not loaded in eager-loading.
 func (e BuildEdges) BuildToPlanOrErr() ([]*Plan, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.BuildToPlan, nil
 	}
 	return nil, &NotLoadedError{edge: "BuildToPlan"}
+}
+
+// BuildToCommitsOrErr returns the BuildToCommits value or an error if the edge
+// was not loaded in eager-loading.
+func (e BuildEdges) BuildToCommitsOrErr() ([]*Commit, error) {
+	if e.loadedTypes[7] {
+		return e.BuildToCommits, nil
+	}
+	return nil, &NotLoadedError{edge: "BuildToCommits"}
+}
+
+// BuildToAdhocPlansOrErr returns the BuildToAdhocPlans value or an error if the edge
+// was not loaded in eager-loading.
+func (e BuildEdges) BuildToAdhocPlansOrErr() ([]*AdhocPlan, error) {
+	if e.loadedTypes[8] {
+		return e.BuildToAdhocPlans, nil
+	}
+	return nil, &NotLoadedError{edge: "BuildToAdhocPlans"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -149,6 +195,8 @@ func (*Build) scanValues(columns []string) ([]interface{}, error) {
 		case build.ForeignKeys[0]: // build_build_to_environment
 			values[i] = new(uuid.UUID)
 		case build.ForeignKeys[1]: // build_build_to_competition
+			values[i] = new(uuid.UUID)
+		case build.ForeignKeys[2]: // build_build_to_latest_commit
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Build", columns[i])
@@ -201,6 +249,12 @@ func (b *Build) assignValues(columns []string, values []interface{}) error {
 			} else if value != nil {
 				b.build_build_to_competition = value
 			}
+		case build.ForeignKeys[2]:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field build_build_to_latest_commit", values[i])
+			} else if value != nil {
+				b.build_build_to_latest_commit = value
+			}
 		}
 	}
 	return nil
@@ -221,6 +275,11 @@ func (b *Build) QueryBuildToCompetition() *CompetitionQuery {
 	return (&BuildClient{config: b.config}).QueryBuildToCompetition(b)
 }
 
+// QueryBuildToLatestCommit queries the "BuildToLatestCommit" edge of the Build entity.
+func (b *Build) QueryBuildToLatestCommit() *CommitQuery {
+	return (&BuildClient{config: b.config}).QueryBuildToLatestCommit(b)
+}
+
 // QueryBuildToProvisionedNetwork queries the "BuildToProvisionedNetwork" edge of the Build entity.
 func (b *Build) QueryBuildToProvisionedNetwork() *ProvisionedNetworkQuery {
 	return (&BuildClient{config: b.config}).QueryBuildToProvisionedNetwork(b)
@@ -234,6 +293,16 @@ func (b *Build) QueryBuildToTeam() *TeamQuery {
 // QueryBuildToPlan queries the "BuildToPlan" edge of the Build entity.
 func (b *Build) QueryBuildToPlan() *PlanQuery {
 	return (&BuildClient{config: b.config}).QueryBuildToPlan(b)
+}
+
+// QueryBuildToCommits queries the "BuildToCommits" edge of the Build entity.
+func (b *Build) QueryBuildToCommits() *CommitQuery {
+	return (&BuildClient{config: b.config}).QueryBuildToCommits(b)
+}
+
+// QueryBuildToAdhocPlans queries the "BuildToAdhocPlans" edge of the Build entity.
+func (b *Build) QueryBuildToAdhocPlans() *AdhocPlanQuery {
+	return (&BuildClient{config: b.config}).QueryBuildToAdhocPlans(b)
 }
 
 // Update returns a builder for updating this Build.

@@ -24,11 +24,13 @@ type config struct {
 
 // hooks per client, for fast access.
 type hooks struct {
+	AdhocPlan          []ent.Hook
 	AgentStatus        []ent.Hook
 	AgentTask          []ent.Hook
 	AuthUser           []ent.Hook
 	Build              []ent.Hook
 	Command            []ent.Hook
+	Commit             []ent.Hook
 	Competition        []ent.Hook
 	DNS                []ent.Hook
 	DNSRecord          []ent.Hook
@@ -45,6 +47,7 @@ type hooks struct {
 	IncludedNetwork    []ent.Hook
 	Network            []ent.Hook
 	Plan               []ent.Hook
+	PlanDiff           []ent.Hook
 	ProvisionedHost    []ent.Hook
 	ProvisionedNetwork []ent.Hook
 	ProvisioningStep   []ent.Hook

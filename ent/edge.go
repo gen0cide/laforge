@@ -4,6 +4,46 @@ package ent
 
 import "context"
 
+func (ap *AdhocPlan) PrevAdhocPlan(ctx context.Context) ([]*AdhocPlan, error) {
+	result, err := ap.Edges.PrevAdhocPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = ap.QueryPrevAdhocPlan().All(ctx)
+	}
+	return result, err
+}
+
+func (ap *AdhocPlan) NextAdhocPlan(ctx context.Context) ([]*AdhocPlan, error) {
+	result, err := ap.Edges.NextAdhocPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = ap.QueryNextAdhocPlan().All(ctx)
+	}
+	return result, err
+}
+
+func (ap *AdhocPlan) AdhocPlanToBuild(ctx context.Context) (*Build, error) {
+	result, err := ap.Edges.AdhocPlanToBuildOrErr()
+	if IsNotLoaded(err) {
+		result, err = ap.QueryAdhocPlanToBuild().Only(ctx)
+	}
+	return result, err
+}
+
+func (ap *AdhocPlan) AdhocPlanToStatus(ctx context.Context) (*Status, error) {
+	result, err := ap.Edges.AdhocPlanToStatusOrErr()
+	if IsNotLoaded(err) {
+		result, err = ap.QueryAdhocPlanToStatus().Only(ctx)
+	}
+	return result, err
+}
+
+func (ap *AdhocPlan) AdhocPlanToAgentTask(ctx context.Context) (*AgentTask, error) {
+	result, err := ap.Edges.AdhocPlanToAgentTaskOrErr()
+	if IsNotLoaded(err) {
+		result, err = ap.QueryAdhocPlanToAgentTask().Only(ctx)
+	}
+	return result, err
+}
+
 func (as *AgentStatus) AgentStatusToProvisionedHost(ctx context.Context) (*ProvisionedHost, error) {
 	result, err := as.Edges.AgentStatusToProvisionedHostOrErr()
 	if IsNotLoaded(err) {
@@ -24,6 +64,14 @@ func (at *AgentTask) AgentTaskToProvisionedHost(ctx context.Context) (*Provision
 	result, err := at.Edges.AgentTaskToProvisionedHostOrErr()
 	if IsNotLoaded(err) {
 		result, err = at.QueryAgentTaskToProvisionedHost().Only(ctx)
+	}
+	return result, err
+}
+
+func (at *AgentTask) AgentTaskToAdhocPlan(ctx context.Context) ([]*AdhocPlan, error) {
+	result, err := at.Edges.AgentTaskToAdhocPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = at.QueryAgentTaskToAdhocPlan().All(ctx)
 	}
 	return result, err
 }
@@ -68,6 +116,14 @@ func (b *Build) BuildToCompetition(ctx context.Context) (*Competition, error) {
 	return result, err
 }
 
+func (b *Build) BuildToLatestCommit(ctx context.Context) (*Commit, error) {
+	result, err := b.Edges.BuildToLatestCommitOrErr()
+	if IsNotLoaded(err) {
+		result, err = b.QueryBuildToLatestCommit().Only(ctx)
+	}
+	return result, err
+}
+
 func (b *Build) BuildToProvisionedNetwork(ctx context.Context) ([]*ProvisionedNetwork, error) {
 	result, err := b.Edges.BuildToProvisionedNetworkOrErr()
 	if IsNotLoaded(err) {
@@ -92,6 +148,22 @@ func (b *Build) BuildToPlan(ctx context.Context) ([]*Plan, error) {
 	return result, err
 }
 
+func (b *Build) BuildToCommits(ctx context.Context) ([]*Commit, error) {
+	result, err := b.Edges.BuildToCommitsOrErr()
+	if IsNotLoaded(err) {
+		result, err = b.QueryBuildToCommits().All(ctx)
+	}
+	return result, err
+}
+
+func (b *Build) BuildToAdhocPlans(ctx context.Context) ([]*AdhocPlan, error) {
+	result, err := b.Edges.BuildToAdhocPlansOrErr()
+	if IsNotLoaded(err) {
+		result, err = b.QueryBuildToAdhocPlans().All(ctx)
+	}
+	return result, err
+}
+
 func (c *Command) CommandToUser(ctx context.Context) ([]*User, error) {
 	result, err := c.Edges.CommandToUserOrErr()
 	if IsNotLoaded(err) {
@@ -106,6 +178,22 @@ func (c *Command) CommandToEnvironment(ctx context.Context) (*Environment, error
 		result, err = c.QueryCommandToEnvironment().Only(ctx)
 	}
 	return result, MaskNotFound(err)
+}
+
+func (c *Commit) CommitToBuild(ctx context.Context) (*Build, error) {
+	result, err := c.Edges.CommitToBuildOrErr()
+	if IsNotLoaded(err) {
+		result, err = c.QueryCommitToBuild().Only(ctx)
+	}
+	return result, err
+}
+
+func (c *Commit) CommitToPlanDiffs(ctx context.Context) ([]*PlanDiff, error) {
+	result, err := c.Edges.CommitToPlanDiffsOrErr()
+	if IsNotLoaded(err) {
+		result, err = c.QueryCommitToPlanDiffs().All(ctx)
+	}
+	return result, err
 }
 
 func (c *Competition) CompetitionToDNS(ctx context.Context) ([]*DNS, error) {
@@ -580,6 +668,30 @@ func (pl *Plan) PlanToStatus(ctx context.Context) (*Status, error) {
 	return result, err
 }
 
+func (pl *Plan) PlanToPlanDiffs(ctx context.Context) ([]*PlanDiff, error) {
+	result, err := pl.Edges.PlanToPlanDiffsOrErr()
+	if IsNotLoaded(err) {
+		result, err = pl.QueryPlanToPlanDiffs().All(ctx)
+	}
+	return result, err
+}
+
+func (pd *PlanDiff) PlanDiffToCommit(ctx context.Context) (*Commit, error) {
+	result, err := pd.Edges.PlanDiffToCommitOrErr()
+	if IsNotLoaded(err) {
+		result, err = pd.QueryPlanDiffToCommit().Only(ctx)
+	}
+	return result, err
+}
+
+func (pd *PlanDiff) PlanDiffToPlan(ctx context.Context) (*Plan, error) {
+	result, err := pd.Edges.PlanDiffToPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = pd.QueryPlanDiffToPlan().Only(ctx)
+	}
+	return result, err
+}
+
 func (ph *ProvisionedHost) ProvisionedHostToStatus(ctx context.Context) (*Status, error) {
 	result, err := ph.Edges.ProvisionedHostToStatusOrErr()
 	if IsNotLoaded(err) {
@@ -912,6 +1024,14 @@ func (s *Status) StatusToServerTask(ctx context.Context) (*ServerTask, error) {
 	result, err := s.Edges.StatusToServerTaskOrErr()
 	if IsNotLoaded(err) {
 		result, err = s.QueryStatusToServerTask().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (s *Status) StatusToAdhocPlan(ctx context.Context) (*AdhocPlan, error) {
+	result, err := s.Edges.StatusToAdhocPlanOrErr()
+	if IsNotLoaded(err) {
+		result, err = s.QueryStatusToAdhocPlan().Only(ctx)
 	}
 	return result, MaskNotFound(err)
 }

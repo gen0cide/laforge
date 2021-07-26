@@ -565,6 +565,34 @@ func HasPlanToStatusWith(preds ...predicate.Status) predicate.Plan {
 	})
 }
 
+// HasPlanToPlanDiffs applies the HasEdge predicate on the "PlanToPlanDiffs" edge.
+func HasPlanToPlanDiffs() predicate.Plan {
+	return predicate.Plan(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(PlanToPlanDiffsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, PlanToPlanDiffsTable, PlanToPlanDiffsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPlanToPlanDiffsWith applies the HasEdge predicate on the "PlanToPlanDiffs" edge with a given conditions (other predicates).
+func HasPlanToPlanDiffsWith(preds ...predicate.PlanDiff) predicate.Plan {
+	return predicate.Plan(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(PlanToPlanDiffsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, PlanToPlanDiffsTable, PlanToPlanDiffsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Plan) predicate.Plan {
 	return predicate.Plan(func(s *sql.Selector) {

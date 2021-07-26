@@ -363,6 +363,34 @@ func HasBuildToCompetitionWith(preds ...predicate.Competition) predicate.Build {
 	})
 }
 
+// HasBuildToLatestCommit applies the HasEdge predicate on the "BuildToLatestCommit" edge.
+func HasBuildToLatestCommit() predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToLatestCommitTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, BuildToLatestCommitTable, BuildToLatestCommitColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBuildToLatestCommitWith applies the HasEdge predicate on the "BuildToLatestCommit" edge with a given conditions (other predicates).
+func HasBuildToLatestCommitWith(preds ...predicate.Commit) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToLatestCommitInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, BuildToLatestCommitTable, BuildToLatestCommitColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasBuildToProvisionedNetwork applies the HasEdge predicate on the "BuildToProvisionedNetwork" edge.
 func HasBuildToProvisionedNetwork() predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
@@ -438,6 +466,62 @@ func HasBuildToPlanWith(preds ...predicate.Plan) predicate.Build {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BuildToPlanInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, BuildToPlanTable, BuildToPlanColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasBuildToCommits applies the HasEdge predicate on the "BuildToCommits" edge.
+func HasBuildToCommits() predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToCommitsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, BuildToCommitsTable, BuildToCommitsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBuildToCommitsWith applies the HasEdge predicate on the "BuildToCommits" edge with a given conditions (other predicates).
+func HasBuildToCommitsWith(preds ...predicate.Commit) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToCommitsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, BuildToCommitsTable, BuildToCommitsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasBuildToAdhocPlans applies the HasEdge predicate on the "BuildToAdhocPlans" edge.
+func HasBuildToAdhocPlans() predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToAdhocPlansTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, BuildToAdhocPlansTable, BuildToAdhocPlansColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBuildToAdhocPlansWith applies the HasEdge predicate on the "BuildToAdhocPlans" edge with a given conditions (other predicates).
+func HasBuildToAdhocPlansWith(preds ...predicate.AdhocPlan) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToAdhocPlansInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, BuildToAdhocPlansTable, BuildToAdhocPlansColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

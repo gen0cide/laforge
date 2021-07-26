@@ -9,7 +9,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/adhocplan"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/commit"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/plan"
@@ -99,6 +101,17 @@ func (bc *BuildCreate) SetBuildToCompetition(c *Competition) *BuildCreate {
 	return bc.SetBuildToCompetitionID(c.ID)
 }
 
+// SetBuildToLatestCommitID sets the "BuildToLatestCommit" edge to the Commit entity by ID.
+func (bc *BuildCreate) SetBuildToLatestCommitID(id uuid.UUID) *BuildCreate {
+	bc.mutation.SetBuildToLatestCommitID(id)
+	return bc
+}
+
+// SetBuildToLatestCommit sets the "BuildToLatestCommit" edge to the Commit entity.
+func (bc *BuildCreate) SetBuildToLatestCommit(c *Commit) *BuildCreate {
+	return bc.SetBuildToLatestCommitID(c.ID)
+}
+
 // AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
 func (bc *BuildCreate) AddBuildToProvisionedNetworkIDs(ids ...uuid.UUID) *BuildCreate {
 	bc.mutation.AddBuildToProvisionedNetworkIDs(ids...)
@@ -142,6 +155,36 @@ func (bc *BuildCreate) AddBuildToPlan(p ...*Plan) *BuildCreate {
 		ids[i] = p[i].ID
 	}
 	return bc.AddBuildToPlanIDs(ids...)
+}
+
+// AddBuildToCommitIDs adds the "BuildToCommits" edge to the Commit entity by IDs.
+func (bc *BuildCreate) AddBuildToCommitIDs(ids ...uuid.UUID) *BuildCreate {
+	bc.mutation.AddBuildToCommitIDs(ids...)
+	return bc
+}
+
+// AddBuildToCommits adds the "BuildToCommits" edges to the Commit entity.
+func (bc *BuildCreate) AddBuildToCommits(c ...*Commit) *BuildCreate {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return bc.AddBuildToCommitIDs(ids...)
+}
+
+// AddBuildToAdhocPlanIDs adds the "BuildToAdhocPlans" edge to the AdhocPlan entity by IDs.
+func (bc *BuildCreate) AddBuildToAdhocPlanIDs(ids ...uuid.UUID) *BuildCreate {
+	bc.mutation.AddBuildToAdhocPlanIDs(ids...)
+	return bc
+}
+
+// AddBuildToAdhocPlans adds the "BuildToAdhocPlans" edges to the AdhocPlan entity.
+func (bc *BuildCreate) AddBuildToAdhocPlans(a ...*AdhocPlan) *BuildCreate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return bc.AddBuildToAdhocPlanIDs(ids...)
 }
 
 // Mutation returns the BuildMutation object of the builder.
@@ -222,6 +265,9 @@ func (bc *BuildCreate) check() error {
 	}
 	if _, ok := bc.mutation.BuildToCompetitionID(); !ok {
 		return &ValidationError{Name: "BuildToCompetition", err: errors.New("ent: missing required edge \"BuildToCompetition\"")}
+	}
+	if _, ok := bc.mutation.BuildToLatestCommitID(); !ok {
+		return &ValidationError{Name: "BuildToLatestCommit", err: errors.New("ent: missing required edge \"BuildToLatestCommit\"")}
 	}
 	return nil
 }
@@ -335,6 +381,26 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 		_node.build_build_to_competition = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := bc.mutation.BuildToLatestCommitIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   build.BuildToLatestCommitTable,
+			Columns: []string{build.BuildToLatestCommitColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: commit.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.build_build_to_latest_commit = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := bc.mutation.BuildToProvisionedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -384,6 +450,44 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.BuildToCommitsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   build.BuildToCommitsTable,
+			Columns: []string{build.BuildToCommitsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: commit.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.BuildToAdhocPlansIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   build.BuildToAdhocPlansTable,
+			Columns: []string{build.BuildToAdhocPlansColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: adhocplan.FieldID,
 				},
 			},
 		}

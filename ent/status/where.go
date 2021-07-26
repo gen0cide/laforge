@@ -754,6 +754,34 @@ func HasStatusToServerTaskWith(preds ...predicate.ServerTask) predicate.Status {
 	})
 }
 
+// HasStatusToAdhocPlan applies the HasEdge predicate on the "StatusToAdhocPlan" edge.
+func HasStatusToAdhocPlan() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToAdhocPlanTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToAdhocPlanTable, StatusToAdhocPlanColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStatusToAdhocPlanWith applies the HasEdge predicate on the "StatusToAdhocPlan" edge with a given conditions (other predicates).
+func HasStatusToAdhocPlanWith(preds ...predicate.AdhocPlan) predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToAdhocPlanInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToAdhocPlanTable, StatusToAdhocPlanColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Status) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {

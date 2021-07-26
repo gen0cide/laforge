@@ -49,6 +49,8 @@ type Plan struct {
 	HCLPlanToProvisioningStep *ProvisioningStep `json:"PlanToProvisioningStep,omitempty"`
 	// PlanToStatus holds the value of the PlanToStatus edge.
 	HCLPlanToStatus *Status `json:"PlanToStatus,omitempty"`
+	// PlanToPlanDiffs holds the value of the PlanToPlanDiffs edge.
+	HCLPlanToPlanDiffs []*PlanDiff `json:"PlanToPlanDiffs,omitempty"`
 	//
 	plan_plan_to_build *uuid.UUID
 }
@@ -71,9 +73,11 @@ type PlanEdges struct {
 	PlanToProvisioningStep *ProvisioningStep `json:"PlanToProvisioningStep,omitempty"`
 	// PlanToStatus holds the value of the PlanToStatus edge.
 	PlanToStatus *Status `json:"PlanToStatus,omitempty"`
+	// PlanToPlanDiffs holds the value of the PlanToPlanDiffs edge.
+	PlanToPlanDiffs []*PlanDiff `json:"PlanToPlanDiffs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [9]bool
 }
 
 // PrevPlanOrErr returns the PrevPlan value or an error if the edge
@@ -178,6 +182,15 @@ func (e PlanEdges) PlanToStatusOrErr() (*Status, error) {
 	return nil, &NotLoadedError{edge: "PlanToStatus"}
 }
 
+// PlanToPlanDiffsOrErr returns the PlanToPlanDiffs value or an error if the edge
+// was not loaded in eager-loading.
+func (e PlanEdges) PlanToPlanDiffsOrErr() ([]*PlanDiff, error) {
+	if e.loadedTypes[8] {
+		return e.PlanToPlanDiffs, nil
+	}
+	return nil, &NotLoadedError{edge: "PlanToPlanDiffs"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Plan) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -279,6 +292,11 @@ func (pl *Plan) QueryPlanToProvisioningStep() *ProvisioningStepQuery {
 // QueryPlanToStatus queries the "PlanToStatus" edge of the Plan entity.
 func (pl *Plan) QueryPlanToStatus() *StatusQuery {
 	return (&PlanClient{config: pl.config}).QueryPlanToStatus(pl)
+}
+
+// QueryPlanToPlanDiffs queries the "PlanToPlanDiffs" edge of the Plan entity.
+func (pl *Plan) QueryPlanToPlanDiffs() *PlanDiffQuery {
+	return (&PlanClient{config: pl.config}).QueryPlanToPlanDiffs(pl)
 }
 
 // Update returns a builder for updating this Plan.

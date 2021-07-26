@@ -9,6 +9,18 @@ import (
 )
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (ap *AdhocPlanQuery) CollectFields(ctx context.Context, satisfies ...string) *AdhocPlanQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		ap = ap.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return ap
+}
+
+func (ap *AdhocPlanQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *AdhocPlanQuery {
+	return ap
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (as *AgentStatusQuery) CollectFields(ctx context.Context, satisfies ...string) *AgentStatusQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		as = as.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
@@ -65,6 +77,18 @@ func (c *CommandQuery) CollectFields(ctx context.Context, satisfies ...string) *
 }
 
 func (c *CommandQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *CommandQuery {
+	return c
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (c *CommitQuery) CollectFields(ctx context.Context, satisfies ...string) *CommitQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		c = c.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return c
+}
+
+func (c *CommitQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *CommitQuery {
 	return c
 }
 
@@ -258,6 +282,18 @@ func (pl *PlanQuery) CollectFields(ctx context.Context, satisfies ...string) *Pl
 
 func (pl *PlanQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *PlanQuery {
 	return pl
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (pd *PlanDiffQuery) CollectFields(ctx context.Context, satisfies ...string) *PlanDiffQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		pd = pd.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return pd
+}
+
+func (pd *PlanDiffQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *PlanDiffQuery {
+	return pd
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
