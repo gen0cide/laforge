@@ -13,6 +13,8 @@ const (
 	FieldID = "id"
 	// FieldRevision holds the string denoting the revision field in the database.
 	FieldRevision = "revision"
+	// FieldEnvironmentRevision holds the string denoting the environment_revision field in the database.
+	FieldEnvironmentRevision = "environment_revision"
 	// FieldCompletedPlan holds the string denoting the completed_plan field in the database.
 	FieldCompletedPlan = "completed_plan"
 	// EdgeBuildToStatus holds the string denoting the buildtostatus edge name in mutations.
@@ -77,6 +79,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldRevision,
+	FieldEnvironmentRevision,
 	FieldCompletedPlan,
 }
 

@@ -182,6 +182,7 @@ export type LaForgeEnvironment = {
   EnvironmentToDNS: Array<Maybe<LaForgeDns>>;
   EnvironmentToNetwork: Array<Maybe<LaForgeNetwork>>;
   EnvironmentToBuild: Array<Maybe<LaForgeBuild>>;
+  EnvironmentToRepository: Array<Maybe<LaForgeRepository>>;
 };
 
 export type LaForgeFileDelete = {
@@ -294,6 +295,8 @@ export type LaForgeMutation = {
   deleteBuild: Scalars['Boolean'];
   createTask: Scalars['Boolean'];
   rebuild: Scalars['Boolean'];
+  createEnviromentFromRepo: Array<Maybe<LaForgeEnvironment>>;
+  updateEnviromentViaPull: Array<Maybe<LaForgeEnvironment>>;
   modifySelfPassword: Scalars['Boolean'];
   modifySelfUserInfo?: Maybe<LaForgeAuthUser>;
   createUser?: Maybe<LaForgeAuthUser>;
@@ -330,6 +333,17 @@ export type LaForgeMutationCreateTaskArgs = {
 
 export type LaForgeMutationRebuildArgs = {
   rootPlans: Array<Maybe<Scalars['String']>>;
+};
+
+export type LaForgeMutationCreateEnviromentFromRepoArgs = {
+  repoURL: Scalars['String'];
+  branchName?: Scalars['String'];
+  repoName: Scalars['String'];
+  envFilePath: Scalars['String'];
+};
+
+export type LaForgeMutationUpdateEnviromentViaPullArgs = {
+  repoUUID: Scalars['String'];
 };
 
 export type LaForgeMutationModifySelfPasswordArgs = {
@@ -542,6 +556,15 @@ export type LaForgeQueryAgentStatusArgs = {
 
 export type LaForgeQueryGetAgentTasksArgs = {
   proStepUUID: Scalars['String'];
+};
+
+export type LaForgeRepository = {
+  __typename?: 'Repository';
+  id: Scalars['ID'];
+  repo_url: Scalars['String'];
+  branch_name: Scalars['String'];
+  environment_filepath: Scalars['String'];
+  commit_info: Scalars['String'];
 };
 
 export enum LaForgeRoleLevel {
@@ -848,6 +871,9 @@ export type LaForgeGetEnvironmentQuery = { __typename?: 'Query' } & {
         tags?: Maybe<Array<Maybe<{ __typename?: 'tagMap' } & Pick<LaForgeTagMap, 'key' | 'value'>>>>;
         config?: Maybe<Array<Maybe<{ __typename?: 'configMap' } & Pick<LaForgeConfigMap, 'key' | 'value'>>>>;
         EnvironmentToUser: Array<Maybe<{ __typename?: 'User' } & Pick<LaForgeUser, 'id' | 'name' | 'uuid' | 'email'>>>;
+        EnvironmentToRepository: Array<
+          Maybe<{ __typename?: 'Repository' } & Pick<LaForgeRepository, 'id' | 'repo_url' | 'branch_name' | 'commit_info'>>
+        >;
         EnvironmentToBuild: Array<
           Maybe<
             { __typename?: 'Build' } & Pick<LaForgeBuild, 'id' | 'revision'> & {
@@ -998,7 +1024,13 @@ export type LaForgeGetEnvironmentInfoQuery = { __typename?: 'Query' } & {
         tags?: Maybe<Array<Maybe<{ __typename?: 'tagMap' } & Pick<LaForgeTagMap, 'key' | 'value'>>>>;
         config?: Maybe<Array<Maybe<{ __typename?: 'configMap' } & Pick<LaForgeConfigMap, 'key' | 'value'>>>>;
         EnvironmentToUser: Array<Maybe<{ __typename?: 'User' } & Pick<LaForgeUser, 'id' | 'name' | 'uuid' | 'email'>>>;
-        EnvironmentToBuild: Array<Maybe<{ __typename?: 'Build' } & Pick<LaForgeBuild, 'id' | 'revision'>>>;
+        EnvironmentToBuild: Array<
+          Maybe<
+            { __typename?: 'Build' } & Pick<LaForgeBuild, 'id' | 'revision'> & {
+                buildToStatus: { __typename?: 'Status' } & LaForgeStatusFieldsFragment;
+              }
+          >
+        >;
       }
   >;
 };
@@ -1514,6 +1546,12 @@ export const GetEnvironmentDocument = gql`
         uuid
         email
       }
+      EnvironmentToRepository {
+        id
+        repo_url
+        branch_name
+        commit_info
+      }
       EnvironmentToBuild {
         id
         revision
@@ -1727,9 +1765,13 @@ export const GetEnvironmentInfoDocument = gql`
       EnvironmentToBuild {
         id
         revision
+        buildToStatus {
+          ...StatusFields
+        }
       }
     }
   }
+  ${StatusFieldsFragmentDoc}
 `;
 
 @Injectable({

@@ -25,9 +25,9 @@ export class PlanComponent implements OnInit {
   ) {
     this.subheader.setTitle('Plan');
     this.subheader.setDescription('Plan an environment to build');
+    this.subheader.setShowEnvDropdown(false);
 
     this.environment = this.envService.getEnvironmentInfo().asObservable();
-    this.build = this.envService.getBuildTree().asObservable();
   }
 
   ngOnInit(): void {}

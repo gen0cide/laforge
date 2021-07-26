@@ -118,6 +118,7 @@ func CreateBuild(ctx context.Context, client *ent.Client, rdb *redis.Client, cur
 	}
 	entBuild, err := client.Build.Create().
 		SetRevision(len(entEnvironment.Edges.EnvironmentToBuild)).
+		SetEnvironmentRevision(entEnvironment.Revision).
 		SetBuildToEnvironment(entEnvironment).
 		SetBuildToStatus(entStatus).
 		SetBuildToCompetition(entCompetition).

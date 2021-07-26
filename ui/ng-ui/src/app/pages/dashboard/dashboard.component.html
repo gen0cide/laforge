@@ -1,2 +1,18 @@
-Dashboard
-<mat-slider min="1" max="100" step="1" value="1"></mat-slider>
+<div class="card-list">
+  <mat-card class="laforge-card">
+    <mat-card-header>
+      <mat-card-title>Environments</mat-card-title>
+      <!-- <mat-card-subtitle></mat-card-subtitle> -->
+    </mat-card-header>
+    <mat-card-content>
+      <ng-container *ngIf="getEnvironmentsLoading | async">
+        <i class="fa fa-3x fa-spinner fa-spin"></i>
+      </ng-container>
+      <ng-container *ngIf="!(getEnvironmentsLoading | async)">
+        <ng-container *ngIf="envService.getEnvironments() | async as _environments">
+          <p *ngFor="let env of _environments">{{ env.name }}</p>
+        </ng-container>
+      </ng-container>
+    </mat-card-content>
+  </mat-card>
+</div>

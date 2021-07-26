@@ -152,6 +152,7 @@ type AgentTask {
 type Build {
   id: ID!
   revision: Int!
+  environment_revision: Int!
   completed_plan: Boolean!
   buildToStatus: Status!
   buildToEnvironment: Environment!
@@ -244,6 +245,7 @@ type Environment {
   EnvironmentToDNS: [DNS]!
   EnvironmentToNetwork: [Network]!
   EnvironmentToBuild: [Build]!
+  EnvironmentToRepository: [Repository]!
 }
 
 type FileDelete {
@@ -353,9 +355,6 @@ type Plan {
 type ProvisionedHost {
   id: ID!
   subnet_ip: String!
-  ### TODO: Does Not Exist Yet
-  combined_output: String
-  ###
   ProvisionedHostToStatus: Status!
   ProvisionedHostToProvisionedNetwork: ProvisionedNetwork!
   ProvisionedHostToHost: Host!
@@ -389,6 +388,14 @@ type ProvisioningStep {
   ProvisioningStepToFileDownload: FileDownload
   ProvisioningStepToFileExtract: FileExtract
   ProvisioningStepToPlan: Plan
+}
+
+type Repository {
+  id: ID!
+  repo_url: String!
+  branch_name: String!
+  environment_filepath: String!
+  commit_info: String!
 }
 
 type Script {
@@ -464,6 +471,7 @@ type AuthUser {
   phone: String!
   company: String!
   occupation: String!
+  publicKey: String!
 }
 
 # TODO: Can use on INPUT_FIELD_DEFINITION if wanna have auth on a per variable level
@@ -498,6 +506,8 @@ type Mutation {
     args: String!
   ): Boolean! @hasRole(roles: [ADMIN, USER])
   rebuild(rootPlans: [String]!): Boolean!
+
+  createAdhoc(rootPlans: [AdhocPlan]!): boolean
 
   createEnviromentFromRepo(
     repoURL: String!

@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -54,6 +55,23 @@ func (r *authUserResolver) Role(ctx context.Context, obj *ent.AuthUser) (model.R
 
 func (r *authUserResolver) Provider(ctx context.Context, obj *ent.AuthUser) (model.ProviderType, error) {
 	return model.ProviderType(obj.Provider), nil
+}
+
+func (r *authUserResolver) PublicKey(ctx context.Context, obj *ent.AuthUser) (string, error) {
+	currentUser, err := auth.ForContext(ctx)
+	if err != nil {
+		return "", err
+	}
+	// Read entire file content, giving us little control but
+	// making it very simple. No need to close the file.
+	content, err := ioutil.ReadFile(currentUser.PrivateKeyPath + ".pub")
+	if err != nil {
+		return "", err
+	}
+
+	// Convert []byte to string and print to screen
+	text := string(content)
+	return text, nil
 }
 
 func (r *buildResolver) ID(ctx context.Context, obj *ent.Build) (string, error) {
@@ -1021,6 +1039,14 @@ func (r *queryResolver) GetAgentTasks(ctx context.Context, proStepUUID string) (
 	return agentTasks, err
 }
 
+func (r *repositoryResolver) ID(ctx context.Context, obj *ent.Repository) (string, error) {
+	return obj.ID.String(), nil
+}
+
+func (r *repositoryResolver) EnvironmentFilepath(ctx context.Context, obj *ent.Repository) (string, error) {
+	return obj.EnviromentFilepath, nil
+}
+
 func (r *scriptResolver) ID(ctx context.Context, obj *ent.Script) (string, error) {
 	return obj.ID.String(), nil
 }
@@ -1253,6 +1279,9 @@ func (r *Resolver) ProvisioningStep() generated.ProvisioningStepResolver {
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+// Repository returns generated.RepositoryResolver implementation.
+func (r *Resolver) Repository() generated.RepositoryResolver { return &repositoryResolver{r} }
+
 // Script returns generated.ScriptResolver implementation.
 func (r *Resolver) Script() generated.ScriptResolver { return &scriptResolver{r} }
 
@@ -1292,6 +1321,7 @@ type provisionedHostResolver struct{ *Resolver }
 type provisionedNetworkResolver struct{ *Resolver }
 type provisioningStepResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type repositoryResolver struct{ *Resolver }
 type scriptResolver struct{ *Resolver }
 type serverTaskResolver struct{ *Resolver }
 type statusResolver struct{ *Resolver }

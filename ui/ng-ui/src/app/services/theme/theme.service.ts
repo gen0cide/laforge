@@ -9,7 +9,8 @@ export class ThemeService {
   private currentTheme: Theme;
 
   constructor() {
-    this.currentTheme = 'dark';
+    const cachedTheme = localStorage.getItem('laforge-theme') as Theme;
+    this.currentTheme = cachedTheme || 'dark';
     this.initTheme();
   }
 
@@ -23,6 +24,8 @@ export class ThemeService {
   }
 
   private initTheme(): void {
+    localStorage.setItem('laforge-theme', this.currentTheme);
+
     document.body.classList.remove('theme-light');
     document.body.classList.remove('theme-dark');
 

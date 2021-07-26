@@ -22,6 +22,12 @@ query GetEnvironment($envId: String!) {
       uuid
       email
     }
+    EnvironmentToRepository {
+      id
+      repo_url
+      branch_name
+      commit_info
+    }
     EnvironmentToBuild {
       id
       revision
@@ -210,6 +216,9 @@ query GetEnvironmentInfo($envId: String!) {
     EnvironmentToBuild {
       id
       revision
+      buildToStatus {
+        ...StatusFields
+      }
     }
   }
 }

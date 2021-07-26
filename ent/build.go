@@ -21,6 +21,8 @@ type Build struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// Revision holds the value of the "revision" field.
 	Revision int `json:"revision,omitempty"`
+	// EnvironmentRevision holds the value of the "environment_revision" field.
+	EnvironmentRevision int `json:"environment_revision,omitempty"`
 	// CompletedPlan holds the value of the "completed_plan" field.
 	CompletedPlan bool `json:"completed_plan,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -140,7 +142,7 @@ func (*Build) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case build.FieldCompletedPlan:
 			values[i] = new(sql.NullBool)
-		case build.FieldRevision:
+		case build.FieldRevision, build.FieldEnvironmentRevision:
 			values[i] = new(sql.NullInt64)
 		case build.FieldID:
 			values[i] = new(uuid.UUID)
@@ -174,6 +176,12 @@ func (b *Build) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field revision", values[i])
 			} else if value.Valid {
 				b.Revision = int(value.Int64)
+			}
+		case build.FieldEnvironmentRevision:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field environment_revision", values[i])
+			} else if value.Valid {
+				b.EnvironmentRevision = int(value.Int64)
 			}
 		case build.FieldCompletedPlan:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -253,6 +261,8 @@ func (b *Build) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", b.ID))
 	builder.WriteString(", revision=")
 	builder.WriteString(fmt.Sprintf("%v", b.Revision))
+	builder.WriteString(", environment_revision=")
+	builder.WriteString(fmt.Sprintf("%v", b.EnvironmentRevision))
 	builder.WriteString(", completed_plan=")
 	builder.WriteString(fmt.Sprintf("%v", b.CompletedPlan))
 	builder.WriteByte(')')

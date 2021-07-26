@@ -47,6 +47,19 @@ func (bu *BuildUpdate) AddRevision(i int) *BuildUpdate {
 	return bu
 }
 
+// SetEnvironmentRevision sets the "environment_revision" field.
+func (bu *BuildUpdate) SetEnvironmentRevision(i int) *BuildUpdate {
+	bu.mutation.ResetEnvironmentRevision()
+	bu.mutation.SetEnvironmentRevision(i)
+	return bu
+}
+
+// AddEnvironmentRevision adds i to the "environment_revision" field.
+func (bu *BuildUpdate) AddEnvironmentRevision(i int) *BuildUpdate {
+	bu.mutation.AddEnvironmentRevision(i)
+	return bu
+}
+
 // SetCompletedPlan sets the "completed_plan" field.
 func (bu *BuildUpdate) SetCompletedPlan(b bool) *BuildUpdate {
 	bu.mutation.SetCompletedPlan(b)
@@ -331,6 +344,20 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeInt,
 			Value:  value,
 			Column: build.FieldRevision,
+		})
+	}
+	if value, ok := bu.mutation.EnvironmentRevision(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: build.FieldEnvironmentRevision,
+		})
+	}
+	if value, ok := bu.mutation.AddedEnvironmentRevision(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: build.FieldEnvironmentRevision,
 		})
 	}
 	if value, ok := bu.mutation.CompletedPlan(); ok {
@@ -636,6 +663,19 @@ func (buo *BuildUpdateOne) SetRevision(i int) *BuildUpdateOne {
 // AddRevision adds i to the "revision" field.
 func (buo *BuildUpdateOne) AddRevision(i int) *BuildUpdateOne {
 	buo.mutation.AddRevision(i)
+	return buo
+}
+
+// SetEnvironmentRevision sets the "environment_revision" field.
+func (buo *BuildUpdateOne) SetEnvironmentRevision(i int) *BuildUpdateOne {
+	buo.mutation.ResetEnvironmentRevision()
+	buo.mutation.SetEnvironmentRevision(i)
+	return buo
+}
+
+// AddEnvironmentRevision adds i to the "environment_revision" field.
+func (buo *BuildUpdateOne) AddEnvironmentRevision(i int) *BuildUpdateOne {
+	buo.mutation.AddEnvironmentRevision(i)
 	return buo
 }
 
@@ -947,6 +987,20 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 			Type:   field.TypeInt,
 			Value:  value,
 			Column: build.FieldRevision,
+		})
+	}
+	if value, ok := buo.mutation.EnvironmentRevision(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: build.FieldEnvironmentRevision,
+		})
+	}
+	if value, ok := buo.mutation.AddedEnvironmentRevision(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: build.FieldEnvironmentRevision,
 		})
 	}
 	if value, ok := buo.mutation.CompletedPlan(); ok {

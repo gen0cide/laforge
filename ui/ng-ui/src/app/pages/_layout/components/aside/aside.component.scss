@@ -12,3 +12,11 @@
     white-space: nowrap;
   }
 }
+
+.menu-nav > .menu-section:first-of-type {
+  margin: 0 !important;
+}
+
+.menu-nav {
+  padding: 0 !important;
+}

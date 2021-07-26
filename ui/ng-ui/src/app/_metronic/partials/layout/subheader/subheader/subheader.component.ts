@@ -30,6 +30,7 @@ export class SubheaderComponent implements OnInit {
   title$: Observable<string>;
   breadcrumbs$: Observable<BreadcrumbItemModel[]>;
   description$: Observable<string>;
+  showEnvDropdown$: Observable<boolean>;
   branches: Branch[] = [
     { name: 'Bradley', hash: '98y3if' },
     { name: 'Lucas', hash: '32a7fh' }
@@ -49,6 +50,7 @@ export class SubheaderComponent implements OnInit {
     this.title$ = this.subheader.titleSubject.asObservable();
     this.breadcrumbs$ = this.subheader.breadCrumbsSubject.asObservable();
     this.description$ = this.subheader.descriptionSubject.asObservable();
+    this.showEnvDropdown$ = this.subheader.showEnvironmentDropdown.asObservable();
 
     this.envService.getEnvironments().subscribe(() => {
       this.cdRef.markForCheck();

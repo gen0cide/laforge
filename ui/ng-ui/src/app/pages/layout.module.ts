@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ViewComponentsModule } from '@components/view-components.module';
 import { NgbDropdownModule, NgbProgressbarModule } from '@ng-bootstrap/ng-bootstrap';
 import { InlineSVGModule } from 'ng-inline-svg';
@@ -47,7 +48,8 @@ import { PagesRoutingModule } from './pages-routing.module';
     CoreModule,
     SubheaderModule,
     ViewComponentsModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    MatSnackBarModule
   ]
 })
 export class LayoutModule {}

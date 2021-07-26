@@ -99,6 +99,13 @@ func Revision(v int) predicate.Build {
 	})
 }
 
+// EnvironmentRevision applies equality check predicate on the "environment_revision" field. It's identical to EnvironmentRevisionEQ.
+func EnvironmentRevision(v int) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldEnvironmentRevision), v))
+	})
+}
+
 // CompletedPlan applies equality check predicate on the "completed_plan" field. It's identical to CompletedPlanEQ.
 func CompletedPlan(v bool) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
@@ -179,6 +186,82 @@ func RevisionLT(v int) predicate.Build {
 func RevisionLTE(v int) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldRevision), v))
+	})
+}
+
+// EnvironmentRevisionEQ applies the EQ predicate on the "environment_revision" field.
+func EnvironmentRevisionEQ(v int) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldEnvironmentRevision), v))
+	})
+}
+
+// EnvironmentRevisionNEQ applies the NEQ predicate on the "environment_revision" field.
+func EnvironmentRevisionNEQ(v int) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldEnvironmentRevision), v))
+	})
+}
+
+// EnvironmentRevisionIn applies the In predicate on the "environment_revision" field.
+func EnvironmentRevisionIn(vs ...int) predicate.Build {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Build(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldEnvironmentRevision), v...))
+	})
+}
+
+// EnvironmentRevisionNotIn applies the NotIn predicate on the "environment_revision" field.
+func EnvironmentRevisionNotIn(vs ...int) predicate.Build {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Build(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldEnvironmentRevision), v...))
+	})
+}
+
+// EnvironmentRevisionGT applies the GT predicate on the "environment_revision" field.
+func EnvironmentRevisionGT(v int) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldEnvironmentRevision), v))
+	})
+}
+
+// EnvironmentRevisionGTE applies the GTE predicate on the "environment_revision" field.
+func EnvironmentRevisionGTE(v int) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldEnvironmentRevision), v))
+	})
+}
+
+// EnvironmentRevisionLT applies the LT predicate on the "environment_revision" field.
+func EnvironmentRevisionLT(v int) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldEnvironmentRevision), v))
+	})
+}
+
+// EnvironmentRevisionLTE applies the LTE predicate on the "environment_revision" field.
+func EnvironmentRevisionLTE(v int) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldEnvironmentRevision), v))
 	})
 }
 

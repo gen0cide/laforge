@@ -407,7 +407,7 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     b.ID,
 		Type:   "Build",
-		Fields: make([]*Field, 2),
+		Fields: make([]*Field, 3),
 		Edges:  make([]*Edge, 6),
 	}
 	var buf []byte
@@ -419,10 +419,18 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "revision",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(b.CompletedPlan); err != nil {
+	if buf, err = json.Marshal(b.EnvironmentRevision); err != nil {
 		return nil, err
 	}
 	node.Fields[1] = &Field{
+		Type:  "int",
+		Name:  "environment_revision",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(b.CompletedPlan); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
 		Type:  "bool",
 		Name:  "completed_plan",
 		Value: string(buf),

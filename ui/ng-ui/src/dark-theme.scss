@@ -93,6 +93,26 @@ $dark-text-on-error: #000;
     color: $dark-text-on-surface-lighter !important;
   }
 
+  .mat-select-panel {
+    background: $dark-surface-24 !important;
+  }
+
+  .mat-optgroup-label {
+    color: $dark-text-on-surface-lighter !important;
+  }
+
+  .mat-select-panel .mat-option.mat-selected:not(.mat-option-multiple) {
+    background: $dark-primary !important;
+  }
+
+  .mat-primary .mat-option.mat-selected:not(.mat-option-disabled) {
+    color: $dark-text-on-primary !important;
+  }
+
+  .mat-option {
+    color: $dark-text-on-surface !important;
+  }
+
   div.splash-screen#splash-screen {
     background-color: $dark-background !important;
   }
@@ -101,6 +121,10 @@ $dark-text-on-error: #000;
     background-color: $dark-surface-06 !important;
     color: $dark-text-on-surface !important;
     border-top: none !important;
+  }
+
+  .subheader-title small {
+    color: $dark-text-on-surface-lighter !important;
   }
 
   .header {
@@ -154,6 +178,11 @@ $dark-text-on-error: #000;
     > .menu-item:not(.menu-item-parent):not(.menu-item-open):not(.menu-item-here):not(.menu-item-active):hover
     > .menu-link {
     background-color: $dark-primary !important;
+    color: $dark-text-on-primary !important;
+  }
+
+  .aside-menu .menu-nav > .menu-section .menu-text {
+    color: $dark-primary !important;
   }
 
   .aside-menu .menu-nav > .menu-item.menu-item-open > .menu-heading .menu-icon,

@@ -99,6 +99,7 @@ var (
 	BuildsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "revision", Type: field.TypeInt},
+		{Name: "environment_revision", Type: field.TypeInt},
 		{Name: "completed_plan", Type: field.TypeBool, Default: false},
 		{Name: "build_build_to_environment", Type: field.TypeUUID, Nullable: true},
 		{Name: "build_build_to_competition", Type: field.TypeUUID, Nullable: true},
@@ -111,13 +112,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "builds_environments_BuildToEnvironment",
-				Columns:    []*schema.Column{BuildsColumns[3]},
+				Columns:    []*schema.Column{BuildsColumns[4]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "builds_competitions_BuildToCompetition",
-				Columns:    []*schema.Column{BuildsColumns[4]},
+				Columns:    []*schema.Column{BuildsColumns[5]},
 				RefColumns: []*schema.Column{CompetitionsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

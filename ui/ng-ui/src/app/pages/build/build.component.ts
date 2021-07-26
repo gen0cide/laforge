@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   LaForgeGetBuildTreeQuery,
   LaForgeGetEnvironmentInfoQuery,
@@ -27,10 +28,12 @@ export class BuildComponent implements OnInit, OnDestroy {
     private subheader: SubheaderService,
     public envService: EnvironmentService,
     private cdRef: ChangeDetectorRef,
-    private executeBuild: LaForgeExecuteBuildGQL
+    private executeBuild: LaForgeExecuteBuildGQL,
+    private snackBar: MatSnackBar
   ) {
     this.subheader.setTitle('Build');
     this.subheader.setDescription('Build a planned environment');
+    this.subheader.setShowEnvDropdown(true);
 
     this.environment = this.envService.getEnvironmentInfo().asObservable();
     this.build = this.envService.getBuildTree().asObservable();
@@ -78,7 +81,12 @@ export class BuildComponent implements OnInit, OnDestroy {
           return console.error(errors);
         }
       }, console.error)
-      .finally(() => (this.executeBuildLoading = false));
+      .finally(() => {
+        this.executeBuildLoading = false;
+        this.snackBar.open('Successfully started build!', 'Cool', {
+          duration: 3000
+        });
+      });
   }
 
   canExecuteBuild(): boolean {

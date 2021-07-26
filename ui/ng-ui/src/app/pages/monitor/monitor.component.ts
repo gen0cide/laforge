@@ -38,6 +38,7 @@ export class MonitorComponent implements AfterViewInit, OnDestroy {
   ) {
     this.subheader.setTitle('Monitor Agents');
     this.subheader.setDescription('View live data being sent from the host agents');
+    this.subheader.setShowEnvDropdown(true);
 
     this.environment = this.envService.getEnvironmentInfo().asObservable();
     this.build = this.envService.getBuildTree().asObservable();
