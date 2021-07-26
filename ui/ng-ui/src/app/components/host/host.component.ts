@@ -29,6 +29,7 @@ export class HostComponent implements OnInit, OnDestroy {
   @Input() selectable: boolean;
   @Input() parentSelected: boolean;
   @Input() hasAgent: boolean;
+  @Input() mode: 'plan' | 'build' | 'manage';
   unsubscribe: Subscription[] = [];
   isSelectedState = false;
   planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
@@ -43,6 +44,7 @@ export class HostComponent implements OnInit, OnDestroy {
     private envService: EnvironmentService,
     private cdRef: ChangeDetectorRef
   ) {
+    if (!this.mode) this.mode = 'manage';
     if (!this.style) this.style = 'compact';
     if (!this.selectable) this.selectable = false;
     if (!this.parentSelected) this.parentSelected = false;
@@ -194,6 +196,18 @@ export class HostComponent implements OnInit, OnDestroy {
   }
 
   shouldCollapse(): boolean {
+    if (this.mode === 'plan') {
+      const plan = this.envService.getPlan(this.provisionedHost.ProvisionedHostToPlan.id);
+      if (plan?.PlanToPlanDiffs.length > 0) {
+        const latestDiff = plan.PlanToPlanDiffs.sort((a, b) => b.revision - a.revision)[0];
+        if (latestDiff.new_state === LaForgeProvisionStatus.Planning) {
+          return false;
+        } else {
+          return true;
+        }
+      }
+      return false;
+    }
     if (this.planStatus && this.planStatus.state === LaForgeProvisionStatus.Deleted) return true;
     // return hostChildrenCompleted(this.provisionedHost as LaForgeProvisionedHost, this.envService.getStatus);
     let numCompleted = 0;

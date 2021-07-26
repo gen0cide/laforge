@@ -174,20 +174,36 @@ func CreateBuild(ctx context.Context, client *ent.Client, rdb *redis.Client, cur
 
 	go func(wg *sync.WaitGroup, entBuild *ent.Build) {
 		wg.Wait()
+
 		ctx := context.Background()
 		defer ctx.Done()
+
+		entCommit, err := utils.CreateRootCommit(client, entBuild)
+		if err != nil {
+			_, _, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask, err)
+			return
+		}
+		err = entBuild.Update().SetBuildToLatestBuildCommit(entCommit).Exec(ctx)
+		if err != nil {
+			_, _, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask, err)
+			return
+		}
+
 		if RenderFilesTask != nil {
 			RenderFilesTaskStatus, RenderFilesTask, err = utils.CompleteServerTask(ctx, client, rdb, RenderFilesTaskStatus, RenderFilesTask)
 			if err != nil {
+				_, _, err = utils.FailServerTask(ctx, client, rdb, RenderFilesTaskStatus, RenderFilesTask, err)
 				return
 			}
 		}
 		_, serverTask, err = utils.CompleteServerTask(ctx, client, rdb, taskStatus, serverTask)
 		if err != nil {
+			_, _, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask, err)
 			return
 		}
 		serverTask, err = client.ServerTask.UpdateOne(serverTask).SetServerTaskToBuild(entBuild).Save(ctx)
 		if err != nil {
+			_, _, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask, err)
 			return
 		}
 		rdb.Publish(ctx, "updatedServerTask", serverTask.ID.String())

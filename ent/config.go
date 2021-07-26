@@ -29,8 +29,8 @@ type hooks struct {
 	AgentTask          []ent.Hook
 	AuthUser           []ent.Hook
 	Build              []ent.Hook
+	BuildCommit        []ent.Hook
 	Command            []ent.Hook
-	Commit             []ent.Hook
 	Competition        []ent.Hook
 	DNS                []ent.Hook
 	DNSRecord          []ent.Hook

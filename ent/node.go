@@ -14,8 +14,8 @@ import (
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/command"
-	"github.com/gen0cide/laforge/ent/commit"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/dns"
@@ -539,11 +539,11 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Edges[3] = &Edge{
-		Type: "Commit",
-		Name: "BuildToLatestCommit",
+		Type: "BuildCommit",
+		Name: "BuildToLatestBuildCommit",
 	}
-	err = b.QueryBuildToLatestCommit().
-		Select(commit.FieldID).
+	err = b.QueryBuildToLatestBuildCommit().
+		Select(buildcommit.FieldID).
 		Scan(ctx, &node.Edges[3].IDs)
 	if err != nil {
 		return nil, err
@@ -579,11 +579,11 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Edges[7] = &Edge{
-		Type: "Commit",
-		Name: "BuildToCommits",
+		Type: "BuildCommit",
+		Name: "BuildToBuildCommits",
 	}
-	err = b.QueryBuildToCommits().
-		Select(commit.FieldID).
+	err = b.QueryBuildToBuildCommits().
+		Select(buildcommit.FieldID).
 		Scan(ctx, &node.Edges[7].IDs)
 	if err != nil {
 		return nil, err
@@ -595,6 +595,61 @@ func (b *Build) Node(ctx context.Context) (node *Node, err error) {
 	err = b.QueryBuildToAdhocPlans().
 		Select(adhocplan.FieldID).
 		Scan(ctx, &node.Edges[8].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (bc *BuildCommit) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     bc.ID,
+		Type:   "BuildCommit",
+		Fields: make([]*Field, 3),
+		Edges:  make([]*Edge, 2),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(bc.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "buildcommit.Type",
+		Name:  "type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(bc.Revision); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "int",
+		Name:  "revision",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(bc.State); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "buildcommit.State",
+		Name:  "state",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Build",
+		Name: "BuildCommitToBuild",
+	}
+	err = bc.QueryBuildCommitToBuild().
+		Select(build.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "PlanDiff",
+		Name: "BuildCommitToPlanDiffs",
+	}
+	err = bc.QueryBuildCommitToPlanDiffs().
+		Select(plandiff.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -713,61 +768,6 @@ func (c *Command) Node(ctx context.Context) (node *Node, err error) {
 	}
 	err = c.QueryCommandToEnvironment().
 		Select(environment.FieldID).
-		Scan(ctx, &node.Edges[1].IDs)
-	if err != nil {
-		return nil, err
-	}
-	return node, nil
-}
-
-func (c *Commit) Node(ctx context.Context) (node *Node, err error) {
-	node = &Node{
-		ID:     c.ID,
-		Type:   "Commit",
-		Fields: make([]*Field, 3),
-		Edges:  make([]*Edge, 2),
-	}
-	var buf []byte
-	if buf, err = json.Marshal(c.Type); err != nil {
-		return nil, err
-	}
-	node.Fields[0] = &Field{
-		Type:  "commit.Type",
-		Name:  "type",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(c.Revision); err != nil {
-		return nil, err
-	}
-	node.Fields[1] = &Field{
-		Type:  "int",
-		Name:  "revision",
-		Value: string(buf),
-	}
-	if buf, err = json.Marshal(c.CommitState); err != nil {
-		return nil, err
-	}
-	node.Fields[2] = &Field{
-		Type:  "commit.CommitState",
-		Name:  "commit_state",
-		Value: string(buf),
-	}
-	node.Edges[0] = &Edge{
-		Type: "Build",
-		Name: "CommitToBuild",
-	}
-	err = c.QueryCommitToBuild().
-		Select(build.FieldID).
-		Scan(ctx, &node.Edges[0].IDs)
-	if err != nil {
-		return nil, err
-	}
-	node.Edges[1] = &Edge{
-		Type: "PlanDiff",
-		Name: "CommitToPlanDiffs",
-	}
-	err = c.QueryCommitToPlanDiffs().
-		Select(plandiff.FieldID).
 		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
@@ -2312,11 +2312,11 @@ func (pd *PlanDiff) Node(ctx context.Context) (node *Node, err error) {
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{
-		Type: "Commit",
-		Name: "PlanDiffToCommit",
+		Type: "BuildCommit",
+		Name: "PlanDiffToBuildCommit",
 	}
-	err = pd.QueryPlanDiffToCommit().
-		Select(commit.FieldID).
+	err = pd.QueryPlanDiffToBuildCommit().
+		Select(buildcommit.FieldID).
 		Scan(ctx, &node.Edges[0].IDs)
 	if err != nil {
 		return nil, err
@@ -3443,19 +3443,19 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 			return nil, err
 		}
 		return n, nil
-	case command.Table:
-		n, err := c.Command.Query().
-			Where(command.ID(id)).
-			CollectFields(ctx, "Command").
+	case buildcommit.Table:
+		n, err := c.BuildCommit.Query().
+			Where(buildcommit.ID(id)).
+			CollectFields(ctx, "BuildCommit").
 			Only(ctx)
 		if err != nil {
 			return nil, err
 		}
 		return n, nil
-	case commit.Table:
-		n, err := c.Commit.Query().
-			Where(commit.ID(id)).
-			CollectFields(ctx, "Commit").
+	case command.Table:
+		n, err := c.Command.Query().
+			Where(command.ID(id)).
+			CollectFields(ctx, "Command").
 			Only(ctx)
 		if err != nil {
 			return nil, err
@@ -3851,10 +3851,10 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 				*noder = node
 			}
 		}
-	case command.Table:
-		nodes, err := c.Command.Query().
-			Where(command.IDIn(ids...)).
-			CollectFields(ctx, "Command").
+	case buildcommit.Table:
+		nodes, err := c.BuildCommit.Query().
+			Where(buildcommit.IDIn(ids...)).
+			CollectFields(ctx, "BuildCommit").
 			All(ctx)
 		if err != nil {
 			return nil, err
@@ -3864,10 +3864,10 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 				*noder = node
 			}
 		}
-	case commit.Table:
-		nodes, err := c.Commit.Query().
-			Where(commit.IDIn(ids...)).
-			CollectFields(ctx, "Commit").
+	case command.Table:
+		nodes, err := c.Command.Query().
+			Where(command.IDIn(ids...)).
+			CollectFields(ctx, "Command").
 			All(ctx)
 		if err != nil {
 			return nil, err

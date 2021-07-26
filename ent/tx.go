@@ -22,10 +22,10 @@ type Tx struct {
 	AuthUser *AuthUserClient
 	// Build is the client for interacting with the Build builders.
 	Build *BuildClient
+	// BuildCommit is the client for interacting with the BuildCommit builders.
+	BuildCommit *BuildCommitClient
 	// Command is the client for interacting with the Command builders.
 	Command *CommandClient
-	// Commit is the client for interacting with the Commit builders.
-	Commit *CommitClient
 	// Competition is the client for interacting with the Competition builders.
 	Competition *CompetitionClient
 	// DNS is the client for interacting with the DNS builders.
@@ -222,8 +222,8 @@ func (tx *Tx) init() {
 	tx.AgentTask = NewAgentTaskClient(tx.config)
 	tx.AuthUser = NewAuthUserClient(tx.config)
 	tx.Build = NewBuildClient(tx.config)
+	tx.BuildCommit = NewBuildCommitClient(tx.config)
 	tx.Command = NewCommandClient(tx.config)
-	tx.Commit = NewCommitClient(tx.config)
 	tx.Competition = NewCompetitionClient(tx.config)
 	tx.DNS = NewDNSClient(tx.config)
 	tx.DNSRecord = NewDNSRecordClient(tx.config)

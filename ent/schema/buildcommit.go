@@ -8,30 +8,30 @@ import (
 	"github.com/google/uuid"
 )
 
-// Commit holds the schema definition for the Commit entity.
-type Commit struct {
+// BuildCommit holds the schema definition for the BuildCommit entity.
+type BuildCommit struct {
 	ent.Schema
 }
 
-// Fields of the Commit.
-func (Commit) Fields() []ent.Field {
+// Fields of the BuildCommit.
+func (BuildCommit) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
 		field.Enum("type").Values("ROOT", "REBUILD", "DELETE"),
 		field.Int("revision"),
-		field.Enum("commit_state").Values("PLANNING", "INPROGRESS", "APPLIED"),
+		field.Enum("state").Values("PLANNING", "INPROGRESS", "APPLIED"),
 	}
 }
 
-// Edges of the Commit.
-func (Commit) Edges() []ent.Edge {
+// Edges of the BuildCommit.
+func (BuildCommit) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("CommitToBuild", Build.Type).
+		edge.To("BuildCommitToBuild", Build.Type).
 			Unique().
 			Required(),
-		edge.From("CommitToPlanDiffs", PlanDiff.Type).
-			Ref("PlanDiffToCommit").
+		edge.From("BuildCommitToPlanDiffs", PlanDiff.Type).
+			Ref("PlanDiffToBuildCommit").
 			Annotations(entsql.Annotation{
 				OnDelete: entsql.Cascade,
 			}),

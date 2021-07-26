@@ -42,6 +42,7 @@ type ResolverRoot interface {
 	AgentTask() AgentTaskResolver
 	AuthUser() AuthUserResolver
 	Build() BuildResolver
+	BuildCommit() BuildCommitResolver
 	Command() CommandResolver
 	Competition() CompetitionResolver
 	DNS() DNSResolver
@@ -56,6 +57,7 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Network() NetworkResolver
 	Plan() PlanResolver
+	PlanDiff() PlanDiffResolver
 	ProvisionedHost() ProvisionedHostResolver
 	ProvisionedNetwork() ProvisionedNetworkResolver
 	ProvisioningStep() ProvisioningStepResolver
@@ -116,8 +118,10 @@ type ComplexityRoot struct {
 	}
 
 	Build struct {
+		BuildToBuildCommits       func(childComplexity int) int
 		BuildToCompetition        func(childComplexity int) int
 		BuildToEnvironment        func(childComplexity int) int
+		BuildToLatestBuildCommit  func(childComplexity int) int
 		BuildToPlan               func(childComplexity int) int
 		BuildToProvisionedNetwork func(childComplexity int) int
 		BuildToStatus             func(childComplexity int) int
@@ -126,6 +130,15 @@ type ComplexityRoot struct {
 		EnvironmentRevision       func(childComplexity int) int
 		ID                        func(childComplexity int) int
 		Revision                  func(childComplexity int) int
+	}
+
+	BuildCommit struct {
+		BuildCommitToBuild     func(childComplexity int) int
+		BuildCommitToPlanDiffs func(childComplexity int) int
+		ID                     func(childComplexity int) int
+		Revision               func(childComplexity int) int
+		State                  func(childComplexity int) int
+		Type                   func(childComplexity int) int
 	}
 
 	Command struct {
@@ -325,6 +338,7 @@ type ComplexityRoot struct {
 		ID                       func(childComplexity int) int
 		NextPlan                 func(childComplexity int) int
 		PlanToBuild              func(childComplexity int) int
+		PlanToPlanDiffs          func(childComplexity int) int
 		PlanToProvisionedHost    func(childComplexity int) int
 		PlanToProvisionedNetwork func(childComplexity int) int
 		PlanToProvisioningStep   func(childComplexity int) int
@@ -335,8 +349,15 @@ type ComplexityRoot struct {
 		Type                     func(childComplexity int) int
 	}
 
+	PlanDiff struct {
+		ID                    func(childComplexity int) int
+		NewState              func(childComplexity int) int
+		PlanDiffToBuildCommit func(childComplexity int) int
+		PlanDiffToPlan        func(childComplexity int) int
+		Revision              func(childComplexity int) int
+	}
+
 	ProvisionedHost struct {
-		CombinedOutput                      func(childComplexity int) int
 		ID                                  func(childComplexity int) int
 		ProvisionedHostToAgentStatus        func(childComplexity int) int
 		ProvisionedHostToHost               func(childComplexity int) int
@@ -499,6 +520,12 @@ type AuthUserResolver interface {
 type BuildResolver interface {
 	ID(ctx context.Context, obj *ent.Build) (string, error)
 }
+type BuildCommitResolver interface {
+	ID(ctx context.Context, obj *ent.BuildCommit) (string, error)
+	Type(ctx context.Context, obj *ent.BuildCommit) (model.BuildCommitType, error)
+
+	State(ctx context.Context, obj *ent.BuildCommit) (model.BuildCommitState, error)
+}
 type CommandResolver interface {
 	ID(ctx context.Context, obj *ent.Command) (string, error)
 
@@ -589,10 +616,13 @@ type PlanResolver interface {
 
 	Type(ctx context.Context, obj *ent.Plan) (model.PlanType, error)
 }
+type PlanDiffResolver interface {
+	ID(ctx context.Context, obj *ent.PlanDiff) (string, error)
+
+	NewState(ctx context.Context, obj *ent.PlanDiff) (model.ProvisionStatus, error)
+}
 type ProvisionedHostResolver interface {
 	ID(ctx context.Context, obj *ent.ProvisionedHost) (string, error)
-
-	CombinedOutput(ctx context.Context, obj *ent.ProvisionedHost) (*string, error)
 
 	ProvisionedHostToAgentStatus(ctx context.Context, obj *ent.ProvisionedHost) (*ent.AgentStatus, error)
 }
@@ -893,6 +923,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AuthUser.Username(childComplexity), true
 
+	case "Build.BuildToBuildCommits":
+		if e.complexity.Build.BuildToBuildCommits == nil {
+			break
+		}
+
+		return e.complexity.Build.BuildToBuildCommits(childComplexity), true
+
 	case "Build.buildToCompetition":
 		if e.complexity.Build.BuildToCompetition == nil {
 			break
@@ -906,6 +943,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Build.BuildToEnvironment(childComplexity), true
+
+	case "Build.BuildToLatestBuildCommit":
+		if e.complexity.Build.BuildToLatestBuildCommit == nil {
+			break
+		}
+
+		return e.complexity.Build.BuildToLatestBuildCommit(childComplexity), true
 
 	case "Build.buildToPlan":
 		if e.complexity.Build.BuildToPlan == nil {
@@ -962,6 +1006,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Build.Revision(childComplexity), true
+
+	case "BuildCommit.BuildCommitToBuild":
+		if e.complexity.BuildCommit.BuildCommitToBuild == nil {
+			break
+		}
+
+		return e.complexity.BuildCommit.BuildCommitToBuild(childComplexity), true
+
+	case "BuildCommit.BuildCommitToPlanDiffs":
+		if e.complexity.BuildCommit.BuildCommitToPlanDiffs == nil {
+			break
+		}
+
+		return e.complexity.BuildCommit.BuildCommitToPlanDiffs(childComplexity), true
+
+	case "BuildCommit.id":
+		if e.complexity.BuildCommit.ID == nil {
+			break
+		}
+
+		return e.complexity.BuildCommit.ID(childComplexity), true
+
+	case "BuildCommit.revision":
+		if e.complexity.BuildCommit.Revision == nil {
+			break
+		}
+
+		return e.complexity.BuildCommit.Revision(childComplexity), true
+
+	case "BuildCommit.state":
+		if e.complexity.BuildCommit.State == nil {
+			break
+		}
+
+		return e.complexity.BuildCommit.State(childComplexity), true
+
+	case "BuildCommit.type":
+		if e.complexity.BuildCommit.Type == nil {
+			break
+		}
+
+		return e.complexity.BuildCommit.Type(childComplexity), true
 
 	case "Command.args":
 		if e.complexity.Command.Args == nil {
@@ -2111,6 +2197,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Plan.PlanToBuild(childComplexity), true
 
+	case "Plan.PlanToPlanDiffs":
+		if e.complexity.Plan.PlanToPlanDiffs == nil {
+			break
+		}
+
+		return e.complexity.Plan.PlanToPlanDiffs(childComplexity), true
+
 	case "Plan.PlanToProvisionedHost":
 		if e.complexity.Plan.PlanToProvisionedHost == nil {
 			break
@@ -2167,12 +2260,40 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Plan.Type(childComplexity), true
 
-	case "ProvisionedHost.combined_output":
-		if e.complexity.ProvisionedHost.CombinedOutput == nil {
+	case "PlanDiff.id":
+		if e.complexity.PlanDiff.ID == nil {
 			break
 		}
 
-		return e.complexity.ProvisionedHost.CombinedOutput(childComplexity), true
+		return e.complexity.PlanDiff.ID(childComplexity), true
+
+	case "PlanDiff.new_state":
+		if e.complexity.PlanDiff.NewState == nil {
+			break
+		}
+
+		return e.complexity.PlanDiff.NewState(childComplexity), true
+
+	case "PlanDiff.PlanDiffToBuildCommit":
+		if e.complexity.PlanDiff.PlanDiffToBuildCommit == nil {
+			break
+		}
+
+		return e.complexity.PlanDiff.PlanDiffToBuildCommit(childComplexity), true
+
+	case "PlanDiff.PlanDiffToPlan":
+		if e.complexity.PlanDiff.PlanDiffToPlan == nil {
+			break
+		}
+
+		return e.complexity.PlanDiff.PlanDiffToPlan(childComplexity), true
+
+	case "PlanDiff.revision":
+		if e.complexity.PlanDiff.Revision == nil {
+			break
+		}
+
+		return e.complexity.PlanDiff.Revision(childComplexity), true
 
 	case "ProvisionedHost.id":
 		if e.complexity.ProvisionedHost.ID == nil {
@@ -3138,6 +3259,18 @@ enum ServerTaskType {
   EXECUTEBUILD
 }
 
+enum BuildCommitType {
+  ROOT
+  REBUILD
+  DELETE
+}
+
+enum BuildCommitState {
+  PLANNING
+  INPROGRESS
+  APPLIED
+}
+
 type AgentStatus {
   clientId: String!
   hostname: String!
@@ -3176,6 +3309,17 @@ type Build {
   buildToProvisionedNetwork: [ProvisionedNetwork]!
   buildToTeam: [Team]!
   buildToPlan: [Plan]!
+  BuildToLatestBuildCommit: BuildCommit
+  BuildToBuildCommits: [BuildCommit]!
+}
+
+type BuildCommit {
+  id: ID!
+  type: BuildCommitType!
+  revision: Int!
+  state: BuildCommitState!
+  BuildCommitToBuild: Build!
+  BuildCommitToPlanDiffs: [PlanDiff]!
 }
 
 type Command {
@@ -3366,14 +3510,20 @@ type Plan {
   PlanToProvisionedHost: ProvisionedHost!
   PlanToProvisioningStep: ProvisioningStep!
   PlanToStatus: Status!
+  PlanToPlanDiffs: [PlanDiff]!
+}
+
+type PlanDiff {
+  id: ID!
+  revision: Int!
+  new_state: ProvisionStatus!
+  PlanDiffToBuildCommit: BuildCommit!
+  PlanDiffToPlan: Plan!
 }
 
 type ProvisionedHost {
   id: ID!
   subnet_ip: String!
-  ### TODO: Does Not Exist Yet
-  combined_output: String
-  ###
   ProvisionedHostToStatus: Status!
   ProvisionedHostToProvisionedNetwork: ProvisionedNetwork!
   ProvisionedHostToHost: Host!
@@ -3519,21 +3669,44 @@ type Mutation {
   deleteUser(userUUID: String!): Boolean!
   executePlan(buildUUID: String!): Build
   deleteBuild(buildUUID: String!): Boolean!
-  createTask(proHostUUID: String!, command: AgentCommand!, args: String!): Boolean! @hasRole(roles: [ADMIN, USER])
+  createTask(
+    proHostUUID: String!
+    command: AgentCommand!
+    args: String!
+  ): Boolean! @hasRole(roles: [ADMIN, USER])
   rebuild(rootPlans: [String]!): Boolean!
 
-  createEnviromentFromRepo(repoURL: String!, branchName: String! = "master", repoName: String!, envFilePath: String!): [Environment]!
-    @hasRole(roles: [ADMIN, USER])
+  # createAdhoc(rootPlans: [AdhocPlan]!): Boolean!
 
-  updateEnviromentViaPull(repoUUID: String!): [Environment]! @hasRole(roles: [ADMIN, USER])
+  createEnviromentFromRepo(
+    repoURL: String!
+    branchName: String! = "master"
+    repoName: String!
+    envFilePath: String!
+  ): [Environment]! @hasRole(roles: [ADMIN, USER])
+
+  updateEnviromentViaPull(repoUUID: String!): [Environment]!
+    @hasRole(roles: [ADMIN, USER])
 
   # User Info
-  modifySelfPassword(currentPassword: String!, newPassword: String!): Boolean! @hasRole(roles: [ADMIN, USER])
-  modifySelfUserInfo(firstName: String, lastName: String, email: String, phone: String, company: String, occupation: String): AuthUser
+  modifySelfPassword(currentPassword: String!, newPassword: String!): Boolean!
     @hasRole(roles: [ADMIN, USER])
+  modifySelfUserInfo(
+    firstName: String
+    lastName: String
+    email: String
+    phone: String
+    company: String
+    occupation: String
+  ): AuthUser @hasRole(roles: [ADMIN, USER])
 
   # User Admin Stuff
-  createUser(username: String!, password: String!, role: RoleLevel!, provider: ProviderType!): AuthUser @hasRole(roles: [ADMIN])
+  createUser(
+    username: String!
+    password: String!
+    role: RoleLevel!
+    provider: ProviderType!
+  ): AuthUser @hasRole(roles: [ADMIN])
   modifyAdminUserInfo(
     userID: String!
     username: String
@@ -3546,7 +3719,8 @@ type Mutation {
     role: RoleLevel
     provider: ProviderType
   ): AuthUser @hasRole(roles: [ADMIN])
-  modifyAdminPassword(userID: String!, newPassword: String!): Boolean! @hasRole(roles: [ADMIN])
+  modifyAdminPassword(userID: String!, newPassword: String!): Boolean!
+    @hasRole(roles: [ADMIN])
 }
 
 type Subscription {
@@ -5650,6 +5824,283 @@ func (ec *executionContext) _Build_buildToPlan(ctx context.Context, field graphq
 	res := resTmp.([]*ent.Plan)
 	fc.Result = res
 	return ec.marshalNPlan2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐPlan(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Build_BuildToLatestBuildCommit(ctx context.Context, field graphql.CollectedField, obj *ent.Build) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Build",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BuildToLatestBuildCommit(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.BuildCommit)
+	fc.Result = res
+	return ec.marshalOBuildCommit2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuildCommit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Build_BuildToBuildCommits(ctx context.Context, field graphql.CollectedField, obj *ent.Build) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Build",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BuildToBuildCommits(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.BuildCommit)
+	fc.Result = res
+	return ec.marshalNBuildCommit2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuildCommit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BuildCommit_id(ctx context.Context, field graphql.CollectedField, obj *ent.BuildCommit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BuildCommit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.BuildCommit().ID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BuildCommit_type(ctx context.Context, field graphql.CollectedField, obj *ent.BuildCommit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BuildCommit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.BuildCommit().Type(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.BuildCommitType)
+	fc.Result = res
+	return ec.marshalNBuildCommitType2githubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐBuildCommitType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BuildCommit_revision(ctx context.Context, field graphql.CollectedField, obj *ent.BuildCommit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BuildCommit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Revision, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BuildCommit_state(ctx context.Context, field graphql.CollectedField, obj *ent.BuildCommit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BuildCommit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.BuildCommit().State(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.BuildCommitState)
+	fc.Result = res
+	return ec.marshalNBuildCommitState2githubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐBuildCommitState(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BuildCommit_BuildCommitToBuild(ctx context.Context, field graphql.CollectedField, obj *ent.BuildCommit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BuildCommit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BuildCommitToBuild(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Build)
+	fc.Result = res
+	return ec.marshalNBuild2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuild(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _BuildCommit_BuildCommitToPlanDiffs(ctx context.Context, field graphql.CollectedField, obj *ent.BuildCommit) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "BuildCommit",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BuildCommitToPlanDiffs(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.PlanDiff)
+	fc.Result = res
+	return ec.marshalNPlanDiff2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐPlanDiff(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Command_id(ctx context.Context, field graphql.CollectedField, obj *ent.Command) (ret graphql.Marshaler) {
@@ -11567,6 +12018,216 @@ func (ec *executionContext) _Plan_PlanToStatus(ctx context.Context, field graphq
 	return ec.marshalNStatus2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐStatus(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Plan_PlanToPlanDiffs(ctx context.Context, field graphql.CollectedField, obj *ent.Plan) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Plan",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PlanToPlanDiffs(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.PlanDiff)
+	fc.Result = res
+	return ec.marshalNPlanDiff2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐPlanDiff(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PlanDiff_id(ctx context.Context, field graphql.CollectedField, obj *ent.PlanDiff) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PlanDiff",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.PlanDiff().ID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PlanDiff_revision(ctx context.Context, field graphql.CollectedField, obj *ent.PlanDiff) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PlanDiff",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Revision, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PlanDiff_new_state(ctx context.Context, field graphql.CollectedField, obj *ent.PlanDiff) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PlanDiff",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.PlanDiff().NewState(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.ProvisionStatus)
+	fc.Result = res
+	return ec.marshalNProvisionStatus2githubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐProvisionStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PlanDiff_PlanDiffToBuildCommit(ctx context.Context, field graphql.CollectedField, obj *ent.PlanDiff) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PlanDiff",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PlanDiffToBuildCommit(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.BuildCommit)
+	fc.Result = res
+	return ec.marshalNBuildCommit2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuildCommit(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _PlanDiff_PlanDiffToPlan(ctx context.Context, field graphql.CollectedField, obj *ent.PlanDiff) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "PlanDiff",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PlanDiffToPlan(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Plan)
+	fc.Result = res
+	return ec.marshalNPlan2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐPlan(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _ProvisionedHost_id(ctx context.Context, field graphql.CollectedField, obj *ent.ProvisionedHost) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -11635,38 +12296,6 @@ func (ec *executionContext) _ProvisionedHost_subnet_ip(ctx context.Context, fiel
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _ProvisionedHost_combined_output(ctx context.Context, field graphql.CollectedField, obj *ent.ProvisionedHost) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "ProvisionedHost",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.ProvisionedHost().CombinedOutput(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ProvisionedHost_ProvisionedHostToStatus(ctx context.Context, field graphql.CollectedField, obj *ent.ProvisionedHost) (ret graphql.Marshaler) {
@@ -16778,6 +17407,128 @@ func (ec *executionContext) _Build(ctx context.Context, sel ast.SelectionSet, ob
 				}
 				return res
 			})
+		case "BuildToLatestBuildCommit":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Build_BuildToLatestBuildCommit(ctx, field, obj)
+				return res
+			})
+		case "BuildToBuildCommits":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Build_BuildToBuildCommits(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var buildCommitImplementors = []string{"BuildCommit"}
+
+func (ec *executionContext) _BuildCommit(ctx context.Context, sel ast.SelectionSet, obj *ent.BuildCommit) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, buildCommitImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BuildCommit")
+		case "id":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._BuildCommit_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "type":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._BuildCommit_type(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "revision":
+			out.Values[i] = ec._BuildCommit_revision(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "state":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._BuildCommit_state(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "BuildCommitToBuild":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._BuildCommit_BuildCommitToBuild(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "BuildCommitToPlanDiffs":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._BuildCommit_BuildCommitToPlanDiffs(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -18543,6 +19294,103 @@ func (ec *executionContext) _Plan(ctx context.Context, sel ast.SelectionSet, obj
 				}
 				return res
 			})
+		case "PlanToPlanDiffs":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Plan_PlanToPlanDiffs(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var planDiffImplementors = []string{"PlanDiff"}
+
+func (ec *executionContext) _PlanDiff(ctx context.Context, sel ast.SelectionSet, obj *ent.PlanDiff) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, planDiffImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PlanDiff")
+		case "id":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PlanDiff_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "revision":
+			out.Values[i] = ec._PlanDiff_revision(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "new_state":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PlanDiff_new_state(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "PlanDiffToBuildCommit":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PlanDiff_PlanDiffToBuildCommit(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "PlanDiffToPlan":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PlanDiff_PlanDiffToPlan(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -18584,17 +19432,6 @@ func (ec *executionContext) _ProvisionedHost(ctx context.Context, sel ast.Select
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "combined_output":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ProvisionedHost_combined_output(ctx, field, obj)
-				return res
-			})
 		case "ProvisionedHostToStatus":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -20203,6 +21040,73 @@ func (ec *executionContext) marshalNBuild2ᚖgithubᚗcomᚋgen0cideᚋlaforge�
 	return ec._Build(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNBuildCommit2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuildCommit(ctx context.Context, sel ast.SelectionSet, v []*ent.BuildCommit) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOBuildCommit2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuildCommit(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNBuildCommit2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuildCommit(ctx context.Context, sel ast.SelectionSet, v *ent.BuildCommit) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._BuildCommit(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNBuildCommitState2githubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐBuildCommitState(ctx context.Context, v interface{}) (model.BuildCommitState, error) {
+	var res model.BuildCommitState
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNBuildCommitState2githubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐBuildCommitState(ctx context.Context, sel ast.SelectionSet, v model.BuildCommitState) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNBuildCommitType2githubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐBuildCommitType(ctx context.Context, v interface{}) (model.BuildCommitType, error) {
+	var res model.BuildCommitType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNBuildCommitType2githubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐBuildCommitType(ctx context.Context, sel ast.SelectionSet, v model.BuildCommitType) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) marshalNCommand2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐCommand(ctx context.Context, sel ast.SelectionSet, v []*ent.Command) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -20807,6 +21711,43 @@ func (ec *executionContext) marshalNPlan2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋ
 		return graphql.Null
 	}
 	return ec._Plan(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNPlanDiff2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐPlanDiff(ctx context.Context, sel ast.SelectionSet, v []*ent.PlanDiff) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOPlanDiff2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐPlanDiff(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
 func (ec *executionContext) unmarshalNPlanType2githubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐPlanType(ctx context.Context, v interface{}) (model.PlanType, error) {
@@ -21784,6 +22725,13 @@ func (ec *executionContext) marshalOBuild2ᚖgithubᚗcomᚋgen0cideᚋlaforge�
 	return ec._Build(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOBuildCommit2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuildCommit(ctx context.Context, sel ast.SelectionSet, v *ent.BuildCommit) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._BuildCommit(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOCommand2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐCommand(ctx context.Context, sel ast.SelectionSet, v *ent.Command) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -21922,6 +22870,13 @@ func (ec *executionContext) marshalOPlan2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋ
 		return graphql.Null
 	}
 	return ec._Plan(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOPlanDiff2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐPlanDiff(ctx context.Context, sel ast.SelectionSet, v *ent.PlanDiff) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._PlanDiff(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOProviderType2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐProviderType(ctx context.Context, v interface{}) (*model.ProviderType, error) {

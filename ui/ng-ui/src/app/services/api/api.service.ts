@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
+  LaForgeGetBuildPlansGQL,
+  LaForgeGetBuildPlansQuery,
   LaForgeGetBuildTreeGQL,
   LaForgeGetBuildTreeQuery,
   LaForgeGetEnvironmentGQL,
@@ -21,7 +23,8 @@ export class ApiService {
     private pullPlanStatuses: LaForgePullPlanStatusesGQL,
     private pullAgentStatuses: LaForgePullAgentStatusesGQL,
     private getEnvironmentInfoGQL: LaForgeGetEnvironmentGQL,
-    private getBuildTreeGQL: LaForgeGetBuildTreeGQL
+    private getBuildTreeGQL: LaForgeGetBuildTreeGQL,
+    private getBuildPlansGQL: LaForgeGetBuildPlansGQL
   ) {}
 
   /**
@@ -116,6 +119,24 @@ export class ApiService {
         })
         .toPromise()
         .then(({ data, error, errors }) => {
+          if (error) {
+            return reject(error);
+          } else if (errors) {
+            return reject(errors);
+          }
+          resolve(data.build);
+        }, reject);
+    });
+  }
+
+  public async pullBuildPlans(buildId: string): Promise<LaForgeGetBuildPlansQuery['build']> {
+    return new Promise((resolve, reject) => {
+      this.getBuildPlansGQL
+        .fetch({
+          buildId
+        })
+        .toPromise()
+        .then(({ data, errors, error }) => {
           if (error) {
             return reject(error);
           } else if (errors) {

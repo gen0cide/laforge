@@ -1,6 +1,6 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { LaForgeGetBuildTreeQuery, LaForgeGetEnvironmentInfoQuery } from '@graphql';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_services/subheader.service';
 import { ApiService } from 'src/app/services/api/api.service';
 import { EnvironmentService } from 'src/app/services/environment/environment.service';
@@ -12,7 +12,8 @@ import { EnvironmentService } from 'src/app/services/environment/environment.ser
   templateUrl: './plan.component.html',
   styleUrls: ['./plan.component.scss']
 })
-export class PlanComponent implements OnInit {
+export class PlanComponent implements OnInit, OnDestroy {
+  private unsubscribe: Subscription[] = [];
   environment: Observable<LaForgeGetEnvironmentInfoQuery['environment']>;
   build: Observable<LaForgeGetBuildTreeQuery['build']>;
   apolloError: any = {};
@@ -25,12 +26,24 @@ export class PlanComponent implements OnInit {
   ) {
     this.subheader.setTitle('Plan');
     this.subheader.setDescription('Plan an environment to build');
-    this.subheader.setShowEnvDropdown(false);
+    this.subheader.setShowEnvDropdown(true);
 
     this.environment = this.envService.getEnvironmentInfo().asObservable();
+    this.build = this.envService.getBuildTree().asObservable();
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    const sub1 = this.envService.getBuildTree().subscribe(() => {
+      this.envService.initPlanStatuses();
+      this.envService.initAgentStatuses();
+      this.envService.initPlans();
+    });
+    this.unsubscribe.push(sub1);
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe.forEach((sub) => sub.unsubscribe());
+  }
 
   envIsSelected(): boolean {
     return this.envService.getEnvironmentInfo().getValue() != null;

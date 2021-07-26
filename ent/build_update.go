@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/adhocplan"
 	"github.com/gen0cide/laforge/ent/build"
-	"github.com/gen0cide/laforge/ent/commit"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/plan"
@@ -117,15 +117,23 @@ func (bu *BuildUpdate) SetBuildToCompetition(c *Competition) *BuildUpdate {
 	return bu.SetBuildToCompetitionID(c.ID)
 }
 
-// SetBuildToLatestCommitID sets the "BuildToLatestCommit" edge to the Commit entity by ID.
-func (bu *BuildUpdate) SetBuildToLatestCommitID(id uuid.UUID) *BuildUpdate {
-	bu.mutation.SetBuildToLatestCommitID(id)
+// SetBuildToLatestBuildCommitID sets the "BuildToLatestBuildCommit" edge to the BuildCommit entity by ID.
+func (bu *BuildUpdate) SetBuildToLatestBuildCommitID(id uuid.UUID) *BuildUpdate {
+	bu.mutation.SetBuildToLatestBuildCommitID(id)
 	return bu
 }
 
-// SetBuildToLatestCommit sets the "BuildToLatestCommit" edge to the Commit entity.
-func (bu *BuildUpdate) SetBuildToLatestCommit(c *Commit) *BuildUpdate {
-	return bu.SetBuildToLatestCommitID(c.ID)
+// SetNillableBuildToLatestBuildCommitID sets the "BuildToLatestBuildCommit" edge to the BuildCommit entity by ID if the given value is not nil.
+func (bu *BuildUpdate) SetNillableBuildToLatestBuildCommitID(id *uuid.UUID) *BuildUpdate {
+	if id != nil {
+		bu = bu.SetBuildToLatestBuildCommitID(*id)
+	}
+	return bu
+}
+
+// SetBuildToLatestBuildCommit sets the "BuildToLatestBuildCommit" edge to the BuildCommit entity.
+func (bu *BuildUpdate) SetBuildToLatestBuildCommit(b *BuildCommit) *BuildUpdate {
+	return bu.SetBuildToLatestBuildCommitID(b.ID)
 }
 
 // AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
@@ -173,19 +181,19 @@ func (bu *BuildUpdate) AddBuildToPlan(p ...*Plan) *BuildUpdate {
 	return bu.AddBuildToPlanIDs(ids...)
 }
 
-// AddBuildToCommitIDs adds the "BuildToCommits" edge to the Commit entity by IDs.
-func (bu *BuildUpdate) AddBuildToCommitIDs(ids ...uuid.UUID) *BuildUpdate {
-	bu.mutation.AddBuildToCommitIDs(ids...)
+// AddBuildToBuildCommitIDs adds the "BuildToBuildCommits" edge to the BuildCommit entity by IDs.
+func (bu *BuildUpdate) AddBuildToBuildCommitIDs(ids ...uuid.UUID) *BuildUpdate {
+	bu.mutation.AddBuildToBuildCommitIDs(ids...)
 	return bu
 }
 
-// AddBuildToCommits adds the "BuildToCommits" edges to the Commit entity.
-func (bu *BuildUpdate) AddBuildToCommits(c ...*Commit) *BuildUpdate {
-	ids := make([]uuid.UUID, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// AddBuildToBuildCommits adds the "BuildToBuildCommits" edges to the BuildCommit entity.
+func (bu *BuildUpdate) AddBuildToBuildCommits(b ...*BuildCommit) *BuildUpdate {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return bu.AddBuildToCommitIDs(ids...)
+	return bu.AddBuildToBuildCommitIDs(ids...)
 }
 
 // AddBuildToAdhocPlanIDs adds the "BuildToAdhocPlans" edge to the AdhocPlan entity by IDs.
@@ -226,9 +234,9 @@ func (bu *BuildUpdate) ClearBuildToCompetition() *BuildUpdate {
 	return bu
 }
 
-// ClearBuildToLatestCommit clears the "BuildToLatestCommit" edge to the Commit entity.
-func (bu *BuildUpdate) ClearBuildToLatestCommit() *BuildUpdate {
-	bu.mutation.ClearBuildToLatestCommit()
+// ClearBuildToLatestBuildCommit clears the "BuildToLatestBuildCommit" edge to the BuildCommit entity.
+func (bu *BuildUpdate) ClearBuildToLatestBuildCommit() *BuildUpdate {
+	bu.mutation.ClearBuildToLatestBuildCommit()
 	return bu
 }
 
@@ -295,25 +303,25 @@ func (bu *BuildUpdate) RemoveBuildToPlan(p ...*Plan) *BuildUpdate {
 	return bu.RemoveBuildToPlanIDs(ids...)
 }
 
-// ClearBuildToCommits clears all "BuildToCommits" edges to the Commit entity.
-func (bu *BuildUpdate) ClearBuildToCommits() *BuildUpdate {
-	bu.mutation.ClearBuildToCommits()
+// ClearBuildToBuildCommits clears all "BuildToBuildCommits" edges to the BuildCommit entity.
+func (bu *BuildUpdate) ClearBuildToBuildCommits() *BuildUpdate {
+	bu.mutation.ClearBuildToBuildCommits()
 	return bu
 }
 
-// RemoveBuildToCommitIDs removes the "BuildToCommits" edge to Commit entities by IDs.
-func (bu *BuildUpdate) RemoveBuildToCommitIDs(ids ...uuid.UUID) *BuildUpdate {
-	bu.mutation.RemoveBuildToCommitIDs(ids...)
+// RemoveBuildToBuildCommitIDs removes the "BuildToBuildCommits" edge to BuildCommit entities by IDs.
+func (bu *BuildUpdate) RemoveBuildToBuildCommitIDs(ids ...uuid.UUID) *BuildUpdate {
+	bu.mutation.RemoveBuildToBuildCommitIDs(ids...)
 	return bu
 }
 
-// RemoveBuildToCommits removes "BuildToCommits" edges to Commit entities.
-func (bu *BuildUpdate) RemoveBuildToCommits(c ...*Commit) *BuildUpdate {
-	ids := make([]uuid.UUID, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// RemoveBuildToBuildCommits removes "BuildToBuildCommits" edges to BuildCommit entities.
+func (bu *BuildUpdate) RemoveBuildToBuildCommits(b ...*BuildCommit) *BuildUpdate {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return bu.RemoveBuildToCommitIDs(ids...)
+	return bu.RemoveBuildToBuildCommitIDs(ids...)
 }
 
 // ClearBuildToAdhocPlans clears all "BuildToAdhocPlans" edges to the AdhocPlan entity.
@@ -401,9 +409,6 @@ func (bu *BuildUpdate) check() error {
 	}
 	if _, ok := bu.mutation.BuildToCompetitionID(); bu.mutation.BuildToCompetitionCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"BuildToCompetition\"")
-	}
-	if _, ok := bu.mutation.BuildToLatestCommitID(); bu.mutation.BuildToLatestCommitCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"BuildToLatestCommit\"")
 	}
 	return nil
 }
@@ -566,33 +571,33 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if bu.mutation.BuildToLatestCommitCleared() {
+	if bu.mutation.BuildToLatestBuildCommitCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   build.BuildToLatestCommitTable,
-			Columns: []string{build.BuildToLatestCommitColumn},
+			Table:   build.BuildToLatestBuildCommitTable,
+			Columns: []string{build.BuildToLatestBuildCommitColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: commit.FieldID,
+					Column: buildcommit.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.BuildToLatestCommitIDs(); len(nodes) > 0 {
+	if nodes := bu.mutation.BuildToLatestBuildCommitIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   build.BuildToLatestCommitTable,
-			Columns: []string{build.BuildToLatestCommitColumn},
+			Table:   build.BuildToLatestBuildCommitTable,
+			Columns: []string{build.BuildToLatestBuildCommitColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: commit.FieldID,
+					Column: buildcommit.FieldID,
 				},
 			},
 		}
@@ -763,33 +768,33 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if bu.mutation.BuildToCommitsCleared() {
+	if bu.mutation.BuildToBuildCommitsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   build.BuildToCommitsTable,
-			Columns: []string{build.BuildToCommitsColumn},
+			Table:   build.BuildToBuildCommitsTable,
+			Columns: []string{build.BuildToBuildCommitsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: commit.FieldID,
+					Column: buildcommit.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.RemovedBuildToCommitsIDs(); len(nodes) > 0 && !bu.mutation.BuildToCommitsCleared() {
+	if nodes := bu.mutation.RemovedBuildToBuildCommitsIDs(); len(nodes) > 0 && !bu.mutation.BuildToBuildCommitsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   build.BuildToCommitsTable,
-			Columns: []string{build.BuildToCommitsColumn},
+			Table:   build.BuildToBuildCommitsTable,
+			Columns: []string{build.BuildToBuildCommitsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: commit.FieldID,
+					Column: buildcommit.FieldID,
 				},
 			},
 		}
@@ -798,17 +803,17 @@ func (bu *BuildUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.BuildToCommitsIDs(); len(nodes) > 0 {
+	if nodes := bu.mutation.BuildToBuildCommitsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   build.BuildToCommitsTable,
-			Columns: []string{build.BuildToCommitsColumn},
+			Table:   build.BuildToBuildCommitsTable,
+			Columns: []string{build.BuildToBuildCommitsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: commit.FieldID,
+					Column: buildcommit.FieldID,
 				},
 			},
 		}
@@ -971,15 +976,23 @@ func (buo *BuildUpdateOne) SetBuildToCompetition(c *Competition) *BuildUpdateOne
 	return buo.SetBuildToCompetitionID(c.ID)
 }
 
-// SetBuildToLatestCommitID sets the "BuildToLatestCommit" edge to the Commit entity by ID.
-func (buo *BuildUpdateOne) SetBuildToLatestCommitID(id uuid.UUID) *BuildUpdateOne {
-	buo.mutation.SetBuildToLatestCommitID(id)
+// SetBuildToLatestBuildCommitID sets the "BuildToLatestBuildCommit" edge to the BuildCommit entity by ID.
+func (buo *BuildUpdateOne) SetBuildToLatestBuildCommitID(id uuid.UUID) *BuildUpdateOne {
+	buo.mutation.SetBuildToLatestBuildCommitID(id)
 	return buo
 }
 
-// SetBuildToLatestCommit sets the "BuildToLatestCommit" edge to the Commit entity.
-func (buo *BuildUpdateOne) SetBuildToLatestCommit(c *Commit) *BuildUpdateOne {
-	return buo.SetBuildToLatestCommitID(c.ID)
+// SetNillableBuildToLatestBuildCommitID sets the "BuildToLatestBuildCommit" edge to the BuildCommit entity by ID if the given value is not nil.
+func (buo *BuildUpdateOne) SetNillableBuildToLatestBuildCommitID(id *uuid.UUID) *BuildUpdateOne {
+	if id != nil {
+		buo = buo.SetBuildToLatestBuildCommitID(*id)
+	}
+	return buo
+}
+
+// SetBuildToLatestBuildCommit sets the "BuildToLatestBuildCommit" edge to the BuildCommit entity.
+func (buo *BuildUpdateOne) SetBuildToLatestBuildCommit(b *BuildCommit) *BuildUpdateOne {
+	return buo.SetBuildToLatestBuildCommitID(b.ID)
 }
 
 // AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
@@ -1027,19 +1040,19 @@ func (buo *BuildUpdateOne) AddBuildToPlan(p ...*Plan) *BuildUpdateOne {
 	return buo.AddBuildToPlanIDs(ids...)
 }
 
-// AddBuildToCommitIDs adds the "BuildToCommits" edge to the Commit entity by IDs.
-func (buo *BuildUpdateOne) AddBuildToCommitIDs(ids ...uuid.UUID) *BuildUpdateOne {
-	buo.mutation.AddBuildToCommitIDs(ids...)
+// AddBuildToBuildCommitIDs adds the "BuildToBuildCommits" edge to the BuildCommit entity by IDs.
+func (buo *BuildUpdateOne) AddBuildToBuildCommitIDs(ids ...uuid.UUID) *BuildUpdateOne {
+	buo.mutation.AddBuildToBuildCommitIDs(ids...)
 	return buo
 }
 
-// AddBuildToCommits adds the "BuildToCommits" edges to the Commit entity.
-func (buo *BuildUpdateOne) AddBuildToCommits(c ...*Commit) *BuildUpdateOne {
-	ids := make([]uuid.UUID, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// AddBuildToBuildCommits adds the "BuildToBuildCommits" edges to the BuildCommit entity.
+func (buo *BuildUpdateOne) AddBuildToBuildCommits(b ...*BuildCommit) *BuildUpdateOne {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return buo.AddBuildToCommitIDs(ids...)
+	return buo.AddBuildToBuildCommitIDs(ids...)
 }
 
 // AddBuildToAdhocPlanIDs adds the "BuildToAdhocPlans" edge to the AdhocPlan entity by IDs.
@@ -1080,9 +1093,9 @@ func (buo *BuildUpdateOne) ClearBuildToCompetition() *BuildUpdateOne {
 	return buo
 }
 
-// ClearBuildToLatestCommit clears the "BuildToLatestCommit" edge to the Commit entity.
-func (buo *BuildUpdateOne) ClearBuildToLatestCommit() *BuildUpdateOne {
-	buo.mutation.ClearBuildToLatestCommit()
+// ClearBuildToLatestBuildCommit clears the "BuildToLatestBuildCommit" edge to the BuildCommit entity.
+func (buo *BuildUpdateOne) ClearBuildToLatestBuildCommit() *BuildUpdateOne {
+	buo.mutation.ClearBuildToLatestBuildCommit()
 	return buo
 }
 
@@ -1149,25 +1162,25 @@ func (buo *BuildUpdateOne) RemoveBuildToPlan(p ...*Plan) *BuildUpdateOne {
 	return buo.RemoveBuildToPlanIDs(ids...)
 }
 
-// ClearBuildToCommits clears all "BuildToCommits" edges to the Commit entity.
-func (buo *BuildUpdateOne) ClearBuildToCommits() *BuildUpdateOne {
-	buo.mutation.ClearBuildToCommits()
+// ClearBuildToBuildCommits clears all "BuildToBuildCommits" edges to the BuildCommit entity.
+func (buo *BuildUpdateOne) ClearBuildToBuildCommits() *BuildUpdateOne {
+	buo.mutation.ClearBuildToBuildCommits()
 	return buo
 }
 
-// RemoveBuildToCommitIDs removes the "BuildToCommits" edge to Commit entities by IDs.
-func (buo *BuildUpdateOne) RemoveBuildToCommitIDs(ids ...uuid.UUID) *BuildUpdateOne {
-	buo.mutation.RemoveBuildToCommitIDs(ids...)
+// RemoveBuildToBuildCommitIDs removes the "BuildToBuildCommits" edge to BuildCommit entities by IDs.
+func (buo *BuildUpdateOne) RemoveBuildToBuildCommitIDs(ids ...uuid.UUID) *BuildUpdateOne {
+	buo.mutation.RemoveBuildToBuildCommitIDs(ids...)
 	return buo
 }
 
-// RemoveBuildToCommits removes "BuildToCommits" edges to Commit entities.
-func (buo *BuildUpdateOne) RemoveBuildToCommits(c ...*Commit) *BuildUpdateOne {
-	ids := make([]uuid.UUID, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// RemoveBuildToBuildCommits removes "BuildToBuildCommits" edges to BuildCommit entities.
+func (buo *BuildUpdateOne) RemoveBuildToBuildCommits(b ...*BuildCommit) *BuildUpdateOne {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return buo.RemoveBuildToCommitIDs(ids...)
+	return buo.RemoveBuildToBuildCommitIDs(ids...)
 }
 
 // ClearBuildToAdhocPlans clears all "BuildToAdhocPlans" edges to the AdhocPlan entity.
@@ -1262,9 +1275,6 @@ func (buo *BuildUpdateOne) check() error {
 	}
 	if _, ok := buo.mutation.BuildToCompetitionID(); buo.mutation.BuildToCompetitionCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"BuildToCompetition\"")
-	}
-	if _, ok := buo.mutation.BuildToLatestCommitID(); buo.mutation.BuildToLatestCommitCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"BuildToLatestCommit\"")
 	}
 	return nil
 }
@@ -1444,33 +1454,33 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if buo.mutation.BuildToLatestCommitCleared() {
+	if buo.mutation.BuildToLatestBuildCommitCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   build.BuildToLatestCommitTable,
-			Columns: []string{build.BuildToLatestCommitColumn},
+			Table:   build.BuildToLatestBuildCommitTable,
+			Columns: []string{build.BuildToLatestBuildCommitColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: commit.FieldID,
+					Column: buildcommit.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.BuildToLatestCommitIDs(); len(nodes) > 0 {
+	if nodes := buo.mutation.BuildToLatestBuildCommitIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   build.BuildToLatestCommitTable,
-			Columns: []string{build.BuildToLatestCommitColumn},
+			Table:   build.BuildToLatestBuildCommitTable,
+			Columns: []string{build.BuildToLatestBuildCommitColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: commit.FieldID,
+					Column: buildcommit.FieldID,
 				},
 			},
 		}
@@ -1641,33 +1651,33 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if buo.mutation.BuildToCommitsCleared() {
+	if buo.mutation.BuildToBuildCommitsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   build.BuildToCommitsTable,
-			Columns: []string{build.BuildToCommitsColumn},
+			Table:   build.BuildToBuildCommitsTable,
+			Columns: []string{build.BuildToBuildCommitsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: commit.FieldID,
+					Column: buildcommit.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.RemovedBuildToCommitsIDs(); len(nodes) > 0 && !buo.mutation.BuildToCommitsCleared() {
+	if nodes := buo.mutation.RemovedBuildToBuildCommitsIDs(); len(nodes) > 0 && !buo.mutation.BuildToBuildCommitsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   build.BuildToCommitsTable,
-			Columns: []string{build.BuildToCommitsColumn},
+			Table:   build.BuildToBuildCommitsTable,
+			Columns: []string{build.BuildToBuildCommitsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: commit.FieldID,
+					Column: buildcommit.FieldID,
 				},
 			},
 		}
@@ -1676,17 +1686,17 @@ func (buo *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.BuildToCommitsIDs(); len(nodes) > 0 {
+	if nodes := buo.mutation.BuildToBuildCommitsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   build.BuildToCommitsTable,
-			Columns: []string{build.BuildToCommitsColumn},
+			Table:   build.BuildToBuildCommitsTable,
+			Columns: []string{build.BuildToBuildCommitsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: commit.FieldID,
+					Column: buildcommit.FieldID,
 				},
 			},
 		}

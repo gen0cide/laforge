@@ -129,6 +129,92 @@ func (e AgentTaskState) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type BuildCommitState string
+
+const (
+	BuildCommitStatePlanning   BuildCommitState = "PLANNING"
+	BuildCommitStateInprogress BuildCommitState = "INPROGRESS"
+	BuildCommitStateApplied    BuildCommitState = "APPLIED"
+)
+
+var AllBuildCommitState = []BuildCommitState{
+	BuildCommitStatePlanning,
+	BuildCommitStateInprogress,
+	BuildCommitStateApplied,
+}
+
+func (e BuildCommitState) IsValid() bool {
+	switch e {
+	case BuildCommitStatePlanning, BuildCommitStateInprogress, BuildCommitStateApplied:
+		return true
+	}
+	return false
+}
+
+func (e BuildCommitState) String() string {
+	return string(e)
+}
+
+func (e *BuildCommitState) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = BuildCommitState(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid BuildCommitState", str)
+	}
+	return nil
+}
+
+func (e BuildCommitState) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type BuildCommitType string
+
+const (
+	BuildCommitTypeRoot    BuildCommitType = "ROOT"
+	BuildCommitTypeRebuild BuildCommitType = "REBUILD"
+	BuildCommitTypeDelete  BuildCommitType = "DELETE"
+)
+
+var AllBuildCommitType = []BuildCommitType{
+	BuildCommitTypeRoot,
+	BuildCommitTypeRebuild,
+	BuildCommitTypeDelete,
+}
+
+func (e BuildCommitType) IsValid() bool {
+	switch e {
+	case BuildCommitTypeRoot, BuildCommitTypeRebuild, BuildCommitTypeDelete:
+		return true
+	}
+	return false
+}
+
+func (e BuildCommitType) String() string {
+	return string(e)
+}
+
+func (e *BuildCommitType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = BuildCommitType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid BuildCommitType", str)
+	}
+	return nil
+}
+
+func (e BuildCommitType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type FindingDifficulty string
 
 const (

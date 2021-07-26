@@ -2,6 +2,9 @@ query GetBuildTree($buildId: String!) {
   build(buildUUID: $buildId) {
     id
     revision
+    BuildToLatestBuildCommit {
+      ...BuildCommitFields
+    }
     buildToStatus {
       ...StatusFields
     }

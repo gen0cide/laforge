@@ -122,6 +122,18 @@ enum ServerTaskType {
   EXECUTEBUILD
 }
 
+enum BuildCommitType {
+  ROOT
+  REBUILD
+  DELETE
+}
+
+enum BuildCommitState {
+  PLANNING
+  INPROGRESS
+  APPLIED
+}
+
 type AgentStatus {
   clientId: String!
   hostname: String!
@@ -160,6 +172,17 @@ type Build {
   buildToProvisionedNetwork: [ProvisionedNetwork]!
   buildToTeam: [Team]!
   buildToPlan: [Plan]!
+  BuildToLatestBuildCommit: BuildCommit
+  BuildToBuildCommits: [BuildCommit]!
+}
+
+type BuildCommit {
+  id: ID!
+  type: BuildCommitType!
+  revision: Int!
+  state: BuildCommitState!
+  BuildCommitToBuild: Build!
+  BuildCommitToPlanDiffs: [PlanDiff]!
 }
 
 type Command {
@@ -350,6 +373,15 @@ type Plan {
   PlanToProvisionedHost: ProvisionedHost!
   PlanToProvisioningStep: ProvisioningStep!
   PlanToStatus: Status!
+  PlanToPlanDiffs: [PlanDiff]!
+}
+
+type PlanDiff {
+  id: ID!
+  revision: Int!
+  new_state: ProvisionStatus!
+  PlanDiffToBuildCommit: BuildCommit!
+  PlanDiffToPlan: Plan!
 }
 
 type ProvisionedHost {
@@ -507,7 +539,7 @@ type Mutation {
   ): Boolean! @hasRole(roles: [ADMIN, USER])
   rebuild(rootPlans: [String]!): Boolean!
 
-  createAdhoc(rootPlans: [AdhocPlan]!): boolean
+  # createAdhoc(rootPlans: [AdhocPlan]!): Boolean!
 
   createEnviromentFromRepo(
     repoURL: String!

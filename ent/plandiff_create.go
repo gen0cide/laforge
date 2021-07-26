@@ -9,7 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/gen0cide/laforge/ent/commit"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/plandiff"
 	"github.com/google/uuid"
@@ -40,15 +40,15 @@ func (pdc *PlanDiffCreate) SetID(u uuid.UUID) *PlanDiffCreate {
 	return pdc
 }
 
-// SetPlanDiffToCommitID sets the "PlanDiffToCommit" edge to the Commit entity by ID.
-func (pdc *PlanDiffCreate) SetPlanDiffToCommitID(id uuid.UUID) *PlanDiffCreate {
-	pdc.mutation.SetPlanDiffToCommitID(id)
+// SetPlanDiffToBuildCommitID sets the "PlanDiffToBuildCommit" edge to the BuildCommit entity by ID.
+func (pdc *PlanDiffCreate) SetPlanDiffToBuildCommitID(id uuid.UUID) *PlanDiffCreate {
+	pdc.mutation.SetPlanDiffToBuildCommitID(id)
 	return pdc
 }
 
-// SetPlanDiffToCommit sets the "PlanDiffToCommit" edge to the Commit entity.
-func (pdc *PlanDiffCreate) SetPlanDiffToCommit(c *Commit) *PlanDiffCreate {
-	return pdc.SetPlanDiffToCommitID(c.ID)
+// SetPlanDiffToBuildCommit sets the "PlanDiffToBuildCommit" edge to the BuildCommit entity.
+func (pdc *PlanDiffCreate) SetPlanDiffToBuildCommit(b *BuildCommit) *PlanDiffCreate {
+	return pdc.SetPlanDiffToBuildCommitID(b.ID)
 }
 
 // SetPlanDiffToPlanID sets the "PlanDiffToPlan" edge to the Plan entity by ID.
@@ -133,8 +133,8 @@ func (pdc *PlanDiffCreate) check() error {
 			return &ValidationError{Name: "new_state", err: fmt.Errorf("ent: validator failed for field \"new_state\": %w", err)}
 		}
 	}
-	if _, ok := pdc.mutation.PlanDiffToCommitID(); !ok {
-		return &ValidationError{Name: "PlanDiffToCommit", err: errors.New("ent: missing required edge \"PlanDiffToCommit\"")}
+	if _, ok := pdc.mutation.PlanDiffToBuildCommitID(); !ok {
+		return &ValidationError{Name: "PlanDiffToBuildCommit", err: errors.New("ent: missing required edge \"PlanDiffToBuildCommit\"")}
 	}
 	if _, ok := pdc.mutation.PlanDiffToPlanID(); !ok {
 		return &ValidationError{Name: "PlanDiffToPlan", err: errors.New("ent: missing required edge \"PlanDiffToPlan\"")}
@@ -184,24 +184,24 @@ func (pdc *PlanDiffCreate) createSpec() (*PlanDiff, *sqlgraph.CreateSpec) {
 		})
 		_node.NewState = value
 	}
-	if nodes := pdc.mutation.PlanDiffToCommitIDs(); len(nodes) > 0 {
+	if nodes := pdc.mutation.PlanDiffToBuildCommitIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   plandiff.PlanDiffToCommitTable,
-			Columns: []string{plandiff.PlanDiffToCommitColumn},
+			Table:   plandiff.PlanDiffToBuildCommitTable,
+			Columns: []string{plandiff.PlanDiffToBuildCommitColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: commit.FieldID,
+					Column: buildcommit.FieldID,
 				},
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.plan_diff_plan_diff_to_commit = &nodes[0]
+		_node.plan_diff_plan_diff_to_build_commit = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := pdc.mutation.PlanDiffToPlanIDs(); len(nodes) > 0 {

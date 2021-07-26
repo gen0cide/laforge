@@ -19,19 +19,19 @@ const (
 	FieldRevision = "revision"
 	// FieldNewState holds the string denoting the new_state field in the database.
 	FieldNewState = "new_state"
-	// EdgePlanDiffToCommit holds the string denoting the plandifftocommit edge name in mutations.
-	EdgePlanDiffToCommit = "PlanDiffToCommit"
+	// EdgePlanDiffToBuildCommit holds the string denoting the plandifftobuildcommit edge name in mutations.
+	EdgePlanDiffToBuildCommit = "PlanDiffToBuildCommit"
 	// EdgePlanDiffToPlan holds the string denoting the plandifftoplan edge name in mutations.
 	EdgePlanDiffToPlan = "PlanDiffToPlan"
 	// Table holds the table name of the plandiff in the database.
 	Table = "plan_diffs"
-	// PlanDiffToCommitTable is the table the holds the PlanDiffToCommit relation/edge.
-	PlanDiffToCommitTable = "plan_diffs"
-	// PlanDiffToCommitInverseTable is the table name for the Commit entity.
-	// It exists in this package in order to avoid circular dependency with the "commit" package.
-	PlanDiffToCommitInverseTable = "commits"
-	// PlanDiffToCommitColumn is the table column denoting the PlanDiffToCommit relation/edge.
-	PlanDiffToCommitColumn = "plan_diff_plan_diff_to_commit"
+	// PlanDiffToBuildCommitTable is the table the holds the PlanDiffToBuildCommit relation/edge.
+	PlanDiffToBuildCommitTable = "plan_diffs"
+	// PlanDiffToBuildCommitInverseTable is the table name for the BuildCommit entity.
+	// It exists in this package in order to avoid circular dependency with the "buildcommit" package.
+	PlanDiffToBuildCommitInverseTable = "build_commits"
+	// PlanDiffToBuildCommitColumn is the table column denoting the PlanDiffToBuildCommit relation/edge.
+	PlanDiffToBuildCommitColumn = "plan_diff_plan_diff_to_build_commit"
 	// PlanDiffToPlanTable is the table the holds the PlanDiffToPlan relation/edge.
 	PlanDiffToPlanTable = "plan_diffs"
 	// PlanDiffToPlanInverseTable is the table name for the Plan entity.
@@ -51,7 +51,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "plan_diffs"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"plan_diff_plan_diff_to_commit",
+	"plan_diff_plan_diff_to_build_commit",
 	"plan_diff_plan_diff_to_plan",
 }
 

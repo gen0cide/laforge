@@ -19,8 +19,8 @@ import (
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/command"
-	"github.com/gen0cide/laforge/ent/commit"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/dns"
@@ -1402,6 +1402,233 @@ func (b *Build) ToEdge(order *BuildOrder) *BuildEdge {
 	}
 }
 
+// BuildCommitEdge is the edge representation of BuildCommit.
+type BuildCommitEdge struct {
+	Node   *BuildCommit `json:"node"`
+	Cursor Cursor       `json:"cursor"`
+}
+
+// BuildCommitConnection is the connection containing edges to BuildCommit.
+type BuildCommitConnection struct {
+	Edges      []*BuildCommitEdge `json:"edges"`
+	PageInfo   PageInfo           `json:"pageInfo"`
+	TotalCount int                `json:"totalCount"`
+}
+
+// BuildCommitPaginateOption enables pagination customization.
+type BuildCommitPaginateOption func(*buildCommitPager) error
+
+// WithBuildCommitOrder configures pagination ordering.
+func WithBuildCommitOrder(order *BuildCommitOrder) BuildCommitPaginateOption {
+	if order == nil {
+		order = DefaultBuildCommitOrder
+	}
+	o := *order
+	return func(pager *buildCommitPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultBuildCommitOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithBuildCommitFilter configures pagination filter.
+func WithBuildCommitFilter(filter func(*BuildCommitQuery) (*BuildCommitQuery, error)) BuildCommitPaginateOption {
+	return func(pager *buildCommitPager) error {
+		if filter == nil {
+			return errors.New("BuildCommitQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type buildCommitPager struct {
+	order  *BuildCommitOrder
+	filter func(*BuildCommitQuery) (*BuildCommitQuery, error)
+}
+
+func newBuildCommitPager(opts []BuildCommitPaginateOption) (*buildCommitPager, error) {
+	pager := &buildCommitPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultBuildCommitOrder
+	}
+	return pager, nil
+}
+
+func (p *buildCommitPager) applyFilter(query *BuildCommitQuery) (*BuildCommitQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *buildCommitPager) toCursor(bc *BuildCommit) Cursor {
+	return p.order.Field.toCursor(bc)
+}
+
+func (p *buildCommitPager) applyCursors(query *BuildCommitQuery, after, before *Cursor) *BuildCommitQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultBuildCommitOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *buildCommitPager) applyOrder(query *BuildCommitQuery, reverse bool) *BuildCommitQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultBuildCommitOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultBuildCommitOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to BuildCommit.
+func (bc *BuildCommitQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...BuildCommitPaginateOption,
+) (*BuildCommitConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newBuildCommitPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if bc, err = pager.applyFilter(bc); err != nil {
+		return nil, err
+	}
+
+	conn := &BuildCommitConnection{Edges: []*BuildCommitEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := bc.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := bc.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	bc = pager.applyCursors(bc, after, before)
+	bc = pager.applyOrder(bc, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		bc = bc.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		bc = bc.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := bc.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *BuildCommit
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *BuildCommit {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *BuildCommit {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*BuildCommitEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &BuildCommitEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+// BuildCommitOrderField defines the ordering field of BuildCommit.
+type BuildCommitOrderField struct {
+	field    string
+	toCursor func(*BuildCommit) Cursor
+}
+
+// BuildCommitOrder defines the ordering of BuildCommit.
+type BuildCommitOrder struct {
+	Direction OrderDirection         `json:"direction"`
+	Field     *BuildCommitOrderField `json:"field"`
+}
+
+// DefaultBuildCommitOrder is the default ordering of BuildCommit.
+var DefaultBuildCommitOrder = &BuildCommitOrder{
+	Direction: OrderDirectionAsc,
+	Field: &BuildCommitOrderField{
+		field: buildcommit.FieldID,
+		toCursor: func(bc *BuildCommit) Cursor {
+			return Cursor{ID: bc.ID}
+		},
+	},
+}
+
+// ToEdge converts BuildCommit into BuildCommitEdge.
+func (bc *BuildCommit) ToEdge(order *BuildCommitOrder) *BuildCommitEdge {
+	if order == nil {
+		order = DefaultBuildCommitOrder
+	}
+	return &BuildCommitEdge{
+		Node:   bc,
+		Cursor: order.Field.toCursor(bc),
+	}
+}
+
 // CommandEdge is the edge representation of Command.
 type CommandEdge struct {
 	Node   *Command `json:"node"`
@@ -1624,233 +1851,6 @@ func (c *Command) ToEdge(order *CommandOrder) *CommandEdge {
 		order = DefaultCommandOrder
 	}
 	return &CommandEdge{
-		Node:   c,
-		Cursor: order.Field.toCursor(c),
-	}
-}
-
-// CommitEdge is the edge representation of Commit.
-type CommitEdge struct {
-	Node   *Commit `json:"node"`
-	Cursor Cursor  `json:"cursor"`
-}
-
-// CommitConnection is the connection containing edges to Commit.
-type CommitConnection struct {
-	Edges      []*CommitEdge `json:"edges"`
-	PageInfo   PageInfo      `json:"pageInfo"`
-	TotalCount int           `json:"totalCount"`
-}
-
-// CommitPaginateOption enables pagination customization.
-type CommitPaginateOption func(*commitPager) error
-
-// WithCommitOrder configures pagination ordering.
-func WithCommitOrder(order *CommitOrder) CommitPaginateOption {
-	if order == nil {
-		order = DefaultCommitOrder
-	}
-	o := *order
-	return func(pager *commitPager) error {
-		if err := o.Direction.Validate(); err != nil {
-			return err
-		}
-		if o.Field == nil {
-			o.Field = DefaultCommitOrder.Field
-		}
-		pager.order = &o
-		return nil
-	}
-}
-
-// WithCommitFilter configures pagination filter.
-func WithCommitFilter(filter func(*CommitQuery) (*CommitQuery, error)) CommitPaginateOption {
-	return func(pager *commitPager) error {
-		if filter == nil {
-			return errors.New("CommitQuery filter cannot be nil")
-		}
-		pager.filter = filter
-		return nil
-	}
-}
-
-type commitPager struct {
-	order  *CommitOrder
-	filter func(*CommitQuery) (*CommitQuery, error)
-}
-
-func newCommitPager(opts []CommitPaginateOption) (*commitPager, error) {
-	pager := &commitPager{}
-	for _, opt := range opts {
-		if err := opt(pager); err != nil {
-			return nil, err
-		}
-	}
-	if pager.order == nil {
-		pager.order = DefaultCommitOrder
-	}
-	return pager, nil
-}
-
-func (p *commitPager) applyFilter(query *CommitQuery) (*CommitQuery, error) {
-	if p.filter != nil {
-		return p.filter(query)
-	}
-	return query, nil
-}
-
-func (p *commitPager) toCursor(c *Commit) Cursor {
-	return p.order.Field.toCursor(c)
-}
-
-func (p *commitPager) applyCursors(query *CommitQuery, after, before *Cursor) *CommitQuery {
-	for _, predicate := range cursorsToPredicates(
-		p.order.Direction, after, before,
-		p.order.Field.field, DefaultCommitOrder.Field.field,
-	) {
-		query = query.Where(predicate)
-	}
-	return query
-}
-
-func (p *commitPager) applyOrder(query *CommitQuery, reverse bool) *CommitQuery {
-	direction := p.order.Direction
-	if reverse {
-		direction = direction.reverse()
-	}
-	query = query.Order(direction.orderFunc(p.order.Field.field))
-	if p.order.Field != DefaultCommitOrder.Field {
-		query = query.Order(direction.orderFunc(DefaultCommitOrder.Field.field))
-	}
-	return query
-}
-
-// Paginate executes the query and returns a relay based cursor connection to Commit.
-func (c *CommitQuery) Paginate(
-	ctx context.Context, after *Cursor, first *int,
-	before *Cursor, last *int, opts ...CommitPaginateOption,
-) (*CommitConnection, error) {
-	if err := validateFirstLast(first, last); err != nil {
-		return nil, err
-	}
-	pager, err := newCommitPager(opts)
-	if err != nil {
-		return nil, err
-	}
-
-	if c, err = pager.applyFilter(c); err != nil {
-		return nil, err
-	}
-
-	conn := &CommitConnection{Edges: []*CommitEdge{}}
-	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
-		if hasCollectedField(ctx, totalCountField) ||
-			hasCollectedField(ctx, pageInfoField) {
-			count, err := c.Count(ctx)
-			if err != nil {
-				return nil, err
-			}
-			conn.TotalCount = count
-			conn.PageInfo.HasNextPage = first != nil && count > 0
-			conn.PageInfo.HasPreviousPage = last != nil && count > 0
-		}
-		return conn, nil
-	}
-
-	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
-		count, err := c.Clone().Count(ctx)
-		if err != nil {
-			return nil, err
-		}
-		conn.TotalCount = count
-	}
-
-	c = pager.applyCursors(c, after, before)
-	c = pager.applyOrder(c, last != nil)
-	var limit int
-	if first != nil {
-		limit = *first + 1
-	} else if last != nil {
-		limit = *last + 1
-	}
-	if limit > 0 {
-		c = c.Limit(limit)
-	}
-
-	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
-		c = c.collectField(graphql.GetOperationContext(ctx), *field)
-	}
-
-	nodes, err := c.All(ctx)
-	if err != nil || len(nodes) == 0 {
-		return conn, err
-	}
-
-	if len(nodes) == limit {
-		conn.PageInfo.HasNextPage = first != nil
-		conn.PageInfo.HasPreviousPage = last != nil
-		nodes = nodes[:len(nodes)-1]
-	}
-
-	var nodeAt func(int) *Commit
-	if last != nil {
-		n := len(nodes) - 1
-		nodeAt = func(i int) *Commit {
-			return nodes[n-i]
-		}
-	} else {
-		nodeAt = func(i int) *Commit {
-			return nodes[i]
-		}
-	}
-
-	conn.Edges = make([]*CommitEdge, len(nodes))
-	for i := range nodes {
-		node := nodeAt(i)
-		conn.Edges[i] = &CommitEdge{
-			Node:   node,
-			Cursor: pager.toCursor(node),
-		}
-	}
-
-	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
-	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
-	if conn.TotalCount == 0 {
-		conn.TotalCount = len(nodes)
-	}
-
-	return conn, nil
-}
-
-// CommitOrderField defines the ordering field of Commit.
-type CommitOrderField struct {
-	field    string
-	toCursor func(*Commit) Cursor
-}
-
-// CommitOrder defines the ordering of Commit.
-type CommitOrder struct {
-	Direction OrderDirection    `json:"direction"`
-	Field     *CommitOrderField `json:"field"`
-}
-
-// DefaultCommitOrder is the default ordering of Commit.
-var DefaultCommitOrder = &CommitOrder{
-	Direction: OrderDirectionAsc,
-	Field: &CommitOrderField{
-		field: commit.FieldID,
-		toCursor: func(c *Commit) Cursor {
-			return Cursor{ID: c.ID}
-		},
-	},
-}
-
-// ToEdge converts Commit into CommitEdge.
-func (c *Commit) ToEdge(order *CommitOrder) *CommitEdge {
-	if order == nil {
-		order = DefaultCommitOrder
-	}
-	return &CommitEdge{
 		Node:   c,
 		Cursor: order.Field.toCursor(c),
 	}

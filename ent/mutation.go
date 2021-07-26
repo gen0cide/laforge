@@ -13,8 +13,8 @@ import (
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/command"
-	"github.com/gen0cide/laforge/ent/commit"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/dns"
@@ -63,8 +63,8 @@ const (
 	TypeAgentTask          = "AgentTask"
 	TypeAuthUser           = "AuthUser"
 	TypeBuild              = "Build"
+	TypeBuildCommit        = "BuildCommit"
 	TypeCommand            = "Command"
-	TypeCommit             = "Commit"
 	TypeCompetition        = "Competition"
 	TypeDNS                = "DNS"
 	TypeDNSRecord          = "DNSRecord"
@@ -3908,8 +3908,8 @@ type BuildMutation struct {
 	cleared_BuildToEnvironment        bool
 	_BuildToCompetition               *uuid.UUID
 	cleared_BuildToCompetition        bool
-	_BuildToLatestCommit              *uuid.UUID
-	cleared_BuildToLatestCommit       bool
+	_BuildToLatestBuildCommit         *uuid.UUID
+	cleared_BuildToLatestBuildCommit  bool
 	_BuildToProvisionedNetwork        map[uuid.UUID]struct{}
 	removed_BuildToProvisionedNetwork map[uuid.UUID]struct{}
 	cleared_BuildToProvisionedNetwork bool
@@ -3919,9 +3919,9 @@ type BuildMutation struct {
 	_BuildToPlan                      map[uuid.UUID]struct{}
 	removed_BuildToPlan               map[uuid.UUID]struct{}
 	cleared_BuildToPlan               bool
-	_BuildToCommits                   map[uuid.UUID]struct{}
-	removed_BuildToCommits            map[uuid.UUID]struct{}
-	cleared_BuildToCommits            bool
+	_BuildToBuildCommits              map[uuid.UUID]struct{}
+	removed_BuildToBuildCommits       map[uuid.UUID]struct{}
+	cleared_BuildToBuildCommits       bool
 	_BuildToAdhocPlans                map[uuid.UUID]struct{}
 	removed_BuildToAdhocPlans         map[uuid.UUID]struct{}
 	cleared_BuildToAdhocPlans         bool
@@ -4280,43 +4280,43 @@ func (m *BuildMutation) ResetBuildToCompetition() {
 	m.cleared_BuildToCompetition = false
 }
 
-// SetBuildToLatestCommitID sets the "BuildToLatestCommit" edge to the Commit entity by id.
-func (m *BuildMutation) SetBuildToLatestCommitID(id uuid.UUID) {
-	m._BuildToLatestCommit = &id
+// SetBuildToLatestBuildCommitID sets the "BuildToLatestBuildCommit" edge to the BuildCommit entity by id.
+func (m *BuildMutation) SetBuildToLatestBuildCommitID(id uuid.UUID) {
+	m._BuildToLatestBuildCommit = &id
 }
 
-// ClearBuildToLatestCommit clears the "BuildToLatestCommit" edge to the Commit entity.
-func (m *BuildMutation) ClearBuildToLatestCommit() {
-	m.cleared_BuildToLatestCommit = true
+// ClearBuildToLatestBuildCommit clears the "BuildToLatestBuildCommit" edge to the BuildCommit entity.
+func (m *BuildMutation) ClearBuildToLatestBuildCommit() {
+	m.cleared_BuildToLatestBuildCommit = true
 }
 
-// BuildToLatestCommitCleared reports if the "BuildToLatestCommit" edge to the Commit entity was cleared.
-func (m *BuildMutation) BuildToLatestCommitCleared() bool {
-	return m.cleared_BuildToLatestCommit
+// BuildToLatestBuildCommitCleared reports if the "BuildToLatestBuildCommit" edge to the BuildCommit entity was cleared.
+func (m *BuildMutation) BuildToLatestBuildCommitCleared() bool {
+	return m.cleared_BuildToLatestBuildCommit
 }
 
-// BuildToLatestCommitID returns the "BuildToLatestCommit" edge ID in the mutation.
-func (m *BuildMutation) BuildToLatestCommitID() (id uuid.UUID, exists bool) {
-	if m._BuildToLatestCommit != nil {
-		return *m._BuildToLatestCommit, true
+// BuildToLatestBuildCommitID returns the "BuildToLatestBuildCommit" edge ID in the mutation.
+func (m *BuildMutation) BuildToLatestBuildCommitID() (id uuid.UUID, exists bool) {
+	if m._BuildToLatestBuildCommit != nil {
+		return *m._BuildToLatestBuildCommit, true
 	}
 	return
 }
 
-// BuildToLatestCommitIDs returns the "BuildToLatestCommit" edge IDs in the mutation.
+// BuildToLatestBuildCommitIDs returns the "BuildToLatestBuildCommit" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// BuildToLatestCommitID instead. It exists only for internal usage by the builders.
-func (m *BuildMutation) BuildToLatestCommitIDs() (ids []uuid.UUID) {
-	if id := m._BuildToLatestCommit; id != nil {
+// BuildToLatestBuildCommitID instead. It exists only for internal usage by the builders.
+func (m *BuildMutation) BuildToLatestBuildCommitIDs() (ids []uuid.UUID) {
+	if id := m._BuildToLatestBuildCommit; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetBuildToLatestCommit resets all changes to the "BuildToLatestCommit" edge.
-func (m *BuildMutation) ResetBuildToLatestCommit() {
-	m._BuildToLatestCommit = nil
-	m.cleared_BuildToLatestCommit = false
+// ResetBuildToLatestBuildCommit resets all changes to the "BuildToLatestBuildCommit" edge.
+func (m *BuildMutation) ResetBuildToLatestBuildCommit() {
+	m._BuildToLatestBuildCommit = nil
+	m.cleared_BuildToLatestBuildCommit = false
 }
 
 // AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by ids.
@@ -4478,57 +4478,57 @@ func (m *BuildMutation) ResetBuildToPlan() {
 	m.removed_BuildToPlan = nil
 }
 
-// AddBuildToCommitIDs adds the "BuildToCommits" edge to the Commit entity by ids.
-func (m *BuildMutation) AddBuildToCommitIDs(ids ...uuid.UUID) {
-	if m._BuildToCommits == nil {
-		m._BuildToCommits = make(map[uuid.UUID]struct{})
+// AddBuildToBuildCommitIDs adds the "BuildToBuildCommits" edge to the BuildCommit entity by ids.
+func (m *BuildMutation) AddBuildToBuildCommitIDs(ids ...uuid.UUID) {
+	if m._BuildToBuildCommits == nil {
+		m._BuildToBuildCommits = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m._BuildToCommits[ids[i]] = struct{}{}
+		m._BuildToBuildCommits[ids[i]] = struct{}{}
 	}
 }
 
-// ClearBuildToCommits clears the "BuildToCommits" edge to the Commit entity.
-func (m *BuildMutation) ClearBuildToCommits() {
-	m.cleared_BuildToCommits = true
+// ClearBuildToBuildCommits clears the "BuildToBuildCommits" edge to the BuildCommit entity.
+func (m *BuildMutation) ClearBuildToBuildCommits() {
+	m.cleared_BuildToBuildCommits = true
 }
 
-// BuildToCommitsCleared reports if the "BuildToCommits" edge to the Commit entity was cleared.
-func (m *BuildMutation) BuildToCommitsCleared() bool {
-	return m.cleared_BuildToCommits
+// BuildToBuildCommitsCleared reports if the "BuildToBuildCommits" edge to the BuildCommit entity was cleared.
+func (m *BuildMutation) BuildToBuildCommitsCleared() bool {
+	return m.cleared_BuildToBuildCommits
 }
 
-// RemoveBuildToCommitIDs removes the "BuildToCommits" edge to the Commit entity by IDs.
-func (m *BuildMutation) RemoveBuildToCommitIDs(ids ...uuid.UUID) {
-	if m.removed_BuildToCommits == nil {
-		m.removed_BuildToCommits = make(map[uuid.UUID]struct{})
+// RemoveBuildToBuildCommitIDs removes the "BuildToBuildCommits" edge to the BuildCommit entity by IDs.
+func (m *BuildMutation) RemoveBuildToBuildCommitIDs(ids ...uuid.UUID) {
+	if m.removed_BuildToBuildCommits == nil {
+		m.removed_BuildToBuildCommits = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.removed_BuildToCommits[ids[i]] = struct{}{}
+		m.removed_BuildToBuildCommits[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedBuildToCommits returns the removed IDs of the "BuildToCommits" edge to the Commit entity.
-func (m *BuildMutation) RemovedBuildToCommitsIDs() (ids []uuid.UUID) {
-	for id := range m.removed_BuildToCommits {
+// RemovedBuildToBuildCommits returns the removed IDs of the "BuildToBuildCommits" edge to the BuildCommit entity.
+func (m *BuildMutation) RemovedBuildToBuildCommitsIDs() (ids []uuid.UUID) {
+	for id := range m.removed_BuildToBuildCommits {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// BuildToCommitsIDs returns the "BuildToCommits" edge IDs in the mutation.
-func (m *BuildMutation) BuildToCommitsIDs() (ids []uuid.UUID) {
-	for id := range m._BuildToCommits {
+// BuildToBuildCommitsIDs returns the "BuildToBuildCommits" edge IDs in the mutation.
+func (m *BuildMutation) BuildToBuildCommitsIDs() (ids []uuid.UUID) {
+	for id := range m._BuildToBuildCommits {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetBuildToCommits resets all changes to the "BuildToCommits" edge.
-func (m *BuildMutation) ResetBuildToCommits() {
-	m._BuildToCommits = nil
-	m.cleared_BuildToCommits = false
-	m.removed_BuildToCommits = nil
+// ResetBuildToBuildCommits resets all changes to the "BuildToBuildCommits" edge.
+func (m *BuildMutation) ResetBuildToBuildCommits() {
+	m._BuildToBuildCommits = nil
+	m.cleared_BuildToBuildCommits = false
+	m.removed_BuildToBuildCommits = nil
 }
 
 // AddBuildToAdhocPlanIDs adds the "BuildToAdhocPlans" edge to the AdhocPlan entity by ids.
@@ -4768,8 +4768,8 @@ func (m *BuildMutation) AddedEdges() []string {
 	if m._BuildToCompetition != nil {
 		edges = append(edges, build.EdgeBuildToCompetition)
 	}
-	if m._BuildToLatestCommit != nil {
-		edges = append(edges, build.EdgeBuildToLatestCommit)
+	if m._BuildToLatestBuildCommit != nil {
+		edges = append(edges, build.EdgeBuildToLatestBuildCommit)
 	}
 	if m._BuildToProvisionedNetwork != nil {
 		edges = append(edges, build.EdgeBuildToProvisionedNetwork)
@@ -4780,8 +4780,8 @@ func (m *BuildMutation) AddedEdges() []string {
 	if m._BuildToPlan != nil {
 		edges = append(edges, build.EdgeBuildToPlan)
 	}
-	if m._BuildToCommits != nil {
-		edges = append(edges, build.EdgeBuildToCommits)
+	if m._BuildToBuildCommits != nil {
+		edges = append(edges, build.EdgeBuildToBuildCommits)
 	}
 	if m._BuildToAdhocPlans != nil {
 		edges = append(edges, build.EdgeBuildToAdhocPlans)
@@ -4805,8 +4805,8 @@ func (m *BuildMutation) AddedIDs(name string) []ent.Value {
 		if id := m._BuildToCompetition; id != nil {
 			return []ent.Value{*id}
 		}
-	case build.EdgeBuildToLatestCommit:
-		if id := m._BuildToLatestCommit; id != nil {
+	case build.EdgeBuildToLatestBuildCommit:
+		if id := m._BuildToLatestBuildCommit; id != nil {
 			return []ent.Value{*id}
 		}
 	case build.EdgeBuildToProvisionedNetwork:
@@ -4827,9 +4827,9 @@ func (m *BuildMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case build.EdgeBuildToCommits:
-		ids := make([]ent.Value, 0, len(m._BuildToCommits))
-		for id := range m._BuildToCommits {
+	case build.EdgeBuildToBuildCommits:
+		ids := make([]ent.Value, 0, len(m._BuildToBuildCommits))
+		for id := range m._BuildToBuildCommits {
 			ids = append(ids, id)
 		}
 		return ids
@@ -4855,8 +4855,8 @@ func (m *BuildMutation) RemovedEdges() []string {
 	if m.removed_BuildToPlan != nil {
 		edges = append(edges, build.EdgeBuildToPlan)
 	}
-	if m.removed_BuildToCommits != nil {
-		edges = append(edges, build.EdgeBuildToCommits)
+	if m.removed_BuildToBuildCommits != nil {
+		edges = append(edges, build.EdgeBuildToBuildCommits)
 	}
 	if m.removed_BuildToAdhocPlans != nil {
 		edges = append(edges, build.EdgeBuildToAdhocPlans)
@@ -4886,9 +4886,9 @@ func (m *BuildMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case build.EdgeBuildToCommits:
-		ids := make([]ent.Value, 0, len(m.removed_BuildToCommits))
-		for id := range m.removed_BuildToCommits {
+	case build.EdgeBuildToBuildCommits:
+		ids := make([]ent.Value, 0, len(m.removed_BuildToBuildCommits))
+		for id := range m.removed_BuildToBuildCommits {
 			ids = append(ids, id)
 		}
 		return ids
@@ -4914,8 +4914,8 @@ func (m *BuildMutation) ClearedEdges() []string {
 	if m.cleared_BuildToCompetition {
 		edges = append(edges, build.EdgeBuildToCompetition)
 	}
-	if m.cleared_BuildToLatestCommit {
-		edges = append(edges, build.EdgeBuildToLatestCommit)
+	if m.cleared_BuildToLatestBuildCommit {
+		edges = append(edges, build.EdgeBuildToLatestBuildCommit)
 	}
 	if m.cleared_BuildToProvisionedNetwork {
 		edges = append(edges, build.EdgeBuildToProvisionedNetwork)
@@ -4926,8 +4926,8 @@ func (m *BuildMutation) ClearedEdges() []string {
 	if m.cleared_BuildToPlan {
 		edges = append(edges, build.EdgeBuildToPlan)
 	}
-	if m.cleared_BuildToCommits {
-		edges = append(edges, build.EdgeBuildToCommits)
+	if m.cleared_BuildToBuildCommits {
+		edges = append(edges, build.EdgeBuildToBuildCommits)
 	}
 	if m.cleared_BuildToAdhocPlans {
 		edges = append(edges, build.EdgeBuildToAdhocPlans)
@@ -4945,16 +4945,16 @@ func (m *BuildMutation) EdgeCleared(name string) bool {
 		return m.cleared_BuildToEnvironment
 	case build.EdgeBuildToCompetition:
 		return m.cleared_BuildToCompetition
-	case build.EdgeBuildToLatestCommit:
-		return m.cleared_BuildToLatestCommit
+	case build.EdgeBuildToLatestBuildCommit:
+		return m.cleared_BuildToLatestBuildCommit
 	case build.EdgeBuildToProvisionedNetwork:
 		return m.cleared_BuildToProvisionedNetwork
 	case build.EdgeBuildToTeam:
 		return m.cleared_BuildToTeam
 	case build.EdgeBuildToPlan:
 		return m.cleared_BuildToPlan
-	case build.EdgeBuildToCommits:
-		return m.cleared_BuildToCommits
+	case build.EdgeBuildToBuildCommits:
+		return m.cleared_BuildToBuildCommits
 	case build.EdgeBuildToAdhocPlans:
 		return m.cleared_BuildToAdhocPlans
 	}
@@ -4974,8 +4974,8 @@ func (m *BuildMutation) ClearEdge(name string) error {
 	case build.EdgeBuildToCompetition:
 		m.ClearBuildToCompetition()
 		return nil
-	case build.EdgeBuildToLatestCommit:
-		m.ClearBuildToLatestCommit()
+	case build.EdgeBuildToLatestBuildCommit:
+		m.ClearBuildToLatestBuildCommit()
 		return nil
 	}
 	return fmt.Errorf("unknown Build unique edge %s", name)
@@ -4994,8 +4994,8 @@ func (m *BuildMutation) ResetEdge(name string) error {
 	case build.EdgeBuildToCompetition:
 		m.ResetBuildToCompetition()
 		return nil
-	case build.EdgeBuildToLatestCommit:
-		m.ResetBuildToLatestCommit()
+	case build.EdgeBuildToLatestBuildCommit:
+		m.ResetBuildToLatestBuildCommit()
 		return nil
 	case build.EdgeBuildToProvisionedNetwork:
 		m.ResetBuildToProvisionedNetwork()
@@ -5006,14 +5006,602 @@ func (m *BuildMutation) ResetEdge(name string) error {
 	case build.EdgeBuildToPlan:
 		m.ResetBuildToPlan()
 		return nil
-	case build.EdgeBuildToCommits:
-		m.ResetBuildToCommits()
+	case build.EdgeBuildToBuildCommits:
+		m.ResetBuildToBuildCommits()
 		return nil
 	case build.EdgeBuildToAdhocPlans:
 		m.ResetBuildToAdhocPlans()
 		return nil
 	}
 	return fmt.Errorf("unknown Build edge %s", name)
+}
+
+// BuildCommitMutation represents an operation that mutates the BuildCommit nodes in the graph.
+type BuildCommitMutation struct {
+	config
+	op                             Op
+	typ                            string
+	id                             *uuid.UUID
+	_type                          *buildcommit.Type
+	revision                       *int
+	addrevision                    *int
+	state                          *buildcommit.State
+	clearedFields                  map[string]struct{}
+	_BuildCommitToBuild            *uuid.UUID
+	cleared_BuildCommitToBuild     bool
+	_BuildCommitToPlanDiffs        map[uuid.UUID]struct{}
+	removed_BuildCommitToPlanDiffs map[uuid.UUID]struct{}
+	cleared_BuildCommitToPlanDiffs bool
+	done                           bool
+	oldValue                       func(context.Context) (*BuildCommit, error)
+	predicates                     []predicate.BuildCommit
+}
+
+var _ ent.Mutation = (*BuildCommitMutation)(nil)
+
+// buildcommitOption allows management of the mutation configuration using functional options.
+type buildcommitOption func(*BuildCommitMutation)
+
+// newBuildCommitMutation creates new mutation for the BuildCommit entity.
+func newBuildCommitMutation(c config, op Op, opts ...buildcommitOption) *BuildCommitMutation {
+	m := &BuildCommitMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeBuildCommit,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withBuildCommitID sets the ID field of the mutation.
+func withBuildCommitID(id uuid.UUID) buildcommitOption {
+	return func(m *BuildCommitMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *BuildCommit
+		)
+		m.oldValue = func(ctx context.Context) (*BuildCommit, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().BuildCommit.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withBuildCommit sets the old BuildCommit of the mutation.
+func withBuildCommit(node *BuildCommit) buildcommitOption {
+	return func(m *BuildCommitMutation) {
+		m.oldValue = func(context.Context) (*BuildCommit, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m BuildCommitMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m BuildCommitMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of BuildCommit entities.
+func (m *BuildCommitMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID
+// is only available if it was provided to the builder.
+func (m *BuildCommitMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetType sets the "type" field.
+func (m *BuildCommitMutation) SetType(b buildcommit.Type) {
+	m._type = &b
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *BuildCommitMutation) GetType() (r buildcommit.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the BuildCommit entity.
+// If the BuildCommit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildCommitMutation) OldType(ctx context.Context) (v buildcommit.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *BuildCommitMutation) ResetType() {
+	m._type = nil
+}
+
+// SetRevision sets the "revision" field.
+func (m *BuildCommitMutation) SetRevision(i int) {
+	m.revision = &i
+	m.addrevision = nil
+}
+
+// Revision returns the value of the "revision" field in the mutation.
+func (m *BuildCommitMutation) Revision() (r int, exists bool) {
+	v := m.revision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRevision returns the old "revision" field's value of the BuildCommit entity.
+// If the BuildCommit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildCommitMutation) OldRevision(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldRevision is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldRevision requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRevision: %w", err)
+	}
+	return oldValue.Revision, nil
+}
+
+// AddRevision adds i to the "revision" field.
+func (m *BuildCommitMutation) AddRevision(i int) {
+	if m.addrevision != nil {
+		*m.addrevision += i
+	} else {
+		m.addrevision = &i
+	}
+}
+
+// AddedRevision returns the value that was added to the "revision" field in this mutation.
+func (m *BuildCommitMutation) AddedRevision() (r int, exists bool) {
+	v := m.addrevision
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRevision resets all changes to the "revision" field.
+func (m *BuildCommitMutation) ResetRevision() {
+	m.revision = nil
+	m.addrevision = nil
+}
+
+// SetState sets the "state" field.
+func (m *BuildCommitMutation) SetState(b buildcommit.State) {
+	m.state = &b
+}
+
+// State returns the value of the "state" field in the mutation.
+func (m *BuildCommitMutation) State() (r buildcommit.State, exists bool) {
+	v := m.state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldState returns the old "state" field's value of the BuildCommit entity.
+// If the BuildCommit object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildCommitMutation) OldState(ctx context.Context) (v buildcommit.State, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldState: %w", err)
+	}
+	return oldValue.State, nil
+}
+
+// ResetState resets all changes to the "state" field.
+func (m *BuildCommitMutation) ResetState() {
+	m.state = nil
+}
+
+// SetBuildCommitToBuildID sets the "BuildCommitToBuild" edge to the Build entity by id.
+func (m *BuildCommitMutation) SetBuildCommitToBuildID(id uuid.UUID) {
+	m._BuildCommitToBuild = &id
+}
+
+// ClearBuildCommitToBuild clears the "BuildCommitToBuild" edge to the Build entity.
+func (m *BuildCommitMutation) ClearBuildCommitToBuild() {
+	m.cleared_BuildCommitToBuild = true
+}
+
+// BuildCommitToBuildCleared reports if the "BuildCommitToBuild" edge to the Build entity was cleared.
+func (m *BuildCommitMutation) BuildCommitToBuildCleared() bool {
+	return m.cleared_BuildCommitToBuild
+}
+
+// BuildCommitToBuildID returns the "BuildCommitToBuild" edge ID in the mutation.
+func (m *BuildCommitMutation) BuildCommitToBuildID() (id uuid.UUID, exists bool) {
+	if m._BuildCommitToBuild != nil {
+		return *m._BuildCommitToBuild, true
+	}
+	return
+}
+
+// BuildCommitToBuildIDs returns the "BuildCommitToBuild" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// BuildCommitToBuildID instead. It exists only for internal usage by the builders.
+func (m *BuildCommitMutation) BuildCommitToBuildIDs() (ids []uuid.UUID) {
+	if id := m._BuildCommitToBuild; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetBuildCommitToBuild resets all changes to the "BuildCommitToBuild" edge.
+func (m *BuildCommitMutation) ResetBuildCommitToBuild() {
+	m._BuildCommitToBuild = nil
+	m.cleared_BuildCommitToBuild = false
+}
+
+// AddBuildCommitToPlanDiffIDs adds the "BuildCommitToPlanDiffs" edge to the PlanDiff entity by ids.
+func (m *BuildCommitMutation) AddBuildCommitToPlanDiffIDs(ids ...uuid.UUID) {
+	if m._BuildCommitToPlanDiffs == nil {
+		m._BuildCommitToPlanDiffs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m._BuildCommitToPlanDiffs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearBuildCommitToPlanDiffs clears the "BuildCommitToPlanDiffs" edge to the PlanDiff entity.
+func (m *BuildCommitMutation) ClearBuildCommitToPlanDiffs() {
+	m.cleared_BuildCommitToPlanDiffs = true
+}
+
+// BuildCommitToPlanDiffsCleared reports if the "BuildCommitToPlanDiffs" edge to the PlanDiff entity was cleared.
+func (m *BuildCommitMutation) BuildCommitToPlanDiffsCleared() bool {
+	return m.cleared_BuildCommitToPlanDiffs
+}
+
+// RemoveBuildCommitToPlanDiffIDs removes the "BuildCommitToPlanDiffs" edge to the PlanDiff entity by IDs.
+func (m *BuildCommitMutation) RemoveBuildCommitToPlanDiffIDs(ids ...uuid.UUID) {
+	if m.removed_BuildCommitToPlanDiffs == nil {
+		m.removed_BuildCommitToPlanDiffs = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.removed_BuildCommitToPlanDiffs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedBuildCommitToPlanDiffs returns the removed IDs of the "BuildCommitToPlanDiffs" edge to the PlanDiff entity.
+func (m *BuildCommitMutation) RemovedBuildCommitToPlanDiffsIDs() (ids []uuid.UUID) {
+	for id := range m.removed_BuildCommitToPlanDiffs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// BuildCommitToPlanDiffsIDs returns the "BuildCommitToPlanDiffs" edge IDs in the mutation.
+func (m *BuildCommitMutation) BuildCommitToPlanDiffsIDs() (ids []uuid.UUID) {
+	for id := range m._BuildCommitToPlanDiffs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetBuildCommitToPlanDiffs resets all changes to the "BuildCommitToPlanDiffs" edge.
+func (m *BuildCommitMutation) ResetBuildCommitToPlanDiffs() {
+	m._BuildCommitToPlanDiffs = nil
+	m.cleared_BuildCommitToPlanDiffs = false
+	m.removed_BuildCommitToPlanDiffs = nil
+}
+
+// Op returns the operation name.
+func (m *BuildCommitMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (BuildCommit).
+func (m *BuildCommitMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *BuildCommitMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m._type != nil {
+		fields = append(fields, buildcommit.FieldType)
+	}
+	if m.revision != nil {
+		fields = append(fields, buildcommit.FieldRevision)
+	}
+	if m.state != nil {
+		fields = append(fields, buildcommit.FieldState)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *BuildCommitMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case buildcommit.FieldType:
+		return m.GetType()
+	case buildcommit.FieldRevision:
+		return m.Revision()
+	case buildcommit.FieldState:
+		return m.State()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *BuildCommitMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case buildcommit.FieldType:
+		return m.OldType(ctx)
+	case buildcommit.FieldRevision:
+		return m.OldRevision(ctx)
+	case buildcommit.FieldState:
+		return m.OldState(ctx)
+	}
+	return nil, fmt.Errorf("unknown BuildCommit field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BuildCommitMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case buildcommit.FieldType:
+		v, ok := value.(buildcommit.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case buildcommit.FieldRevision:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRevision(v)
+		return nil
+	case buildcommit.FieldState:
+		v, ok := value.(buildcommit.State)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetState(v)
+		return nil
+	}
+	return fmt.Errorf("unknown BuildCommit field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *BuildCommitMutation) AddedFields() []string {
+	var fields []string
+	if m.addrevision != nil {
+		fields = append(fields, buildcommit.FieldRevision)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *BuildCommitMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case buildcommit.FieldRevision:
+		return m.AddedRevision()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BuildCommitMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case buildcommit.FieldRevision:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRevision(v)
+		return nil
+	}
+	return fmt.Errorf("unknown BuildCommit numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *BuildCommitMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *BuildCommitMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *BuildCommitMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown BuildCommit nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *BuildCommitMutation) ResetField(name string) error {
+	switch name {
+	case buildcommit.FieldType:
+		m.ResetType()
+		return nil
+	case buildcommit.FieldRevision:
+		m.ResetRevision()
+		return nil
+	case buildcommit.FieldState:
+		m.ResetState()
+		return nil
+	}
+	return fmt.Errorf("unknown BuildCommit field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *BuildCommitMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m._BuildCommitToBuild != nil {
+		edges = append(edges, buildcommit.EdgeBuildCommitToBuild)
+	}
+	if m._BuildCommitToPlanDiffs != nil {
+		edges = append(edges, buildcommit.EdgeBuildCommitToPlanDiffs)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *BuildCommitMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case buildcommit.EdgeBuildCommitToBuild:
+		if id := m._BuildCommitToBuild; id != nil {
+			return []ent.Value{*id}
+		}
+	case buildcommit.EdgeBuildCommitToPlanDiffs:
+		ids := make([]ent.Value, 0, len(m._BuildCommitToPlanDiffs))
+		for id := range m._BuildCommitToPlanDiffs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *BuildCommitMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removed_BuildCommitToPlanDiffs != nil {
+		edges = append(edges, buildcommit.EdgeBuildCommitToPlanDiffs)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *BuildCommitMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case buildcommit.EdgeBuildCommitToPlanDiffs:
+		ids := make([]ent.Value, 0, len(m.removed_BuildCommitToPlanDiffs))
+		for id := range m.removed_BuildCommitToPlanDiffs {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *BuildCommitMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.cleared_BuildCommitToBuild {
+		edges = append(edges, buildcommit.EdgeBuildCommitToBuild)
+	}
+	if m.cleared_BuildCommitToPlanDiffs {
+		edges = append(edges, buildcommit.EdgeBuildCommitToPlanDiffs)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *BuildCommitMutation) EdgeCleared(name string) bool {
+	switch name {
+	case buildcommit.EdgeBuildCommitToBuild:
+		return m.cleared_BuildCommitToBuild
+	case buildcommit.EdgeBuildCommitToPlanDiffs:
+		return m.cleared_BuildCommitToPlanDiffs
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *BuildCommitMutation) ClearEdge(name string) error {
+	switch name {
+	case buildcommit.EdgeBuildCommitToBuild:
+		m.ClearBuildCommitToBuild()
+		return nil
+	}
+	return fmt.Errorf("unknown BuildCommit unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *BuildCommitMutation) ResetEdge(name string) error {
+	switch name {
+	case buildcommit.EdgeBuildCommitToBuild:
+		m.ResetBuildCommitToBuild()
+		return nil
+	case buildcommit.EdgeBuildCommitToPlanDiffs:
+		m.ResetBuildCommitToPlanDiffs()
+		return nil
+	}
+	return fmt.Errorf("unknown BuildCommit edge %s", name)
 }
 
 // CommandMutation represents an operation that mutates the Command nodes in the graph.
@@ -6067,594 +6655,6 @@ func (m *CommandMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Command edge %s", name)
-}
-
-// CommitMutation represents an operation that mutates the Commit nodes in the graph.
-type CommitMutation struct {
-	config
-	op                        Op
-	typ                       string
-	id                        *uuid.UUID
-	_type                     *commit.Type
-	revision                  *int
-	addrevision               *int
-	commit_state              *commit.CommitState
-	clearedFields             map[string]struct{}
-	_CommitToBuild            *uuid.UUID
-	cleared_CommitToBuild     bool
-	_CommitToPlanDiffs        map[uuid.UUID]struct{}
-	removed_CommitToPlanDiffs map[uuid.UUID]struct{}
-	cleared_CommitToPlanDiffs bool
-	done                      bool
-	oldValue                  func(context.Context) (*Commit, error)
-	predicates                []predicate.Commit
-}
-
-var _ ent.Mutation = (*CommitMutation)(nil)
-
-// commitOption allows management of the mutation configuration using functional options.
-type commitOption func(*CommitMutation)
-
-// newCommitMutation creates new mutation for the Commit entity.
-func newCommitMutation(c config, op Op, opts ...commitOption) *CommitMutation {
-	m := &CommitMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeCommit,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withCommitID sets the ID field of the mutation.
-func withCommitID(id uuid.UUID) commitOption {
-	return func(m *CommitMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *Commit
-		)
-		m.oldValue = func(ctx context.Context) (*Commit, error) {
-			once.Do(func() {
-				if m.done {
-					err = fmt.Errorf("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().Commit.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withCommit sets the old Commit of the mutation.
-func withCommit(node *Commit) commitOption {
-	return func(m *CommitMutation) {
-		m.oldValue = func(context.Context) (*Commit, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m CommitMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m CommitMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of Commit entities.
-func (m *CommitMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID
-// is only available if it was provided to the builder.
-func (m *CommitMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// SetType sets the "type" field.
-func (m *CommitMutation) SetType(c commit.Type) {
-	m._type = &c
-}
-
-// GetType returns the value of the "type" field in the mutation.
-func (m *CommitMutation) GetType() (r commit.Type, exists bool) {
-	v := m._type
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldType returns the old "type" field's value of the Commit entity.
-// If the Commit object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CommitMutation) OldType(ctx context.Context) (v commit.Type, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldType is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldType requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldType: %w", err)
-	}
-	return oldValue.Type, nil
-}
-
-// ResetType resets all changes to the "type" field.
-func (m *CommitMutation) ResetType() {
-	m._type = nil
-}
-
-// SetRevision sets the "revision" field.
-func (m *CommitMutation) SetRevision(i int) {
-	m.revision = &i
-	m.addrevision = nil
-}
-
-// Revision returns the value of the "revision" field in the mutation.
-func (m *CommitMutation) Revision() (r int, exists bool) {
-	v := m.revision
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRevision returns the old "revision" field's value of the Commit entity.
-// If the Commit object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CommitMutation) OldRevision(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldRevision is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldRevision requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRevision: %w", err)
-	}
-	return oldValue.Revision, nil
-}
-
-// AddRevision adds i to the "revision" field.
-func (m *CommitMutation) AddRevision(i int) {
-	if m.addrevision != nil {
-		*m.addrevision += i
-	} else {
-		m.addrevision = &i
-	}
-}
-
-// AddedRevision returns the value that was added to the "revision" field in this mutation.
-func (m *CommitMutation) AddedRevision() (r int, exists bool) {
-	v := m.addrevision
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetRevision resets all changes to the "revision" field.
-func (m *CommitMutation) ResetRevision() {
-	m.revision = nil
-	m.addrevision = nil
-}
-
-// SetCommitState sets the "commit_state" field.
-func (m *CommitMutation) SetCommitState(cs commit.CommitState) {
-	m.commit_state = &cs
-}
-
-// CommitState returns the value of the "commit_state" field in the mutation.
-func (m *CommitMutation) CommitState() (r commit.CommitState, exists bool) {
-	v := m.commit_state
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCommitState returns the old "commit_state" field's value of the Commit entity.
-// If the Commit object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CommitMutation) OldCommitState(ctx context.Context) (v commit.CommitState, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldCommitState is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldCommitState requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCommitState: %w", err)
-	}
-	return oldValue.CommitState, nil
-}
-
-// ResetCommitState resets all changes to the "commit_state" field.
-func (m *CommitMutation) ResetCommitState() {
-	m.commit_state = nil
-}
-
-// SetCommitToBuildID sets the "CommitToBuild" edge to the Build entity by id.
-func (m *CommitMutation) SetCommitToBuildID(id uuid.UUID) {
-	m._CommitToBuild = &id
-}
-
-// ClearCommitToBuild clears the "CommitToBuild" edge to the Build entity.
-func (m *CommitMutation) ClearCommitToBuild() {
-	m.cleared_CommitToBuild = true
-}
-
-// CommitToBuildCleared reports if the "CommitToBuild" edge to the Build entity was cleared.
-func (m *CommitMutation) CommitToBuildCleared() bool {
-	return m.cleared_CommitToBuild
-}
-
-// CommitToBuildID returns the "CommitToBuild" edge ID in the mutation.
-func (m *CommitMutation) CommitToBuildID() (id uuid.UUID, exists bool) {
-	if m._CommitToBuild != nil {
-		return *m._CommitToBuild, true
-	}
-	return
-}
-
-// CommitToBuildIDs returns the "CommitToBuild" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// CommitToBuildID instead. It exists only for internal usage by the builders.
-func (m *CommitMutation) CommitToBuildIDs() (ids []uuid.UUID) {
-	if id := m._CommitToBuild; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetCommitToBuild resets all changes to the "CommitToBuild" edge.
-func (m *CommitMutation) ResetCommitToBuild() {
-	m._CommitToBuild = nil
-	m.cleared_CommitToBuild = false
-}
-
-// AddCommitToPlanDiffIDs adds the "CommitToPlanDiffs" edge to the PlanDiff entity by ids.
-func (m *CommitMutation) AddCommitToPlanDiffIDs(ids ...uuid.UUID) {
-	if m._CommitToPlanDiffs == nil {
-		m._CommitToPlanDiffs = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m._CommitToPlanDiffs[ids[i]] = struct{}{}
-	}
-}
-
-// ClearCommitToPlanDiffs clears the "CommitToPlanDiffs" edge to the PlanDiff entity.
-func (m *CommitMutation) ClearCommitToPlanDiffs() {
-	m.cleared_CommitToPlanDiffs = true
-}
-
-// CommitToPlanDiffsCleared reports if the "CommitToPlanDiffs" edge to the PlanDiff entity was cleared.
-func (m *CommitMutation) CommitToPlanDiffsCleared() bool {
-	return m.cleared_CommitToPlanDiffs
-}
-
-// RemoveCommitToPlanDiffIDs removes the "CommitToPlanDiffs" edge to the PlanDiff entity by IDs.
-func (m *CommitMutation) RemoveCommitToPlanDiffIDs(ids ...uuid.UUID) {
-	if m.removed_CommitToPlanDiffs == nil {
-		m.removed_CommitToPlanDiffs = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.removed_CommitToPlanDiffs[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedCommitToPlanDiffs returns the removed IDs of the "CommitToPlanDiffs" edge to the PlanDiff entity.
-func (m *CommitMutation) RemovedCommitToPlanDiffsIDs() (ids []uuid.UUID) {
-	for id := range m.removed_CommitToPlanDiffs {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// CommitToPlanDiffsIDs returns the "CommitToPlanDiffs" edge IDs in the mutation.
-func (m *CommitMutation) CommitToPlanDiffsIDs() (ids []uuid.UUID) {
-	for id := range m._CommitToPlanDiffs {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetCommitToPlanDiffs resets all changes to the "CommitToPlanDiffs" edge.
-func (m *CommitMutation) ResetCommitToPlanDiffs() {
-	m._CommitToPlanDiffs = nil
-	m.cleared_CommitToPlanDiffs = false
-	m.removed_CommitToPlanDiffs = nil
-}
-
-// Op returns the operation name.
-func (m *CommitMutation) Op() Op {
-	return m.op
-}
-
-// Type returns the node type of this mutation (Commit).
-func (m *CommitMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *CommitMutation) Fields() []string {
-	fields := make([]string, 0, 3)
-	if m._type != nil {
-		fields = append(fields, commit.FieldType)
-	}
-	if m.revision != nil {
-		fields = append(fields, commit.FieldRevision)
-	}
-	if m.commit_state != nil {
-		fields = append(fields, commit.FieldCommitState)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *CommitMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case commit.FieldType:
-		return m.GetType()
-	case commit.FieldRevision:
-		return m.Revision()
-	case commit.FieldCommitState:
-		return m.CommitState()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *CommitMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case commit.FieldType:
-		return m.OldType(ctx)
-	case commit.FieldRevision:
-		return m.OldRevision(ctx)
-	case commit.FieldCommitState:
-		return m.OldCommitState(ctx)
-	}
-	return nil, fmt.Errorf("unknown Commit field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *CommitMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case commit.FieldType:
-		v, ok := value.(commit.Type)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetType(v)
-		return nil
-	case commit.FieldRevision:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRevision(v)
-		return nil
-	case commit.FieldCommitState:
-		v, ok := value.(commit.CommitState)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCommitState(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Commit field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *CommitMutation) AddedFields() []string {
-	var fields []string
-	if m.addrevision != nil {
-		fields = append(fields, commit.FieldRevision)
-	}
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *CommitMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case commit.FieldRevision:
-		return m.AddedRevision()
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *CommitMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	case commit.FieldRevision:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddRevision(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Commit numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *CommitMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *CommitMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *CommitMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown Commit nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *CommitMutation) ResetField(name string) error {
-	switch name {
-	case commit.FieldType:
-		m.ResetType()
-		return nil
-	case commit.FieldRevision:
-		m.ResetRevision()
-		return nil
-	case commit.FieldCommitState:
-		m.ResetCommitState()
-		return nil
-	}
-	return fmt.Errorf("unknown Commit field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *CommitMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m._CommitToBuild != nil {
-		edges = append(edges, commit.EdgeCommitToBuild)
-	}
-	if m._CommitToPlanDiffs != nil {
-		edges = append(edges, commit.EdgeCommitToPlanDiffs)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *CommitMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case commit.EdgeCommitToBuild:
-		if id := m._CommitToBuild; id != nil {
-			return []ent.Value{*id}
-		}
-	case commit.EdgeCommitToPlanDiffs:
-		ids := make([]ent.Value, 0, len(m._CommitToPlanDiffs))
-		for id := range m._CommitToPlanDiffs {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *CommitMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removed_CommitToPlanDiffs != nil {
-		edges = append(edges, commit.EdgeCommitToPlanDiffs)
-	}
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *CommitMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case commit.EdgeCommitToPlanDiffs:
-		ids := make([]ent.Value, 0, len(m.removed_CommitToPlanDiffs))
-		for id := range m.removed_CommitToPlanDiffs {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *CommitMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.cleared_CommitToBuild {
-		edges = append(edges, commit.EdgeCommitToBuild)
-	}
-	if m.cleared_CommitToPlanDiffs {
-		edges = append(edges, commit.EdgeCommitToPlanDiffs)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *CommitMutation) EdgeCleared(name string) bool {
-	switch name {
-	case commit.EdgeCommitToBuild:
-		return m.cleared_CommitToBuild
-	case commit.EdgeCommitToPlanDiffs:
-		return m.cleared_CommitToPlanDiffs
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *CommitMutation) ClearEdge(name string) error {
-	switch name {
-	case commit.EdgeCommitToBuild:
-		m.ClearCommitToBuild()
-		return nil
-	}
-	return fmt.Errorf("unknown Commit unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *CommitMutation) ResetEdge(name string) error {
-	switch name {
-	case commit.EdgeCommitToBuild:
-		m.ResetCommitToBuild()
-		return nil
-	case commit.EdgeCommitToPlanDiffs:
-		m.ResetCommitToPlanDiffs()
-		return nil
-	}
-	return fmt.Errorf("unknown Commit edge %s", name)
 }
 
 // CompetitionMutation represents an operation that mutates the Competition nodes in the graph.
@@ -20133,20 +20133,20 @@ func (m *PlanMutation) ResetEdge(name string) error {
 // PlanDiffMutation represents an operation that mutates the PlanDiff nodes in the graph.
 type PlanDiffMutation struct {
 	config
-	op                       Op
-	typ                      string
-	id                       *uuid.UUID
-	revision                 *int
-	addrevision              *int
-	new_state                *plandiff.NewState
-	clearedFields            map[string]struct{}
-	_PlanDiffToCommit        *uuid.UUID
-	cleared_PlanDiffToCommit bool
-	_PlanDiffToPlan          *uuid.UUID
-	cleared_PlanDiffToPlan   bool
-	done                     bool
-	oldValue                 func(context.Context) (*PlanDiff, error)
-	predicates               []predicate.PlanDiff
+	op                            Op
+	typ                           string
+	id                            *uuid.UUID
+	revision                      *int
+	addrevision                   *int
+	new_state                     *plandiff.NewState
+	clearedFields                 map[string]struct{}
+	_PlanDiffToBuildCommit        *uuid.UUID
+	cleared_PlanDiffToBuildCommit bool
+	_PlanDiffToPlan               *uuid.UUID
+	cleared_PlanDiffToPlan        bool
+	done                          bool
+	oldValue                      func(context.Context) (*PlanDiff, error)
+	predicates                    []predicate.PlanDiff
 }
 
 var _ ent.Mutation = (*PlanDiffMutation)(nil)
@@ -20326,43 +20326,43 @@ func (m *PlanDiffMutation) ResetNewState() {
 	m.new_state = nil
 }
 
-// SetPlanDiffToCommitID sets the "PlanDiffToCommit" edge to the Commit entity by id.
-func (m *PlanDiffMutation) SetPlanDiffToCommitID(id uuid.UUID) {
-	m._PlanDiffToCommit = &id
+// SetPlanDiffToBuildCommitID sets the "PlanDiffToBuildCommit" edge to the BuildCommit entity by id.
+func (m *PlanDiffMutation) SetPlanDiffToBuildCommitID(id uuid.UUID) {
+	m._PlanDiffToBuildCommit = &id
 }
 
-// ClearPlanDiffToCommit clears the "PlanDiffToCommit" edge to the Commit entity.
-func (m *PlanDiffMutation) ClearPlanDiffToCommit() {
-	m.cleared_PlanDiffToCommit = true
+// ClearPlanDiffToBuildCommit clears the "PlanDiffToBuildCommit" edge to the BuildCommit entity.
+func (m *PlanDiffMutation) ClearPlanDiffToBuildCommit() {
+	m.cleared_PlanDiffToBuildCommit = true
 }
 
-// PlanDiffToCommitCleared reports if the "PlanDiffToCommit" edge to the Commit entity was cleared.
-func (m *PlanDiffMutation) PlanDiffToCommitCleared() bool {
-	return m.cleared_PlanDiffToCommit
+// PlanDiffToBuildCommitCleared reports if the "PlanDiffToBuildCommit" edge to the BuildCommit entity was cleared.
+func (m *PlanDiffMutation) PlanDiffToBuildCommitCleared() bool {
+	return m.cleared_PlanDiffToBuildCommit
 }
 
-// PlanDiffToCommitID returns the "PlanDiffToCommit" edge ID in the mutation.
-func (m *PlanDiffMutation) PlanDiffToCommitID() (id uuid.UUID, exists bool) {
-	if m._PlanDiffToCommit != nil {
-		return *m._PlanDiffToCommit, true
+// PlanDiffToBuildCommitID returns the "PlanDiffToBuildCommit" edge ID in the mutation.
+func (m *PlanDiffMutation) PlanDiffToBuildCommitID() (id uuid.UUID, exists bool) {
+	if m._PlanDiffToBuildCommit != nil {
+		return *m._PlanDiffToBuildCommit, true
 	}
 	return
 }
 
-// PlanDiffToCommitIDs returns the "PlanDiffToCommit" edge IDs in the mutation.
+// PlanDiffToBuildCommitIDs returns the "PlanDiffToBuildCommit" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// PlanDiffToCommitID instead. It exists only for internal usage by the builders.
-func (m *PlanDiffMutation) PlanDiffToCommitIDs() (ids []uuid.UUID) {
-	if id := m._PlanDiffToCommit; id != nil {
+// PlanDiffToBuildCommitID instead. It exists only for internal usage by the builders.
+func (m *PlanDiffMutation) PlanDiffToBuildCommitIDs() (ids []uuid.UUID) {
+	if id := m._PlanDiffToBuildCommit; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetPlanDiffToCommit resets all changes to the "PlanDiffToCommit" edge.
-func (m *PlanDiffMutation) ResetPlanDiffToCommit() {
-	m._PlanDiffToCommit = nil
-	m.cleared_PlanDiffToCommit = false
+// ResetPlanDiffToBuildCommit resets all changes to the "PlanDiffToBuildCommit" edge.
+func (m *PlanDiffMutation) ResetPlanDiffToBuildCommit() {
+	m._PlanDiffToBuildCommit = nil
+	m.cleared_PlanDiffToBuildCommit = false
 }
 
 // SetPlanDiffToPlanID sets the "PlanDiffToPlan" edge to the Plan entity by id.
@@ -20550,8 +20550,8 @@ func (m *PlanDiffMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PlanDiffMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m._PlanDiffToCommit != nil {
-		edges = append(edges, plandiff.EdgePlanDiffToCommit)
+	if m._PlanDiffToBuildCommit != nil {
+		edges = append(edges, plandiff.EdgePlanDiffToBuildCommit)
 	}
 	if m._PlanDiffToPlan != nil {
 		edges = append(edges, plandiff.EdgePlanDiffToPlan)
@@ -20563,8 +20563,8 @@ func (m *PlanDiffMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *PlanDiffMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case plandiff.EdgePlanDiffToCommit:
-		if id := m._PlanDiffToCommit; id != nil {
+	case plandiff.EdgePlanDiffToBuildCommit:
+		if id := m._PlanDiffToBuildCommit; id != nil {
 			return []ent.Value{*id}
 		}
 	case plandiff.EdgePlanDiffToPlan:
@@ -20592,8 +20592,8 @@ func (m *PlanDiffMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PlanDiffMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.cleared_PlanDiffToCommit {
-		edges = append(edges, plandiff.EdgePlanDiffToCommit)
+	if m.cleared_PlanDiffToBuildCommit {
+		edges = append(edges, plandiff.EdgePlanDiffToBuildCommit)
 	}
 	if m.cleared_PlanDiffToPlan {
 		edges = append(edges, plandiff.EdgePlanDiffToPlan)
@@ -20605,8 +20605,8 @@ func (m *PlanDiffMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *PlanDiffMutation) EdgeCleared(name string) bool {
 	switch name {
-	case plandiff.EdgePlanDiffToCommit:
-		return m.cleared_PlanDiffToCommit
+	case plandiff.EdgePlanDiffToBuildCommit:
+		return m.cleared_PlanDiffToBuildCommit
 	case plandiff.EdgePlanDiffToPlan:
 		return m.cleared_PlanDiffToPlan
 	}
@@ -20617,8 +20617,8 @@ func (m *PlanDiffMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *PlanDiffMutation) ClearEdge(name string) error {
 	switch name {
-	case plandiff.EdgePlanDiffToCommit:
-		m.ClearPlanDiffToCommit()
+	case plandiff.EdgePlanDiffToBuildCommit:
+		m.ClearPlanDiffToBuildCommit()
 		return nil
 	case plandiff.EdgePlanDiffToPlan:
 		m.ClearPlanDiffToPlan()
@@ -20631,8 +20631,8 @@ func (m *PlanDiffMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *PlanDiffMutation) ResetEdge(name string) error {
 	switch name {
-	case plandiff.EdgePlanDiffToCommit:
-		m.ResetPlanDiffToCommit()
+	case plandiff.EdgePlanDiffToBuildCommit:
+		m.ResetPlanDiffToBuildCommit()
 		return nil
 	case plandiff.EdgePlanDiffToPlan:
 		m.ResetPlanDiffToPlan()

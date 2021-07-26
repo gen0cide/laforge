@@ -32,4 +32,26 @@ fragment PlanFields on Plan {
   PlanToStatus {
     ...StatusFields
   }
+  PlanToPlanDiffs {
+    ...PlanDiffFields
+  }
+}
+
+fragment PlanDiffFields on PlanDiff {
+  id
+  revision
+  new_state
+  # PlanDiffToPlan {
+  #   ...PlanFields
+  # }
+}
+
+fragment BuildCommitFields on BuildCommit {
+  id
+  revision
+  type
+  state
+  BuildCommitToPlanDiffs {
+    ...PlanDiffFields
+  }
 }

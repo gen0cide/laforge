@@ -78,12 +78,14 @@ export type LaForgeAuthUser = {
   phone: Scalars['String'];
   company: Scalars['String'];
   occupation: Scalars['String'];
+  publicKey: Scalars['String'];
 };
 
 export type LaForgeBuild = {
   __typename?: 'Build';
   id: Scalars['ID'];
   revision: Scalars['Int'];
+  environment_revision: Scalars['Int'];
   completed_plan: Scalars['Boolean'];
   buildToStatus: LaForgeStatus;
   buildToEnvironment: LaForgeEnvironment;
@@ -91,7 +93,31 @@ export type LaForgeBuild = {
   buildToProvisionedNetwork: Array<Maybe<LaForgeProvisionedNetwork>>;
   buildToTeam: Array<Maybe<LaForgeTeam>>;
   buildToPlan: Array<Maybe<LaForgePlan>>;
+  BuildToLatestBuildCommit?: Maybe<LaForgeBuildCommit>;
+  BuildToBuildCommits: Array<Maybe<LaForgeBuildCommit>>;
 };
+
+export type LaForgeBuildCommit = {
+  __typename?: 'BuildCommit';
+  id: Scalars['ID'];
+  type: LaForgeBuildCommitType;
+  revision: Scalars['Int'];
+  state: LaForgeBuildCommitState;
+  BuildCommitToBuild: LaForgeBuild;
+  BuildCommitToPlanDiffs: Array<Maybe<LaForgePlanDiff>>;
+};
+
+export enum LaForgeBuildCommitState {
+  Planning = 'PLANNING',
+  Inprogress = 'INPROGRESS',
+  Applied = 'APPLIED'
+}
+
+export enum LaForgeBuildCommitType {
+  Root = 'ROOT',
+  Rebuild = 'REBUILD',
+  Delete = 'DELETE'
+}
 
 export type LaForgeCommand = {
   __typename?: 'Command';
@@ -411,6 +437,16 @@ export type LaForgePlan = {
   PlanToProvisionedHost: LaForgeProvisionedHost;
   PlanToProvisioningStep: LaForgeProvisioningStep;
   PlanToStatus: LaForgeStatus;
+  PlanToPlanDiffs: Array<Maybe<LaForgePlanDiff>>;
+};
+
+export type LaForgePlanDiff = {
+  __typename?: 'PlanDiff';
+  id: Scalars['ID'];
+  revision: Scalars['Int'];
+  new_state: LaForgeProvisionStatus;
+  PlanDiffToBuildCommit: LaForgeBuildCommit;
+  PlanDiffToPlan: LaForgePlan;
 };
 
 export enum LaForgePlanType {
@@ -456,7 +492,6 @@ export type LaForgeProvisionedHost = {
   __typename?: 'ProvisionedHost';
   id: Scalars['ID'];
   subnet_ip: Scalars['String'];
-  combined_output?: Maybe<Scalars['String']>;
   ProvisionedHostToStatus: LaForgeStatus;
   ProvisionedHostToProvisionedNetwork: LaForgeProvisionedNetwork;
   ProvisionedHostToHost: LaForgeHost;
@@ -704,6 +739,7 @@ export type LaForgeGetBuildTreeQueryVariables = Exact<{
 export type LaForgeGetBuildTreeQuery = { __typename?: 'Query' } & {
   build?: Maybe<
     { __typename?: 'Build' } & Pick<LaForgeBuild, 'id' | 'revision'> & {
+        BuildToLatestBuildCommit?: Maybe<{ __typename?: 'BuildCommit' } & LaForgeBuildCommitFieldsFragment>;
         buildToStatus: { __typename?: 'Status' } & LaForgeStatusFieldsFragment;
         buildToTeam: Array<
           Maybe<
@@ -1060,7 +1096,15 @@ export type LaForgeAgentStatusFieldsFragment = { __typename?: 'AgentStatus' } & 
 
 export type LaForgePlanFieldsFragment = { __typename?: 'Plan' } & Pick<LaForgePlan, 'id' | 'step_number' | 'type'> & {
     PlanToStatus: { __typename?: 'Status' } & LaForgeStatusFieldsFragment;
+    PlanToPlanDiffs: Array<Maybe<{ __typename?: 'PlanDiff' } & LaForgePlanDiffFieldsFragment>>;
   };
+
+export type LaForgePlanDiffFieldsFragment = { __typename?: 'PlanDiff' } & Pick<LaForgePlanDiff, 'id' | 'revision' | 'new_state'>;
+
+export type LaForgeBuildCommitFieldsFragment = { __typename?: 'BuildCommit' } & Pick<
+  LaForgeBuildCommit,
+  'id' | 'revision' | 'type' | 'state'
+> & { BuildCommitToPlanDiffs: Array<Maybe<{ __typename?: 'PlanDiff' } & LaForgePlanDiffFieldsFragment>> };
 
 export type LaForgeRebuildMutationVariables = Exact<{
   rootPlans: Array<Maybe<Scalars['String']>> | Maybe<Scalars['String']>;
@@ -1204,6 +1248,13 @@ export const StatusFieldsFragmentDoc = gql`
     error
   }
 `;
+export const PlanDiffFieldsFragmentDoc = gql`
+  fragment PlanDiffFields on PlanDiff {
+    id
+    revision
+    new_state
+  }
+`;
 export const PlanFieldsFragmentDoc = gql`
   fragment PlanFields on Plan {
     id
@@ -1212,8 +1263,24 @@ export const PlanFieldsFragmentDoc = gql`
     PlanToStatus {
       ...StatusFields
     }
+    PlanToPlanDiffs {
+      ...PlanDiffFields
+    }
   }
   ${StatusFieldsFragmentDoc}
+  ${PlanDiffFieldsFragmentDoc}
+`;
+export const BuildCommitFieldsFragmentDoc = gql`
+  fragment BuildCommitFields on BuildCommit {
+    id
+    revision
+    type
+    state
+    BuildCommitToPlanDiffs {
+      ...PlanDiffFields
+    }
+  }
+  ${PlanDiffFieldsFragmentDoc}
 `;
 export const ServerTaskFieldsFragmentDoc = gql`
   fragment ServerTaskFields on ServerTask {
@@ -1293,6 +1360,9 @@ export const GetBuildTreeDocument = gql`
     build(buildUUID: $buildId) {
       id
       revision
+      BuildToLatestBuildCommit {
+        ...BuildCommitFields
+      }
       buildToStatus {
         ...StatusFields
       }
@@ -1465,6 +1535,7 @@ export const GetBuildTreeDocument = gql`
       }
     }
   }
+  ${BuildCommitFieldsFragmentDoc}
   ${StatusFieldsFragmentDoc}
 `;
 

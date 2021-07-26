@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/adhocplan"
 	"github.com/gen0cide/laforge/ent/build"
-	"github.com/gen0cide/laforge/ent/commit"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/plan"
@@ -101,15 +101,23 @@ func (bc *BuildCreate) SetBuildToCompetition(c *Competition) *BuildCreate {
 	return bc.SetBuildToCompetitionID(c.ID)
 }
 
-// SetBuildToLatestCommitID sets the "BuildToLatestCommit" edge to the Commit entity by ID.
-func (bc *BuildCreate) SetBuildToLatestCommitID(id uuid.UUID) *BuildCreate {
-	bc.mutation.SetBuildToLatestCommitID(id)
+// SetBuildToLatestBuildCommitID sets the "BuildToLatestBuildCommit" edge to the BuildCommit entity by ID.
+func (bc *BuildCreate) SetBuildToLatestBuildCommitID(id uuid.UUID) *BuildCreate {
+	bc.mutation.SetBuildToLatestBuildCommitID(id)
 	return bc
 }
 
-// SetBuildToLatestCommit sets the "BuildToLatestCommit" edge to the Commit entity.
-func (bc *BuildCreate) SetBuildToLatestCommit(c *Commit) *BuildCreate {
-	return bc.SetBuildToLatestCommitID(c.ID)
+// SetNillableBuildToLatestBuildCommitID sets the "BuildToLatestBuildCommit" edge to the BuildCommit entity by ID if the given value is not nil.
+func (bc *BuildCreate) SetNillableBuildToLatestBuildCommitID(id *uuid.UUID) *BuildCreate {
+	if id != nil {
+		bc = bc.SetBuildToLatestBuildCommitID(*id)
+	}
+	return bc
+}
+
+// SetBuildToLatestBuildCommit sets the "BuildToLatestBuildCommit" edge to the BuildCommit entity.
+func (bc *BuildCreate) SetBuildToLatestBuildCommit(b *BuildCommit) *BuildCreate {
+	return bc.SetBuildToLatestBuildCommitID(b.ID)
 }
 
 // AddBuildToProvisionedNetworkIDs adds the "BuildToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
@@ -157,19 +165,19 @@ func (bc *BuildCreate) AddBuildToPlan(p ...*Plan) *BuildCreate {
 	return bc.AddBuildToPlanIDs(ids...)
 }
 
-// AddBuildToCommitIDs adds the "BuildToCommits" edge to the Commit entity by IDs.
-func (bc *BuildCreate) AddBuildToCommitIDs(ids ...uuid.UUID) *BuildCreate {
-	bc.mutation.AddBuildToCommitIDs(ids...)
+// AddBuildToBuildCommitIDs adds the "BuildToBuildCommits" edge to the BuildCommit entity by IDs.
+func (bc *BuildCreate) AddBuildToBuildCommitIDs(ids ...uuid.UUID) *BuildCreate {
+	bc.mutation.AddBuildToBuildCommitIDs(ids...)
 	return bc
 }
 
-// AddBuildToCommits adds the "BuildToCommits" edges to the Commit entity.
-func (bc *BuildCreate) AddBuildToCommits(c ...*Commit) *BuildCreate {
-	ids := make([]uuid.UUID, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// AddBuildToBuildCommits adds the "BuildToBuildCommits" edges to the BuildCommit entity.
+func (bc *BuildCreate) AddBuildToBuildCommits(b ...*BuildCommit) *BuildCreate {
+	ids := make([]uuid.UUID, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return bc.AddBuildToCommitIDs(ids...)
+	return bc.AddBuildToBuildCommitIDs(ids...)
 }
 
 // AddBuildToAdhocPlanIDs adds the "BuildToAdhocPlans" edge to the AdhocPlan entity by IDs.
@@ -265,9 +273,6 @@ func (bc *BuildCreate) check() error {
 	}
 	if _, ok := bc.mutation.BuildToCompetitionID(); !ok {
 		return &ValidationError{Name: "BuildToCompetition", err: errors.New("ent: missing required edge \"BuildToCompetition\"")}
-	}
-	if _, ok := bc.mutation.BuildToLatestCommitID(); !ok {
-		return &ValidationError{Name: "BuildToLatestCommit", err: errors.New("ent: missing required edge \"BuildToLatestCommit\"")}
 	}
 	return nil
 }
@@ -381,24 +386,24 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 		_node.build_build_to_competition = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := bc.mutation.BuildToLatestCommitIDs(); len(nodes) > 0 {
+	if nodes := bc.mutation.BuildToLatestBuildCommitIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   build.BuildToLatestCommitTable,
-			Columns: []string{build.BuildToLatestCommitColumn},
+			Table:   build.BuildToLatestBuildCommitTable,
+			Columns: []string{build.BuildToLatestBuildCommitColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: commit.FieldID,
+					Column: buildcommit.FieldID,
 				},
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.build_build_to_latest_commit = &nodes[0]
+		_node.build_build_to_latest_build_commit = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := bc.mutation.BuildToProvisionedNetworkIDs(); len(nodes) > 0 {
@@ -458,17 +463,17 @@ func (bc *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := bc.mutation.BuildToCommitsIDs(); len(nodes) > 0 {
+	if nodes := bc.mutation.BuildToBuildCommitsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   build.BuildToCommitsTable,
-			Columns: []string{build.BuildToCommitsColumn},
+			Table:   build.BuildToBuildCommitsTable,
+			Columns: []string{build.BuildToBuildCommitsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: commit.FieldID,
+					Column: buildcommit.FieldID,
 				},
 			},
 		}

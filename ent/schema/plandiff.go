@@ -25,7 +25,7 @@ func (PlanDiff) Fields() []ent.Field {
 // Edges of the PlanDiff.
 func (PlanDiff) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("PlanDiffToCommit", Commit.Type).
+		edge.To("PlanDiffToBuildCommit", BuildCommit.Type).
 			Unique().
 			Required(),
 		edge.To("PlanDiffToPlan", Plan.Type).

@@ -223,25 +223,25 @@ func NewStateNotIn(vs ...NewState) predicate.PlanDiff {
 	})
 }
 
-// HasPlanDiffToCommit applies the HasEdge predicate on the "PlanDiffToCommit" edge.
-func HasPlanDiffToCommit() predicate.PlanDiff {
+// HasPlanDiffToBuildCommit applies the HasEdge predicate on the "PlanDiffToBuildCommit" edge.
+func HasPlanDiffToBuildCommit() predicate.PlanDiff {
 	return predicate.PlanDiff(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(PlanDiffToCommitTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, PlanDiffToCommitTable, PlanDiffToCommitColumn),
+			sqlgraph.To(PlanDiffToBuildCommitTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, PlanDiffToBuildCommitTable, PlanDiffToBuildCommitColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasPlanDiffToCommitWith applies the HasEdge predicate on the "PlanDiffToCommit" edge with a given conditions (other predicates).
-func HasPlanDiffToCommitWith(preds ...predicate.Commit) predicate.PlanDiff {
+// HasPlanDiffToBuildCommitWith applies the HasEdge predicate on the "PlanDiffToBuildCommit" edge with a given conditions (other predicates).
+func HasPlanDiffToBuildCommitWith(preds ...predicate.BuildCommit) predicate.PlanDiff {
 	return predicate.PlanDiff(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(PlanDiffToCommitInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, PlanDiffToCommitTable, PlanDiffToCommitColumn),
+			sqlgraph.To(PlanDiffToBuildCommitInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, PlanDiffToBuildCommitTable, PlanDiffToBuildCommitColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

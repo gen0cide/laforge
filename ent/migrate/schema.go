@@ -129,7 +129,7 @@ var (
 		{Name: "completed_plan", Type: field.TypeBool, Default: false},
 		{Name: "build_build_to_environment", Type: field.TypeUUID, Nullable: true},
 		{Name: "build_build_to_competition", Type: field.TypeUUID, Nullable: true},
-		{Name: "build_build_to_latest_commit", Type: field.TypeUUID, Nullable: true},
+		{Name: "build_build_to_latest_build_commit", Type: field.TypeUUID, Nullable: true},
 	}
 	// BuildsTable holds the schema information for the "builds" table.
 	BuildsTable = &schema.Table{
@@ -150,9 +150,31 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "builds_commits_BuildToLatestCommit",
+				Symbol:     "builds_build_commits_BuildToLatestBuildCommit",
 				Columns:    []*schema.Column{BuildsColumns[6]},
-				RefColumns: []*schema.Column{CommitsColumns[0]},
+				RefColumns: []*schema.Column{BuildCommitsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// BuildCommitsColumns holds the columns for the "build_commits" table.
+	BuildCommitsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"ROOT", "REBUILD", "DELETE"}},
+		{Name: "revision", Type: field.TypeInt},
+		{Name: "state", Type: field.TypeEnum, Enums: []string{"PLANNING", "INPROGRESS", "APPLIED"}},
+		{Name: "build_commit_build_commit_to_build", Type: field.TypeUUID, Nullable: true},
+	}
+	// BuildCommitsTable holds the schema information for the "build_commits" table.
+	BuildCommitsTable = &schema.Table{
+		Name:       "build_commits",
+		Columns:    BuildCommitsColumns,
+		PrimaryKey: []*schema.Column{BuildCommitsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "build_commits_builds_BuildCommitToBuild",
+				Columns:    []*schema.Column{BuildCommitsColumns[4]},
+				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -184,28 +206,6 @@ var (
 				Columns:    []*schema.Column{CommandsColumns[12]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
 				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// CommitsColumns holds the columns for the "commits" table.
-	CommitsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"ROOT", "REBUILD", "DELETE"}},
-		{Name: "revision", Type: field.TypeInt},
-		{Name: "commit_state", Type: field.TypeEnum, Enums: []string{"PLANNING", "INPROGRESS", "APPLIED"}},
-		{Name: "commit_commit_to_build", Type: field.TypeUUID, Nullable: true},
-	}
-	// CommitsTable holds the schema information for the "commits" table.
-	CommitsTable = &schema.Table{
-		Name:       "commits",
-		Columns:    CommitsColumns,
-		PrimaryKey: []*schema.Column{CommitsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "commits_builds_CommitToBuild",
-				Columns:    []*schema.Column{CommitsColumns[4]},
-				RefColumns: []*schema.Column{BuildsColumns[0]},
-				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -629,7 +629,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "revision", Type: field.TypeInt},
 		{Name: "new_state", Type: field.TypeEnum, Enums: []string{"PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED", "TODELETE", "DELETEINPROGRESS", "DELETED"}},
-		{Name: "plan_diff_plan_diff_to_commit", Type: field.TypeUUID, Nullable: true},
+		{Name: "plan_diff_plan_diff_to_build_commit", Type: field.TypeUUID, Nullable: true},
 		{Name: "plan_diff_plan_diff_to_plan", Type: field.TypeUUID, Nullable: true},
 	}
 	// PlanDiffsTable holds the schema information for the "plan_diffs" table.
@@ -639,9 +639,9 @@ var (
 		PrimaryKey: []*schema.Column{PlanDiffsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "plan_diffs_commits_PlanDiffToCommit",
+				Symbol:     "plan_diffs_build_commits_PlanDiffToBuildCommit",
 				Columns:    []*schema.Column{PlanDiffsColumns[3]},
-				RefColumns: []*schema.Column{CommitsColumns[0]},
+				RefColumns: []*schema.Column{BuildCommitsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
@@ -1310,8 +1310,8 @@ var (
 		AgentTasksTable,
 		AuthUsersTable,
 		BuildsTable,
+		BuildCommitsTable,
 		CommandsTable,
-		CommitsTable,
 		CompetitionsTable,
 		DnSsTable,
 		DNSRecordsTable,
@@ -1359,9 +1359,9 @@ func init() {
 	AgentTasksTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
 	BuildsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	BuildsTable.ForeignKeys[1].RefTable = CompetitionsTable
-	BuildsTable.ForeignKeys[2].RefTable = CommitsTable
+	BuildsTable.ForeignKeys[2].RefTable = BuildCommitsTable
+	BuildCommitsTable.ForeignKeys[0].RefTable = BuildsTable
 	CommandsTable.ForeignKeys[0].RefTable = EnvironmentsTable
-	CommitsTable.ForeignKeys[0].RefTable = BuildsTable
 	CompetitionsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	DNSRecordsTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	DisksTable.ForeignKeys[0].RefTable = HostsTable
@@ -1381,7 +1381,7 @@ func init() {
 	IncludedNetworksTable.ForeignKeys[0].RefTable = NetworksTable
 	NetworksTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	PlansTable.ForeignKeys[0].RefTable = BuildsTable
-	PlanDiffsTable.ForeignKeys[0].RefTable = CommitsTable
+	PlanDiffsTable.ForeignKeys[0].RefTable = BuildCommitsTable
 	PlanDiffsTable.ForeignKeys[1].RefTable = PlansTable
 	ProvisionedHostsTable.ForeignKeys[0].RefTable = GinFileMiddlewaresTable
 	ProvisionedHostsTable.ForeignKeys[1].RefTable = PlansTable

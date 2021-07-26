@@ -5,6 +5,7 @@ import {
   LaForgeGetEnvironmentGQL,
   LaForgeGetEnvironmentInfoQuery,
   LaForgeGetEnvironmentsQuery,
+  LaForgePlanFieldsFragment,
   LaForgeSubscribeUpdatedAgentStatusGQL,
   LaForgeSubscribeUpdatedAgentStatusSubscription,
   LaForgeSubscribeUpdatedStatusGQL,
@@ -33,6 +34,8 @@ export class EnvironmentService {
   public statusUpdate: BehaviorSubject<boolean>;
   private agentStatusMap: { [key: string]: LaForgeSubscribeUpdatedAgentStatusSubscription['updatedAgentStatus'] };
   public agentStatusUpdate: BehaviorSubject<boolean>;
+  private planMap: { [key: string]: LaForgePlanFieldsFragment };
+  public planUpdate: BehaviorSubject<boolean>;
 
   constructor(
     private api: ApiService,
@@ -48,8 +51,10 @@ export class EnvironmentService {
     this.buildTree = new BehaviorSubject(null);
     this.statusUpdate = new BehaviorSubject(false);
     this.agentStatusUpdate = new BehaviorSubject(false);
+    this.planUpdate = new BehaviorSubject(false);
     this.statusMap = {};
     this.agentStatusMap = {};
+    this.planMap = {};
 
     this.initEnvironments();
     this.startStatusSubscription();
@@ -85,6 +90,10 @@ export class EnvironmentService {
     return this.agentStatusMap[hostId];
   }
 
+  public getPlan(planId: string) {
+    return this.planMap[planId];
+  }
+
   private initEnvironments() {
     this.api.pullEnvironments().then((envs) => {
       this.environments.next(envs);
@@ -118,6 +127,28 @@ export class EnvironmentService {
         }
       }
       this.agentStatusUpdate.next(!this.agentStatusUpdate.getValue());
+    }, console.error);
+  }
+
+  public initPlans() {
+    if (!this.buildTree.getValue()) return;
+    this.api.pullBuildPlans(this.buildTree.getValue().id).then((build) => {
+      for (const team of build.buildToTeam) {
+        this.planMap[team.TeamToPlan.id] = {
+          ...team.TeamToPlan
+        };
+        for (const pnet of team.TeamToProvisionedNetwork) {
+          this.planMap[pnet.ProvisionedNetworkToPlan.id] = {
+            ...pnet.ProvisionedNetworkToPlan
+          };
+          for (const phost of pnet.ProvisionedNetworkToProvisionedHost) {
+            this.planMap[phost.ProvisionedHostToPlan.id] = {
+              ...phost.ProvisionedHostToPlan
+            };
+          }
+        }
+      }
+      this.planUpdate.next(!this.planUpdate.getValue());
     }, console.error);
   }
 

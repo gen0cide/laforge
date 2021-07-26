@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/gen0cide/laforge/ent/commit"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/plandiff"
 	"github.com/google/uuid"
@@ -27,19 +27,19 @@ type PlanDiff struct {
 	Edges PlanDiffEdges `json:"edges"`
 
 	// Edges put into the main struct to be loaded via hcl
-	// PlanDiffToCommit holds the value of the PlanDiffToCommit edge.
-	HCLPlanDiffToCommit *Commit `json:"PlanDiffToCommit,omitempty"`
+	// PlanDiffToBuildCommit holds the value of the PlanDiffToBuildCommit edge.
+	HCLPlanDiffToBuildCommit *BuildCommit `json:"PlanDiffToBuildCommit,omitempty"`
 	// PlanDiffToPlan holds the value of the PlanDiffToPlan edge.
 	HCLPlanDiffToPlan *Plan `json:"PlanDiffToPlan,omitempty"`
 	//
-	plan_diff_plan_diff_to_commit *uuid.UUID
-	plan_diff_plan_diff_to_plan   *uuid.UUID
+	plan_diff_plan_diff_to_build_commit *uuid.UUID
+	plan_diff_plan_diff_to_plan         *uuid.UUID
 }
 
 // PlanDiffEdges holds the relations/edges for other nodes in the graph.
 type PlanDiffEdges struct {
-	// PlanDiffToCommit holds the value of the PlanDiffToCommit edge.
-	PlanDiffToCommit *Commit `json:"PlanDiffToCommit,omitempty"`
+	// PlanDiffToBuildCommit holds the value of the PlanDiffToBuildCommit edge.
+	PlanDiffToBuildCommit *BuildCommit `json:"PlanDiffToBuildCommit,omitempty"`
 	// PlanDiffToPlan holds the value of the PlanDiffToPlan edge.
 	PlanDiffToPlan *Plan `json:"PlanDiffToPlan,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -47,18 +47,18 @@ type PlanDiffEdges struct {
 	loadedTypes [2]bool
 }
 
-// PlanDiffToCommitOrErr returns the PlanDiffToCommit value or an error if the edge
+// PlanDiffToBuildCommitOrErr returns the PlanDiffToBuildCommit value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e PlanDiffEdges) PlanDiffToCommitOrErr() (*Commit, error) {
+func (e PlanDiffEdges) PlanDiffToBuildCommitOrErr() (*BuildCommit, error) {
 	if e.loadedTypes[0] {
-		if e.PlanDiffToCommit == nil {
-			// The edge PlanDiffToCommit was loaded in eager-loading,
+		if e.PlanDiffToBuildCommit == nil {
+			// The edge PlanDiffToBuildCommit was loaded in eager-loading,
 			// but was not found.
-			return nil, &NotFoundError{label: commit.Label}
+			return nil, &NotFoundError{label: buildcommit.Label}
 		}
-		return e.PlanDiffToCommit, nil
+		return e.PlanDiffToBuildCommit, nil
 	}
-	return nil, &NotLoadedError{edge: "PlanDiffToCommit"}
+	return nil, &NotLoadedError{edge: "PlanDiffToBuildCommit"}
 }
 
 // PlanDiffToPlanOrErr returns the PlanDiffToPlan value or an error if the edge
@@ -86,7 +86,7 @@ func (*PlanDiff) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullString)
 		case plandiff.FieldID:
 			values[i] = new(uuid.UUID)
-		case plandiff.ForeignKeys[0]: // plan_diff_plan_diff_to_commit
+		case plandiff.ForeignKeys[0]: // plan_diff_plan_diff_to_build_commit
 			values[i] = new(uuid.UUID)
 		case plandiff.ForeignKeys[1]: // plan_diff_plan_diff_to_plan
 			values[i] = new(uuid.UUID)
@@ -125,9 +125,9 @@ func (pd *PlanDiff) assignValues(columns []string, values []interface{}) error {
 			}
 		case plandiff.ForeignKeys[0]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field plan_diff_plan_diff_to_commit", values[i])
+				return fmt.Errorf("unexpected type %T for field plan_diff_plan_diff_to_build_commit", values[i])
 			} else if value != nil {
-				pd.plan_diff_plan_diff_to_commit = value
+				pd.plan_diff_plan_diff_to_build_commit = value
 			}
 		case plandiff.ForeignKeys[1]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -140,9 +140,9 @@ func (pd *PlanDiff) assignValues(columns []string, values []interface{}) error {
 	return nil
 }
 
-// QueryPlanDiffToCommit queries the "PlanDiffToCommit" edge of the PlanDiff entity.
-func (pd *PlanDiff) QueryPlanDiffToCommit() *CommitQuery {
-	return (&PlanDiffClient{config: pd.config}).QueryPlanDiffToCommit(pd)
+// QueryPlanDiffToBuildCommit queries the "PlanDiffToBuildCommit" edge of the PlanDiff entity.
+func (pd *PlanDiff) QueryPlanDiffToBuildCommit() *BuildCommitQuery {
+	return (&PlanDiffClient{config: pd.config}).QueryPlanDiffToBuildCommit(pd)
 }
 
 // QueryPlanDiffToPlan queries the "PlanDiffToPlan" edge of the PlanDiff entity.

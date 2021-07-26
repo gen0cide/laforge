@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { LaForgeProvisionStatus, LaForgeSubscribeUpdatedStatusSubscription, LaForgeTeam } from '@graphql';
+import { LaForgeProvisionStatus, LaForgeSubscribeUpdatedStatusSubscription, LaForgeTeam, LaForgeGetBuildTreeQuery } from '@graphql';
 import { EnvironmentService } from '@services/environment/environment.service';
 import { Subscription } from 'rxjs';
 
@@ -13,10 +13,11 @@ import { RebuildService } from '../../services/rebuild/rebuild.service';
 export class TeamComponent implements OnInit, OnDestroy {
   private unsubscribe: Subscription[] = [];
   @Input() title: string;
-  @Input() team: LaForgeTeam;
+  @Input() team: LaForgeGetBuildTreeQuery['build']['buildToTeam'][0];
   @Input() style: 'compact' | 'collapsed' | 'expanded';
   @Input() selectable: boolean;
   @Input() mode: 'plan' | 'build' | 'manage';
+  @Input() buildCommit: LaForgeGetBuildTreeQuery['build']['BuildToLatestBuildCommit'];
   isSelectedState = false;
   planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
   expandOverride = false;
@@ -142,18 +143,30 @@ export class TeamComponent implements OnInit, OnDestroy {
   onSelect(): void {
     let success = false;
     if (!this.isSelected()) {
-      success = this.rebuild.addTeam(this.team);
+      success = this.rebuild.addTeam(this.team as LaForgeTeam);
     } else {
-      success = this.rebuild.removeTeam(this.team);
+      success = this.rebuild.removeTeam(this.team as LaForgeTeam);
     }
     if (success) this.isSelectedState = !this.isSelectedState;
   }
 
   isSelected(): boolean {
-    return this.rebuild.hasTeam(this.team);
+    return this.rebuild.hasTeam(this.team as LaForgeTeam);
   }
 
   shouldCollapse(): boolean {
+    if (this.mode === 'plan') {
+      const plan = this.envService.getPlan(this.team.TeamToPlan.id);
+      if (plan?.PlanToPlanDiffs.length > 0) {
+        const latestDiff = plan.PlanToPlanDiffs.sort((a, b) => b.revision - a.revision)[0];
+        if (latestDiff.new_state === LaForgeProvisionStatus.Planning) {
+          return false;
+        } else {
+          return true;
+        }
+      }
+      return false;
+    }
     return (
       this.planStatus &&
       (this.planStatus.state === LaForgeProvisionStatus.Deleted ||

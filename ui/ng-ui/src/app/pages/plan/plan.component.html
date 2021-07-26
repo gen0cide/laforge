@@ -15,18 +15,32 @@
   </mat-card-header>
   <mat-card-content *ngIf="envIsSelected() && environment == null">Loading Environments...</mat-card-content>
   <mat-card-header *ngIf="environment | async as _environment">
-    <mat-card-title-group>
-      <mat-card-title>Plan</mat-card-title>
+    <!-- <mat-card-title-group> -->
+    <!-- <mat-card-title>Plan</mat-card-title>
       <mat-card-subtitle>Construct a plan for a LaForge environment from your git branch</mat-card-subtitle>
       <mat-card-subtitle><b>Name:</b> {{ _environment.name }}</mat-card-subtitle>
       <mat-card-subtitle><b>Competition:</b> {{ _environment.competition_id }}</mat-card-subtitle>
-      <mat-card-subtitle><b>Description:</b> {{ _environment.description }}</mat-card-subtitle>
-      <!-- <mat-card-subtitle
+      <mat-card-subtitle><b>Description:</b> {{ _environment.description }}</mat-card-subtitle> -->
+    <!-- <mat-card-subtitle
         ><b>Maintainer:</b> {{ _environment.maintainer.name }} &lt;{{ _environment.maintainer.email }}&gt;</mat-card-subtitle
       > -->
-    </mat-card-title-group>
+    <!-- </mat-card-title-group> -->
+
+    <mat-card-title
+      >{{ _environment.name }}
+      <span *ngIf="build | async as _build"
+        >v{{ _build.revision }} | Commit {{ _build.BuildToLatestBuildCommit?.revision }} [{{ _build.BuildToLatestBuildCommit?.type }}]</span
+      ></mat-card-title
+    >
+    <mat-card-subtitle>{{ _environment.description }}</mat-card-subtitle>
   </mat-card-header>
-  <!-- <mat-card-content *ngIf="build | async as _build">
-    <app-team *ngFor="let team of _build.buildToTeams" [team]="team" [style]="'expanded'" [mode]="'plan'"></app-team>
-  </mat-card-content> -->
+  <mat-card-content *ngIf="build | async as _build">
+    <app-team
+      *ngFor="let team of _build.buildToTeam"
+      [team]="team"
+      [style]="'expanded'"
+      [mode]="'plan'"
+      [buildCommit]="_build.BuildToLatestBuildCommit"
+    ></app-team>
+  </mat-card-content>
 </mat-card>

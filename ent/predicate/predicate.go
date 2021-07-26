@@ -21,11 +21,11 @@ type AuthUser func(*sql.Selector)
 // Build is the predicate function for build builders.
 type Build func(*sql.Selector)
 
+// BuildCommit is the predicate function for buildcommit builders.
+type BuildCommit func(*sql.Selector)
+
 // Command is the predicate function for command builders.
 type Command func(*sql.Selector)
-
-// Commit is the predicate function for commit builders.
-type Commit func(*sql.Selector)
 
 // Competition is the predicate function for competition builders.
 type Competition func(*sql.Selector)

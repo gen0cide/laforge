@@ -74,6 +74,19 @@ func (f BuildFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return f(ctx, mv)
 }
 
+// The BuildCommitFunc type is an adapter to allow the use of ordinary
+// function as BuildCommit mutator.
+type BuildCommitFunc func(context.Context, *ent.BuildCommitMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f BuildCommitFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.BuildCommitMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BuildCommitMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The CommandFunc type is an adapter to allow the use of ordinary
 // function as Command mutator.
 type CommandFunc func(context.Context, *ent.CommandMutation) (ent.Value, error)
@@ -83,19 +96,6 @@ func (f CommandFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	mv, ok := m.(*ent.CommandMutation)
 	if !ok {
 		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CommandMutation", m)
-	}
-	return f(ctx, mv)
-}
-
-// The CommitFunc type is an adapter to allow the use of ordinary
-// function as Commit mutator.
-type CommitFunc func(context.Context, *ent.CommitMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f CommitFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.CommitMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CommitMutation", m)
 	}
 	return f(ctx, mv)
 }

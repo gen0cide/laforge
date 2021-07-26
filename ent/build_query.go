@@ -14,7 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/adhocplan"
 	"github.com/gen0cide/laforge/ent/build"
-	"github.com/gen0cide/laforge/ent/commit"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/plan"
@@ -38,11 +38,11 @@ type BuildQuery struct {
 	withBuildToStatus             *StatusQuery
 	withBuildToEnvironment        *EnvironmentQuery
 	withBuildToCompetition        *CompetitionQuery
-	withBuildToLatestCommit       *CommitQuery
+	withBuildToLatestBuildCommit  *BuildCommitQuery
 	withBuildToProvisionedNetwork *ProvisionedNetworkQuery
 	withBuildToTeam               *TeamQuery
 	withBuildToPlan               *PlanQuery
-	withBuildToCommits            *CommitQuery
+	withBuildToBuildCommits       *BuildCommitQuery
 	withBuildToAdhocPlans         *AdhocPlanQuery
 	withFKs                       bool
 	// intermediate query (i.e. traversal path).
@@ -147,9 +147,9 @@ func (bq *BuildQuery) QueryBuildToCompetition() *CompetitionQuery {
 	return query
 }
 
-// QueryBuildToLatestCommit chains the current query on the "BuildToLatestCommit" edge.
-func (bq *BuildQuery) QueryBuildToLatestCommit() *CommitQuery {
-	query := &CommitQuery{config: bq.config}
+// QueryBuildToLatestBuildCommit chains the current query on the "BuildToLatestBuildCommit" edge.
+func (bq *BuildQuery) QueryBuildToLatestBuildCommit() *BuildCommitQuery {
+	query := &BuildCommitQuery{config: bq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := bq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -160,8 +160,8 @@ func (bq *BuildQuery) QueryBuildToLatestCommit() *CommitQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(build.Table, build.FieldID, selector),
-			sqlgraph.To(commit.Table, commit.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, build.BuildToLatestCommitTable, build.BuildToLatestCommitColumn),
+			sqlgraph.To(buildcommit.Table, buildcommit.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, build.BuildToLatestBuildCommitTable, build.BuildToLatestBuildCommitColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -235,9 +235,9 @@ func (bq *BuildQuery) QueryBuildToPlan() *PlanQuery {
 	return query
 }
 
-// QueryBuildToCommits chains the current query on the "BuildToCommits" edge.
-func (bq *BuildQuery) QueryBuildToCommits() *CommitQuery {
-	query := &CommitQuery{config: bq.config}
+// QueryBuildToBuildCommits chains the current query on the "BuildToBuildCommits" edge.
+func (bq *BuildQuery) QueryBuildToBuildCommits() *BuildCommitQuery {
+	query := &BuildCommitQuery{config: bq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := bq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -248,8 +248,8 @@ func (bq *BuildQuery) QueryBuildToCommits() *CommitQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(build.Table, build.FieldID, selector),
-			sqlgraph.To(commit.Table, commit.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, build.BuildToCommitsTable, build.BuildToCommitsColumn),
+			sqlgraph.To(buildcommit.Table, buildcommit.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, build.BuildToBuildCommitsTable, build.BuildToBuildCommitsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -463,11 +463,11 @@ func (bq *BuildQuery) Clone() *BuildQuery {
 		withBuildToStatus:             bq.withBuildToStatus.Clone(),
 		withBuildToEnvironment:        bq.withBuildToEnvironment.Clone(),
 		withBuildToCompetition:        bq.withBuildToCompetition.Clone(),
-		withBuildToLatestCommit:       bq.withBuildToLatestCommit.Clone(),
+		withBuildToLatestBuildCommit:  bq.withBuildToLatestBuildCommit.Clone(),
 		withBuildToProvisionedNetwork: bq.withBuildToProvisionedNetwork.Clone(),
 		withBuildToTeam:               bq.withBuildToTeam.Clone(),
 		withBuildToPlan:               bq.withBuildToPlan.Clone(),
-		withBuildToCommits:            bq.withBuildToCommits.Clone(),
+		withBuildToBuildCommits:       bq.withBuildToBuildCommits.Clone(),
 		withBuildToAdhocPlans:         bq.withBuildToAdhocPlans.Clone(),
 		// clone intermediate query.
 		sql:  bq.sql.Clone(),
@@ -508,14 +508,14 @@ func (bq *BuildQuery) WithBuildToCompetition(opts ...func(*CompetitionQuery)) *B
 	return bq
 }
 
-// WithBuildToLatestCommit tells the query-builder to eager-load the nodes that are connected to
-// the "BuildToLatestCommit" edge. The optional arguments are used to configure the query builder of the edge.
-func (bq *BuildQuery) WithBuildToLatestCommit(opts ...func(*CommitQuery)) *BuildQuery {
-	query := &CommitQuery{config: bq.config}
+// WithBuildToLatestBuildCommit tells the query-builder to eager-load the nodes that are connected to
+// the "BuildToLatestBuildCommit" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BuildQuery) WithBuildToLatestBuildCommit(opts ...func(*BuildCommitQuery)) *BuildQuery {
+	query := &BuildCommitQuery{config: bq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	bq.withBuildToLatestCommit = query
+	bq.withBuildToLatestBuildCommit = query
 	return bq
 }
 
@@ -552,14 +552,14 @@ func (bq *BuildQuery) WithBuildToPlan(opts ...func(*PlanQuery)) *BuildQuery {
 	return bq
 }
 
-// WithBuildToCommits tells the query-builder to eager-load the nodes that are connected to
-// the "BuildToCommits" edge. The optional arguments are used to configure the query builder of the edge.
-func (bq *BuildQuery) WithBuildToCommits(opts ...func(*CommitQuery)) *BuildQuery {
-	query := &CommitQuery{config: bq.config}
+// WithBuildToBuildCommits tells the query-builder to eager-load the nodes that are connected to
+// the "BuildToBuildCommits" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BuildQuery) WithBuildToBuildCommits(opts ...func(*BuildCommitQuery)) *BuildQuery {
+	query := &BuildCommitQuery{config: bq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	bq.withBuildToCommits = query
+	bq.withBuildToBuildCommits = query
 	return bq
 }
 
@@ -644,15 +644,15 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 			bq.withBuildToStatus != nil,
 			bq.withBuildToEnvironment != nil,
 			bq.withBuildToCompetition != nil,
-			bq.withBuildToLatestCommit != nil,
+			bq.withBuildToLatestBuildCommit != nil,
 			bq.withBuildToProvisionedNetwork != nil,
 			bq.withBuildToTeam != nil,
 			bq.withBuildToPlan != nil,
-			bq.withBuildToCommits != nil,
+			bq.withBuildToBuildCommits != nil,
 			bq.withBuildToAdhocPlans != nil,
 		}
 	)
-	if bq.withBuildToEnvironment != nil || bq.withBuildToCompetition != nil || bq.withBuildToLatestCommit != nil {
+	if bq.withBuildToEnvironment != nil || bq.withBuildToCompetition != nil || bq.withBuildToLatestBuildCommit != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -764,20 +764,20 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 		}
 	}
 
-	if query := bq.withBuildToLatestCommit; query != nil {
+	if query := bq.withBuildToLatestBuildCommit; query != nil {
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*Build)
 		for i := range nodes {
-			if nodes[i].build_build_to_latest_commit == nil {
+			if nodes[i].build_build_to_latest_build_commit == nil {
 				continue
 			}
-			fk := *nodes[i].build_build_to_latest_commit
+			fk := *nodes[i].build_build_to_latest_build_commit
 			if _, ok := nodeids[fk]; !ok {
 				ids = append(ids, fk)
 			}
 			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
-		query.Where(commit.IDIn(ids...))
+		query.Where(buildcommit.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
@@ -785,10 +785,10 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 		for _, n := range neighbors {
 			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "build_build_to_latest_commit" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "build_build_to_latest_build_commit" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.BuildToLatestCommit = n
+				nodes[i].Edges.BuildToLatestBuildCommit = n
 			}
 		}
 	}
@@ -880,32 +880,32 @@ func (bq *BuildQuery) sqlAll(ctx context.Context) ([]*Build, error) {
 		}
 	}
 
-	if query := bq.withBuildToCommits; query != nil {
+	if query := bq.withBuildToBuildCommits; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[uuid.UUID]*Build)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.BuildToCommits = []*Commit{}
+			nodes[i].Edges.BuildToBuildCommits = []*BuildCommit{}
 		}
 		query.withFKs = true
-		query.Where(predicate.Commit(func(s *sql.Selector) {
-			s.Where(sql.InValues(build.BuildToCommitsColumn, fks...))
+		query.Where(predicate.BuildCommit(func(s *sql.Selector) {
+			s.Where(sql.InValues(build.BuildToBuildCommitsColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.commit_commit_to_build
+			fk := n.build_commit_build_commit_to_build
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "commit_commit_to_build" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "build_commit_build_commit_to_build" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "commit_commit_to_build" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "build_commit_build_commit_to_build" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.BuildToCommits = append(node.Edges.BuildToCommits, n)
+			node.Edges.BuildToBuildCommits = append(node.Edges.BuildToBuildCommits, n)
 		}
 	}
 

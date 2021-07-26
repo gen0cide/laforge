@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/gen0cide/laforge/ent/commit"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/plandiff"
 	"github.com/gen0cide/laforge/ent/predicate"
@@ -28,9 +28,9 @@ type PlanDiffQuery struct {
 	fields     []string
 	predicates []predicate.PlanDiff
 	// eager-loading edges.
-	withPlanDiffToCommit *CommitQuery
-	withPlanDiffToPlan   *PlanQuery
-	withFKs              bool
+	withPlanDiffToBuildCommit *BuildCommitQuery
+	withPlanDiffToPlan        *PlanQuery
+	withFKs                   bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -67,9 +67,9 @@ func (pdq *PlanDiffQuery) Order(o ...OrderFunc) *PlanDiffQuery {
 	return pdq
 }
 
-// QueryPlanDiffToCommit chains the current query on the "PlanDiffToCommit" edge.
-func (pdq *PlanDiffQuery) QueryPlanDiffToCommit() *CommitQuery {
-	query := &CommitQuery{config: pdq.config}
+// QueryPlanDiffToBuildCommit chains the current query on the "PlanDiffToBuildCommit" edge.
+func (pdq *PlanDiffQuery) QueryPlanDiffToBuildCommit() *BuildCommitQuery {
+	query := &BuildCommitQuery{config: pdq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := pdq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -80,8 +80,8 @@ func (pdq *PlanDiffQuery) QueryPlanDiffToCommit() *CommitQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plandiff.Table, plandiff.FieldID, selector),
-			sqlgraph.To(commit.Table, commit.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, plandiff.PlanDiffToCommitTable, plandiff.PlanDiffToCommitColumn),
+			sqlgraph.To(buildcommit.Table, buildcommit.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, plandiff.PlanDiffToBuildCommitTable, plandiff.PlanDiffToBuildCommitColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pdq.driver.Dialect(), step)
 		return fromU, nil
@@ -287,27 +287,27 @@ func (pdq *PlanDiffQuery) Clone() *PlanDiffQuery {
 		return nil
 	}
 	return &PlanDiffQuery{
-		config:               pdq.config,
-		limit:                pdq.limit,
-		offset:               pdq.offset,
-		order:                append([]OrderFunc{}, pdq.order...),
-		predicates:           append([]predicate.PlanDiff{}, pdq.predicates...),
-		withPlanDiffToCommit: pdq.withPlanDiffToCommit.Clone(),
-		withPlanDiffToPlan:   pdq.withPlanDiffToPlan.Clone(),
+		config:                    pdq.config,
+		limit:                     pdq.limit,
+		offset:                    pdq.offset,
+		order:                     append([]OrderFunc{}, pdq.order...),
+		predicates:                append([]predicate.PlanDiff{}, pdq.predicates...),
+		withPlanDiffToBuildCommit: pdq.withPlanDiffToBuildCommit.Clone(),
+		withPlanDiffToPlan:        pdq.withPlanDiffToPlan.Clone(),
 		// clone intermediate query.
 		sql:  pdq.sql.Clone(),
 		path: pdq.path,
 	}
 }
 
-// WithPlanDiffToCommit tells the query-builder to eager-load the nodes that are connected to
-// the "PlanDiffToCommit" edge. The optional arguments are used to configure the query builder of the edge.
-func (pdq *PlanDiffQuery) WithPlanDiffToCommit(opts ...func(*CommitQuery)) *PlanDiffQuery {
-	query := &CommitQuery{config: pdq.config}
+// WithPlanDiffToBuildCommit tells the query-builder to eager-load the nodes that are connected to
+// the "PlanDiffToBuildCommit" edge. The optional arguments are used to configure the query builder of the edge.
+func (pdq *PlanDiffQuery) WithPlanDiffToBuildCommit(opts ...func(*BuildCommitQuery)) *PlanDiffQuery {
+	query := &BuildCommitQuery{config: pdq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	pdq.withPlanDiffToCommit = query
+	pdq.withPlanDiffToBuildCommit = query
 	return pdq
 }
 
@@ -389,11 +389,11 @@ func (pdq *PlanDiffQuery) sqlAll(ctx context.Context) ([]*PlanDiff, error) {
 		withFKs     = pdq.withFKs
 		_spec       = pdq.querySpec()
 		loadedTypes = [2]bool{
-			pdq.withPlanDiffToCommit != nil,
+			pdq.withPlanDiffToBuildCommit != nil,
 			pdq.withPlanDiffToPlan != nil,
 		}
 	)
-	if pdq.withPlanDiffToCommit != nil || pdq.withPlanDiffToPlan != nil {
+	if pdq.withPlanDiffToBuildCommit != nil || pdq.withPlanDiffToPlan != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -419,20 +419,20 @@ func (pdq *PlanDiffQuery) sqlAll(ctx context.Context) ([]*PlanDiff, error) {
 		return nodes, nil
 	}
 
-	if query := pdq.withPlanDiffToCommit; query != nil {
+	if query := pdq.withPlanDiffToBuildCommit; query != nil {
 		ids := make([]uuid.UUID, 0, len(nodes))
 		nodeids := make(map[uuid.UUID][]*PlanDiff)
 		for i := range nodes {
-			if nodes[i].plan_diff_plan_diff_to_commit == nil {
+			if nodes[i].plan_diff_plan_diff_to_build_commit == nil {
 				continue
 			}
-			fk := *nodes[i].plan_diff_plan_diff_to_commit
+			fk := *nodes[i].plan_diff_plan_diff_to_build_commit
 			if _, ok := nodeids[fk]; !ok {
 				ids = append(ids, fk)
 			}
 			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
-		query.Where(commit.IDIn(ids...))
+		query.Where(buildcommit.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
@@ -440,10 +440,10 @@ func (pdq *PlanDiffQuery) sqlAll(ctx context.Context) ([]*PlanDiff, error) {
 		for _, n := range neighbors {
 			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "plan_diff_plan_diff_to_commit" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "plan_diff_plan_diff_to_build_commit" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.PlanDiffToCommit = n
+				nodes[i].Edges.PlanDiffToBuildCommit = n
 			}
 		}
 	}

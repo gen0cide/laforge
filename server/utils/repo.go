@@ -38,6 +38,10 @@ func CloneGit(repoURL, repoPath, privateKey, branchName string) (string, error) 
 		Progress:      os.Stdout,
 		// SingleBranch:  true,
 	})
+	if err != nil {
+		err := fmt.Errorf("unable to clone repo: %s", err.Error())
+		return "", err
+	}
 
 	// Print the latest commit that was just pulled
 	ref, err := repo.Head()

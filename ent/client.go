@@ -15,8 +15,8 @@ import (
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/command"
-	"github.com/gen0cide/laforge/ent/commit"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/dns"
@@ -66,10 +66,10 @@ type Client struct {
 	AuthUser *AuthUserClient
 	// Build is the client for interacting with the Build builders.
 	Build *BuildClient
+	// BuildCommit is the client for interacting with the BuildCommit builders.
+	BuildCommit *BuildCommitClient
 	// Command is the client for interacting with the Command builders.
 	Command *CommandClient
-	// Commit is the client for interacting with the Commit builders.
-	Commit *CommitClient
 	// Competition is the client for interacting with the Competition builders.
 	Competition *CompetitionClient
 	// DNS is the client for interacting with the DNS builders.
@@ -144,8 +144,8 @@ func (c *Client) init() {
 	c.AgentTask = NewAgentTaskClient(c.config)
 	c.AuthUser = NewAuthUserClient(c.config)
 	c.Build = NewBuildClient(c.config)
+	c.BuildCommit = NewBuildCommitClient(c.config)
 	c.Command = NewCommandClient(c.config)
-	c.Commit = NewCommitClient(c.config)
 	c.Competition = NewCompetitionClient(c.config)
 	c.DNS = NewDNSClient(c.config)
 	c.DNSRecord = NewDNSRecordClient(c.config)
@@ -212,8 +212,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		AgentTask:          NewAgentTaskClient(cfg),
 		AuthUser:           NewAuthUserClient(cfg),
 		Build:              NewBuildClient(cfg),
+		BuildCommit:        NewBuildCommitClient(cfg),
 		Command:            NewCommandClient(cfg),
-		Commit:             NewCommitClient(cfg),
 		Competition:        NewCompetitionClient(cfg),
 		DNS:                NewDNSClient(cfg),
 		DNSRecord:          NewDNSRecordClient(cfg),
@@ -265,8 +265,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		AgentTask:          NewAgentTaskClient(cfg),
 		AuthUser:           NewAuthUserClient(cfg),
 		Build:              NewBuildClient(cfg),
+		BuildCommit:        NewBuildCommitClient(cfg),
 		Command:            NewCommandClient(cfg),
-		Commit:             NewCommitClient(cfg),
 		Competition:        NewCompetitionClient(cfg),
 		DNS:                NewDNSClient(cfg),
 		DNSRecord:          NewDNSRecordClient(cfg),
@@ -329,8 +329,8 @@ func (c *Client) Use(hooks ...Hook) {
 	c.AgentTask.Use(hooks...)
 	c.AuthUser.Use(hooks...)
 	c.Build.Use(hooks...)
+	c.BuildCommit.Use(hooks...)
 	c.Command.Use(hooks...)
-	c.Commit.Use(hooks...)
 	c.Competition.Use(hooks...)
 	c.DNS.Use(hooks...)
 	c.DNSRecord.Use(hooks...)
@@ -1030,15 +1030,15 @@ func (c *BuildClient) QueryBuildToCompetition(b *Build) *CompetitionQuery {
 	return query
 }
 
-// QueryBuildToLatestCommit queries the BuildToLatestCommit edge of a Build.
-func (c *BuildClient) QueryBuildToLatestCommit(b *Build) *CommitQuery {
-	query := &CommitQuery{config: c.config}
+// QueryBuildToLatestBuildCommit queries the BuildToLatestBuildCommit edge of a Build.
+func (c *BuildClient) QueryBuildToLatestBuildCommit(b *Build) *BuildCommitQuery {
+	query := &BuildCommitQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := b.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(build.Table, build.FieldID, id),
-			sqlgraph.To(commit.Table, commit.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, build.BuildToLatestCommitTable, build.BuildToLatestCommitColumn),
+			sqlgraph.To(buildcommit.Table, buildcommit.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, build.BuildToLatestBuildCommitTable, build.BuildToLatestBuildCommitColumn),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -1094,15 +1094,15 @@ func (c *BuildClient) QueryBuildToPlan(b *Build) *PlanQuery {
 	return query
 }
 
-// QueryBuildToCommits queries the BuildToCommits edge of a Build.
-func (c *BuildClient) QueryBuildToCommits(b *Build) *CommitQuery {
-	query := &CommitQuery{config: c.config}
+// QueryBuildToBuildCommits queries the BuildToBuildCommits edge of a Build.
+func (c *BuildClient) QueryBuildToBuildCommits(b *Build) *BuildCommitQuery {
+	query := &BuildCommitQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := b.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(build.Table, build.FieldID, id),
-			sqlgraph.To(commit.Table, commit.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, build.BuildToCommitsTable, build.BuildToCommitsColumn),
+			sqlgraph.To(buildcommit.Table, buildcommit.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, build.BuildToBuildCommitsTable, build.BuildToBuildCommitsColumn),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -1129,6 +1129,128 @@ func (c *BuildClient) QueryBuildToAdhocPlans(b *Build) *AdhocPlanQuery {
 // Hooks returns the client hooks.
 func (c *BuildClient) Hooks() []Hook {
 	return c.hooks.Build
+}
+
+// BuildCommitClient is a client for the BuildCommit schema.
+type BuildCommitClient struct {
+	config
+}
+
+// NewBuildCommitClient returns a client for the BuildCommit from the given config.
+func NewBuildCommitClient(c config) *BuildCommitClient {
+	return &BuildCommitClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `buildcommit.Hooks(f(g(h())))`.
+func (c *BuildCommitClient) Use(hooks ...Hook) {
+	c.hooks.BuildCommit = append(c.hooks.BuildCommit, hooks...)
+}
+
+// Create returns a create builder for BuildCommit.
+func (c *BuildCommitClient) Create() *BuildCommitCreate {
+	mutation := newBuildCommitMutation(c.config, OpCreate)
+	return &BuildCommitCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of BuildCommit entities.
+func (c *BuildCommitClient) CreateBulk(builders ...*BuildCommitCreate) *BuildCommitCreateBulk {
+	return &BuildCommitCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for BuildCommit.
+func (c *BuildCommitClient) Update() *BuildCommitUpdate {
+	mutation := newBuildCommitMutation(c.config, OpUpdate)
+	return &BuildCommitUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *BuildCommitClient) UpdateOne(bc *BuildCommit) *BuildCommitUpdateOne {
+	mutation := newBuildCommitMutation(c.config, OpUpdateOne, withBuildCommit(bc))
+	return &BuildCommitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *BuildCommitClient) UpdateOneID(id uuid.UUID) *BuildCommitUpdateOne {
+	mutation := newBuildCommitMutation(c.config, OpUpdateOne, withBuildCommitID(id))
+	return &BuildCommitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for BuildCommit.
+func (c *BuildCommitClient) Delete() *BuildCommitDelete {
+	mutation := newBuildCommitMutation(c.config, OpDelete)
+	return &BuildCommitDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *BuildCommitClient) DeleteOne(bc *BuildCommit) *BuildCommitDeleteOne {
+	return c.DeleteOneID(bc.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *BuildCommitClient) DeleteOneID(id uuid.UUID) *BuildCommitDeleteOne {
+	builder := c.Delete().Where(buildcommit.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &BuildCommitDeleteOne{builder}
+}
+
+// Query returns a query builder for BuildCommit.
+func (c *BuildCommitClient) Query() *BuildCommitQuery {
+	return &BuildCommitQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a BuildCommit entity by its id.
+func (c *BuildCommitClient) Get(ctx context.Context, id uuid.UUID) (*BuildCommit, error) {
+	return c.Query().Where(buildcommit.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *BuildCommitClient) GetX(ctx context.Context, id uuid.UUID) *BuildCommit {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryBuildCommitToBuild queries the BuildCommitToBuild edge of a BuildCommit.
+func (c *BuildCommitClient) QueryBuildCommitToBuild(bc *BuildCommit) *BuildQuery {
+	query := &BuildQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := bc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(buildcommit.Table, buildcommit.FieldID, id),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, buildcommit.BuildCommitToBuildTable, buildcommit.BuildCommitToBuildColumn),
+		)
+		fromV = sqlgraph.Neighbors(bc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBuildCommitToPlanDiffs queries the BuildCommitToPlanDiffs edge of a BuildCommit.
+func (c *BuildCommitClient) QueryBuildCommitToPlanDiffs(bc *BuildCommit) *PlanDiffQuery {
+	query := &PlanDiffQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := bc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(buildcommit.Table, buildcommit.FieldID, id),
+			sqlgraph.To(plandiff.Table, plandiff.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, buildcommit.BuildCommitToPlanDiffsTable, buildcommit.BuildCommitToPlanDiffsColumn),
+		)
+		fromV = sqlgraph.Neighbors(bc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *BuildCommitClient) Hooks() []Hook {
+	return c.hooks.BuildCommit
 }
 
 // CommandClient is a client for the Command schema.
@@ -1251,128 +1373,6 @@ func (c *CommandClient) QueryCommandToEnvironment(co *Command) *EnvironmentQuery
 // Hooks returns the client hooks.
 func (c *CommandClient) Hooks() []Hook {
 	return c.hooks.Command
-}
-
-// CommitClient is a client for the Commit schema.
-type CommitClient struct {
-	config
-}
-
-// NewCommitClient returns a client for the Commit from the given config.
-func NewCommitClient(c config) *CommitClient {
-	return &CommitClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `commit.Hooks(f(g(h())))`.
-func (c *CommitClient) Use(hooks ...Hook) {
-	c.hooks.Commit = append(c.hooks.Commit, hooks...)
-}
-
-// Create returns a create builder for Commit.
-func (c *CommitClient) Create() *CommitCreate {
-	mutation := newCommitMutation(c.config, OpCreate)
-	return &CommitCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Commit entities.
-func (c *CommitClient) CreateBulk(builders ...*CommitCreate) *CommitCreateBulk {
-	return &CommitCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Commit.
-func (c *CommitClient) Update() *CommitUpdate {
-	mutation := newCommitMutation(c.config, OpUpdate)
-	return &CommitUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *CommitClient) UpdateOne(co *Commit) *CommitUpdateOne {
-	mutation := newCommitMutation(c.config, OpUpdateOne, withCommit(co))
-	return &CommitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *CommitClient) UpdateOneID(id uuid.UUID) *CommitUpdateOne {
-	mutation := newCommitMutation(c.config, OpUpdateOne, withCommitID(id))
-	return &CommitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Commit.
-func (c *CommitClient) Delete() *CommitDelete {
-	mutation := newCommitMutation(c.config, OpDelete)
-	return &CommitDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a delete builder for the given entity.
-func (c *CommitClient) DeleteOne(co *Commit) *CommitDeleteOne {
-	return c.DeleteOneID(co.ID)
-}
-
-// DeleteOneID returns a delete builder for the given id.
-func (c *CommitClient) DeleteOneID(id uuid.UUID) *CommitDeleteOne {
-	builder := c.Delete().Where(commit.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &CommitDeleteOne{builder}
-}
-
-// Query returns a query builder for Commit.
-func (c *CommitClient) Query() *CommitQuery {
-	return &CommitQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a Commit entity by its id.
-func (c *CommitClient) Get(ctx context.Context, id uuid.UUID) (*Commit, error) {
-	return c.Query().Where(commit.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *CommitClient) GetX(ctx context.Context, id uuid.UUID) *Commit {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryCommitToBuild queries the CommitToBuild edge of a Commit.
-func (c *CommitClient) QueryCommitToBuild(co *Commit) *BuildQuery {
-	query := &BuildQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := co.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(commit.Table, commit.FieldID, id),
-			sqlgraph.To(build.Table, build.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, commit.CommitToBuildTable, commit.CommitToBuildColumn),
-		)
-		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryCommitToPlanDiffs queries the CommitToPlanDiffs edge of a Commit.
-func (c *CommitClient) QueryCommitToPlanDiffs(co *Commit) *PlanDiffQuery {
-	query := &PlanDiffQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := co.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(commit.Table, commit.FieldID, id),
-			sqlgraph.To(plandiff.Table, plandiff.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, commit.CommitToPlanDiffsTable, commit.CommitToPlanDiffsColumn),
-		)
-		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *CommitClient) Hooks() []Hook {
-	return c.hooks.Commit
 }
 
 // CompetitionClient is a client for the Competition schema.
@@ -3860,15 +3860,15 @@ func (c *PlanDiffClient) GetX(ctx context.Context, id uuid.UUID) *PlanDiff {
 	return obj
 }
 
-// QueryPlanDiffToCommit queries the PlanDiffToCommit edge of a PlanDiff.
-func (c *PlanDiffClient) QueryPlanDiffToCommit(pd *PlanDiff) *CommitQuery {
-	query := &CommitQuery{config: c.config}
+// QueryPlanDiffToBuildCommit queries the PlanDiffToBuildCommit edge of a PlanDiff.
+func (c *PlanDiffClient) QueryPlanDiffToBuildCommit(pd *PlanDiff) *BuildCommitQuery {
+	query := &BuildCommitQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := pd.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plandiff.Table, plandiff.FieldID, id),
-			sqlgraph.To(commit.Table, commit.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, plandiff.PlanDiffToCommitTable, plandiff.PlanDiffToCommitColumn),
+			sqlgraph.To(buildcommit.Table, buildcommit.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, plandiff.PlanDiffToBuildCommitTable, plandiff.PlanDiffToBuildCommitColumn),
 		)
 		fromV = sqlgraph.Neighbors(pd.driver.Dialect(), step)
 		return fromV, nil

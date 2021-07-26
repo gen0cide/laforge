@@ -4,7 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { UserModel } from '../../_models/user.model';
 import { environment } from '../../../../../environments/environment';
 import { AuthModel } from '../../_models/auth.model';
-import { LaForgeAuthUser, LaForgeGetCurrentUserGQL } from '@graphql';
+import { LaForgeAuthUser, LaForgeGetCurrentUserGQL, LaForgeGetCurrentUserQuery } from '@graphql';
 import { map } from 'rxjs/operators';
 
 const API_USERS_URL = `${environment.apiUrl}/users`;
@@ -73,7 +73,7 @@ export class AuthHTTPService {
     });
   }
 
-  getCurrentUserFromContext(): Observable<LaForgeAuthUser> {
+  getCurrentUserFromContext(): Observable<LaForgeGetCurrentUserQuery['currentUser']> {
     return this.getCurrentUser.fetch().pipe(
       map((result) => {
         return result.data.currentUser;

@@ -8,8 +8,8 @@ import (
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/command"
-	"github.com/gen0cide/laforge/ent/commit"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/dns"
@@ -116,6 +116,12 @@ func init() {
 	buildDescID := buildFields[0].Descriptor()
 	// build.DefaultID holds the default value on creation for the id field.
 	build.DefaultID = buildDescID.Default.(func() uuid.UUID)
+	buildcommitFields := schema.BuildCommit{}.Fields()
+	_ = buildcommitFields
+	// buildcommitDescID is the schema descriptor for id field.
+	buildcommitDescID := buildcommitFields[0].Descriptor()
+	// buildcommit.DefaultID holds the default value on creation for the id field.
+	buildcommit.DefaultID = buildcommitDescID.Default.(func() uuid.UUID)
 	commandFields := schema.Command{}.Fields()
 	_ = commandFields
 	// commandDescCooldown is the schema descriptor for cooldown field.
@@ -130,12 +136,6 @@ func init() {
 	commandDescID := commandFields[0].Descriptor()
 	// command.DefaultID holds the default value on creation for the id field.
 	command.DefaultID = commandDescID.Default.(func() uuid.UUID)
-	commitFields := schema.Commit{}.Fields()
-	_ = commitFields
-	// commitDescID is the schema descriptor for id field.
-	commitDescID := commitFields[0].Descriptor()
-	// commit.DefaultID holds the default value on creation for the id field.
-	commit.DefaultID = commitDescID.Default.(func() uuid.UUID)
 	competitionFields := schema.Competition{}.Fields()
 	_ = competitionFields
 	// competitionDescID is the schema descriptor for id field.

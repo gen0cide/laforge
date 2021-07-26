@@ -116,12 +116,12 @@ func (b *Build) BuildToCompetition(ctx context.Context) (*Competition, error) {
 	return result, err
 }
 
-func (b *Build) BuildToLatestCommit(ctx context.Context) (*Commit, error) {
-	result, err := b.Edges.BuildToLatestCommitOrErr()
+func (b *Build) BuildToLatestBuildCommit(ctx context.Context) (*BuildCommit, error) {
+	result, err := b.Edges.BuildToLatestBuildCommitOrErr()
 	if IsNotLoaded(err) {
-		result, err = b.QueryBuildToLatestCommit().Only(ctx)
+		result, err = b.QueryBuildToLatestBuildCommit().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (b *Build) BuildToProvisionedNetwork(ctx context.Context) ([]*ProvisionedNetwork, error) {
@@ -148,10 +148,10 @@ func (b *Build) BuildToPlan(ctx context.Context) ([]*Plan, error) {
 	return result, err
 }
 
-func (b *Build) BuildToCommits(ctx context.Context) ([]*Commit, error) {
-	result, err := b.Edges.BuildToCommitsOrErr()
+func (b *Build) BuildToBuildCommits(ctx context.Context) ([]*BuildCommit, error) {
+	result, err := b.Edges.BuildToBuildCommitsOrErr()
 	if IsNotLoaded(err) {
-		result, err = b.QueryBuildToCommits().All(ctx)
+		result, err = b.QueryBuildToBuildCommits().All(ctx)
 	}
 	return result, err
 }
@@ -160,6 +160,22 @@ func (b *Build) BuildToAdhocPlans(ctx context.Context) ([]*AdhocPlan, error) {
 	result, err := b.Edges.BuildToAdhocPlansOrErr()
 	if IsNotLoaded(err) {
 		result, err = b.QueryBuildToAdhocPlans().All(ctx)
+	}
+	return result, err
+}
+
+func (bc *BuildCommit) BuildCommitToBuild(ctx context.Context) (*Build, error) {
+	result, err := bc.Edges.BuildCommitToBuildOrErr()
+	if IsNotLoaded(err) {
+		result, err = bc.QueryBuildCommitToBuild().Only(ctx)
+	}
+	return result, err
+}
+
+func (bc *BuildCommit) BuildCommitToPlanDiffs(ctx context.Context) ([]*PlanDiff, error) {
+	result, err := bc.Edges.BuildCommitToPlanDiffsOrErr()
+	if IsNotLoaded(err) {
+		result, err = bc.QueryBuildCommitToPlanDiffs().All(ctx)
 	}
 	return result, err
 }
@@ -178,22 +194,6 @@ func (c *Command) CommandToEnvironment(ctx context.Context) (*Environment, error
 		result, err = c.QueryCommandToEnvironment().Only(ctx)
 	}
 	return result, MaskNotFound(err)
-}
-
-func (c *Commit) CommitToBuild(ctx context.Context) (*Build, error) {
-	result, err := c.Edges.CommitToBuildOrErr()
-	if IsNotLoaded(err) {
-		result, err = c.QueryCommitToBuild().Only(ctx)
-	}
-	return result, err
-}
-
-func (c *Commit) CommitToPlanDiffs(ctx context.Context) ([]*PlanDiff, error) {
-	result, err := c.Edges.CommitToPlanDiffsOrErr()
-	if IsNotLoaded(err) {
-		result, err = c.QueryCommitToPlanDiffs().All(ctx)
-	}
-	return result, err
 }
 
 func (c *Competition) CompetitionToDNS(ctx context.Context) ([]*DNS, error) {
@@ -676,10 +676,10 @@ func (pl *Plan) PlanToPlanDiffs(ctx context.Context) ([]*PlanDiff, error) {
 	return result, err
 }
 
-func (pd *PlanDiff) PlanDiffToCommit(ctx context.Context) (*Commit, error) {
-	result, err := pd.Edges.PlanDiffToCommitOrErr()
+func (pd *PlanDiff) PlanDiffToBuildCommit(ctx context.Context) (*BuildCommit, error) {
+	result, err := pd.Edges.PlanDiffToBuildCommitOrErr()
 	if IsNotLoaded(err) {
-		result, err = pd.QueryPlanDiffToCommit().Only(ctx)
+		result, err = pd.QueryPlanDiffToBuildCommit().Only(ctx)
 	}
 	return result, err
 }

@@ -78,6 +78,18 @@ func (r *buildResolver) ID(ctx context.Context, obj *ent.Build) (string, error) 
 	return obj.ID.String(), nil
 }
 
+func (r *buildCommitResolver) ID(ctx context.Context, obj *ent.BuildCommit) (string, error) {
+	return obj.ID.String(), nil
+}
+
+func (r *buildCommitResolver) Type(ctx context.Context, obj *ent.BuildCommit) (model.BuildCommitType, error) {
+	return model.BuildCommitType(obj.Type), nil
+}
+
+func (r *buildCommitResolver) State(ctx context.Context, obj *ent.BuildCommit) (model.BuildCommitState, error) {
+	return model.BuildCommitState(obj.State), nil
+}
+
 func (r *commandResolver) ID(ctx context.Context, obj *ent.Command) (string, error) {
 	return obj.ID.String(), nil
 }
@@ -817,14 +829,16 @@ func (r *planResolver) Type(ctx context.Context, obj *ent.Plan) (model.PlanType,
 	return model.PlanType(obj.Type), nil
 }
 
-func (r *provisionedHostResolver) ID(ctx context.Context, obj *ent.ProvisionedHost) (string, error) {
+func (r *planDiffResolver) ID(ctx context.Context, obj *ent.PlanDiff) (string, error) {
 	return obj.ID.String(), nil
 }
 
-func (r *provisionedHostResolver) CombinedOutput(ctx context.Context, obj *ent.ProvisionedHost) (*string, error) {
-	// TODO: Implement CombinedOutput
-	todo := "not implemented"
-	return &todo, nil
+func (r *planDiffResolver) NewState(ctx context.Context, obj *ent.PlanDiff) (model.ProvisionStatus, error) {
+	return model.ProvisionStatus(obj.NewState), nil
+}
+
+func (r *provisionedHostResolver) ID(ctx context.Context, obj *ent.ProvisionedHost) (string, error) {
+	return obj.ID.String(), nil
 }
 
 func (r *provisionedHostResolver) ProvisionedHostToAgentStatus(ctx context.Context, obj *ent.ProvisionedHost) (*ent.AgentStatus, error) {
@@ -1219,6 +1233,9 @@ func (r *Resolver) AuthUser() generated.AuthUserResolver { return &authUserResol
 // Build returns generated.BuildResolver implementation.
 func (r *Resolver) Build() generated.BuildResolver { return &buildResolver{r} }
 
+// BuildCommit returns generated.BuildCommitResolver implementation.
+func (r *Resolver) BuildCommit() generated.BuildCommitResolver { return &buildCommitResolver{r} }
+
 // Command returns generated.CommandResolver implementation.
 func (r *Resolver) Command() generated.CommandResolver { return &commandResolver{r} }
 
@@ -1260,6 +1277,9 @@ func (r *Resolver) Network() generated.NetworkResolver { return &networkResolver
 
 // Plan returns generated.PlanResolver implementation.
 func (r *Resolver) Plan() generated.PlanResolver { return &planResolver{r} }
+
+// PlanDiff returns generated.PlanDiffResolver implementation.
+func (r *Resolver) PlanDiff() generated.PlanDiffResolver { return &planDiffResolver{r} }
 
 // ProvisionedHost returns generated.ProvisionedHostResolver implementation.
 func (r *Resolver) ProvisionedHost() generated.ProvisionedHostResolver {
@@ -1303,6 +1323,7 @@ func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
 type agentTaskResolver struct{ *Resolver }
 type authUserResolver struct{ *Resolver }
 type buildResolver struct{ *Resolver }
+type buildCommitResolver struct{ *Resolver }
 type commandResolver struct{ *Resolver }
 type competitionResolver struct{ *Resolver }
 type dNSResolver struct{ *Resolver }
@@ -1317,6 +1338,7 @@ type identityResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type networkResolver struct{ *Resolver }
 type planResolver struct{ *Resolver }
+type planDiffResolver struct{ *Resolver }
 type provisionedHostResolver struct{ *Resolver }
 type provisionedNetworkResolver struct{ *Resolver }
 type provisioningStepResolver struct{ *Resolver }
@@ -1328,3 +1350,15 @@ type statusResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
 type teamResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *provisionedHostResolver) CombinedOutput(ctx context.Context, obj *ent.ProvisionedHost) (*string, error) {
+	// TODO: Implement CombinedOutput
+	todo := "not implemented"
+	return &todo, nil
+}

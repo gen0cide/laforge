@@ -69,6 +69,18 @@ func (b *BuildQuery) collectField(ctx *graphql.OperationContext, field graphql.C
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (bc *BuildCommitQuery) CollectFields(ctx context.Context, satisfies ...string) *BuildCommitQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		bc = bc.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return bc
+}
+
+func (bc *BuildCommitQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *BuildCommitQuery {
+	return bc
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (c *CommandQuery) CollectFields(ctx context.Context, satisfies ...string) *CommandQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		c = c.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
@@ -77,18 +89,6 @@ func (c *CommandQuery) CollectFields(ctx context.Context, satisfies ...string) *
 }
 
 func (c *CommandQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *CommandQuery {
-	return c
-}
-
-// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (c *CommitQuery) CollectFields(ctx context.Context, satisfies ...string) *CommitQuery {
-	if fc := graphql.GetFieldContext(ctx); fc != nil {
-		c = c.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
-	}
-	return c
-}
-
-func (c *CommitQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *CommitQuery {
 	return c
 }
 

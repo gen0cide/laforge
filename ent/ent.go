@@ -15,8 +15,8 @@ import (
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/command"
-	"github.com/gen0cide/laforge/ent/commit"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/disk"
 	"github.com/gen0cide/laforge/ent/dns"
@@ -70,8 +70,8 @@ func columnChecker(table string) func(string) error {
 		agenttask.Table:          agenttask.ValidColumn,
 		authuser.Table:           authuser.ValidColumn,
 		build.Table:              build.ValidColumn,
+		buildcommit.Table:        buildcommit.ValidColumn,
 		command.Table:            command.ValidColumn,
-		commit.Table:             commit.ValidColumn,
 		competition.Table:        competition.ValidColumn,
 		dns.Table:                dns.ValidColumn,
 		dnsrecord.Table:          dnsrecord.ValidColumn,
