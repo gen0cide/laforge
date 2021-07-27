@@ -109,6 +109,8 @@ const (
 	StatePLANNING   State = "PLANNING"
 	StateINPROGRESS State = "INPROGRESS"
 	StateAPPLIED    State = "APPLIED"
+	StateCANCELLED  State = "CANCELLED"
+	StateAPPROVED   State = "APPROVED"
 )
 
 func (s State) String() string {
@@ -118,7 +120,7 @@ func (s State) String() string {
 // StateValidator is a validator for the "state" field enum values. It is called by the builders before save.
 func StateValidator(s State) error {
 	switch s {
-	case StatePLANNING, StateINPROGRESS, StateAPPLIED:
+	case StatePLANNING, StateINPROGRESS, StateAPPLIED, StateCANCELLED, StateAPPROVED:
 		return nil
 	default:
 		return fmt.Errorf("buildcommit: invalid enum value for state field: %q", s)

@@ -162,7 +162,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"ROOT", "REBUILD", "DELETE"}},
 		{Name: "revision", Type: field.TypeInt},
-		{Name: "state", Type: field.TypeEnum, Enums: []string{"PLANNING", "INPROGRESS", "APPLIED"}},
+		{Name: "state", Type: field.TypeEnum, Enums: []string{"PLANNING", "INPROGRESS", "APPLIED", "CANCELLED", "APPROVED"}},
 		{Name: "build_commit_build_commit_to_build", Type: field.TypeUUID, Nullable: true},
 	}
 	// BuildCommitsTable holds the schema information for the "build_commits" table.
@@ -628,7 +628,7 @@ var (
 	PlanDiffsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "revision", Type: field.TypeInt},
-		{Name: "new_state", Type: field.TypeEnum, Enums: []string{"PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED", "TODELETE", "DELETEINPROGRESS", "DELETED"}},
+		{Name: "new_state", Type: field.TypeEnum, Enums: []string{"PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED", "TODELETE", "DELETEINPROGRESS", "DELETED", "TOREBUILD"}},
 		{Name: "plan_diff_plan_diff_to_build_commit", Type: field.TypeUUID, Nullable: true},
 		{Name: "plan_diff_plan_diff_to_plan", Type: field.TypeUUID, Nullable: true},
 	}
@@ -910,7 +910,7 @@ var (
 	// StatusColumns holds the columns for the "status" table.
 	StatusColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "state", Type: field.TypeEnum, Enums: []string{"PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED", "TODELETE", "DELETEINPROGRESS", "DELETED"}},
+		{Name: "state", Type: field.TypeEnum, Enums: []string{"PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED", "TODELETE", "DELETEINPROGRESS", "DELETED", "TOREBUILD"}},
 		{Name: "status_for", Type: field.TypeEnum, Enums: []string{"Build", "Team", "Plan", "ProvisionedNetwork", "ProvisionedHost", "ProvisioningStep", "ServerTask"}},
 		{Name: "started_at", Type: field.TypeTime, Nullable: true},
 		{Name: "ended_at", Type: field.TypeTime, Nullable: true},

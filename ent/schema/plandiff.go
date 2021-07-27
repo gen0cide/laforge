@@ -18,7 +18,7 @@ func (PlanDiff) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
 		field.Int("revision"),
-		field.Enum("new_state").Values("PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED", "TODELETE", "DELETEINPROGRESS", "DELETED"),
+		field.Enum("new_state").Values("PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED", "TODELETE", "DELETEINPROGRESS", "DELETED", "TOREBUILD"),
 	}
 }
 

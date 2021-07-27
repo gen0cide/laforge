@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/buildcommit"
@@ -58,4 +59,30 @@ func CreateRootCommit(client *ent.Client, entBuild *ent.Build) (*ent.BuildCommit
 	}
 
 	return rootCommit, nil
+}
+
+// WaitForCommitReview halts program execution until a given build commit has been either approved or cancelled. Returns true if the commit was approved or false if the commit was cancelled or timeout was reached.
+func WaitForCommitReview(client *ent.Client, ctx context.Context, entBuildCommit *ent.BuildCommit, timeout time.Duration) (bool, error) {
+	startTime := time.Now()
+	for {
+		entBuildCommit, err := client.BuildCommit.Query().Where(buildcommit.IDEQ(entBuildCommit.ID)).Only(ctx)
+		if err != nil {
+			return false, err
+		}
+
+		// If the user has made a decision
+		if entBuildCommit.State == buildcommit.StateCANCELLED {
+			return false, nil
+		} else if entBuildCommit.State == buildcommit.StateAPPROVED {
+			return true, nil
+		}
+
+		// Check if we've timed out already
+		if time.Since(startTime) >= timeout {
+			break
+		}
+		// Otherwise, wait 1 second and then check again
+		time.Sleep(1 * time.Second)
+	}
+	return false, nil
 }

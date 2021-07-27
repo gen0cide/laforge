@@ -23,7 +23,11 @@
               "object-path",
               "apexcharts",
               "clipboard.js",
-              "highlight.js"
+              "highlight.js",
+              "lodash",
+              "subscriptions-transport-ws",
+              "graphql-tag",
+              "zen-observable"
             ],
             "index": "src/index.html",
             "main": "src/main.ts",

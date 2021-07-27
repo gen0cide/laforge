@@ -119,7 +119,9 @@ func (s *Server) GetTask(ctx context.Context, in *pb.TaskRequest) (*pb.TaskReply
 			agenttask.StateEQ(agenttask.StateINPROGRESS),
 		)).First(ctx)
 	if err != nil {
-		logrus.Errorf("GRPC SERVER ERROR: Cannot find agent task for client %v. Error: %v", in.GetClientId(), err)
+		if !ent.IsNotFound(err) {
+			logrus.Errorf("GRPC SERVER ERROR: Cannot find agent task for client %v. Error: %v", in.GetClientId(), err)
+		}
 		return &pb.TaskReply{Id: "", Command: pb.TaskReply_DEFAULT}, nil
 	}
 	// logrus.Debugf("GRPC SERVER DEBUG: Agent for client %v has requested task", in.GetClientId())

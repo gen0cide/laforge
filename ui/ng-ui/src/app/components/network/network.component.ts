@@ -61,7 +61,7 @@ export class NetworkComponent implements OnInit, OnDestroy {
     this.dialog.open(NetworkModalComponent, {
       width: '50%',
       height: '80%',
-      data: { provisionedNetwork: this.provisionedNetwork }
+      data: { provisionedNetwork: this.provisionedNetwork, planStatus: this.planStatus }
     });
   }
 

@@ -119,7 +119,8 @@ export class HostComponent implements OnInit, OnDestroy {
     }
     if (this.agentStatus) {
       if (this.isAgentStale()) return 'exclamation-circle';
-      else return 'check-circle';
+      if (this.childrenCompleted()) return 'check-circle';
+      else return 'satellite-dish';
     } else {
       if (!status?.state) {
         return 'minus-circle';
@@ -195,21 +196,7 @@ export class HostComponent implements OnInit, OnDestroy {
     return this.rebuild.hasHost(this.provisionedHost as LaForgeProvisionedHost);
   }
 
-  shouldCollapse(): boolean {
-    if (this.mode === 'plan') {
-      const plan = this.envService.getPlan(this.provisionedHost.ProvisionedHostToPlan.id);
-      if (plan?.PlanToPlanDiffs.length > 0) {
-        const latestDiff = plan.PlanToPlanDiffs.sort((a, b) => b.revision - a.revision)[0];
-        if (latestDiff.new_state === LaForgeProvisionStatus.Planning) {
-          return false;
-        } else {
-          return true;
-        }
-      }
-      return false;
-    }
-    if (this.planStatus && this.planStatus.state === LaForgeProvisionStatus.Deleted) return true;
-    // return hostChildrenCompleted(this.provisionedHost as LaForgeProvisionedHost, this.envService.getStatus);
+  childrenCompleted(): boolean {
     let numCompleted = 0;
     let numAwaiting = 0;
     let totalSteps = 0;
@@ -225,6 +212,24 @@ export class HostComponent implements OnInit, OnDestroy {
     if (numCompleted === totalSteps) return true;
     if (numAwaiting === totalSteps) return true;
     else return false;
+  }
+
+  shouldCollapse(): boolean {
+    if (this.mode === 'plan') {
+      const plan = this.envService.getPlan(this.provisionedHost.ProvisionedHostToPlan.id);
+      if (plan?.PlanToPlanDiffs.length > 0) {
+        const latestDiff = plan.PlanToPlanDiffs.sort((a, b) => b.revision - a.revision)[0];
+        if (latestDiff.new_state === LaForgeProvisionStatus.Planning) {
+          return false;
+        } else {
+          return true;
+        }
+      }
+      return false;
+    }
+    if (this.planStatus && this.planStatus.state === LaForgeProvisionStatus.Deleted) return true;
+    // return hostChildrenCompleted(this.provisionedHost as LaForgeProvisionedHost, this.envService.getStatus);
+    return this.childrenCompleted();
   }
 
   toggleCollapse(): void {

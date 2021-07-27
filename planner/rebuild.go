@@ -2,17 +2,64 @@ package planner
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/gen0cide/laforge/builder"
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/plan"
+	"github.com/gen0cide/laforge/ent/plandiff"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/gen0cide/laforge/server/utils"
 	"github.com/sirupsen/logrus"
 )
 
 func Rebuild(ctx context.Context, client *ent.Client, entPlans []*ent.Plan) (bool, error) {
+	entBuild, err := entPlans[0].QueryPlanToBuild().Only(ctx)
+	if err != nil {
+		logrus.Errorf("error getting build from plan: %v", err)
+		return false, err
+	}
+
+	rebuildRevision, err := entBuild.QueryBuildToBuildCommits().Count(ctx)
+	if err != nil {
+		logrus.Errorf("error counting commits on build: %v", err)
+		return false, err
+	}
+
+	entRebuildCommit, err := client.BuildCommit.Create().
+		SetRevision(rebuildRevision).
+		SetType(buildcommit.TypeREBUILD).
+		SetState(buildcommit.StatePLANNING).
+		Save(ctx)
+
+	for _, rootPlan := range entPlans {
+		err = generateRebuildCommitPlans(client, ctx, rootPlan, entRebuildCommit)
+		if err != nil {
+			logrus.Errorf("error generating plans for rebuild commit")
+			return false, err
+		}
+	}
+
+	isApproved, err := utils.WaitForCommitReview(client, ctx, entRebuildCommit, 20*time.Minute)
+	if err != nil {
+		logrus.Errorf("error while waiting for rebuild commit to be reviewed: %v", err)
+		return false, err
+	}
+
+	// Cancelled or timeout reached
+	if !isApproved {
+		logrus.Errorf("commit has been cancelled or 20 minute timeout has been reached")
+		err = entRebuildCommit.Update().SetState(buildcommit.StateCANCELLED).Exec(ctx)
+		if err != nil {
+			logrus.Errorf("error while cancelling rebuild commit: %v", err)
+			return false, err
+		}
+		return false, fmt.Errorf("commit has been cancelled or 20 minute timeout has been reached")
+	}
+
 	env, err := entPlans[0].QueryPlanToBuild().QueryBuildToEnvironment().Only(ctx)
 	// environment, err := entBuild.QueryBuildToEnvironment().Only(ctx)
 	if err != nil {
@@ -67,6 +114,32 @@ func Rebuild(ctx context.Context, client *ent.Client, entPlans []*ent.Plan) (boo
 	wg2.Wait()
 
 	return true, nil
+}
+
+func generateRebuildCommitPlans(client *ent.Client, ctx context.Context, rootPlan *ent.Plan, entBuildCommit *ent.BuildCommit) error {
+	diffRevision, err := rootPlan.QueryPlanToPlanDiffs().Count(ctx)
+	if err != nil {
+		return err
+	}
+	_, err = client.PlanDiff.Create().
+		SetNewState(plandiff.NewStateTOREBUILD).
+		SetPlanDiffToBuildCommit(entBuildCommit).
+		SetPlanDiffToPlan(rootPlan).
+		SetRevision(diffRevision).
+		Save(ctx)
+
+	nextPlans, err := rootPlan.QueryNextPlan().All(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, nextPlan := range nextPlans {
+		err := generateRebuildCommitPlans(client, ctx, nextPlan, entBuildCommit)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func markForDeleteRoutine(ctx context.Context, entPlan *ent.Plan) error {

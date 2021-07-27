@@ -20,7 +20,7 @@ func (BuildCommit) Fields() []ent.Field {
 			Default(uuid.New),
 		field.Enum("type").Values("ROOT", "REBUILD", "DELETE"),
 		field.Int("revision"),
-		field.Enum("state").Values("PLANNING", "INPROGRESS", "APPLIED"),
+		field.Enum("state").Values("PLANNING", "INPROGRESS", "APPLIED", "CANCELLED", "APPROVED"),
 	}
 }
 

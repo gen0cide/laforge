@@ -1,7 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { LaForgeGetBuildTreeQuery, LaForgeProvisionStatus, LaForgeSubscribeUpdatedStatusSubscription } from '@graphql';
+import { EnvironmentService } from '@services/environment/environment.service';
 import { ProvisionStatus } from 'src/app/models/common.model';
-import { ProvisionedNetwork } from 'src/app/models/network.model';
 
 @Component({
   selector: 'app-network-modal',
@@ -15,11 +16,39 @@ export class NetworkModalComponent {
 
   constructor(
     public dialogRef: MatDialogRef<NetworkModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { provisionedNetwork: ProvisionedNetwork }
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
+      provisionedNetwork: LaForgeGetBuildTreeQuery['build']['buildToTeam'][0]['TeamToProvisionedNetwork'][0];
+      planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
+    },
+    private envService: EnvironmentService
   ) {}
 
   onClose(): void {
     this.dialogRef.close();
+  }
+
+  allChildrenResponding(): boolean {
+    let numWithAgentData = 0;
+    let numWithCompletedSteps = 0;
+    let totalHosts = 0;
+    for (const host of this.data.provisionedNetwork.ProvisionedNetworkToProvisionedHost) {
+      totalHosts++;
+      if (host.ProvisionedHostToAgentStatus?.clientId) numWithAgentData++;
+      let totalSteps = 0;
+      let totalCompletedSteps = 0;
+      for (const step of host.ProvisionedHostToProvisioningStep) {
+        if (step.step_number === 0) continue;
+        totalSteps++;
+        if (
+          step.ProvisioningStepToStatus.id &&
+          this.envService.getStatus(step.ProvisioningStepToPlan.PlanToStatus.id)?.state === LaForgeProvisionStatus.Complete
+        )
+          totalCompletedSteps++;
+      }
+      if (totalSteps === totalCompletedSteps) numWithCompletedSteps++;
+    }
+    return numWithAgentData === totalHosts && numWithCompletedSteps === totalHosts;
   }
 
   getStatus(): ProvisionStatus {
@@ -41,7 +70,16 @@ export class NetworkModalComponent {
   }
 
   getStatusText(): string {
-    return ProvisionStatus[this.getStatus()];
+    switch (this.data.planStatus.state) {
+      case LaForgeProvisionStatus.Complete:
+        return 'Complete';
+      case LaForgeProvisionStatus.Failed:
+        return 'Failed';
+      case LaForgeProvisionStatus.Inprogress:
+        return 'In Progress';
+      default:
+        return 'minus-circle';
+    }
   }
 
   getStatusIcon(): string {

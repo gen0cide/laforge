@@ -26,13 +26,34 @@
       > -->
     <!-- </mat-card-title-group> -->
 
-    <mat-card-title
+    <!-- <mat-card-title
       >{{ _environment.name }}
       <span *ngIf="build | async as _build"
         >v{{ _build.revision }} | Commit {{ _build.BuildToLatestBuildCommit?.revision }} [{{ _build.BuildToLatestBuildCommit?.type }}]</span
       ></mat-card-title
     >
-    <mat-card-subtitle>{{ _environment.description }}</mat-card-subtitle>
+    <mat-card-subtitle>{{ _environment.description }}</mat-card-subtitle> -->
+    <div class="env-header d-flex align-items-center justify-content-between">
+      <div class="env-info w-50">
+        <mat-card-title
+          >{{ _environment.name }} <span *ngIf="build | async as _build">v{{ _build.revision }}</span></mat-card-title
+        >
+        <mat-card-subtitle>{{ _environment.description }}</mat-card-subtitle>
+      </div>
+      <div class="controls">
+        <button
+          mat-icon-button
+          color="primary"
+          aria-label="Execute the current build"
+          title="Execute"
+          (click)="triggerExecuteBuild()"
+          [disabled]="!canExecuteBuild() || executeBuildLoading"
+          [disableRipple]="!canExecuteBuild() || executeBuildLoading"
+        >
+          <i class="fad text-inherit" [ngClass]="'fa-' + (!executeBuildLoading ? 'rocket-launch' : 'spinner fa-spin')"></i>
+        </button>
+      </div>
+    </div>
   </mat-card-header>
   <mat-card-content *ngIf="build | async as _build">
     <app-team

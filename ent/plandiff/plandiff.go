@@ -89,6 +89,7 @@ const (
 	NewStateTODELETE         NewState = "TODELETE"
 	NewStateDELETEINPROGRESS NewState = "DELETEINPROGRESS"
 	NewStateDELETED          NewState = "DELETED"
+	NewStateTOREBUILD        NewState = "TOREBUILD"
 )
 
 func (ns NewState) String() string {
@@ -98,7 +99,7 @@ func (ns NewState) String() string {
 // NewStateValidator is a validator for the "new_state" field enum values. It is called by the builders before save.
 func NewStateValidator(ns NewState) error {
 	switch ns {
-	case NewStatePLANNING, NewStateAWAITING, NewStateINPROGRESS, NewStateFAILED, NewStateCOMPLETE, NewStateTAINTED, NewStateTODELETE, NewStateDELETEINPROGRESS, NewStateDELETED:
+	case NewStatePLANNING, NewStateAWAITING, NewStateINPROGRESS, NewStateFAILED, NewStateCOMPLETE, NewStateTAINTED, NewStateTODELETE, NewStateDELETEINPROGRESS, NewStateDELETED, NewStateTOREBUILD:
 		return nil
 	default:
 		return fmt.Errorf("plandiff: invalid enum value for new_state field: %q", ns)
