@@ -538,6 +538,8 @@ type Mutation {
     args: String!
   ): Boolean! @hasRole(roles: [ADMIN, USER])
   rebuild(rootPlans: [String]!): Boolean!
+  approveCommit(commitUUID: String!): Boolean!
+  cancelCommit(commitUUID: String!): Boolean!
 
   # createAdhoc(rootPlans: [AdhocPlan]!): Boolean!
 
@@ -590,4 +592,6 @@ type Subscription {
   updatedAgentStatus: AgentStatus!
   updatedStatus: Status!
   updatedServerTask: ServerTask!
+  updatedBuild: Build!
+  updatedCommit: BuildCommit!
 }

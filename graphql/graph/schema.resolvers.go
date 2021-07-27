@@ -16,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
@@ -508,7 +509,33 @@ func (r *mutationResolver) Rebuild(ctx context.Context, rootPlans []*string) (bo
 		return false, err
 	}
 
-	return planner.Rebuild(ctx, r.client, entPlans)
+	return planner.Rebuild(ctx, r.client, r.rdb, entPlans)
+}
+
+func (r *mutationResolver) ApproveCommit(ctx context.Context, commitUUID string) (bool, error) {
+	uuid, err := uuid.Parse(commitUUID)
+	if err != nil {
+		return false, err
+	}
+	err = r.client.BuildCommit.UpdateOneID(uuid).SetState(buildcommit.StateAPPROVED).Exec(ctx)
+	if err != nil {
+		return false, err
+	}
+	r.rdb.Publish(ctx, "updatedBuildCommit", commitUUID)
+	return true, nil
+}
+
+func (r *mutationResolver) CancelCommit(ctx context.Context, commitUUID string) (bool, error) {
+	uuid, err := uuid.Parse(commitUUID)
+	if err != nil {
+		return false, err
+	}
+	err = r.client.BuildCommit.UpdateOneID(uuid).SetState(buildcommit.StateCANCELLED).Exec(ctx)
+	if err != nil {
+		return false, err
+	}
+	r.rdb.Publish(ctx, "updatedBuildCommit", commitUUID)
+	return true, nil
 }
 
 func (r *mutationResolver) CreateEnviromentFromRepo(ctx context.Context, repoURL string, branchName string, repoName string, envFilePath string) ([]*ent.Environment, error) {
@@ -1214,6 +1241,72 @@ func (r *subscriptionResolver) UpdatedServerTask(ctx context.Context) (<-chan *e
 		}
 	}()
 	return newServerTask, nil
+}
+
+func (r *subscriptionResolver) UpdatedBuild(ctx context.Context) (<-chan *ent.Build, error) {
+	newBuild := make(chan *ent.Build, 1)
+	go func() {
+		sub := r.rdb.Subscribe(ctx, "updatedBuild")
+		_, err := sub.Receive(ctx)
+		if err != nil {
+			return
+		}
+		ch := sub.Channel()
+		for {
+			select {
+			case message := <-ch:
+				uuid, err := uuid.Parse(message.Payload)
+				if err != nil {
+					sub.Close()
+					return
+				}
+				entBuild, err := r.client.Build.Get(ctx, uuid)
+				if err != nil {
+					sub.Close()
+					return
+				}
+				newBuild <- entBuild
+			// close when context done
+			case <-ctx.Done():
+				sub.Close()
+				return
+			}
+		}
+	}()
+	return newBuild, nil
+}
+
+func (r *subscriptionResolver) UpdatedCommit(ctx context.Context) (<-chan *ent.BuildCommit, error) {
+	newBuildCommit := make(chan *ent.BuildCommit, 1)
+	go func() {
+		sub := r.rdb.Subscribe(ctx, "updatedBuildCommit")
+		_, err := sub.Receive(ctx)
+		if err != nil {
+			return
+		}
+		ch := sub.Channel()
+		for {
+			select {
+			case message := <-ch:
+				uuid, err := uuid.Parse(message.Payload)
+				if err != nil {
+					sub.Close()
+					return
+				}
+				entBuildCommit, err := r.client.BuildCommit.Get(ctx, uuid)
+				if err != nil {
+					sub.Close()
+					return
+				}
+				newBuildCommit <- entBuildCommit
+			// close when context done
+			case <-ctx.Done():
+				sub.Close()
+				return
+			}
+		}
+	}()
+	return newBuildCommit, nil
 }
 
 func (r *teamResolver) ID(ctx context.Context, obj *ent.Team) (string, error) {

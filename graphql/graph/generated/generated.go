@@ -306,6 +306,8 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		ApproveCommit            func(childComplexity int, commitUUID string) int
+		CancelCommit             func(childComplexity int, commitUUID string) int
 		CreateBuild              func(childComplexity int, envUUID string, renderFiles bool) int
 		CreateEnviromentFromRepo func(childComplexity int, repoURL string, branchName string, repoName string, envFilePath string) int
 		CreateTask               func(childComplexity int, proHostUUID string, command model.AgentCommand, args string) int
@@ -466,6 +468,8 @@ type ComplexityRoot struct {
 
 	Subscription struct {
 		UpdatedAgentStatus func(childComplexity int) int
+		UpdatedBuild       func(childComplexity int) int
+		UpdatedCommit      func(childComplexity int) int
 		UpdatedServerTask  func(childComplexity int) int
 		UpdatedStatus      func(childComplexity int) int
 	}
@@ -597,6 +601,8 @@ type MutationResolver interface {
 	DeleteBuild(ctx context.Context, buildUUID string) (bool, error)
 	CreateTask(ctx context.Context, proHostUUID string, command model.AgentCommand, args string) (bool, error)
 	Rebuild(ctx context.Context, rootPlans []*string) (bool, error)
+	ApproveCommit(ctx context.Context, commitUUID string) (bool, error)
+	CancelCommit(ctx context.Context, commitUUID string) (bool, error)
 	CreateEnviromentFromRepo(ctx context.Context, repoURL string, branchName string, repoName string, envFilePath string) ([]*ent.Environment, error)
 	UpdateEnviromentViaPull(ctx context.Context, repoUUID string) ([]*ent.Environment, error)
 	ModifySelfPassword(ctx context.Context, currentPassword string, newPassword string) (bool, error)
@@ -676,6 +682,8 @@ type SubscriptionResolver interface {
 	UpdatedAgentStatus(ctx context.Context) (<-chan *ent.AgentStatus, error)
 	UpdatedStatus(ctx context.Context) (<-chan *ent.Status, error)
 	UpdatedServerTask(ctx context.Context) (<-chan *ent.ServerTask, error)
+	UpdatedBuild(ctx context.Context) (<-chan *ent.Build, error)
+	UpdatedCommit(ctx context.Context) (<-chan *ent.BuildCommit, error)
 }
 type TeamResolver interface {
 	ID(ctx context.Context, obj *ent.Team) (string, error)
@@ -1945,6 +1953,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Identity.Vars(childComplexity), true
 
+	case "Mutation.approveCommit":
+		if e.complexity.Mutation.ApproveCommit == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_approveCommit_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ApproveCommit(childComplexity, args["commitUUID"].(string)), true
+
+	case "Mutation.cancelCommit":
+		if e.complexity.Mutation.CancelCommit == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_cancelCommit_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CancelCommit(childComplexity, args["commitUUID"].(string)), true
+
 	case "Mutation.createBuild":
 		if e.complexity.Mutation.CreateBuild == nil {
 			break
@@ -2928,6 +2960,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Subscription.UpdatedAgentStatus(childComplexity), true
 
+	case "Subscription.updatedBuild":
+		if e.complexity.Subscription.UpdatedBuild == nil {
+			break
+		}
+
+		return e.complexity.Subscription.UpdatedBuild(childComplexity), true
+
+	case "Subscription.updatedCommit":
+		if e.complexity.Subscription.UpdatedCommit == nil {
+			break
+		}
+
+		return e.complexity.Subscription.UpdatedCommit(childComplexity), true
+
 	case "Subscription.updatedServerTask":
 		if e.complexity.Subscription.UpdatedServerTask == nil {
 			break
@@ -3675,6 +3721,8 @@ type Mutation {
     args: String!
   ): Boolean! @hasRole(roles: [ADMIN, USER])
   rebuild(rootPlans: [String]!): Boolean!
+  approveCommit(commitUUID: String!): Boolean!
+  cancelCommit(commitUUID: String!): Boolean!
 
   # createAdhoc(rootPlans: [AdhocPlan]!): Boolean!
 
@@ -3727,6 +3775,8 @@ type Subscription {
   updatedAgentStatus: AgentStatus!
   updatedStatus: Status!
   updatedServerTask: ServerTask!
+  updatedBuild: Build!
+  updatedCommit: BuildCommit!
 }
 `, BuiltIn: false},
 }
@@ -3748,6 +3798,36 @@ func (ec *executionContext) dir_hasRole_args(ctx context.Context, rawArgs map[st
 		}
 	}
 	args["roles"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_approveCommit_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["commitUUID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("commitUUID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["commitUUID"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_cancelCommit_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["commitUUID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("commitUUID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["commitUUID"] = arg0
 	return args, nil
 }
 
@@ -10868,6 +10948,90 @@ func (ec *executionContext) _Mutation_rebuild(ctx context.Context, field graphql
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_approveCommit(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_approveCommit_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ApproveCommit(rctx, args["commitUUID"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_cancelCommit(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_cancelCommit_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CancelCommit(rctx, args["commitUUID"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createEnviromentFromRepo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -15357,6 +15521,96 @@ func (ec *executionContext) _Subscription_updatedServerTask(ctx context.Context,
 	}
 }
 
+func (ec *executionContext) _Subscription_updatedBuild(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().UpdatedBuild(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return nil
+	}
+	return func() graphql.Marshaler {
+		res, ok := <-resTmp.(<-chan *ent.Build)
+		if !ok {
+			return nil
+		}
+		return graphql.WriterFunc(func(w io.Writer) {
+			w.Write([]byte{'{'})
+			graphql.MarshalString(field.Alias).MarshalGQL(w)
+			w.Write([]byte{':'})
+			ec.marshalNBuild2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuild(ctx, field.Selections, res).MarshalGQL(w)
+			w.Write([]byte{'}'})
+		})
+	}
+}
+
+func (ec *executionContext) _Subscription_updatedCommit(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().UpdatedCommit(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return nil
+	}
+	return func() graphql.Marshaler {
+		res, ok := <-resTmp.(<-chan *ent.BuildCommit)
+		if !ok {
+			return nil
+		}
+		return graphql.WriterFunc(func(w io.Writer) {
+			w.Write([]byte{'{'})
+			graphql.MarshalString(field.Alias).MarshalGQL(w)
+			w.Write([]byte{':'})
+			ec.marshalNBuildCommit2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuildCommit(ctx, field.Selections, res).MarshalGQL(w)
+			w.Write([]byte{'}'})
+		})
+	}
+}
+
 func (ec *executionContext) _Team_id(ctx context.Context, field graphql.CollectedField, obj *ent.Team) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -19001,6 +19255,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "approveCommit":
+			out.Values[i] = ec._Mutation_approveCommit(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "cancelCommit":
+			out.Values[i] = ec._Mutation_cancelCommit(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createEnviromentFromRepo":
 			out.Values[i] = ec._Mutation_createEnviromentFromRepo(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -20440,6 +20704,10 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 		return ec._Subscription_updatedStatus(ctx, fields[0])
 	case "updatedServerTask":
 		return ec._Subscription_updatedServerTask(ctx, fields[0])
+	case "updatedBuild":
+		return ec._Subscription_updatedBuild(ctx, fields[0])
+	case "updatedCommit":
+		return ec._Subscription_updatedCommit(ctx, fields[0])
 	default:
 		panic("unknown field " + strconv.Quote(fields[0].Name))
 	}
@@ -20993,6 +21261,10 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNBuild2githubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuild(ctx context.Context, sel ast.SelectionSet, v ent.Build) graphql.Marshaler {
+	return ec._Build(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNBuild2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuild(ctx context.Context, sel ast.SelectionSet, v []*ent.Build) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -21038,6 +21310,10 @@ func (ec *executionContext) marshalNBuild2ᚖgithubᚗcomᚋgen0cideᚋlaforge�
 		return graphql.Null
 	}
 	return ec._Build(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNBuildCommit2githubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuildCommit(ctx context.Context, sel ast.SelectionSet, v ent.BuildCommit) graphql.Marshaler {
+	return ec._BuildCommit(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNBuildCommit2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuildCommit(ctx context.Context, sel ast.SelectionSet, v []*ent.BuildCommit) graphql.Marshaler {

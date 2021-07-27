@@ -12,9 +12,11 @@ import (
 	"strings"
 	"sync"
 	"text/template"
+	"time"
 
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
@@ -178,7 +180,7 @@ func CreateBuild(ctx context.Context, client *ent.Client, rdb *redis.Client, cur
 		ctx := context.Background()
 		defer ctx.Done()
 
-		entCommit, err := utils.CreateRootCommit(client, entBuild)
+		entCommit, err := utils.CreateRootCommit(client, rdb, entBuild)
 		if err != nil {
 			_, _, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask, err)
 			return
@@ -209,6 +211,21 @@ func CreateBuild(ctx context.Context, client *ent.Client, rdb *redis.Client, cur
 		rdb.Publish(ctx, "updatedServerTask", serverTask.ID.String())
 		rdb.Publish(ctx, "updatedBuild", entBuild.ID.String())
 		entBuild.Update().SetCompletedPlan(true).SaveX(ctx)
+
+		isApproved, err := utils.WaitForCommitReview(client, ctx, entCommit, 20*time.Minute)
+		if err != nil {
+			logrus.Errorf("error while waiting for root commit to be approved: %v", err)
+			entCommit.Update().SetState(buildcommit.StateCANCELLED).Exec(ctx)
+			rdb.Publish(ctx, "updatedBuildCommit", entCommit.ID.String())
+			return
+		}
+		if isApproved {
+			go StartBuild(client, currentUser, entBuild)
+		} else {
+			logrus.Errorf("root commit has been cancelled or 20 minute timeout has been reached")
+			entCommit.Update().SetState(buildcommit.StateCANCELLED).Exec(ctx)
+			rdb.Publish(ctx, "updatedBuildCommit", entCommit.ID.String())
+		}
 	}(&wg, entBuild)
 
 	return entBuild, nil

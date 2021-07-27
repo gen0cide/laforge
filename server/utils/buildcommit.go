@@ -8,11 +8,12 @@ import (
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/plandiff"
+	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"
 )
 
 // CreateRootCommit creates the root commit on a build
-func CreateRootCommit(client *ent.Client, entBuild *ent.Build) (*ent.BuildCommit, error) {
+func CreateRootCommit(client *ent.Client, rdb *redis.Client, entBuild *ent.Build) (*ent.BuildCommit, error) {
 	ctx := context.Background()
 	defer ctx.Done()
 
@@ -30,6 +31,7 @@ func CreateRootCommit(client *ent.Client, entBuild *ent.Build) (*ent.BuildCommit
 	if err != nil {
 		return nil, fmt.Errorf("error creating root commit: %v", err)
 	}
+	rdb.Publish(ctx, "updatedBuildCommit", rootCommit.ID.String())
 
 	var planDiffErr error = nil
 	for _, buildPlan := range buildPlans {
@@ -57,6 +59,7 @@ func CreateRootCommit(client *ent.Client, entBuild *ent.Build) (*ent.BuildCommit
 	if planDiffErr != nil {
 		return nil, fmt.Errorf("error while generating plans (check logs): %v", planDiffErr)
 	}
+	rdb.Publish(ctx, "updatedBuildCommit", rootCommit.ID.String())
 
 	return rootCommit, nil
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/gen0cide/laforge/builder"
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/agenttask"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/servertask"
@@ -183,6 +184,19 @@ func StartBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bui
 		return err
 	}
 
+	entRootCommit, err := entBuild.QueryBuildToLatestBuildCommit().Only(ctx)
+	if err != nil {
+		logrus.Errorf("error while querying lastest commit from build: %v", err)
+		return fmt.Errorf("error while querying lastest commit from build: %v", err)
+	}
+
+	err = entRootCommit.Update().SetState(buildcommit.StateINPROGRESS).Exec(ctx)
+	if err != nil {
+		logrus.Errorf("error while cancelling rebuild commit: %v", err)
+		return err
+	}
+	rdb.Publish(ctx, "updatedBuildCommit", entRootCommit.ID.String())
+
 	for _, entPlan := range rootPlans {
 		wg.Add(1)
 		go buildRoutine(client, &genericBuilder, ctx, entPlan, &wg)
@@ -194,6 +208,13 @@ func StartBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bui
 	if err != nil {
 		return fmt.Errorf("error completing execute build server task: %v", err)
 	}
+
+	err = entRootCommit.Update().SetState(buildcommit.StateAPPLIED).Exec(ctx)
+	if err != nil {
+		logrus.Errorf("error while cancelling rebuild commit: %v", err)
+		return err
+	}
+	rdb.Publish(ctx, "updatedBuildCommit", entRootCommit.ID.String())
 
 	return nil
 }
