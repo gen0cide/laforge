@@ -65,7 +65,9 @@ func CreateRootCommit(client *ent.Client, rdb *redis.Client, entBuild *ent.Build
 }
 
 // WaitForCommitReview halts program execution until a given build commit has been either approved or cancelled. Returns true if the commit was approved or false if the commit was cancelled or timeout was reached.
-func WaitForCommitReview(client *ent.Client, ctx context.Context, entBuildCommit *ent.BuildCommit, timeout time.Duration) (bool, error) {
+func WaitForCommitReview(client *ent.Client, entBuildCommit *ent.BuildCommit, timeout time.Duration) (bool, error) {
+	ctx := context.Background()
+	defer ctx.Done()
 	startTime := time.Now()
 	for {
 		entBuildCommit, err := client.BuildCommit.Query().Where(buildcommit.IDEQ(entBuildCommit.ID)).Only(ctx)

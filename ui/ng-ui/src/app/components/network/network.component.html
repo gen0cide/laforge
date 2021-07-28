@@ -1,4 +1,10 @@
-<div class="network" (click)="style === 'collapsed' && viewDetails()" [ngClass]="style" [class.selectable]="selectable">
+<div
+  class="network"
+  (click)="style === 'collapsed' && viewDetails()"
+  [ngClass]="style"
+  [class.selectable]="selectable"
+  *ngIf="shouldHideLoading || !shouldHide"
+>
   <div class="rebuild-select" *ngIf="selectable">
     <mat-checkbox
       [checked]="isSelected()"
@@ -12,7 +18,12 @@
   <div class="network-container">
     <div class="network-info">
       <div class="network-status-icon" [ngClass]="'bg-' + getStatusColor()">
-        <i class="fal" [ngClass]="'fa-' + getStatusIcon()"></i>
+        <ng-container *ngIf="shouldHideLoading">
+          <i class="fas fa-spinner fa-spin"></i>
+        </ng-container>
+        <ng-container *ngIf="!shouldHideLoading">
+          <i class="fal" [ngClass]="'fa-' + getStatusIcon()"></i>
+        </ng-container>
       </div>
       <div class="network-header" (click)="style !== 'collapsed' && viewDetails()">
         <span class="network-title"

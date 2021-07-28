@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { Routes, RouterModule } from '@angular/router';
@@ -27,7 +28,8 @@ const routes: Routes = [
     ViewComponentsModule,
     MatTableModule,
     MatButtonModule,
-    MatSelectModule
+    MatSelectModule,
+    MatChipsModule
   ]
 })
 export class PlanModule {}

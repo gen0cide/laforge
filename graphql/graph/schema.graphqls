@@ -47,6 +47,7 @@ enum ProvisionStatus {
   TODELETE
   DELETEINPROGRESS
   DELETED
+  TOREBUILD
 }
 
 enum ProvisionStatusFor {
@@ -132,6 +133,8 @@ enum BuildCommitState {
   PLANNING
   INPROGRESS
   APPLIED
+  CANCELLED
+  APPROVED
 }
 
 type AgentStatus {

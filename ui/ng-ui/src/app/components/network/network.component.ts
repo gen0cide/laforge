@@ -1,6 +1,11 @@
 import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { LaForgeProvisionedNetwork, LaForgeProvisionStatus, LaForgeSubscribeUpdatedStatusSubscription } from '@graphql';
+import {
+  LaForgePlanFieldsFragment,
+  LaForgeProvisionedNetwork,
+  LaForgeProvisionStatus,
+  LaForgeSubscribeUpdatedStatusSubscription
+} from '@graphql';
 import { EnvironmentService } from '@services/environment/environment.service';
 import { Subscription } from 'rxjs';
 import { Status } from 'src/app/models/common.model';
@@ -24,6 +29,9 @@ export class NetworkComponent implements OnInit, OnDestroy {
   isSelectedState = false;
   planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
   expandOverride = false;
+  shouldHideLoading = false;
+  shouldHide = false;
+  latestDiff: LaForgePlanFieldsFragment['PlanToPlanDiffs'][0];
 
   constructor(
     public dialog: MatDialog,
@@ -43,10 +51,15 @@ export class NetworkComponent implements OnInit, OnDestroy {
       this.cdRef.detectChanges();
     });
     this.unsubscribe.push(sub1);
-    const sub2 = this.envService.agentStatusUpdate.asObservable().subscribe(() => {
-      this.cdRef.detectChanges();
-    });
-    this.unsubscribe.push(sub2);
+    if (this.mode === 'plan') {
+      this.shouldHideLoading = true;
+      const sub2 = this.envService.planUpdate.asObservable().subscribe(() => {
+        this.checkLatestPlanDiff();
+        this.checkShouldHide();
+        this.cdRef.markForCheck();
+      });
+      this.unsubscribe.push(sub2);
+    }
   }
 
   ngOnDestroy() {
@@ -55,6 +68,13 @@ export class NetworkComponent implements OnInit, OnDestroy {
 
   checkPlanStatus(): void {
     this.planStatus = this.envService.getStatus(this.provisionedNetwork.ProvisionedNetworkToPlan.PlanToStatus.id) || this.planStatus;
+  }
+
+  checkLatestPlanDiff(): void {
+    if (this.latestDiff) return;
+    const pnetPlan = this.envService.getPlan(this.provisionedNetwork.ProvisionedNetworkToPlan.id);
+    if (!pnetPlan) return;
+    this.latestDiff = [...pnetPlan.PlanToPlanDiffs].sort((a, b) => b.revision - a.revision)[0];
   }
 
   viewDetails(): void {
@@ -89,6 +109,15 @@ export class NetworkComponent implements OnInit, OnDestroy {
   }
 
   getStatusIcon(): string {
+    if (this.mode === 'plan') {
+      if (!this.latestDiff) return 'spinner fa-spin';
+      switch (this.latestDiff.new_state) {
+        case LaForgeProvisionStatus.Torebuild:
+          return 'sync-alt';
+        default:
+          return 'network-wired';
+      }
+    }
     if (!this.planStatus) return 'minus-circle';
 
     switch (this.planStatus.state) {
@@ -100,12 +129,23 @@ export class NetworkComponent implements OnInit, OnDestroy {
         return 'trash-restore fas';
       case LaForgeProvisionStatus.Deleted:
         return 'trash fas';
+      case LaForgeProvisionStatus.Failed:
+        return 'ban';
       default:
         return 'network-wired';
     }
   }
 
   getStatusColor(): string {
+    if (this.mode === 'plan') {
+      if (!this.latestDiff) return 'dark';
+      switch (this.latestDiff.new_state) {
+        case LaForgeProvisionStatus.Torebuild:
+          return 'warning';
+        default:
+          return 'dark';
+      }
+    }
     if (!this.planStatus) return 'dark';
     switch (this.planStatus.state) {
       case LaForgeProvisionStatus.Complete:
@@ -149,18 +189,41 @@ export class NetworkComponent implements OnInit, OnDestroy {
     return this.rebuild.hasNetwork(this.provisionedNetwork);
   }
 
-  shouldCollapse(): boolean {
+  checkShouldHide() {
     if (this.mode === 'plan') {
-      const plan = this.envService.getPlan(this.provisionedNetwork.ProvisionedNetworkToPlan.id);
-      if (plan?.PlanToPlanDiffs.length > 0) {
-        const latestDiff = plan.PlanToPlanDiffs.sort((a, b) => b.revision - a.revision)[0];
-        if (latestDiff.new_state === LaForgeProvisionStatus.Planning) {
-          return false;
-        } else {
-          return true;
+      if (!this.latestDiff) return (this.shouldHide = false);
+      const latestCommit = this.envService.getBuildTree().getValue()?.BuildToLatestBuildCommit;
+      if (!latestCommit) return (this.shouldHide = false);
+      const pnetPlan = this.envService.getPlan(this.provisionedNetwork.ProvisionedNetworkToPlan.id);
+      if (pnetPlan?.PlanToPlanDiffs.length > 0) {
+        // expand if latest diff is a part of the latest commit
+        if (latestCommit && latestCommit.BuildCommitToPlanDiffs.filter((diff) => diff.id === this.latestDiff.id).length > 0) {
+          this.shouldHideLoading = false;
+          this.shouldHide = false;
+          return;
         }
       }
+      this.shouldHideLoading = false;
+      this.shouldHide = true;
+      return;
+    }
+    this.shouldHide = false;
+  }
+
+  shouldCollapse(): boolean {
+    if (this.mode === 'plan') {
+      // const pnetPlan = this.envService.getPlan(this.provisionedNetwork.ProvisionedNetworkToPlan.id);
+      // const latestCommitRevision = this.envService.getBuildTree().getValue()?.BuildToLatestBuildCommit.revision;
+      // if (pnetPlan?.PlanToPlanDiffs.length > 0) {
+      //   const latestDiff = [...pnetPlan.PlanToPlanDiffs].sort((a, b) => b.revision - a.revision)[0];
+      //   // collapse if latest diff isn't a part of the latest commit
+      //   if (latestCommitRevision && latestCommitRevision === latestDiff.revision) {
+      //     this.shouldCollapseLoading = false;
       return false;
+      //   }
+      // }
+      // this.shouldCollapseLoading = false;
+      // return true;
     }
     return (
       this.planStatus &&

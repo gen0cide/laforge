@@ -1,4 +1,4 @@
-<div class="team" [ngClass]="style" [class.selectable]="selectable">
+<div class="team" [ngClass]="style" [class.selectable]="selectable" *ngIf="shouldHideLoading || !shouldHide">
   <div class="rebuild-select" *ngIf="selectable">
     <!-- <input type="checkbox" (change)="onSelect($event)" title="Select for rebuild" aria-label="Select for rebuild" /> -->
     <mat-checkbox [checked]="isSelected()" (change)="onSelect()" [aria-label]="'Select Network'"></mat-checkbox>
@@ -6,7 +6,12 @@
   <div class="team-container">
     <div class="team-info">
       <div class="team-status-icon" [ngClass]="'bg-' + getStatusColor()">
-        <i class="fal" [ngClass]="'fa-' + getStatusIcon()"></i>
+        <ng-container *ngIf="shouldHideLoading">
+          <i class="fas fa-spinner fa-spin"></i>
+        </ng-container>
+        <ng-container *ngIf="!shouldHideLoading">
+          <i class="fal" [ngClass]="'fa-' + getStatusIcon()"></i>
+        </ng-container>
       </div>
       <div class="team-details">
         <span class="team-number"

@@ -212,7 +212,8 @@ func CreateBuild(ctx context.Context, client *ent.Client, rdb *redis.Client, cur
 		rdb.Publish(ctx, "updatedBuild", entBuild.ID.String())
 		entBuild.Update().SetCompletedPlan(true).SaveX(ctx)
 
-		isApproved, err := utils.WaitForCommitReview(client, ctx, entCommit, 20*time.Minute)
+		logrus.Debug("-----\nWAITING FOR COMMIT REVIEW\n-----")
+		isApproved, err := utils.WaitForCommitReview(client, entCommit, 20*time.Minute)
 		if err != nil {
 			logrus.Errorf("error while waiting for root commit to be approved: %v", err)
 			entCommit.Update().SetState(buildcommit.StateCANCELLED).Exec(ctx)
@@ -220,8 +221,10 @@ func CreateBuild(ctx context.Context, client *ent.Client, rdb *redis.Client, cur
 			return
 		}
 		if isApproved {
+			logrus.Debug("-----\nCOMMIT APPROVED\n-----")
 			go StartBuild(client, currentUser, entBuild)
 		} else {
+			logrus.Debug("-----\nCOMMIT CANCELLED/TIMED OUT\n-----")
 			logrus.Errorf("root commit has been cancelled or 20 minute timeout has been reached")
 			entCommit.Update().SetState(buildcommit.StateCANCELLED).Exec(ctx)
 			rdb.Publish(ctx, "updatedBuildCommit", entCommit.ID.String())

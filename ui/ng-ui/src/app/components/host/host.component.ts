@@ -2,6 +2,7 @@ import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy } from '@angular
 import { MatDialog } from '@angular/material/dialog';
 import {
   LaForgeGetBuildTreeQuery,
+  LaForgePlanFieldsFragment,
   LaForgeProvisionedHost,
   LaForgeProvisionStatus,
   LaForgeSubscribeUpdatedAgentStatusSubscription,
@@ -36,6 +37,9 @@ export class HostComponent implements OnInit, OnDestroy {
   provisionedHostStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
   agentStatus: LaForgeSubscribeUpdatedAgentStatusSubscription['updatedAgentStatus'];
   expandOverride = false;
+  shouldHideLoading = false;
+  shouldHide = false;
+  latestDiff: LaForgePlanFieldsFragment['PlanToPlanDiffs'][0];
 
   constructor(
     public dialog: MatDialog,
@@ -63,6 +67,15 @@ export class HostComponent implements OnInit, OnDestroy {
       this.cdRef.detectChanges();
     });
     this.unsubscribe.push(sub2);
+    if (this.mode === 'plan') {
+      this.shouldHideLoading = true;
+      const sub2 = this.envService.planUpdate.asObservable().subscribe(() => {
+        this.checkLatestPlanDiff();
+        this.checkShouldHide();
+        this.cdRef.markForCheck();
+      });
+      this.unsubscribe.push(sub2);
+    }
   }
 
   ngOnDestroy() {
@@ -105,7 +118,23 @@ export class HostComponent implements OnInit, OnDestroy {
     return Date.now() / 1000 - this.agentStatus.timestamp > 120;
   }
 
+  checkLatestPlanDiff(): void {
+    if (this.latestDiff) return;
+    const phostPlan = this.envService.getPlan(this.provisionedHost.ProvisionedHostToPlan.id);
+    if (!phostPlan) return;
+    this.latestDiff = [...phostPlan.PlanToPlanDiffs].sort((a, b) => b.revision - a.revision)[0];
+  }
+
   getStatusIcon(): string {
+    if (this.mode === 'plan') {
+      if (!this.latestDiff) return 'spinner fa-spin';
+      switch (this.latestDiff.new_state) {
+        case LaForgeProvisionStatus.Torebuild:
+          return 'sync-alt';
+        case LaForgeProvisionStatus.Torebuild:
+          return 'computer-classic';
+      }
+    }
     const status = this.planStatus ?? this.provisionedHostStatus;
     if (status?.state) {
       switch (status.state) {
@@ -129,7 +158,7 @@ export class HostComponent implements OnInit, OnDestroy {
         case LaForgeProvisionStatus.Complete:
           return 'box-check';
         case LaForgeProvisionStatus.Failed:
-          return 'times-circle';
+          return 'ban';
         case LaForgeProvisionStatus.Inprogress:
           return 'play-circle';
         case LaForgeProvisionStatus.Awaiting:
@@ -137,12 +166,19 @@ export class HostComponent implements OnInit, OnDestroy {
         case LaForgeProvisionStatus.Planning:
           return 'ruler-triangle';
         default:
-          return 'minus-circle';
+          return 'computer-classic';
       }
     }
   }
 
   getStatusColor(): string {
+    if (this.mode === 'plan') {
+      if (!this.latestDiff) return 'dark';
+      switch (this.latestDiff.new_state) {
+        case LaForgeProvisionStatus.Torebuild:
+          return 'warning';
+      }
+    }
     const status = this.planStatus ?? this.provisionedHostStatus;
     if (status?.state) {
       switch (status.state) {
@@ -214,18 +250,38 @@ export class HostComponent implements OnInit, OnDestroy {
     else return false;
   }
 
-  shouldCollapse(): boolean {
+  checkShouldHide() {
     if (this.mode === 'plan') {
-      const plan = this.envService.getPlan(this.provisionedHost.ProvisionedHostToPlan.id);
-      if (plan?.PlanToPlanDiffs.length > 0) {
-        const latestDiff = plan.PlanToPlanDiffs.sort((a, b) => b.revision - a.revision)[0];
-        if (latestDiff.new_state === LaForgeProvisionStatus.Planning) {
-          return false;
-        } else {
-          return true;
+      if (!this.latestDiff) return (this.shouldHide = false);
+      const latestCommit = this.envService.getBuildTree().getValue()?.BuildToLatestBuildCommit;
+      if (!latestCommit) return (this.shouldHide = false);
+      const phostPlan = this.envService.getPlan(this.provisionedHost.ProvisionedHostToPlan.id);
+      if (phostPlan?.PlanToPlanDiffs.length > 0) {
+        // expand if latest diff is a part of the latest commit
+        if (latestCommit && latestCommit.BuildCommitToPlanDiffs.filter((diff) => diff.id === this.latestDiff.id).length > 0) {
+          this.shouldHideLoading = false;
+          this.shouldHide = false;
+          return;
         }
       }
+      this.shouldHideLoading = false;
+      this.shouldHide = true;
+      return;
+    }
+    this.shouldHide = false;
+  }
+
+  shouldCollapse(): boolean {
+    if (this.mode === 'plan') {
+      // const plan = this.envService.getPlan(this.provisionedHost.ProvisionedHostToPlan.id);
+      // if (plan?.PlanToPlanDiffs.length > 0) {
+      //   const latestCommitRevision = this.envService.getBuildTree().getValue()?.BuildToLatestBuildCommit.revision;
+      //   const latestDiff = [...plan.PlanToPlanDiffs].sort((a, b) => b.revision - a.revision)[0];
+      //   // collapse if latest diff isn't a part of the latest commit
+      //   if (latestCommitRevision && latestCommitRevision != latestDiff.revision) return true;
       return false;
+      // }
+      // return true;
     }
     if (this.planStatus && this.planStatus.state === LaForgeProvisionStatus.Deleted) return true;
     // return hostChildrenCompleted(this.provisionedHost as LaForgeProvisionedHost, this.envService.getStatus);

@@ -495,6 +495,11 @@ func (r *mutationResolver) CreateTask(ctx context.Context, proHostUUID string, c
 }
 
 func (r *mutationResolver) Rebuild(ctx context.Context, rootPlans []*string) (bool, error) {
+	currentUser, err := auth.ForContext(ctx)
+	if err != nil {
+		return false, err
+	}
+
 	uuids := make([]uuid.UUID, len(rootPlans))
 	for _, rootPlanId := range rootPlans {
 		uuid, err := uuid.Parse(*rootPlanId)
@@ -509,7 +514,14 @@ func (r *mutationResolver) Rebuild(ctx context.Context, rootPlans []*string) (bo
 		return false, err
 	}
 
-	return planner.Rebuild(ctx, r.client, r.rdb, entPlans)
+	spawnedRebuild := make(chan bool, 1)
+	go planner.Rebuild(r.client, r.rdb, currentUser, entPlans, spawnedRebuild)
+
+	rebuildStartedSuccess := <-spawnedRebuild
+	if rebuildStartedSuccess {
+		return true, nil
+	}
+	return false, nil
 }
 
 func (r *mutationResolver) ApproveCommit(ctx context.Context, commitUUID string) (bool, error) {

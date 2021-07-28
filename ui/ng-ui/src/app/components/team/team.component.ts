@@ -1,5 +1,11 @@
 import { Component, Input, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { LaForgeProvisionStatus, LaForgeSubscribeUpdatedStatusSubscription, LaForgeTeam, LaForgeGetBuildTreeQuery } from '@graphql';
+import {
+  LaForgeProvisionStatus,
+  LaForgeSubscribeUpdatedStatusSubscription,
+  LaForgeTeam,
+  LaForgeGetBuildTreeQuery,
+  LaForgePlanFieldsFragment
+} from '@graphql';
 import { EnvironmentService } from '@services/environment/environment.service';
 import { Subscription } from 'rxjs';
 
@@ -21,6 +27,9 @@ export class TeamComponent implements OnInit, OnDestroy {
   isSelectedState = false;
   planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
   expandOverride = false;
+  shouldHideLoading = false;
+  shouldHide = false;
+  latestDiff: LaForgePlanFieldsFragment['PlanToPlanDiffs'][0];
 
   constructor(private rebuild: RebuildService, private envService: EnvironmentService, private cdRef: ChangeDetectorRef) {
     if (!this.mode) this.mode = 'manage';
@@ -34,6 +43,15 @@ export class TeamComponent implements OnInit, OnDestroy {
       this.cdRef.detectChanges();
     });
     this.unsubscribe.push(sub1);
+    if (this.mode === 'plan') {
+      this.shouldHideLoading = true;
+      const sub2 = this.envService.planUpdate.asObservable().subscribe(() => {
+        this.checkLatestPlanDiff();
+        this.checkShouldHide();
+        this.cdRef.markForCheck();
+      });
+      this.unsubscribe.push(sub2);
+    }
   }
 
   ngOnDestroy() {
@@ -42,6 +60,13 @@ export class TeamComponent implements OnInit, OnDestroy {
 
   checkPlanStatus(): void {
     this.planStatus = this.envService.getStatus(this.team.TeamToPlan.PlanToStatus.id) || this.planStatus;
+  }
+
+  checkLatestPlanDiff(): void {
+    if (this.latestDiff) return;
+    const teamPlan = this.envService.getPlan(this.team.TeamToPlan.id);
+    if (!teamPlan) return;
+    this.latestDiff = [...teamPlan.PlanToPlanDiffs].sort((a, b) => b.revision - a.revision)[0];
   }
 
   // getStatus(): ProvisionStatus {
@@ -85,6 +110,15 @@ export class TeamComponent implements OnInit, OnDestroy {
   }
 
   getStatusIcon(): string {
+    if (this.mode === 'plan') {
+      if (!this.latestDiff) return 'spinner fa-spin';
+      switch (this.latestDiff.new_state) {
+        case LaForgeProvisionStatus.Torebuild:
+          return 'sync-alt';
+        default:
+          return 'users';
+      }
+    }
     if (!this.planStatus) return 'minus-circle';
 
     switch (this.planStatus.state) {
@@ -96,12 +130,23 @@ export class TeamComponent implements OnInit, OnDestroy {
         return 'trash-restore fas';
       case LaForgeProvisionStatus.Deleted:
         return 'trash fas';
+      case LaForgeProvisionStatus.Failed:
+        return 'ban';
       default:
         return 'users';
     }
   }
 
   getStatusColor(): string {
+    if (this.mode === 'plan') {
+      if (!this.latestDiff) return 'dark';
+      switch (this.latestDiff.new_state) {
+        case LaForgeProvisionStatus.Torebuild:
+          return 'warning';
+        default:
+          return 'dark';
+      }
+    }
     if (!this.planStatus) return 'dark';
     switch (this.planStatus.state) {
       case LaForgeProvisionStatus.Complete:
@@ -154,18 +199,41 @@ export class TeamComponent implements OnInit, OnDestroy {
     return this.rebuild.hasTeam(this.team as LaForgeTeam);
   }
 
-  shouldCollapse(): boolean {
+  checkShouldHide() {
     if (this.mode === 'plan') {
-      const plan = this.envService.getPlan(this.team.TeamToPlan.id);
-      if (plan?.PlanToPlanDiffs.length > 0) {
-        const latestDiff = plan.PlanToPlanDiffs.sort((a, b) => b.revision - a.revision)[0];
-        if (latestDiff.new_state === LaForgeProvisionStatus.Planning) {
-          return false;
-        } else {
-          return true;
+      if (!this.latestDiff) return (this.shouldHide = false);
+      const latestCommit = this.envService.getBuildTree().getValue()?.BuildToLatestBuildCommit;
+      if (!latestCommit) return false;
+      const teamPlan = this.envService.getPlan(this.team.TeamToPlan.id);
+      if (teamPlan?.PlanToPlanDiffs.length > 0) {
+        // expand if latest diff is a part of the latest commit
+        if (latestCommit && latestCommit.BuildCommitToPlanDiffs.filter((diff) => diff.id === this.latestDiff.id).length > 0) {
+          this.shouldHideLoading = false;
+          this.shouldHide = false;
+          return;
         }
       }
+      this.shouldHideLoading = false;
+      this.shouldHide = true;
+      return;
+    }
+    this.shouldHide = false;
+  }
+
+  shouldCollapse(): boolean {
+    if (this.mode === 'plan') {
+      //   const latestCommit = this.envService.getBuildTree().getValue()?.BuildToLatestBuildCommit;
+      //   const teamPlan = this.envService.getPlan(this.team.TeamToPlan.id);
+      //   if (teamPlan?.PlanToPlanDiffs.length > 0) {
+      //     const latestDiff = [...teamPlan.PlanToPlanDiffs].sort((a, b) => b.revision - a.revision)[0];
+      //     // expand if latest diff is a part of the latest commit
+      //     if (latestCommit && latestCommit.BuildCommitToPlanDiffs.filter((diff) => diff.id === latestDiff.id).length > 0) {
+      //       // this.expandOverride = true;
       return false;
+      //     }
+      //   }
+      //   // this.expandOverride = false;
+      //   return true;
     }
     return (
       this.planStatus &&

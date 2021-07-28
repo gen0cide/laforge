@@ -4,7 +4,8 @@ import {
   LaForgeGetBuildTreeQuery,
   LaForgeProvisioningStepType,
   LaForgeSubscribeUpdatedStatusSubscription,
-  LaForgeProvisionStatus
+  LaForgeProvisionStatus,
+  LaForgePlanFieldsFragment
 } from '@graphql';
 import { Subscription } from 'rxjs';
 import { ApiService } from 'src/app/services/api/api.service';
@@ -25,15 +26,19 @@ export class StepComponent implements OnInit, OnDestroy {
   provisioningStep: LaForgeGetBuildTreeQuery['build']['buildToTeam'][0]['TeamToProvisionedNetwork'][0]['ProvisionedNetworkToProvisionedHost'][0]['ProvisionedHostToProvisioningStep'][0];
   @Input() showDetail: boolean;
   @Input() style: 'compact' | 'expanded';
+  @Input() mode: 'plan' | 'build' | 'manage';
   planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
   provisioningStepStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
+  latestDiff: LaForgePlanFieldsFragment['PlanToPlanDiffs'][0];
 
   constructor(
     private api: ApiService,
     private cdRef: ChangeDetectorRef,
     private envService: EnvironmentService,
     private dialog: MatDialog
-  ) {}
+  ) {
+    if (!this.mode) this.mode = 'manage';
+  }
 
   ngOnInit() {
     const sub = this.envService.statusUpdate.asObservable().subscribe(() => {
@@ -41,6 +46,13 @@ export class StepComponent implements OnInit, OnDestroy {
       this.checkprovisioningStepStatus();
     });
     this.unsubscribe.push(sub);
+    // if (this.mode === 'plan') {
+    //   const sub2 = this.envService.planUpdate.asObservable().subscribe(() => {
+    //     this.checkLatestPlanDiff();
+    //     this.cdRef.markForCheck();
+    //   });
+    //   this.unsubscribe.push(sub2);
+    // }
   }
 
   ngOnDestroy() {
@@ -81,6 +93,13 @@ export class StepComponent implements OnInit, OnDestroy {
     }
   }
 
+  checkLatestPlanDiff(): void {
+    if (!this.provisioningStep.ProvisioningStepToPlan) return;
+    const stepPlan = this.envService.getPlan(this.provisioningStep.ProvisioningStepToPlan.id);
+    if (!stepPlan) return;
+    this.latestDiff = [...stepPlan.PlanToPlanDiffs].sort((a, b) => b.revision - a.revision)[0];
+  }
+
   getStatusIcon(): string {
     switch (this.provisioningStep.type) {
       case LaForgeProvisioningStepType.Script:
@@ -101,6 +120,16 @@ export class StepComponent implements OnInit, OnDestroy {
   }
 
   getStatusColor(): string {
+    if (this.mode === 'plan') {
+      // if (!this.latestDiff) return 'dark';
+      // switch (this.latestDiff.new_state) {
+      //   case LaForgeProvisionStatus.Torebuild:
+      //     return 'warning';
+      //   default:
+      //     return 'dark';
+      // }
+      return 'black';
+    }
     // const status = this.provisionedStep.ProvisioningStepToPlan?.PlanToStatus ?? this.provisionedStep.ProvisioningStepToStatus;
     const status = this.planStatus ?? this.provisioningStepStatus;
     if (!status?.state) {

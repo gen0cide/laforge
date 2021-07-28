@@ -110,7 +110,9 @@ export type LaForgeBuildCommit = {
 export enum LaForgeBuildCommitState {
   Planning = 'PLANNING',
   Inprogress = 'INPROGRESS',
-  Applied = 'APPLIED'
+  Applied = 'APPLIED',
+  Cancelled = 'CANCELLED',
+  Approved = 'APPROVED'
 }
 
 export enum LaForgeBuildCommitType {
@@ -321,6 +323,8 @@ export type LaForgeMutation = {
   deleteBuild: Scalars['Boolean'];
   createTask: Scalars['Boolean'];
   rebuild: Scalars['Boolean'];
+  approveCommit: Scalars['Boolean'];
+  cancelCommit: Scalars['Boolean'];
   createEnviromentFromRepo: Array<Maybe<LaForgeEnvironment>>;
   updateEnviromentViaPull: Array<Maybe<LaForgeEnvironment>>;
   modifySelfPassword: Scalars['Boolean'];
@@ -359,6 +363,14 @@ export type LaForgeMutationCreateTaskArgs = {
 
 export type LaForgeMutationRebuildArgs = {
   rootPlans: Array<Maybe<Scalars['String']>>;
+};
+
+export type LaForgeMutationApproveCommitArgs = {
+  commitUUID: Scalars['String'];
+};
+
+export type LaForgeMutationCancelCommitArgs = {
+  commitUUID: Scalars['String'];
 };
 
 export type LaForgeMutationCreateEnviromentFromRepoArgs = {
@@ -475,7 +487,8 @@ export enum LaForgeProvisionStatus {
   Undefined = 'UNDEFINED',
   Todelete = 'TODELETE',
   Deleteinprogress = 'DELETEINPROGRESS',
-  Deleted = 'DELETED'
+  Deleted = 'DELETED',
+  Torebuild = 'TOREBUILD'
 }
 
 export enum LaForgeProvisionStatusFor {
@@ -669,6 +682,8 @@ export type LaForgeSubscription = {
   updatedAgentStatus: LaForgeAgentStatus;
   updatedStatus: LaForgeStatus;
   updatedServerTask: LaForgeServerTask;
+  updatedBuild: LaForgeBuild;
+  updatedCommit: LaForgeBuildCommit;
 };
 
 export type LaForgeTeam = {

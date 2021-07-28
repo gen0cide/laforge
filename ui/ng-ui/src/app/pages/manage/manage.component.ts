@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import {
   LaForgeGetEnvironmentInfoQuery,
   LaForgeGetBuildTreeQuery,
@@ -37,7 +38,8 @@ export class ManageComponent implements OnInit, OnDestroy {
     private cdRef: ChangeDetectorRef,
     private subheader: SubheaderService,
     private envService: EnvironmentService,
-    private rebuild: RebuildService
+    private rebuild: RebuildService,
+    private router: Router
   ) {
     this.subheader.setTitle('Environment');
     this.subheader.setDescription('Manage your currently running environment');
@@ -76,29 +78,30 @@ export class ManageComponent implements OnInit, OnDestroy {
   }
 
   rebuildEnv(): void {
-    //   this.isRebuildLoading = true;
-    //   this.cdRef.detectChanges();
-    //   console.log('rebuilding env...');
-    //   this.rebuild
-    //     .executeRebuild()
-    //     .then(
-    //       (success) => {
-    //         if (success) {
-    //           this.isRebuildLoading = false;
-    //         } else {
-    //           this.rebuildErrors = [Error('Rebuild was unsuccessfull, please check server logs for failure point.')];
-    //         }
-    //       },
-    //       (errs) => {
-    //         this.rebuildErrors = errs;
-    //       }
-    //     )
-    //     .finally(() => this.cdRef.detectChanges());
-    //   console.log('done rebuilding env...');
+    this.isRebuildLoading = true;
+    this.cdRef.detectChanges();
+    console.log('rebuilding env...');
+    this.rebuild
+      .executeRebuild()
+      .then(
+        (success) => {
+          if (success) {
+            this.isRebuildLoading = false;
+            this.router.navigate(['plan']);
+          } else {
+            this.rebuildErrors = [Error('Rebuild was unsuccessfull, please check server logs for failure point.')];
+          }
+        },
+        (errs) => {
+          this.rebuildErrors = errs;
+        }
+      )
+      .finally(() => this.cdRef.detectChanges());
+    console.log('done rebuilding env...');
   }
 
   toggleSelectionMode(): void {
-    //   this.selectionMode = !this.selectionMode;
+    this.selectionMode = !this.selectionMode;
   }
 
   toggleDeleteBuildModal(): void {
