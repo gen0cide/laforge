@@ -1,13 +1,18 @@
 import { Injectable } from '@angular/core';
 import {
+  LaForgeAgentStatusFieldsFragment,
+  LaForgeBuildCommitFieldsFragment,
   LaForgeGetBuildTreeGQL,
   LaForgeGetBuildTreeQuery,
   LaForgeGetEnvironmentGQL,
   LaForgeGetEnvironmentInfoQuery,
   LaForgeGetEnvironmentsQuery,
   LaForgePlanFieldsFragment,
+  LaForgeStatusFieldsFragment,
   LaForgeSubscribeUpdatedAgentStatusGQL,
   LaForgeSubscribeUpdatedAgentStatusSubscription,
+  LaForgeSubscribeUpdatedBuildCommitGQL,
+  LaForgeSubscribeUpdatedBuildGQL,
   LaForgeSubscribeUpdatedStatusGQL,
   LaForgeSubscribeUpdatedStatusSubscription
 } from '@graphql';
@@ -36,13 +41,17 @@ export class EnvironmentService {
   public agentStatusUpdate: BehaviorSubject<boolean>;
   private planMap: { [key: string]: LaForgePlanFieldsFragment };
   public planUpdate: BehaviorSubject<boolean>;
+  private buildCommitMap: { [key: string]: LaForgeBuildCommitFieldsFragment };
+  public buildCommitUpdate: BehaviorSubject<boolean>;
 
   constructor(
     private api: ApiService,
     private getEnvironmentInfoGQL: LaForgeGetEnvironmentGQL,
     private getBuildTreeGQL: LaForgeGetBuildTreeGQL,
     private subscribeUpdatedStatus: LaForgeSubscribeUpdatedStatusGQL,
-    private subscribeUpdatedAgentStatus: LaForgeSubscribeUpdatedAgentStatusGQL
+    private subscribeUpdatedAgentStatus: LaForgeSubscribeUpdatedAgentStatusGQL,
+    private subscribeUpdatedBuild: LaForgeSubscribeUpdatedBuildGQL,
+    private subscribeUpdatedBuildCommit: LaForgeSubscribeUpdatedBuildCommitGQL
   ) {
     this.environments = new BehaviorSubject([]);
     this.envIsLoading = new BehaviorSubject(false);
@@ -52,13 +61,17 @@ export class EnvironmentService {
     this.statusUpdate = new BehaviorSubject(false);
     this.agentStatusUpdate = new BehaviorSubject(false);
     this.planUpdate = new BehaviorSubject(false);
+    this.buildCommitUpdate = new BehaviorSubject(false);
     this.statusMap = {};
     this.agentStatusMap = {};
     this.planMap = {};
+    this.buildCommitMap = {};
 
     this.initEnvironments();
     this.startStatusSubscription();
     this.startAgentStatusSubscription();
+    this.startBuildSubscription();
+    this.startBuildCommitSubscription();
     // this.environmentInfo = environmentInfoApolloQuery.watch()
   }
 
@@ -82,16 +95,25 @@ export class EnvironmentService {
     return this.environments;
   }
 
-  public getStatus(statusId: string) {
+  public getStatus(statusId: string): LaForgeStatusFieldsFragment {
     return this.statusMap[statusId];
   }
 
-  public getAgentStatus(hostId: string) {
+  public getAgentStatus(hostId: string): LaForgeAgentStatusFieldsFragment {
     return this.agentStatusMap[hostId];
   }
 
-  public getPlan(planId: string) {
+  public getPlan(planId: string): LaForgePlanFieldsFragment {
     return this.planMap[planId];
+  }
+
+  public getBuildCommit(buildCommitId: string): LaForgeBuildCommitFieldsFragment {
+    return this.buildCommitMap[buildCommitId];
+  }
+
+  public getLatestCommit(): LaForgeBuildCommitFieldsFragment {
+    if (!this.buildTree.getValue()) return null;
+    return this.buildCommitMap[this.buildTree.getValue().BuildToLatestBuildCommit.id];
   }
 
   private initEnvironments() {
@@ -133,23 +155,25 @@ export class EnvironmentService {
   public initPlans() {
     if (!this.buildTree.getValue()) return;
     this.api.pullBuildPlans(this.buildTree.getValue().id).then((build) => {
-      for (const team of build.buildToTeam) {
-        this.planMap[team.TeamToPlan.id] = {
-          ...team.TeamToPlan
+      for (const plan of build.buildToPlan) {
+        this.planMap[plan.id] = {
+          ...plan
         };
-        for (const pnet of team.TeamToProvisionedNetwork) {
-          this.planMap[pnet.ProvisionedNetworkToPlan.id] = {
-            ...pnet.ProvisionedNetworkToPlan
-          };
-          for (const phost of pnet.ProvisionedNetworkToProvisionedHost) {
-            this.planMap[phost.ProvisionedHostToPlan.id] = {
-              ...phost.ProvisionedHostToPlan
-            };
-          }
-        }
       }
       this.planUpdate.next(!this.planUpdate.getValue());
     }, console.error);
+  }
+
+  public initBuildCommits() {
+    if (!this.buildTree.getValue()) return;
+    this.api.pullBuildCommits(this.buildTree.getValue().id).then((buildCommits) => {
+      for (const buildCommit of buildCommits) {
+        this.buildCommitMap[buildCommit.id] = {
+          ...buildCommit
+        };
+      }
+      this.buildCommitUpdate.next(!this.buildCommitUpdate.getValue());
+    });
   }
 
   public setCurrentEnv(envId: string, buildId: string): void {
@@ -222,6 +246,35 @@ export class EnvironmentService {
           ...updatedAgentStatus
         };
         this.agentStatusUpdate.next(!this.agentStatusUpdate.getValue());
+      }
+    });
+  }
+
+  private startBuildSubscription() {
+    this.subscribeUpdatedBuild.subscribe().subscribe(({ data: { updatedBuild }, errors }) => {
+      if (errors) {
+        console.error(errors);
+      } else if (updatedBuild) {
+        const oldBuildTree = this.buildTree.getValue();
+        this.buildTree.next({
+          ...oldBuildTree,
+          BuildToLatestBuildCommit: {
+            ...updatedBuild.BuildToLatestBuildCommit
+          }
+        });
+      }
+    });
+  }
+
+  private startBuildCommitSubscription() {
+    this.subscribeUpdatedBuildCommit.subscribe().subscribe(({ data: { updatedCommit }, errors }) => {
+      if (errors) {
+        console.error(errors);
+      } else if (updatedCommit) {
+        this.buildCommitMap[updatedCommit.id] = {
+          ...updatedCommit
+        };
+        this.buildCommitUpdate.next(!this.buildCommitUpdate.getValue());
       }
     });
   }

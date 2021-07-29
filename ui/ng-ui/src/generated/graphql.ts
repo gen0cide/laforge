@@ -754,7 +754,7 @@ export type LaForgeGetBuildTreeQueryVariables = Exact<{
 export type LaForgeGetBuildTreeQuery = { __typename?: 'Query' } & {
   build?: Maybe<
     { __typename?: 'Build' } & Pick<LaForgeBuild, 'id' | 'revision'> & {
-        BuildToLatestBuildCommit?: Maybe<{ __typename?: 'BuildCommit' } & LaForgeBuildCommitFieldsFragment>;
+        BuildToLatestBuildCommit?: Maybe<{ __typename?: 'BuildCommit' } & Pick<LaForgeBuildCommit, 'id'>>;
         buildToStatus: { __typename?: 'Status' } & LaForgeStatusFieldsFragment;
         buildToTeam: Array<
           Maybe<
@@ -876,38 +876,33 @@ export type LaForgeGetBuildPlansQueryVariables = Exact<{
 
 export type LaForgeGetBuildPlansQuery = { __typename?: 'Query' } & {
   build?: Maybe<
+    { __typename?: 'Build' } & Pick<LaForgeBuild, 'id'> & { buildToPlan: Array<Maybe<{ __typename?: 'Plan' } & LaForgePlanFieldsFragment>> }
+  >;
+};
+
+export type LaForgeGetBuildCommitsQueryVariables = Exact<{
+  buildId: Scalars['String'];
+}>;
+
+export type LaForgeGetBuildCommitsQuery = { __typename?: 'Query' } & {
+  build?: Maybe<
     { __typename?: 'Build' } & Pick<LaForgeBuild, 'id'> & {
-        buildToTeam: Array<
-          Maybe<
-            { __typename?: 'Team' } & Pick<LaForgeTeam, 'id'> & {
-                TeamToPlan: { __typename?: 'Plan' } & LaForgePlanFieldsFragment;
-                TeamToProvisionedNetwork: Array<
-                  Maybe<
-                    { __typename?: 'ProvisionedNetwork' } & Pick<LaForgeProvisionedNetwork, 'id'> & {
-                        ProvisionedNetworkToPlan: { __typename?: 'Plan' } & LaForgePlanFieldsFragment;
-                        ProvisionedNetworkToProvisionedHost: Array<
-                          Maybe<
-                            { __typename?: 'ProvisionedHost' } & Pick<LaForgeProvisionedHost, 'id'> & {
-                                ProvisionedHostToPlan: { __typename?: 'Plan' } & LaForgePlanFieldsFragment;
-                                ProvisionedHostToProvisioningStep: Array<
-                                  Maybe<
-                                    { __typename?: 'ProvisioningStep' } & Pick<LaForgeProvisioningStep, 'id'> & {
-                                        ProvisioningStepToPlan?: Maybe<{ __typename?: 'Plan' } & LaForgePlanFieldsFragment>;
-                                      }
-                                  >
-                                >;
-                              }
-                          >
-                        >;
-                      }
-                  >
-                >;
-              }
-          >
-        >;
+        BuildToBuildCommits: Array<Maybe<{ __typename?: 'BuildCommit' } & LaForgeBuildCommitFieldsFragment>>;
       }
   >;
 };
+
+export type LaForgeApproveBuildCommitMutationVariables = Exact<{
+  buildCommitId: Scalars['String'];
+}>;
+
+export type LaForgeApproveBuildCommitMutation = { __typename?: 'Mutation' } & Pick<LaForgeMutation, 'approveCommit'>;
+
+export type LaForgeCancelBuildCommitMutationVariables = Exact<{
+  buildCommitId: Scalars['String'];
+}>;
+
+export type LaForgeCancelBuildCommitMutation = { __typename?: 'Mutation' } & Pick<LaForgeMutation, 'cancelCommit'>;
 
 export type LaForgeGetEnvironmentQueryVariables = Exact<{
   envId: Scalars['String'];
@@ -1219,6 +1214,20 @@ export type LaForgeSubscribeUpdatedServerTaskSubscription = { __typename?: 'Subs
   updatedServerTask: { __typename?: 'ServerTask' } & LaForgeServerTaskFieldsFragment;
 };
 
+export type LaForgeSubscribeUpdatedBuildSubscriptionVariables = Exact<{ [key: string]: never }>;
+
+export type LaForgeSubscribeUpdatedBuildSubscription = { __typename?: 'Subscription' } & {
+  updatedBuild: { __typename?: 'Build' } & Pick<LaForgeBuild, 'id'> & {
+      BuildToLatestBuildCommit?: Maybe<{ __typename?: 'BuildCommit' } & Pick<LaForgeBuildCommit, 'id'>>;
+    };
+};
+
+export type LaForgeSubscribeUpdatedBuildCommitSubscriptionVariables = Exact<{ [key: string]: never }>;
+
+export type LaForgeSubscribeUpdatedBuildCommitSubscription = { __typename?: 'Subscription' } & {
+  updatedCommit: { __typename?: 'BuildCommit' } & LaForgeBuildCommitFieldsFragment;
+};
+
 export type LaForgeServerTaskFieldsFragment = { __typename?: 'ServerTask' } & Pick<
   LaForgeServerTask,
   'id' | 'type' | 'start_time' | 'end_time' | 'errors' | 'log_file_path'
@@ -1376,7 +1385,7 @@ export const GetBuildTreeDocument = gql`
       id
       revision
       BuildToLatestBuildCommit {
-        ...BuildCommitFields
+        id
       }
       buildToStatus {
         ...StatusFields
@@ -1550,7 +1559,6 @@ export const GetBuildTreeDocument = gql`
       }
     }
   }
-  ${BuildCommitFieldsFragmentDoc}
   ${StatusFieldsFragmentDoc}
 `;
 
@@ -1568,29 +1576,8 @@ export const GetBuildPlansDocument = gql`
   query GetBuildPlans($buildId: String!) {
     build(buildUUID: $buildId) {
       id
-      buildToTeam {
-        id
-        TeamToPlan {
-          ...PlanFields
-        }
-        TeamToProvisionedNetwork {
-          id
-          ProvisionedNetworkToPlan {
-            ...PlanFields
-          }
-          ProvisionedNetworkToProvisionedHost {
-            id
-            ProvisionedHostToPlan {
-              ...PlanFields
-            }
-            ProvisionedHostToProvisioningStep {
-              id
-              ProvisioningStepToPlan {
-                ...PlanFields
-              }
-            }
-          }
-        }
+      buildToPlan {
+        ...PlanFields
       }
     }
   }
@@ -1602,6 +1589,66 @@ export const GetBuildPlansDocument = gql`
 })
 export class LaForgeGetBuildPlansGQL extends Apollo.Query<LaForgeGetBuildPlansQuery, LaForgeGetBuildPlansQueryVariables> {
   document = GetBuildPlansDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const GetBuildCommitsDocument = gql`
+  query GetBuildCommits($buildId: String!) {
+    build(buildUUID: $buildId) {
+      id
+      BuildToBuildCommits {
+        ...BuildCommitFields
+      }
+    }
+  }
+  ${BuildCommitFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeGetBuildCommitsGQL extends Apollo.Query<LaForgeGetBuildCommitsQuery, LaForgeGetBuildCommitsQueryVariables> {
+  document = GetBuildCommitsDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const ApproveBuildCommitDocument = gql`
+  mutation ApproveBuildCommit($buildCommitId: String!) {
+    approveCommit(commitUUID: $buildCommitId)
+  }
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeApproveBuildCommitGQL extends Apollo.Mutation<
+  LaForgeApproveBuildCommitMutation,
+  LaForgeApproveBuildCommitMutationVariables
+> {
+  document = ApproveBuildCommitDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const CancelBuildCommitDocument = gql`
+  mutation CancelBuildCommit($buildCommitId: String!) {
+    cancelCommit(commitUUID: $buildCommitId)
+  }
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeCancelBuildCommitGQL extends Apollo.Mutation<
+  LaForgeCancelBuildCommitMutation,
+  LaForgeCancelBuildCommitMutationVariables
+> {
+  document = CancelBuildCommitDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);
@@ -2075,6 +2122,52 @@ export class LaForgeSubscribeUpdatedServerTaskGQL extends Apollo.Subscription<
   LaForgeSubscribeUpdatedServerTaskSubscriptionVariables
 > {
   document = SubscribeUpdatedServerTaskDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const SubscribeUpdatedBuildDocument = gql`
+  subscription SubscribeUpdatedBuild {
+    updatedBuild {
+      id
+      BuildToLatestBuildCommit {
+        id
+      }
+    }
+  }
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeSubscribeUpdatedBuildGQL extends Apollo.Subscription<
+  LaForgeSubscribeUpdatedBuildSubscription,
+  LaForgeSubscribeUpdatedBuildSubscriptionVariables
+> {
+  document = SubscribeUpdatedBuildDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const SubscribeUpdatedBuildCommitDocument = gql`
+  subscription SubscribeUpdatedBuildCommit {
+    updatedCommit {
+      ...BuildCommitFields
+    }
+  }
+  ${BuildCommitFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeSubscribeUpdatedBuildCommitGQL extends Apollo.Subscription<
+  LaForgeSubscribeUpdatedBuildCommitSubscription,
+  LaForgeSubscribeUpdatedBuildCommitSubscriptionVariables
+> {
+  document = SubscribeUpdatedBuildCommitDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);

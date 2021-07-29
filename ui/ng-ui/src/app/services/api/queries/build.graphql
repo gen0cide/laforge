@@ -3,7 +3,7 @@ query GetBuildTree($buildId: String!) {
     id
     revision
     BuildToLatestBuildCommit {
-      ...BuildCommitFields
+      id
     }
     buildToStatus {
       ...StatusFields
@@ -181,29 +181,17 @@ query GetBuildTree($buildId: String!) {
 query GetBuildPlans($buildId: String!) {
   build(buildUUID: $buildId) {
     id
-    buildToTeam {
-      id
-      TeamToPlan {
-        ...PlanFields
-      }
-      TeamToProvisionedNetwork {
-        id
-        ProvisionedNetworkToPlan {
-          ...PlanFields
-        }
-        ProvisionedNetworkToProvisionedHost {
-          id
-          ProvisionedHostToPlan {
-            ...PlanFields
-          }
-          ProvisionedHostToProvisioningStep {
-            id
-            ProvisioningStepToPlan {
-              ...PlanFields
-            }
-          }
-        }
-      }
+    buildToPlan {
+      ...PlanFields
+    }
+  }
+}
+
+query GetBuildCommits($buildId: String!) {
+  build(buildUUID: $buildId) {
+    id
+    BuildToBuildCommits {
+      ...BuildCommitFields
     }
   }
 }

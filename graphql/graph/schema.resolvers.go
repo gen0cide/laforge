@@ -457,7 +457,7 @@ func (r *mutationResolver) DeleteBuild(ctx context.Context, buildUUID string) (b
 	}
 
 	spawnedDelete := make(chan bool, 1)
-	go planner.DeleteBuild(r.client, currentUser, b, spawnedDelete)
+	go planner.DeleteBuild(r.client, r.rdb, currentUser, b, spawnedDelete)
 
 	deleteIsSuccess := <-spawnedDelete
 	if deleteIsSuccess {

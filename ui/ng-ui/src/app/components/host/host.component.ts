@@ -72,9 +72,15 @@ export class HostComponent implements OnInit, OnDestroy {
       const sub2 = this.envService.planUpdate.asObservable().subscribe(() => {
         this.checkLatestPlanDiff();
         this.checkShouldHide();
-        this.cdRef.markForCheck();
+        this.cdRef.detectChanges();
       });
       this.unsubscribe.push(sub2);
+      const sub4 = this.envService.buildCommitUpdate.asObservable().subscribe(() => {
+        this.checkLatestPlanDiff();
+        this.checkShouldHide();
+        this.cdRef.detectChanges();
+      });
+      this.unsubscribe.push(sub4);
     }
   }
 
@@ -127,46 +133,48 @@ export class HostComponent implements OnInit, OnDestroy {
 
   getStatusIcon(): string {
     if (this.mode === 'plan') {
-      if (!this.latestDiff) return 'spinner fa-spin';
+      if (!this.latestDiff) return 'fas fa-spinner fa-spin';
       switch (this.latestDiff.new_state) {
         case LaForgeProvisionStatus.Torebuild:
-          return 'sync-alt';
-        case LaForgeProvisionStatus.Torebuild:
-          return 'computer-classic';
+          return 'fas fa-sync-alt';
+        case LaForgeProvisionStatus.Todelete:
+          return 'fad fa-trash';
+        default:
+          return 'fas fa-computer-classic';
       }
     }
     const status = this.planStatus ?? this.provisionedHostStatus;
     if (status?.state) {
       switch (status.state) {
         case LaForgeProvisionStatus.Todelete:
-          return 'recycle';
+          return 'fas fa-recycle';
         case LaForgeProvisionStatus.Deleteinprogress:
-          return 'trash-restore';
+          return 'fas fa-trash-restore';
         case LaForgeProvisionStatus.Deleted:
-          return 'trash';
+          return 'fad fa-trash';
       }
     }
     if (this.agentStatus) {
-      if (this.isAgentStale()) return 'exclamation-circle';
-      if (this.childrenCompleted()) return 'check-circle';
-      else return 'satellite-dish';
+      if (this.isAgentStale()) return 'fas fa-exclamation-circle';
+      if (this.childrenCompleted()) return 'fas fa-check-circle';
+      else return 'fas fa-satellite-dish';
     } else {
       if (!status?.state) {
-        return 'minus-circle';
+        return 'fas fa-minus-circle';
       }
       switch (status.state) {
         case LaForgeProvisionStatus.Complete:
-          return 'box-check';
+          return 'fas fa-box-check';
         case LaForgeProvisionStatus.Failed:
-          return 'ban';
+          return 'fas fa-ban';
         case LaForgeProvisionStatus.Inprogress:
-          return 'play-circle';
+          return 'fas fa-play-circle';
         case LaForgeProvisionStatus.Awaiting:
-          return 'spinner fa-spin';
+          return 'fas fa-spinner fa-spin';
         case LaForgeProvisionStatus.Planning:
-          return 'ruler-triangle';
+          return 'fas fa-ruler-triangle';
         default:
-          return 'computer-classic';
+          return 'fas fa-computer-classic';
       }
     }
   }
@@ -177,6 +185,10 @@ export class HostComponent implements OnInit, OnDestroy {
       switch (this.latestDiff.new_state) {
         case LaForgeProvisionStatus.Torebuild:
           return 'warning';
+        case LaForgeProvisionStatus.Todelete:
+          return 'danger';
+        default:
+          return 'dark';
       }
     }
     const status = this.planStatus ?? this.provisionedHostStatus;
@@ -253,7 +265,7 @@ export class HostComponent implements OnInit, OnDestroy {
   checkShouldHide() {
     if (this.mode === 'plan') {
       if (!this.latestDiff) return (this.shouldHide = false);
-      const latestCommit = this.envService.getBuildTree().getValue()?.BuildToLatestBuildCommit;
+      const latestCommit = this.envService.getLatestCommit();
       if (!latestCommit) return (this.shouldHide = false);
       const phostPlan = this.envService.getPlan(this.provisionedHost.ProvisionedHostToPlan.id);
       if (phostPlan?.PlanToPlanDiffs.length > 0) {
@@ -279,9 +291,9 @@ export class HostComponent implements OnInit, OnDestroy {
       //   const latestDiff = [...plan.PlanToPlanDiffs].sort((a, b) => b.revision - a.revision)[0];
       //   // collapse if latest diff isn't a part of the latest commit
       //   if (latestCommitRevision && latestCommitRevision != latestDiff.revision) return true;
-      return false;
+      // return false;
       // }
-      // return true;
+      return true;
     }
     if (this.planStatus && this.planStatus.state === LaForgeProvisionStatus.Deleted) return true;
     // return hostChildrenCompleted(this.provisionedHost as LaForgeProvisionedHost, this.envService.getStatus);

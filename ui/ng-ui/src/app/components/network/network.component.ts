@@ -56,9 +56,15 @@ export class NetworkComponent implements OnInit, OnDestroy {
       const sub2 = this.envService.planUpdate.asObservable().subscribe(() => {
         this.checkLatestPlanDiff();
         this.checkShouldHide();
-        this.cdRef.markForCheck();
+        this.cdRef.detectChanges();
       });
       this.unsubscribe.push(sub2);
+      const sub4 = this.envService.buildCommitUpdate.asObservable().subscribe(() => {
+        this.checkLatestPlanDiff();
+        this.checkShouldHide();
+        this.cdRef.detectChanges();
+      });
+      this.unsubscribe.push(sub4);
     }
   }
 
@@ -110,29 +116,31 @@ export class NetworkComponent implements OnInit, OnDestroy {
 
   getStatusIcon(): string {
     if (this.mode === 'plan') {
-      if (!this.latestDiff) return 'spinner fa-spin';
+      if (!this.latestDiff) return 'fas fa-spinner fa-spin';
       switch (this.latestDiff.new_state) {
         case LaForgeProvisionStatus.Torebuild:
-          return 'sync-alt';
+          return 'fas fa-sync-alt';
+        case LaForgeProvisionStatus.Todelete:
+          return 'fad fa-trash';
         default:
-          return 'network-wired';
+          return 'fal fa-network-wired';
       }
     }
-    if (!this.planStatus) return 'minus-circle';
+    if (!this.planStatus) return 'fas fa-minus-circle';
 
     switch (this.planStatus.state) {
       case LaForgeProvisionStatus.Planning:
-        return 'ruler-triangle fas';
+        return 'fas fa-ruler-triangle';
       case LaForgeProvisionStatus.Todelete:
-        return 'recycle fas';
+        return 'fas fa-recycle';
       case LaForgeProvisionStatus.Deleteinprogress:
-        return 'trash-restore fas';
+        return 'fas fa-trash-restore';
       case LaForgeProvisionStatus.Deleted:
-        return 'trash fas';
+        return 'fas fa-trash';
       case LaForgeProvisionStatus.Failed:
-        return 'ban';
+        return 'fas fa-ban';
       default:
-        return 'network-wired';
+        return 'fal fa-network-wired';
     }
   }
 
@@ -142,6 +150,8 @@ export class NetworkComponent implements OnInit, OnDestroy {
       switch (this.latestDiff.new_state) {
         case LaForgeProvisionStatus.Torebuild:
           return 'warning';
+        case LaForgeProvisionStatus.Todelete:
+          return 'danger';
         default:
           return 'dark';
       }
@@ -192,7 +202,7 @@ export class NetworkComponent implements OnInit, OnDestroy {
   checkShouldHide() {
     if (this.mode === 'plan') {
       if (!this.latestDiff) return (this.shouldHide = false);
-      const latestCommit = this.envService.getBuildTree().getValue()?.BuildToLatestBuildCommit;
+      const latestCommit = this.envService.getLatestCommit();
       if (!latestCommit) return (this.shouldHide = false);
       const pnetPlan = this.envService.getPlan(this.provisionedNetwork.ProvisionedNetworkToPlan.id);
       if (pnetPlan?.PlanToPlanDiffs.length > 0) {

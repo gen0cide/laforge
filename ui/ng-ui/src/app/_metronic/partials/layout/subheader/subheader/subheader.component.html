@@ -19,7 +19,8 @@
             {{ _title }}
             <ng-container *ngIf="subheaderDisplayDesc">
               <ng-container *ngIf="description$ | async as _description">
-                |&nbsp;<small>{{ _description }}</small>
+                <i class="fad fa-grip-lines-vertical fa-1x mx-2 text-black"></i>
+                <small>{{ _description }}</small>
               </ng-container>
             </ng-container>
           </h2>

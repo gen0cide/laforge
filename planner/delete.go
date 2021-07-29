@@ -10,19 +10,61 @@ import (
 	"github.com/gen0cide/laforge/builder"
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/agenttask"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/plan"
+	"github.com/gen0cide/laforge/ent/plandiff"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/server/utils"
+	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"
 )
 
-func DeleteBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Build, spawnedDelete chan bool) (bool, error) {
+func DeleteBuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUser, entBuild *ent.Build, spawnedDelete chan bool) (bool, error) {
 	deleteContext := context.Background()
 	defer deleteContext.Done()
+
+	entDeleteCommit, err := generateDeleteBuildCommit(deleteContext, client, entBuild)
+	if err != nil {
+		spawnedDelete <- false
+		return false, err
+	}
+	rdb.Publish(deleteContext, "updatedBuildCommit", entDeleteCommit.ID.String())
+	err = entBuild.Update().SetBuildToLatestBuildCommit(entDeleteCommit).Exec(deleteContext)
+	if err != nil {
+		spawnedDelete <- false
+		logrus.Errorf("error while setting latest commit on build: %v", err)
+		return false, fmt.Errorf("error while setting latest commit on build: %v", err)
+	}
+	rdb.Publish(deleteContext, "updatedBuild", entBuild.ID.String())
+
+	spawnedDelete <- true
+
+	logrus.Debug("-----\nWAITING FOR COMMIT REVIEW\n-----")
+	isApproved, err := utils.WaitForCommitReview(client, entDeleteCommit, 20*time.Minute)
+	if err != nil {
+		logrus.Errorf("error while waiting for delete commit to be reviewed: %v", err)
+		entDeleteCommit.Update().SetState(buildcommit.StateCANCELLED).Exec(deleteContext)
+		rdb.Publish(deleteContext, "updatedBuildCommit", entDeleteCommit.ID.String())
+		return false, err
+	}
+
+	// Cancelled or timeout reached
+	if !isApproved {
+		logrus.Debug("-----\nCOMMIT CANCELLED/TIMED OUT\n-----")
+		logrus.Errorf("delete commit has been cancelled or 20 minute timeout has been reached")
+		err = entDeleteCommit.Update().SetState(buildcommit.StateCANCELLED).Exec(deleteContext)
+		if err != nil {
+			logrus.Errorf("error while cancelling delete commit: %v", err)
+			return false, err
+		}
+		rdb.Publish(deleteContext, "updatedBuildCommit", entDeleteCommit.ID.String())
+		return false, fmt.Errorf("commit has been cancelled or 20 minute timeout has been reached")
+	}
+	logrus.Debug("-----\nCOMMIT APPROVED\n-----")
 
 	entEnvironment, err := entBuild.QueryBuildToEnvironment().Only(deleteContext)
 	if err != nil {
@@ -44,9 +86,19 @@ func DeleteBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bu
 	}
 	rdb.Publish(deleteContext, "updatedServerTask", serverTask.ID.String())
 
+	err = entDeleteCommit.Update().SetState(buildcommit.StateINPROGRESS).Exec(deleteContext)
+	if err != nil {
+		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
+		if err != nil {
+			return false, fmt.Errorf("error failing execute build server task: %v", err)
+		}
+		logrus.Errorf("error while cancelling rebuild commit: %v", err)
+		return false, err
+	}
+	rdb.Publish(deleteContext, "updatedBuildCommit", entDeleteCommit.ID.String())
+
 	entPlans, err := entBuild.QueryBuildToPlan().All(deleteContext)
 	if err != nil {
-		spawnedDelete <- false
 		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
 		if err != nil {
 			return false, fmt.Errorf("error failing execute build server task: %v", err)
@@ -58,7 +110,6 @@ func DeleteBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bu
 	for _, entPlan := range entPlans {
 		planStatus, err := entPlan.PlanToStatus(deleteContext)
 		if err != nil {
-			spawnedDelete <- false
 			taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
 			if err != nil {
 				return false, fmt.Errorf("error failing execute build server task: %v", err)
@@ -80,7 +131,6 @@ func DeleteBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bu
 	rootPlans, err := entBuild.QueryBuildToPlan().Where(plan.TypeEQ(plan.TypeStartBuild)).All(deleteContext)
 	if err != nil {
 		logrus.Errorf("error querying root plans from build: %v", err)
-		spawnedDelete <- false
 		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
 		if err != nil {
 			return false, fmt.Errorf("error failing execute build server task: %v", err)
@@ -91,7 +141,6 @@ func DeleteBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bu
 	environment, err := entBuild.QueryBuildToEnvironment().Only(deleteContext)
 	if err != nil {
 		logrus.Errorf("error querying environment from build: %v", err)
-		spawnedDelete <- false
 		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
 		if err != nil {
 			return false, fmt.Errorf("error failing execute build server task: %v", err)
@@ -102,7 +151,6 @@ func DeleteBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bu
 	genericBuilder, err := builder.BuilderFromEnvironment(environment)
 	if err != nil {
 		logrus.Errorf("error generating builder: %v", err)
-		spawnedDelete <- false
 		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
 		if err != nil {
 			return false, fmt.Errorf("error failing execute build server task: %v", err)
@@ -119,8 +167,6 @@ func DeleteBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bu
 		wg.Add(1)
 		go deleteRoutine(client, &genericBuilder, deleteCtx, entPlan, &wg)
 	}
-
-	spawnedDelete <- true
 
 	wg.Wait()
 
@@ -140,11 +186,62 @@ func DeleteBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bu
 	// 	return false, err
 	// }
 
+	err = entDeleteCommit.Update().SetState(buildcommit.StateAPPLIED).Exec(deleteContext)
+	if err != nil {
+		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
+		if err != nil {
+			return false, fmt.Errorf("error failing execute build server task: %v", err)
+		}
+		logrus.Errorf("error while cancelling rebuild commit: %v", err)
+		return false, err
+	}
+	rdb.Publish(deleteContext, "updatedBuildCommit", entDeleteCommit.ID.String())
+
 	taskStatus, serverTask, err = utils.CompleteServerTask(deleteContext, client, rdb, taskStatus, serverTask)
 	if err != nil {
 		return false, fmt.Errorf("error completing execute build server task: %v", err)
 	}
 	return true, nil
+}
+
+func generateDeleteBuildCommit(ctx context.Context, client *ent.Client, entBuild *ent.Build) (*ent.BuildCommit, error) {
+	entPlans, err := entBuild.QueryBuildToPlan().All(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error querying plans from build: %v", err)
+	}
+
+	commitRevision, err := entBuild.QueryBuildToBuildCommits().Count(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error counting build commits on build: %v", err)
+	}
+
+	entDeleteCommit, err := client.BuildCommit.Create().
+		SetRevision(commitRevision).
+		SetState(buildcommit.StatePLANNING).
+		SetType(buildcommit.TypeDELETE).
+		SetBuildCommitToBuild(entBuild).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error creating delete build commit: %v", err)
+	}
+
+	for _, entPlan := range entPlans {
+		entPlanDiffRevision, err := entPlan.QueryPlanToPlanDiffs().Count(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error while counting plan diffs on plan: %v", err)
+		}
+		_, err = client.PlanDiff.Create().
+			SetNewState(plandiff.NewStateTODELETE).
+			SetRevision(entPlanDiffRevision).
+			SetPlanDiffToBuildCommit(entDeleteCommit).
+			SetPlanDiffToPlan(entPlan).
+			Save(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("error while creating plan diff: %v", err)
+		}
+	}
+
+	return entDeleteCommit, nil
 }
 
 // func cleanupBuild(client *ent.Client, ctx context.Context, entPlan *ent.Plan, wg *sync.WaitGroup) {

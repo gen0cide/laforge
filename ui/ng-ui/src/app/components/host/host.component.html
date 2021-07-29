@@ -25,7 +25,7 @@
           <i class="fas fa-spinner fa-spin"></i>
         </ng-container>
         <ng-container *ngIf="!shouldHideLoading">
-          <i class="fas" [ngClass]="'fa-' + getStatusIcon()"></i>
+          <i [ngClass]="getStatusIcon()"></i>
         </ng-container>
       </div>
       <div class="host-preview" (click)="style !== 'compact' && viewDetails()">

@@ -11,7 +11,7 @@
         >
         <mat-card-subtitle>{{ _environment.description }}</mat-card-subtitle>
       </div>
-      <div class="controls">
+      <!-- <div class="controls">
         <button
           mat-icon-button
           color="primary"
@@ -23,7 +23,7 @@
         >
           <i class="fad text-inherit" [ngClass]="'fa-' + (!executeBuildLoading ? 'rocket-launch' : 'spinner fa-spin')"></i>
         </button>
-      </div>
+      </div> -->
     </div>
   </mat-card-header>
   <mat-card-content *ngIf="build | async as _build">

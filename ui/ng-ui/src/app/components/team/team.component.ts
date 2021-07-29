@@ -23,7 +23,6 @@ export class TeamComponent implements OnInit, OnDestroy {
   @Input() style: 'compact' | 'collapsed' | 'expanded';
   @Input() selectable: boolean;
   @Input() mode: 'plan' | 'build' | 'manage';
-  @Input() buildCommit: LaForgeGetBuildTreeQuery['build']['BuildToLatestBuildCommit'];
   isSelectedState = false;
   planStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
   expandOverride = false;
@@ -48,9 +47,15 @@ export class TeamComponent implements OnInit, OnDestroy {
       const sub2 = this.envService.planUpdate.asObservable().subscribe(() => {
         this.checkLatestPlanDiff();
         this.checkShouldHide();
-        this.cdRef.markForCheck();
+        this.cdRef.detectChanges();
       });
       this.unsubscribe.push(sub2);
+      const sub4 = this.envService.buildCommitUpdate.asObservable().subscribe(() => {
+        this.checkLatestPlanDiff();
+        this.checkShouldHide();
+        this.cdRef.detectChanges();
+      });
+      this.unsubscribe.push(sub4);
     }
   }
 
@@ -111,29 +116,31 @@ export class TeamComponent implements OnInit, OnDestroy {
 
   getStatusIcon(): string {
     if (this.mode === 'plan') {
-      if (!this.latestDiff) return 'spinner fa-spin';
+      if (!this.latestDiff) return 'fas fa-spinner fa-spin';
       switch (this.latestDiff.new_state) {
         case LaForgeProvisionStatus.Torebuild:
-          return 'sync-alt';
+          return 'fas fa-sync-alt';
+        case LaForgeProvisionStatus.Todelete:
+          return 'fad fa-trash';
         default:
-          return 'users';
+          return 'fal fa-users';
       }
     }
-    if (!this.planStatus) return 'minus-circle';
+    if (!this.planStatus) return 'fas fa-minus-circle';
 
     switch (this.planStatus.state) {
       case LaForgeProvisionStatus.Planning:
-        return 'ruler-triangle fas';
+        return 'fas fa-ruler-triangle';
       case LaForgeProvisionStatus.Todelete:
-        return 'recycle fas';
+        return 'fas fa-recycle fas';
       case LaForgeProvisionStatus.Deleteinprogress:
-        return 'trash-restore fas';
+        return 'fas fa-trash-restore';
       case LaForgeProvisionStatus.Deleted:
-        return 'trash fas';
+        return 'fas fa-trash fas';
       case LaForgeProvisionStatus.Failed:
-        return 'ban';
+        return 'fas fa-ban';
       default:
-        return 'users';
+        return 'fal fa-users';
     }
   }
 
@@ -143,6 +150,8 @@ export class TeamComponent implements OnInit, OnDestroy {
       switch (this.latestDiff.new_state) {
         case LaForgeProvisionStatus.Torebuild:
           return 'warning';
+        case LaForgeProvisionStatus.Todelete:
+          return 'danger';
         default:
           return 'dark';
       }
@@ -202,7 +211,7 @@ export class TeamComponent implements OnInit, OnDestroy {
   checkShouldHide() {
     if (this.mode === 'plan') {
       if (!this.latestDiff) return (this.shouldHide = false);
-      const latestCommit = this.envService.getBuildTree().getValue()?.BuildToLatestBuildCommit;
+      const latestCommit = this.envService.getLatestCommit();
       if (!latestCommit) return false;
       const teamPlan = this.envService.getPlan(this.team.TeamToPlan.id);
       if (teamPlan?.PlanToPlanDiffs.length > 0) {
