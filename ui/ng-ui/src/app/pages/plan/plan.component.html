@@ -19,13 +19,15 @@
       <div class="env-info w-50">
         <mat-card-title class="d-flex align-items-center justify-content-start">
           {{ _environment.name }}
-          <span *ngIf="build | async as _build">
-            <i class="fad fa-1x fa-grip-lines-vertical text-muted mx-2"></i>
-            v{{ _build.revision + (latestCommit ? '.' + latestCommit.revision + ' [' + latestCommit.type + ']' : '') }}
-            <!-- <span *ngIf="latestCommit">.{{ latestCommit.revision }} [{{ latestCommit.type }}] </span> -->
-          </span>
+          <ng-container *ngIf="build | async as _build">
+            <ng-container *ngIf="latestCommit | async as _latestCommit">
+              <i class="fad fa-1x fa-grip-lines-vertical text-muted mx-2"></i>
+              v{{ _build.revision + '.' + _latestCommit.revision + ' [' + _latestCommit.type + ']' }}
+              <!-- <span *ngIf="latestCommit">.{{ latestCommit.revision }} [{{ latestCommit.type }}] </span> -->
+            </ng-container>
+          </ng-container>
           <mat-chip-list class="ml-3">
-            <mat-chip *ngIf="latestCommit" [color]="getCommitStateColor()" selected [selectable]="false">
+            <mat-chip *ngIf="latestCommit | async" [color]="getCommitStateColor()" selected [selectable]="false">
               {{ getCommitStateText() }}
             </mat-chip>
           </mat-chip-list>

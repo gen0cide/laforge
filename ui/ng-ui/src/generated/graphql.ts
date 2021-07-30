@@ -739,12 +739,7 @@ export type LaForgeGetAgentTasksQuery = { __typename?: 'Query' } & {
 export type LaForgeGetCurrentUserQueryVariables = Exact<{ [key: string]: never }>;
 
 export type LaForgeGetCurrentUserQuery = { __typename?: 'Query' } & {
-  currentUser?: Maybe<
-    { __typename?: 'AuthUser' } & Pick<
-      LaForgeAuthUser,
-      'id' | 'username' | 'role' | 'provider' | 'first_name' | 'last_name' | 'email' | 'phone' | 'company' | 'occupation'
-    >
-  >;
+  currentUser?: Maybe<{ __typename?: 'AuthUser' } & LaForgeAuthUserFieldsFragment>;
 };
 
 export type LaForgeGetBuildTreeQueryVariables = Exact<{
@@ -1116,6 +1111,11 @@ export type LaForgeBuildCommitFieldsFragment = { __typename?: 'BuildCommit' } & 
   'id' | 'revision' | 'type' | 'state'
 > & { BuildCommitToPlanDiffs: Array<Maybe<{ __typename?: 'PlanDiff' } & LaForgePlanDiffFieldsFragment>> };
 
+export type LaForgeAuthUserFieldsFragment = { __typename?: 'AuthUser' } & Pick<
+  LaForgeAuthUser,
+  'id' | 'username' | 'role' | 'provider' | 'first_name' | 'last_name' | 'email' | 'phone' | 'company' | 'occupation' | 'publicKey'
+>;
+
 export type LaForgeRebuildMutationVariables = Exact<{
   rootPlans: Array<Maybe<Scalars['String']>> | Maybe<Scalars['String']>;
 }>;
@@ -1134,6 +1134,27 @@ export type LaForgeExecuteBuildMutationVariables = Exact<{
 
 export type LaForgeExecuteBuildMutation = { __typename?: 'Mutation' } & {
   executePlan?: Maybe<{ __typename?: 'Build' } & Pick<LaForgeBuild, 'id'>>;
+};
+
+export type LaForgeCreateBuildMutationVariables = Exact<{
+  envId: Scalars['String'];
+}>;
+
+export type LaForgeCreateBuildMutation = { __typename?: 'Mutation' } & {
+  createBuild?: Maybe<{ __typename?: 'Build' } & Pick<LaForgeBuild, 'id'>>;
+};
+
+export type LaForgeModifyCurrentUserMutationVariables = Exact<{
+  firstName?: Maybe<Scalars['String']>;
+  lastName?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+  phone?: Maybe<Scalars['String']>;
+  company?: Maybe<Scalars['String']>;
+  occupation?: Maybe<Scalars['String']>;
+}>;
+
+export type LaForgeModifyCurrentUserMutation = { __typename?: 'Mutation' } & {
+  modifySelfUserInfo?: Maybe<{ __typename?: 'AuthUser' } & LaForgeAuthUserFieldsFragment>;
 };
 
 export type LaForgeGetStatusQueryVariables = Exact<{
@@ -1306,6 +1327,21 @@ export const BuildCommitFieldsFragmentDoc = gql`
   }
   ${PlanDiffFieldsFragmentDoc}
 `;
+export const AuthUserFieldsFragmentDoc = gql`
+  fragment AuthUserFields on AuthUser {
+    id
+    username
+    role
+    provider
+    first_name
+    last_name
+    email
+    phone
+    company
+    occupation
+    publicKey
+  }
+`;
 export const ServerTaskFieldsFragmentDoc = gql`
   fragment ServerTaskFields on ServerTask {
     id
@@ -1355,18 +1391,10 @@ export class LaForgeGetAgentTasksGQL extends Apollo.Query<LaForgeGetAgentTasksQu
 export const GetCurrentUserDocument = gql`
   query GetCurrentUser {
     currentUser {
-      id
-      username
-      role
-      provider
-      first_name
-      last_name
-      email
-      phone
-      company
-      occupation
+      ...AuthUserFields
     }
   }
+  ${AuthUserFieldsFragmentDoc}
 `;
 
 @Injectable({
@@ -1962,6 +1990,53 @@ export const ExecuteBuildDocument = gql`
 })
 export class LaForgeExecuteBuildGQL extends Apollo.Mutation<LaForgeExecuteBuildMutation, LaForgeExecuteBuildMutationVariables> {
   document = ExecuteBuildDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const CreateBuildDocument = gql`
+  mutation CreateBuild($envId: String!) {
+    createBuild(envUUID: $envId, renderFiles: true) {
+      id
+    }
+  }
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeCreateBuildGQL extends Apollo.Mutation<LaForgeCreateBuildMutation, LaForgeCreateBuildMutationVariables> {
+  document = CreateBuildDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const ModifyCurrentUserDocument = gql`
+  mutation ModifyCurrentUser($firstName: String, $lastName: String, $email: String, $phone: String, $company: String, $occupation: String) {
+    modifySelfUserInfo(
+      firstName: $firstName
+      lastName: $lastName
+      email: $email
+      phone: $phone
+      company: $company
+      occupation: $occupation
+    ) {
+      ...AuthUserFields
+    }
+  }
+  ${AuthUserFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeModifyCurrentUserGQL extends Apollo.Mutation<
+  LaForgeModifyCurrentUserMutation,
+  LaForgeModifyCurrentUserMutationVariables
+> {
+  document = ModifyCurrentUserDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);

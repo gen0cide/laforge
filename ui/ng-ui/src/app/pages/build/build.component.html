@@ -27,6 +27,6 @@
     </div>
   </mat-card-header>
   <mat-card-content *ngIf="build | async as _build">
-    <app-team *ngFor="let team of _build.buildToTeam" [team]="team" [style]="'expanded'"></app-team>
+    <app-team *ngFor="let team of _build.buildToTeam | sortBy: 'asc':'team_number'" [team]="team" [style]="'expanded'"></app-team>
   </mat-card-content>
 </mat-card>

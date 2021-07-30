@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
+  LaForgeCreateBuildGQL,
+  LaForgeCreateBuildMutation,
   LaForgeGetBuildCommitsGQL,
   LaForgeGetBuildCommitsQuery,
   LaForgeGetBuildPlansGQL,
@@ -10,6 +12,8 @@ import {
   LaForgeGetEnvironmentInfoQuery,
   LaForgeGetEnvironmentsGQL,
   LaForgeGetEnvironmentsQuery,
+  LaForgeModifyCurrentUserGQL,
+  LaForgeModifyCurrentUserMutation,
   LaForgePullAgentStatusesGQL,
   LaForgePullAgentStatusesQuery,
   LaForgePullPlanStatusesGQL,
@@ -27,7 +31,9 @@ export class ApiService {
     private getEnvironmentInfoGQL: LaForgeGetEnvironmentGQL,
     private getBuildTreeGQL: LaForgeGetBuildTreeGQL,
     private getBuildPlansGQL: LaForgeGetBuildPlansGQL,
-    private getBuildCommitsGQL: LaForgeGetBuildCommitsGQL
+    private getBuildCommitsGQL: LaForgeGetBuildCommitsGQL,
+    private createBuildGQL: LaForgeCreateBuildGQL,
+    private modifyCurrentUserGQL: LaForgeModifyCurrentUserGQL
   ) {}
 
   /**
@@ -164,6 +170,49 @@ export class ApiService {
             return reject(errors);
           }
           resolve(data.build.BuildToBuildCommits);
+        }, reject);
+    });
+  }
+
+  public async createBuild(envId: string): Promise<LaForgeCreateBuildMutation['createBuild']> {
+    return new Promise((resolve, reject) => {
+      this.createBuildGQL
+        .mutate({
+          envId
+        })
+        .toPromise()
+        .then(({ data, errors }) => {
+          if (errors) {
+            return reject(errors);
+          } else if (data.createBuild) {
+            return resolve(data.createBuild);
+          }
+          reject(new Error('unknown error occurred while creating build'));
+        }, reject);
+    });
+  }
+
+  public async updateAuthUser(updateAuthUserInput: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    company?: string;
+    occupation?: string;
+  }): Promise<LaForgeModifyCurrentUserMutation['modifySelfUserInfo']> {
+    return new Promise((resolve, reject) => {
+      this.modifyCurrentUserGQL
+        .mutate({
+          ...updateAuthUserInput
+        })
+        .toPromise()
+        .then(({ data, errors }) => {
+          if (errors) {
+            return reject(errors);
+          } else if (data.modifySelfUserInfo) {
+            return resolve(data.modifySelfUserInfo);
+          }
+          reject(new Error('unknown error occurred while updating current user'));
         }, reject);
     });
   }

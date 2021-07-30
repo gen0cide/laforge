@@ -31,7 +31,6 @@ func CreateRootCommit(client *ent.Client, rdb *redis.Client, entBuild *ent.Build
 	if err != nil {
 		return nil, fmt.Errorf("error creating root commit: %v", err)
 	}
-	rdb.Publish(ctx, "updatedBuildCommit", rootCommit.ID.String())
 
 	var planDiffErr error = nil
 	for _, buildPlan := range buildPlans {

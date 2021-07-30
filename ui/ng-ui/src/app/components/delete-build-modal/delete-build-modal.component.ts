@@ -1,5 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 
 import { LaForgeDeleteBuildGQL } from '../../../generated/graphql';
 
@@ -15,7 +16,8 @@ export class DeleteBuildModalComponent {
   constructor(
     public dialogRef: MatDialogRef<DeleteBuildModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { buildName: string; buildId: string },
-    private deleteBuild: LaForgeDeleteBuildGQL
+    private deleteBuild: LaForgeDeleteBuildGQL,
+    private router: Router
   ) {}
 
   buildNameChange(value: string) {
@@ -42,6 +44,7 @@ export class DeleteBuildModalComponent {
         if (errors) {
           return console.error(errors);
         } else if (data.deleteBuild) {
+          this.router.navigate(['plan']);
           return this.onClose();
         }
         console.error('delete build failed');

@@ -11,3 +11,15 @@ mutation ExecuteBuild($buildId: String!) {
     id
   }
 }
+
+mutation CreateBuild($envId: String!) {
+  createBuild(envUUID: $envId, renderFiles: true) {
+    id
+  }
+}
+
+mutation ModifyCurrentUser($firstName: String, $lastName: String, $email: String, $phone: String, $company: String, $occupation: String) {
+  modifySelfUserInfo(firstName: $firstName, lastName: $lastName, email: $email, phone: $phone, company: $company, occupation: $occupation) {
+    ...AuthUserFields
+  }
+}

@@ -1,45 +1,50 @@
 <mat-card>
   <mat-card-header>
-    <mat-card-title>Account - FIRST_NAME LAST_NAME</mat-card-title>
-    <mat-card-subtitle>
-      <mat-chip-list>
-        <mat-chip color="primary" selected disableRipple>Role 1</mat-chip>
-        <mat-chip color="secondary" selected disableRipple>Role 2</mat-chip>
-        <mat-chip color="accent" selected disableRipple>Role 3</mat-chip>
-        <mat-chip color="warn" selected disableRipple>Role 4</mat-chip>
-      </mat-chip-list>
-    </mat-card-subtitle>
+    <mat-card-title class="d-flex align-items-center">
+      <ng-container *ngIf="user | async as _user">
+        {{ _user.username }} <i *ngIf="_user.first_name || _user.last_name" class="fad fa-1x fa-grip-lines-vertical text-black mx-1"></i>
+        <span class="text-muted">{{ _user.first_name }} {{ _user.last_name }}</span>
+        <mat-chip-list class="ml-3">
+          <mat-chip [color]="getRoleColor()" selected disableRipple>{{ _user.role }}</mat-chip>
+        </mat-chip-list>
+      </ng-container>
+    </mat-card-title>
   </mat-card-header>
   <mat-divider></mat-divider>
   <mat-card-content>
-    <form class="user-form" (submit)="onSubmitChanges($event)">
+    <form class="user-form" (submit)="onSubmitChanges($event)" *ngIf="user | async as _user">
+      <mat-form-field appearance="fill">
+        <mat-label>Username</mat-label>
+        <input matInput type="text" [formControl]="username" readonly />
+      </mat-form-field>
       <mat-form-field appearance="fill">
         <mat-label>First Name</mat-label>
-        <input matInput type="text" />
+        <input matInput type="text" [formControl]="firstName" />
       </mat-form-field>
       <mat-form-field appearance="fill">
         <mat-label>Last Name</mat-label>
-        <input matInput type="text" />
-      </mat-form-field>
-      <mat-form-field appearance="fill">
-        <mat-label>Username</mat-label>
-        <input matInput type="text" />
+        <input matInput type="text" [formControl]="lastName" />
       </mat-form-field>
       <mat-form-field appearance="fill">
         <mat-label>Email</mat-label>
-        <input matInput type="email" />
+        <input matInput type="email" [formControl]="email" />
       </mat-form-field>
       <mat-form-field appearance="fill">
         <mat-label>Phone Number</mat-label>
-        <input matInput type="tel" />
+        <input matInput type="tel" [formControl]="phone" />
       </mat-form-field>
       <mat-form-field appearance="fill">
         <mat-label>Company</mat-label>
-        <input matInput type="text" />
+        <input matInput type="text" [formControl]="company" />
       </mat-form-field>
       <mat-form-field appearance="fill">
         <mat-label>Occupation</mat-label>
-        <input matInput type="text" />
+        <input matInput type="text" [formControl]="occupation" />
+      </mat-form-field>
+      <div class="break"></div>
+      <mat-form-field appearance="fill">
+        <mat-label>Git Public SSH Key</mat-label>
+        <textarea matInput type="text" [formControl]="publicKey" readonly></textarea>
       </mat-form-field>
       <div class="break"></div>
       <button color="primary" mat-flat-button>Save Changes</button>

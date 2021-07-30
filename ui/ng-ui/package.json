@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve -c=dev --host 0.0.0.0",
-    "build": "ng build",
+    "build": "ng build --prod && cp -R dist ../../server/dist",
     "test": "ng test",
     "lint": "eslint ./src/app --ext js,ts,json --quiet --fix",
     "e2e": "ng e2e",

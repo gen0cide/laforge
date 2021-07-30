@@ -24,7 +24,7 @@
     </div>
     <div class="networks" *ngIf="expandOverride || (!shouldCollapse() && style === 'expanded') || style === 'compact'">
       <app-network
-        *ngFor="let provNetwork of team.TeamToProvisionedNetwork"
+        *ngFor="let provNetwork of team.TeamToProvisionedNetwork | sortBy: 'asc':'name'"
         [provisionedNetwork]="provNetwork"
         [status]="provNetwork.ProvisionedNetworkToStatus"
         [style]="style"

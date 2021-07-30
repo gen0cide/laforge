@@ -122,4 +122,15 @@ export class ManageComponent implements OnInit, OnDestroy {
         this.buildStatus.state === LaForgeProvisionStatus.Tainted)
     );
   }
+
+  canRebuildBuild(): boolean {
+    return (
+      this.buildStatus &&
+      this.buildStatus.state !== LaForgeProvisionStatus.Planning &&
+      this.buildStatus.state !== LaForgeProvisionStatus.Deleted &&
+      this.buildStatus.state !== LaForgeProvisionStatus.Todelete &&
+      this.buildStatus.state !== LaForgeProvisionStatus.Deleteinprogress &&
+      this.buildStatus.state !== LaForgeProvisionStatus.Inprogress
+    );
+  }
 }

@@ -165,6 +165,7 @@ func Rebuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUser, e
 	time.Sleep(1 * time.Minute)
 
 	buildContext := context.Background()
+	defer buildContext.Done()
 	// for _, entPlan := range entPlans {
 	err = markForRoutine(buildContext, status.StateAWAITING, entRebuildCommit)
 	if err != nil {
@@ -197,6 +198,10 @@ func Rebuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUser, e
 	}
 	rdb.Publish(ctx, "updatedBuildCommit", entRebuildCommit.ID.String())
 
+	taskStatus, serverTask, err = utils.CompleteServerTask(deleteContext, client, rdb, taskStatus, serverTask)
+	if err != nil {
+		return false, fmt.Errorf("error completing execute build server task: %v", err)
+	}
 	return true, nil
 }
 

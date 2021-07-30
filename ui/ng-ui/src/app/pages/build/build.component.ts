@@ -32,7 +32,7 @@ export class BuildComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar
   ) {
     this.subheader.setTitle('Build');
-    this.subheader.setDescription('Build a planned environment');
+    this.subheader.setDescription('Monitor the progress of a given build');
     this.subheader.setShowEnvDropdown(true);
 
     this.environment = this.envService.getEnvironmentInfo().asObservable();

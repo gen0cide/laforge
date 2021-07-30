@@ -139,6 +139,8 @@ export class HostComponent implements OnInit, OnDestroy {
           return 'fas fa-sync-alt';
         case LaForgeProvisionStatus.Todelete:
           return 'fad fa-trash';
+        case LaForgeProvisionStatus.Planning:
+          return 'fas fa-ruler-triangle';
         default:
           return 'fas fa-computer-classic';
       }
@@ -187,6 +189,8 @@ export class HostComponent implements OnInit, OnDestroy {
           return 'warning';
         case LaForgeProvisionStatus.Todelete:
           return 'danger';
+        case LaForgeProvisionStatus.Planning:
+          return 'primary';
         default:
           return 'dark';
       }

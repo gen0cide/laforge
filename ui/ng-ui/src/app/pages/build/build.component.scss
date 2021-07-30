@@ -15,6 +15,10 @@
   justify-content: center;
 }
 
+::ng-deep app-team {
+  width: 100%;
+}
+
 ::ng-deep .env-header {
   button {
     transform: scale(0.8);

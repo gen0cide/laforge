@@ -136,7 +136,7 @@ func GothicCallbackHandler(client *ent.Client) gin.HandlerFunc {
 
 		// TODO: Change Cookie to be secure
 		ctx.SetCookie("auth-cookie", tokenString, 60*60, "/", hostname, false, false)
-		ctx.Redirect(http.StatusFound, "/playground")
+		ctx.Redirect(http.StatusFound, "/")
 		// ctx.JSON(200, entAuthUser)
 	}
 }

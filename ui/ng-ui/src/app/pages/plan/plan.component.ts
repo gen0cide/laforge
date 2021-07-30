@@ -10,7 +10,7 @@ import {
   LaForgeGetEnvironmentInfoQuery,
   LaForgeSubscribeUpdatedStatusSubscription
 } from '@graphql';
-import { Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_services/subheader.service';
 import { ApiService } from 'src/app/services/api/api.service';
 import { EnvironmentService } from 'src/app/services/environment/environment.service';
@@ -25,7 +25,7 @@ export class PlanComponent implements OnInit, OnDestroy {
   environment: Observable<LaForgeGetEnvironmentInfoQuery['environment']>;
   build: Observable<LaForgeGetBuildTreeQuery['build']>;
   buildStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
-  latestCommit: LaForgeBuildCommitFieldsFragment;
+  latestCommit: BehaviorSubject<LaForgeBuildCommitFieldsFragment>;
   apolloError: any = {};
   approveDenyCommitLoading = false;
   planLoading = true;
@@ -46,37 +46,31 @@ export class PlanComponent implements OnInit, OnDestroy {
 
     this.environment = this.envService.getEnvironmentInfo().asObservable();
     this.build = this.envService.getBuildTree().asObservable();
+    this.latestCommit = new BehaviorSubject(null);
   }
 
   ngOnInit(): void {
     this.planLoading = true;
-    console.log('ngOnInit');
-    if (this.envService.getBuildTree().getValue()) {
+    const sub1 = this.envService.getBuildTree().subscribe(() => {
       this.envService.initPlanStatuses();
       this.envService.initAgentStatuses();
       this.envService.initPlans();
       this.envService.initBuildCommits();
-    } else {
-      const sub1 = this.envService.getBuildTree().subscribe(() => {
-        this.envService.initPlanStatuses();
-        this.envService.initAgentStatuses();
-        this.envService.initPlans();
-        this.envService.initBuildCommits();
-      });
-      this.unsubscribe.push(sub1);
-    }
-    const sub2 = this.envService.statusUpdate.asObservable().subscribe(() => {
+      this.checkLatestCommit();
+    });
+    this.unsubscribe.push(sub1);
+    const sub2 = this.envService.statusUpdate.subscribe(() => {
       this.checkBuildStatus();
-      this.cdRef.markForCheck();
+      this.cdRef.detectChanges();
     });
     this.unsubscribe.push(sub2);
     this.planLoading = true;
-    const sub3 = this.envService.planUpdate.asObservable().subscribe(() => {
+    const sub3 = this.envService.planUpdate.subscribe(() => {
       this.planLoading = false;
-      // this.cdRef.markForCheck();
+      this.cdRef.detectChanges();
     });
     this.unsubscribe.push(sub3);
-    const sub4 = this.envService.buildCommitUpdate.asObservable().subscribe(() => {
+    const sub4 = this.envService.buildCommitUpdate.subscribe(() => {
       this.checkLatestCommit();
       this.cdRef.detectChanges();
     });
@@ -102,8 +96,15 @@ export class PlanComponent implements OnInit, OnDestroy {
   checkLatestCommit(): void {
     if (!this.envService.getBuildTree().getValue()) return;
     const updatedBuildCommit = this.envService.getLatestCommit();
-    if (!this.latestCommit || this.latestCommit.id !== updatedBuildCommit.id) {
-      this.latestCommit = { ...updatedBuildCommit };
+    if (updatedBuildCommit && (!this.latestCommit.getValue() || this.latestCommit.getValue().id !== updatedBuildCommit.id)) {
+      this.latestCommit.next({ ...updatedBuildCommit });
+      this.cdRef.detectChanges();
+    }
+    if (this.latestCommit.getValue() && this.latestCommit.getValue().state === LaForgeBuildCommitState.Inprogress) {
+      this.router.navigate(['build']);
+      this.snackBar.open('Plan is in progress. Redirecting to build...', null, {
+        duration: 1000
+      });
     }
   }
 
@@ -184,7 +185,7 @@ export class PlanComponent implements OnInit, OnDestroy {
           } else if (data.approveCommit) {
             this.snackBar.open('Commit approved', 'Nice!', {
               // duration: 3000,
-              panelClass: 'bg-success text-white'
+              panelClass: ['bg-success', 'text-white']
             });
             this.router.navigate(['build']);
           }

@@ -115,7 +115,7 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "browserTarget": "laforge:build",
-            "publicHost": "http://laforge-dev.cyberrange.rit.edu:4200"
+            "publicHost": "0.0.0.0:4200"
           },
           "configurations": {
             "production": {

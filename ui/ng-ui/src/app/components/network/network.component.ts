@@ -122,6 +122,8 @@ export class NetworkComponent implements OnInit, OnDestroy {
           return 'fas fa-sync-alt';
         case LaForgeProvisionStatus.Todelete:
           return 'fad fa-trash';
+        case LaForgeProvisionStatus.Planning:
+          return 'fas fa-ruler-triangle';
         default:
           return 'fal fa-network-wired';
       }
@@ -152,6 +154,8 @@ export class NetworkComponent implements OnInit, OnDestroy {
           return 'warning';
         case LaForgeProvisionStatus.Todelete:
           return 'danger';
+        case LaForgeProvisionStatus.Planning:
+          return 'primary';
         default:
           return 'dark';
       }

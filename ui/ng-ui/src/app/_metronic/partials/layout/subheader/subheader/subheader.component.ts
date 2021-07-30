@@ -9,7 +9,7 @@ import { MatSelectChange } from '@angular/material/select';
 import { EnvironmentService } from 'src/app/services/environment/environment.service';
 import { Build, Environment } from 'src/app/models/environment.model';
 import { ID } from 'src/app/models/common.model';
-import { LaForgeGetBuildTreeQuery, LaForgeGetEnvironmentInfoQuery } from '@graphql';
+import { LaForgeGetBuildTreeQuery, LaForgeGetEnvironmentGQL, LaForgeGetEnvironmentInfoQuery, LaForgeGetEnvironmentsQuery } from '@graphql';
 
 interface Branch {
   name: string;
@@ -35,6 +35,7 @@ export class SubheaderComponent implements OnInit {
     { name: 'Bradley', hash: '98y3if' },
     { name: 'Lucas', hash: '32a7fh' }
   ];
+  environments: Observable<LaForgeGetEnvironmentsQuery['environments']>;
   environment: LaForgeGetEnvironmentInfoQuery['environment'];
   build: LaForgeGetBuildTreeQuery['build'];
   envIsLoading: Observable<boolean>;
@@ -52,9 +53,11 @@ export class SubheaderComponent implements OnInit {
     this.description$ = this.subheader.descriptionSubject.asObservable();
     this.showEnvDropdown$ = this.subheader.showEnvironmentDropdown.asObservable();
 
-    this.envService.getEnvironments().subscribe(() => {
-      this.cdRef.markForCheck();
-    });
+    // this.envService.getEnvironments().subscribe(() => {
+    //   this.cdRef.markForCheck();
+    // });
+
+    this.environments = this.envService.getEnvironments().asObservable();
 
     this.envService
       .getEnvironmentInfo()

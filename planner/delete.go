@@ -9,6 +9,7 @@ import (
 
 	"github.com/gen0cide/laforge/builder"
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/plan"
@@ -604,6 +605,12 @@ func deleteHost(client *ent.Client, builder *builder.Builder, ctx context.Contex
 	_, deleteErr := client.AgentTask.Delete().Where(agenttask.HasAgentTaskToProvisionedHostWith(provisionedhost.IDEQ(entProHost.ID))).Exec(ctx)
 	if deleteErr != nil {
 		logrus.Errorf("error while deleting Agent Tasks for Provisioned Host: %v", err)
+		return deleteErr
+	}
+	// Cleanup agent statuses
+	_, deleteErr = client.AgentStatus.Delete().Where(agentstatus.HasAgentStatusToProvisionedHostWith(provisionedhost.IDEQ(entProHost.ID))).Exec(ctx)
+	if deleteErr != nil {
+		logrus.Errorf("error while deleting Agent Statuses for Provisioned Host: %v", err)
 		return deleteErr
 	}
 	return nil

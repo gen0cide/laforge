@@ -11,7 +11,8 @@ $dark-surface-24: #373737;
 
 $dark-primary: #fff4a3;
 $dark-primary-variant: #fcc143;
-$dark-secondary: #93c6ff;
+$dark-secondary: #e9e7ff;
+$dark-secondary-variant: #9d9aff;
 $dark-background: #121212;
 $dark-error: #cf6679;
 
@@ -32,6 +33,10 @@ $dark-text-on-error: #000;
 
   hr {
     border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .text-black {
+    color: $dark-text-on-surface !important;
   }
 
   .text-dark,
@@ -195,6 +200,32 @@ $dark-text-on-error: #000;
     color: $dark-text-on-primary !important;
   }
 
+  .aside-menu
+    .menu-nav
+    > .menu-item:not(.menu-item-parent):not(.menu-item-open):not(.menu-item-here):not(.menu-item-active):hover
+    > .menu-heading
+    .menu-text,
+  .aside-menu
+    .menu-nav
+    > .menu-item:not(.menu-item-parent):not(.menu-item-open):not(.menu-item-here):not(.menu-item-active):hover
+    > .menu-link
+    .menu-text {
+    color: $dark-text-on-primary !important;
+  }
+
+  .aside-menu
+    .menu-nav
+    > .menu-item:not(.menu-item-parent):not(.menu-item-open):not(.menu-item-here):not(.menu-item-active):hover
+    > .menu-heading
+    .menu-icon,
+  .aside-menu
+    .menu-nav
+    > .menu-item:not(.menu-item-parent):not(.menu-item-open):not(.menu-item-here):not(.menu-item-active):hover
+    > .menu-link
+    .menu-icon {
+    color: $dark-text-on-primary !important;
+  }
+
   .aside-menu .menu-nav > .menu-item > .menu-heading .menu-icon.svg-icon svg g [fill],
   .aside-menu .menu-nav > .menu-item > .menu-link .menu-icon.svg-icon svg g [fill] {
     fill: $dark-text-on-surface !important;
@@ -203,6 +234,43 @@ $dark-text-on-error: #000;
   .aside-menu .menu-nav > .menu-item.menu-item-open > .menu-heading .menu-icon.svg-icon svg g [fill],
   .aside-menu .menu-nav > .menu-item.menu-item-open > .menu-link .menu-icon.svg-icon svg g [fill] {
     fill: $dark-text-on-primary !important;
+  }
+
+  .dropdown-menu {
+    background: $dark-surface-03 !important;
+    box-shadow: 0px 4px 13px 3px #000;
+  }
+
+  .navi.navi-hover .navi-item .navi-link:hover {
+    background-color: $dark-surface-04 !important;
+  }
+
+  .bg-gray-600 {
+    background: $dark-surface-06 !important;
+  }
+
+  .btn.btn-clean:not(:disabled):not(.disabled):active:not(.btn-text),
+  .btn.btn-clean:not(:disabled):not(.disabled).active,
+  .show > .btn.btn-clean.dropdown-toggle,
+  .show .btn.btn-clean.btn-dropdown {
+    background-color: $dark-surface-24;
+  }
+
+  .navi .navi-item .navi-link .navi-text {
+    color: $dark-text-on-surface !important;
+  }
+
+  .mat-input-element::placeholder {
+    color: $dark-text-on-surface-lighter !important;
+  }
+
+  code {
+    background-color: $dark-surface-24 !important;
+    color: $dark-text-on-surface !important;
+  }
+
+  .btn-light-primary {
+    background-color: $dark-surface-24 !important;
   }
 
   app-footer.footer {

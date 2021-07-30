@@ -116,7 +116,7 @@ export class EnvironmentService {
     return this.buildCommitMap[this.buildTree.getValue().BuildToLatestBuildCommit.id];
   }
 
-  private initEnvironments() {
+  public initEnvironments() {
     this.api.pullEnvironments().then((envs) => {
       this.environments.next(envs);
       if (localStorage.getItem('selected_env') && localStorage.getItem('selected_build')) {
@@ -255,13 +255,14 @@ export class EnvironmentService {
       if (errors) {
         console.error(errors);
       } else if (updatedBuild) {
-        const oldBuildTree = this.buildTree.getValue();
-        this.buildTree.next({
-          ...oldBuildTree,
-          BuildToLatestBuildCommit: {
-            ...updatedBuild.BuildToLatestBuildCommit
-          }
-        });
+        // const oldBuildTree = this.buildTree.getValue();
+        this.pullBuildTree(updatedBuild.id);
+        // this.buildTree.next({
+        //   ...oldBuildTree,
+        //   BuildToLatestBuildCommit: {
+        //     ...updatedBuild.BuildToLatestBuildCommit
+        //   }
+        // });
       }
     });
   }

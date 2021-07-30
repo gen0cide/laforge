@@ -41,7 +41,7 @@
     </div>
     <div class="hosts" *ngIf="expandOverride || (!shouldCollapse() && style === 'expanded') || style === 'compact'">
       <app-host
-        *ngFor="let provHost of provisionedNetwork.ProvisionedNetworkToProvisionedHost"
+        *ngFor="let provHost of provisionedNetwork.ProvisionedNetworkToProvisionedHost | sortBy: 'asc':'ProvisionedHostToHost.hostname'"
         [provisionedHost]="provHost"
         [style]="style"
         [selectable]="selectable"

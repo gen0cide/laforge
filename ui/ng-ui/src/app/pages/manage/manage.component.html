@@ -27,8 +27,8 @@
           aria-label="Rebuild the selected objects"
           title="Rebuild"
           (click)="rebuildEnv()"
-          [disabled]="!selectionMode"
-          [disableRipple]="!selectionMode"
+          [disabled]="!selectionMode && !canRebuildBuild()"
+          [disableRipple]="!selectionMode && !canRebuildBuild()"
         >
           <i class="fad fa-undo-alt text-inherit"></i>
         </button>
@@ -38,6 +38,8 @@
           [attr.aria-label]="selectionMode ? 'Cancel Selection' : 'Select multiple to rebuild'"
           [attr.title]="selectionMode ? 'Cancel Selection' : 'Select multiple to rebuild'"
           (click)="toggleSelectionMode()"
+          [disabled]="!canRebuildBuild()"
+          [disableRipple]="!canRebuildBuild()"
         >
           <i class="fad text-inherit" [ngClass]="selectionMode ? 'fa-times' : 'fa-check-square'"></i>
         </button>

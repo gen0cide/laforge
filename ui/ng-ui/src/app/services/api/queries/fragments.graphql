@@ -55,3 +55,17 @@ fragment BuildCommitFields on BuildCommit {
     ...PlanDiffFields
   }
 }
+
+fragment AuthUserFields on AuthUser {
+  id
+  username
+  role
+  provider
+  first_name
+  last_name
+  email
+  phone
+  company
+  occupation
+  publicKey
+}

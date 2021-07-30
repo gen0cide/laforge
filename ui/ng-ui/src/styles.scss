@@ -80,6 +80,28 @@
   color: inherit !important;
 }
 
-.text-dark {
+.text-black {
   color: black !important;
+}
+
+.mat-snack-bar-container.bg-success .mat-simple-snackbar .mat-simple-snackbar-action,
+.mat-snack-bar-container.bg-danger .mat-simple-snackbar .mat-simple-snackbar-action {
+  color: white !important;
+}
+
+.laforge-card {
+  width: 100%;
+}
+
+.laforge-card-list {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+
+  .laforge-card {
+    flex: 1 1 0;
+    min-width: 33%;
+    box-sizing: border-box;
+    margin: 0.5rem 1rem;
+  }
 }

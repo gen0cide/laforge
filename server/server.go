@@ -45,8 +45,8 @@ func redirectToRootHandler(client *ent.Client) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		// h.ServeHTTP(c.Writer, c.Request)
-		c.AbortWithStatus(503)
-		// c.Redirect(301, "/ui")
+		// c.AbortWithStatus(503)
+		c.Redirect(301, "/ui")
 		c.Abort()
 	}
 }
@@ -158,6 +158,15 @@ func createDefaultAdminUser(client *ent.Client, ctx context.Context) error {
 	return nil
 }
 
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
 	// Start logging all Logrus output to files
 	ginMode := os.Getenv("GIN_MODE")
@@ -266,8 +275,8 @@ func main() {
 	// router.Static("/ui/", "./dist")
 	router.GET("/ui/*filename", func(c *gin.Context) {
 		filename := c.Param("filename")
-		fmt.Println(filename)
-		if filename == "/monitor" || filename == "/monitor/" {
+		fmt.Println(contains([]string{"manage", "dashboard", "plan", "build"}, filename))
+		if contains([]string{"manage", "dashboard", "plan", "build"}, filename) {
 			c.Redirect(301, "/ui/")
 		} else {
 			c.File("./dist/" + filename)
@@ -277,6 +286,9 @@ func main() {
 	router.GET("/playground", playgroundHandler())
 
 	authGroup := router.Group("/auth")
+	authGroup.GET("/login", func(c *gin.Context) {
+		c.Redirect(301, "/ui/")
+	})
 	authGroup.POST("/local/login", auth.LocalLogin(client))
 	authGroup.GET("/:provider/login", auth.GothicBeginAuth())
 	authGroup.GET("/:provider/callback", auth.GothicCallbackHandler(client))

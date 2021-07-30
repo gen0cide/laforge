@@ -44,7 +44,7 @@
     <div class="d-flex align-items-center">
       <ng-container *ngIf="showEnvDropdown$ | async">
         <i class="fa fa-spinner fa-spin mr-2" *ngIf="(envIsLoading | async) || (buildIsLoading | async)"></i>
-        <mat-form-field appearance="fill" *ngIf="this.envService.getEnvironments() | async as _environments">
+        <mat-form-field appearance="fill" *ngIf="this.environments | async as _environments">
           <mat-label>Environments</mat-label>
           <mat-select
             (selectionChange)="selectEnvironment($event)"

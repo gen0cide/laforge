@@ -190,6 +190,7 @@ func CreateBuild(ctx context.Context, client *ent.Client, rdb *redis.Client, cur
 			_, _, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask, err)
 			return
 		}
+		rdb.Publish(ctx, "updatedBuild", entBuild.ID.String())
 
 		if RenderFilesTask != nil {
 			RenderFilesTaskStatus, RenderFilesTask, err = utils.CompleteServerTask(ctx, client, rdb, RenderFilesTaskStatus, RenderFilesTask)
@@ -210,7 +211,7 @@ func CreateBuild(ctx context.Context, client *ent.Client, rdb *redis.Client, cur
 		}
 		rdb.Publish(ctx, "updatedServerTask", serverTask.ID.String())
 		rdb.Publish(ctx, "updatedBuild", entBuild.ID.String())
-		entBuild.Update().SetCompletedPlan(true).SaveX(ctx)
+		// entBuild.Update().SetCompletedPlan(true).SaveX(ctx)
 
 		logrus.Debug("-----\nWAITING FOR COMMIT REVIEW\n-----")
 		isApproved, err := utils.WaitForCommitReview(client, entCommit, 20*time.Minute)

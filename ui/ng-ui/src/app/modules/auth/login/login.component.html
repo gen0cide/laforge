@@ -114,9 +114,9 @@
       >
         <i class="fad fa-user-visor"></i> Sign In
       </button>
-      <button type="button" class="btn btn-light-primary font-weight-bolder px-8 py-4 my-3 font-size-lg">
+      <a href="/auth/github/login" class="btn btn-light-primary font-weight-bolder px-8 py-4 my-3 font-size-lg">
         <i class="fab fa-github"></i> Sign in with GitHub
-      </button>
+      </a>
 
       <ng-container *ngIf="(isLoading$ | async) || (redirectLoading | async)">
         <span class="spinner spinner-primary ml-5"></span>
