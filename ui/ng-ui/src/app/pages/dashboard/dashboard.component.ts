@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { LaForgeGetEnvironmentsQuery } from '@graphql';
 import { ApiService } from '@services/api/api.service';
 import { EnvironmentService } from '@services/environment/environment.service';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { SubheaderService } from 'src/app/_metronic/partials/layout/subheader/_services/subheader.service';
 
 @Component({
@@ -21,6 +21,7 @@ export class DashboardComponent implements OnInit {
   envFilePath = new FormControl('', Validators.required);
   environmentsCols: string[] = ['name', 'competition_id', 'build_count', 'actions'];
   environments: Observable<LaForgeGetEnvironmentsQuery['environments']>;
+  gitIsLoading: BehaviorSubject<boolean>;
 
   constructor(
     private cdRef: ChangeDetectorRef,
@@ -35,6 +36,7 @@ export class DashboardComponent implements OnInit {
 
     this.getEnvironmentsLoading = this.envService.envIsLoading.asObservable();
     this.environments = this.envService.getEnvironments().asObservable();
+    this.gitIsLoading = new BehaviorSubject(false);
   }
 
   ngOnInit(): void {
@@ -101,6 +103,30 @@ export class DashboardComponent implements OnInit {
     if (this.repoName.errors) return;
     if (this.branchName.errors) return;
     if (this.envFilePath.errors) return;
-    console.log('clone env');
+    this.gitIsLoading.next(true);
+    this.api
+      .createEnvFromGit({
+        repoURL: this.gitUrl.value,
+        repoName: this.repoName.value,
+        branchName: this.branchName.value,
+        envFilePath: this.envFilePath.value
+      })
+      .then(
+        (env) => {
+          if (env.length > 0) {
+            this.snackbar.open('Environment successfully loaded. Refreshing page...', null, {
+              panelClass: ['bg-success', 'text-white']
+            });
+            window.location.reload();
+          }
+        },
+        (err) => {
+          console.error(err);
+          this.snackbar.open('Error while cloning repo from git. See console/logs for details.', 'Okay', {
+            panelClass: ['bg-danger', 'text-white']
+          });
+        }
+      )
+      .finally(() => this.gitIsLoading.next(false));
   }
 }

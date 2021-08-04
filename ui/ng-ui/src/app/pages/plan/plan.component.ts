@@ -53,10 +53,14 @@ export class PlanComponent implements OnInit, OnDestroy {
     this.planLoading = true;
     const sub1 = this.envService.getBuildTree().subscribe(() => {
       this.envService.initPlanStatuses();
-      this.envService.initAgentStatuses();
+      // this.envService.initAgentStatuses();
       this.envService.initPlans();
       this.envService.initBuildCommits();
       this.checkLatestCommit();
+      this.envService.startStatusSubscription();
+      this.envService.startAgentStatusSubscription();
+      this.envService.startBuildSubscription();
+      this.envService.startBuildCommitSubscription();
     });
     this.unsubscribe.push(sub1);
     const sub2 = this.envService.statusUpdate.subscribe(() => {
@@ -79,6 +83,10 @@ export class PlanComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.unsubscribe.forEach((sub) => sub.unsubscribe());
+    this.envService.stopStatusSubscription();
+    this.envService.stopAgentStatusSubscription();
+    this.envService.stopBuildSubscription();
+    this.envService.stopBuildCommitSubscription();
   }
 
   envIsSelected(): boolean {

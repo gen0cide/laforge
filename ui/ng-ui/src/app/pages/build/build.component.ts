@@ -42,7 +42,7 @@ export class BuildComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const sub1 = this.envService.getBuildTree().subscribe(() => {
       this.envService.initPlanStatuses();
-      this.envService.initAgentStatuses();
+      // this.envService.initAgentStatuses();
     });
     this.unsubscribe.push(sub1);
     const sub2 = this.envService.statusUpdate.asObservable().subscribe(() => {

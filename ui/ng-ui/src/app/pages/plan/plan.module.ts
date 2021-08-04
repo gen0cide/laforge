@@ -7,6 +7,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { Routes, RouterModule } from '@angular/router';
+import { LaforgePipesModule } from 'src/app/pipes/pipes.module';
 
 import { ViewComponentsModule } from '../../components/view-components.module';
 
@@ -29,7 +30,8 @@ const routes: Routes = [
     MatTableModule,
     MatButtonModule,
     MatSelectModule,
-    MatChipsModule
+    MatChipsModule,
+    LaforgePipesModule
   ]
 })
 export class PlanModule {}

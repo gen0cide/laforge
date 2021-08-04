@@ -1,11 +1,5 @@
 query GetAgentTasks($proStepId: String!) {
   getAgentTasks(proStepUUID: $proStepId) {
-    id
-    state
-    command
-    args
-    number
-    output
-    error_message
+    ...AgentTaskFields
   }
 }

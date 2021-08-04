@@ -462,6 +462,7 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, pNetwork *e
 		SetProvisionedHostToStatus(entStatus).
 		SetProvisionedHostToProvisionedNetwork(pNetwork).
 		SetProvisionedHostToHost(entHost).
+		// SetProvisionedHostToBuild(entBuild).
 		Save(ctx)
 
 	if entHost.Tags["root-dns"] == "true" {

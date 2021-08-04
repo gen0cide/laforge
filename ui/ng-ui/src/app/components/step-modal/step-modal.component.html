@@ -37,7 +37,7 @@
       <mat-table [dataSource]="[task]" class="bg-gray-100">
         <ng-container matColumnDef="args">
           <mat-header-cell *matHeaderCellDef> Args </mat-header-cell>
-          <mat-cell *matCellDef="let t"> {{ t.args }} </mat-cell>
+          <mat-cell *matCellDef="let t"> {{ t.args.replace('💔', ', ') }} </mat-cell>
         </ng-container>
         <ng-container matColumnDef="state">
           <mat-header-cell *matHeaderCellDef> State </mat-header-cell>

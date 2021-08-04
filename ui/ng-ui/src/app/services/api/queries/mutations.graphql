@@ -23,3 +23,9 @@ mutation ModifyCurrentUser($firstName: String, $lastName: String, $email: String
     ...AuthUserFields
   }
 }
+
+mutation CreateEnvironmentFromGit($repoURL: String!, $repoName: String!, $branchName: String!, $envFilePath: String!) {
+  createEnviromentFromRepo(repoURL: $repoURL, repoName: $repoName, branchName: $branchName, envFilePath: $envFilePath) {
+    id
+  }
+}

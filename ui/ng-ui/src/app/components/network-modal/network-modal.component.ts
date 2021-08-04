@@ -83,16 +83,15 @@ export class NetworkModalComponent {
   }
 
   getStatusIcon(): string {
-    this.getStatus();
     if (this.failedChildren) {
       return 'skull-crossbones';
     }
-    switch (this.getStatus()) {
-      case ProvisionStatus.COMPLETE:
+    switch (this.data.planStatus.state) {
+      case LaForgeProvisionStatus.Complete:
         return 'check-circle';
-      case ProvisionStatus.FAILED:
+      case LaForgeProvisionStatus.Failed:
         return 'times-circle';
-      case ProvisionStatus.INPROGRESS:
+      case LaForgeProvisionStatus.Inprogress:
         return 'play-circle';
       default:
         return 'minus-circle';
@@ -100,13 +99,16 @@ export class NetworkModalComponent {
   }
 
   getStatusColor(): string {
-    switch (this.getStatus()) {
-      case ProvisionStatus.COMPLETE:
+    if (this.failedChildren) {
+      return 'warning';
+    }
+    switch (this.data.planStatus.state) {
+      case LaForgeProvisionStatus.Complete:
         return 'success';
-      case ProvisionStatus.INPROGRESS:
-        return 'warning';
-      case ProvisionStatus.FAILED:
+      case LaForgeProvisionStatus.Failed:
         return 'danger';
+      case LaForgeProvisionStatus.Inprogress:
+        return 'info';
       default:
         return 'dark';
     }

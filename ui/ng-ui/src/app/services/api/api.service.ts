@@ -2,20 +2,23 @@ import { Injectable } from '@angular/core';
 import {
   LaForgeCreateBuildGQL,
   LaForgeCreateBuildMutation,
+  LaForgeCreateEnvironmentFromGitGQL,
+  LaForgeCreateEnvironmentFromGitMutation,
+  LaForgeGetAllAgentStatusesGQL,
+  LaForgeGetAllAgentStatusesQuery,
   LaForgeGetBuildCommitsGQL,
   LaForgeGetBuildCommitsQuery,
   LaForgeGetBuildPlansGQL,
   LaForgeGetBuildPlansQuery,
   LaForgeGetBuildTreeGQL,
   LaForgeGetBuildTreeQuery,
-  LaForgeGetEnvironmentGQL,
+  LaForgeGetEnvironmentInfoGQL,
   LaForgeGetEnvironmentInfoQuery,
   LaForgeGetEnvironmentsGQL,
   LaForgeGetEnvironmentsQuery,
   LaForgeModifyCurrentUserGQL,
   LaForgeModifyCurrentUserMutation,
   LaForgePullAgentStatusesGQL,
-  LaForgePullAgentStatusesQuery,
   LaForgePullPlanStatusesGQL,
   LaForgePullPlanStatusesQuery
 } from '@graphql';
@@ -28,12 +31,14 @@ export class ApiService {
     private getEnvironments: LaForgeGetEnvironmentsGQL,
     private pullPlanStatuses: LaForgePullPlanStatusesGQL,
     private pullAgentStatuses: LaForgePullAgentStatusesGQL,
-    private getEnvironmentInfoGQL: LaForgeGetEnvironmentGQL,
+    private getAllAgentStatuses: LaForgeGetAllAgentStatusesGQL,
+    private getEnvironmentInfoGQL: LaForgeGetEnvironmentInfoGQL,
     private getBuildTreeGQL: LaForgeGetBuildTreeGQL,
     private getBuildPlansGQL: LaForgeGetBuildPlansGQL,
     private getBuildCommitsGQL: LaForgeGetBuildCommitsGQL,
     private createBuildGQL: LaForgeCreateBuildGQL,
-    private modifyCurrentUserGQL: LaForgeModifyCurrentUserGQL
+    private modifyCurrentUserGQL: LaForgeModifyCurrentUserGQL,
+    private createEnvironmentFromGitGQL: LaForgeCreateEnvironmentFromGitGQL
   ) {}
 
   /**
@@ -64,9 +69,9 @@ export class ApiService {
    * @param buildId The build ID that agents relate to
    * @returns The build tree with only agents as full objects
    */
-  public pullAllAgentStatuses(buildId: string): Promise<LaForgePullAgentStatusesQuery['build']> {
+  public pullAllAgentStatuses(buildId: string): Promise<LaForgeGetAllAgentStatusesQuery['getAllAgentStatus']> {
     return new Promise((resolve, reject) => {
-      this.pullAgentStatuses
+      this.getAllAgentStatuses
         .fetch({
           buildId
         })
@@ -77,7 +82,7 @@ export class ApiService {
           } else if (errors) {
             return reject(errors);
           }
-          resolve(data.build);
+          resolve(data.getAllAgentStatus);
         });
     });
   }
@@ -213,6 +218,29 @@ export class ApiService {
             return resolve(data.modifySelfUserInfo);
           }
           reject(new Error('unknown error occurred while updating current user'));
+        }, reject);
+    });
+  }
+
+  public async createEnvFromGit(createEnvFromGitInput: {
+    repoURL: string;
+    repoName: string;
+    branchName: string;
+    envFilePath: string;
+  }): Promise<LaForgeCreateEnvironmentFromGitMutation['createEnviromentFromRepo']> {
+    return new Promise((resolve, reject) => {
+      this.createEnvironmentFromGitGQL
+        .mutate({
+          ...createEnvFromGitInput
+        })
+        .toPromise()
+        .then(({ data, errors }) => {
+          if (errors) {
+            return reject(errors);
+          } else if (data.createEnviromentFromRepo) {
+            return resolve(data.createEnviromentFromRepo);
+          }
+          reject(new Error('unknown error occurred while cloning env from git'));
         }, reject);
     });
   }

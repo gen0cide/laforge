@@ -135,17 +135,21 @@ const (
 	BuildCommitStatePlanning   BuildCommitState = "PLANNING"
 	BuildCommitStateInprogress BuildCommitState = "INPROGRESS"
 	BuildCommitStateApplied    BuildCommitState = "APPLIED"
+	BuildCommitStateCancelled  BuildCommitState = "CANCELLED"
+	BuildCommitStateApproved   BuildCommitState = "APPROVED"
 )
 
 var AllBuildCommitState = []BuildCommitState{
 	BuildCommitStatePlanning,
 	BuildCommitStateInprogress,
 	BuildCommitStateApplied,
+	BuildCommitStateCancelled,
+	BuildCommitStateApproved,
 }
 
 func (e BuildCommitState) IsValid() bool {
 	switch e {
-	case BuildCommitStatePlanning, BuildCommitStateInprogress, BuildCommitStateApplied:
+	case BuildCommitStatePlanning, BuildCommitStateInprogress, BuildCommitStateApplied, BuildCommitStateCancelled, BuildCommitStateApproved:
 		return true
 	}
 	return false
@@ -418,6 +422,7 @@ const (
 	ProvisionStatusTodelete         ProvisionStatus = "TODELETE"
 	ProvisionStatusDeleteinprogress ProvisionStatus = "DELETEINPROGRESS"
 	ProvisionStatusDeleted          ProvisionStatus = "DELETED"
+	ProvisionStatusTorebuild        ProvisionStatus = "TOREBUILD"
 )
 
 var AllProvisionStatus = []ProvisionStatus{
@@ -431,11 +436,12 @@ var AllProvisionStatus = []ProvisionStatus{
 	ProvisionStatusTodelete,
 	ProvisionStatusDeleteinprogress,
 	ProvisionStatusDeleted,
+	ProvisionStatusTorebuild,
 }
 
 func (e ProvisionStatus) IsValid() bool {
 	switch e {
-	case ProvisionStatusPlanning, ProvisionStatusAwaiting, ProvisionStatusInprogress, ProvisionStatusFailed, ProvisionStatusComplete, ProvisionStatusTainted, ProvisionStatusUndefined, ProvisionStatusTodelete, ProvisionStatusDeleteinprogress, ProvisionStatusDeleted:
+	case ProvisionStatusPlanning, ProvisionStatusAwaiting, ProvisionStatusInprogress, ProvisionStatusFailed, ProvisionStatusComplete, ProvisionStatusTainted, ProvisionStatusUndefined, ProvisionStatusTodelete, ProvisionStatusDeleteinprogress, ProvisionStatusDeleted, ProvisionStatusTorebuild:
 		return true
 	}
 	return false

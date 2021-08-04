@@ -39,3 +39,9 @@ query PullAgentStatuses($buildId: String!) {
     }
   }
 }
+
+query GetAllAgentStatuses($buildId: String!) {
+  getAllAgentStatus(buildUUID: $buildId) {
+    ...AgentStatusFields
+  }
+}

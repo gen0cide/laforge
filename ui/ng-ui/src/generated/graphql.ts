@@ -568,6 +568,7 @@ export type LaForgeQuery = {
   getUserList?: Maybe<Array<Maybe<LaForgeAuthUser>>>;
   getCurrentUserTasks?: Maybe<Array<Maybe<LaForgeServerTask>>>;
   getAgentTasks?: Maybe<Array<Maybe<LaForgeAgentTask>>>;
+  getAllAgentStatus?: Maybe<Array<Maybe<LaForgeAgentStatus>>>;
 };
 
 export type LaForgeQueryEnvironmentArgs = {
@@ -604,6 +605,10 @@ export type LaForgeQueryAgentStatusArgs = {
 
 export type LaForgeQueryGetAgentTasksArgs = {
   proStepUUID: Scalars['String'];
+};
+
+export type LaForgeQueryGetAllAgentStatusArgs = {
+  buildUUID: Scalars['String'];
 };
 
 export type LaForgeRepository = {
@@ -1157,6 +1162,17 @@ export type LaForgeModifyCurrentUserMutation = { __typename?: 'Mutation' } & {
   modifySelfUserInfo?: Maybe<{ __typename?: 'AuthUser' } & LaForgeAuthUserFieldsFragment>;
 };
 
+export type LaForgeCreateEnvironmentFromGitMutationVariables = Exact<{
+  repoURL: Scalars['String'];
+  repoName: Scalars['String'];
+  branchName: Scalars['String'];
+  envFilePath: Scalars['String'];
+}>;
+
+export type LaForgeCreateEnvironmentFromGitMutation = { __typename?: 'Mutation' } & {
+  createEnviromentFromRepo: Array<Maybe<{ __typename?: 'Environment' } & Pick<LaForgeEnvironment, 'id'>>>;
+};
+
 export type LaForgeGetStatusQueryVariables = Exact<{
   statusId: Scalars['String'];
 }>;
@@ -1215,6 +1231,14 @@ export type LaForgePullAgentStatusesQuery = { __typename?: 'Query' } & {
         >;
       }
   >;
+};
+
+export type LaForgeGetAllAgentStatusesQueryVariables = Exact<{
+  buildId: Scalars['String'];
+}>;
+
+export type LaForgeGetAllAgentStatusesQuery = { __typename?: 'Query' } & {
+  getAllAgentStatus?: Maybe<Array<Maybe<{ __typename?: 'AgentStatus' } & LaForgeAgentStatusFieldsFragment>>>;
 };
 
 export type LaForgeSubscribeUpdatedStatusSubscriptionVariables = Exact<{ [key: string]: never }>;
@@ -2042,6 +2066,27 @@ export class LaForgeModifyCurrentUserGQL extends Apollo.Mutation<
     super(apollo);
   }
 }
+export const CreateEnvironmentFromGitDocument = gql`
+  mutation CreateEnvironmentFromGit($repoURL: String!, $repoName: String!, $branchName: String!, $envFilePath: String!) {
+    createEnviromentFromRepo(repoURL: $repoURL, repoName: $repoName, branchName: $branchName, envFilePath: $envFilePath) {
+      id
+    }
+  }
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeCreateEnvironmentFromGitGQL extends Apollo.Mutation<
+  LaForgeCreateEnvironmentFromGitMutation,
+  LaForgeCreateEnvironmentFromGitMutationVariables
+> {
+  document = CreateEnvironmentFromGitDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
 export const GetStatusDocument = gql`
   query GetStatus($statusId: String!) {
     status(statusUUID: $statusId) {
@@ -2131,6 +2176,25 @@ export const PullAgentStatusesDocument = gql`
 })
 export class LaForgePullAgentStatusesGQL extends Apollo.Query<LaForgePullAgentStatusesQuery, LaForgePullAgentStatusesQueryVariables> {
   document = PullAgentStatusesDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const GetAllAgentStatusesDocument = gql`
+  query GetAllAgentStatuses($buildId: String!) {
+    getAllAgentStatus(buildUUID: $buildId) {
+      ...AgentStatusFields
+    }
+  }
+  ${AgentStatusFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeGetAllAgentStatusesGQL extends Apollo.Query<LaForgeGetAllAgentStatusesQuery, LaForgeGetAllAgentStatusesQueryVariables> {
+  document = GetAllAgentStatusesDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);

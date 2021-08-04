@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/agentstatus"
@@ -1092,6 +1093,101 @@ func (r *queryResolver) GetAgentTasks(ctx context.Context, proStepUUID string) (
 	return agentTasks, err
 }
 
+func (r *queryResolver) GetAllAgentStatus(ctx context.Context, buildUUID string) ([]*ent.AgentStatus, error) {
+	uuid, err := uuid.Parse(buildUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	/*
+				var slice []T
+		    var wg sync.WaitGroup
+
+		    queue := make(chan T, 1)
+
+		    // Create our data and send it into the queue.
+		    wg.Add(100)
+		    for i := 0; i < 100; i++ {
+		        go func(i int) {
+		            // defer wg.Done()  <- will result in the last int to be missed in the receiving channel
+		            queue <- T(i)
+		        }(i)
+		    }
+
+		    go func() {
+		        // defer wg.Done() <- Never gets called since the 100 `Done()` calls are made above, resulting in the `Wait()` to continue on before this is executed
+		        for t := range queue {
+		            slice = append(slice, t)
+		            wg.Done()   // ** move the `Done()` call here
+		        }
+		    }()
+
+		    wg.Wait()
+
+		    // now prints off all 100 int values
+		    fmt.Println(slice)
+	*/
+
+	build, err := r.client.Build.Query().Where(build.IDEQ(uuid)).Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+	teams, err := build.QueryBuildToTeam().All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var agentStatuses []*ent.AgentStatus
+	var wg sync.WaitGroup
+	var routineErr error
+
+	mu := &sync.Mutex{}
+
+	for _, team := range teams {
+		wg.Add(1)
+		go func(ctx context.Context, wg *sync.WaitGroup, team *ent.Team) {
+			defer wg.Done()
+			pnets, routineErr := team.QueryTeamToProvisionedNetwork().All(ctx)
+			if routineErr != nil {
+				return
+			}
+			for _, pnet := range pnets {
+				wg.Add(1)
+				go func(ctx context.Context, wg *sync.WaitGroup, pnet *ent.ProvisionedNetwork) {
+					defer wg.Done()
+					phosts, routineErr := pnet.QueryProvisionedNetworkToProvisionedHost().All(ctx)
+					if routineErr != nil {
+						return
+					}
+					for _, phost := range phosts {
+						wg.Add(1)
+						go func(ctx context.Context, wg *sync.WaitGroup, phost *ent.ProvisionedHost) {
+							defer wg.Done()
+							agentStatus, routineErr := phost.QueryProvisionedHostToAgentStatus().Order(
+								ent.Desc(agentstatus.FieldTimestamp),
+							).First(ctx)
+							if routineErr != nil {
+								return
+							}
+							mu.Lock()
+							agentStatuses = append(agentStatuses, agentStatus)
+							mu.Unlock()
+						}(ctx, wg, phost)
+					}
+				}(ctx, wg, pnet)
+			}
+		}(ctx, &wg, team)
+	}
+
+	wg.Wait()
+
+	if routineErr != nil {
+		return nil, routineErr
+	}
+
+	return agentStatuses, nil
+}
+
 func (r *repositoryResolver) ID(ctx context.Context, obj *ent.Repository) (string, error) {
 	return obj.ID.String(), nil
 }
@@ -1319,6 +1415,10 @@ func (r *subscriptionResolver) UpdatedCommit(ctx context.Context) (<-chan *ent.B
 		}
 	}()
 	return newBuildCommit, nil
+}
+
+func (r *subscriptionResolver) UpdatedAgentTask(ctx context.Context) (<-chan *ent.AgentTask, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *teamResolver) ID(ctx context.Context, obj *ent.Team) (string, error) {

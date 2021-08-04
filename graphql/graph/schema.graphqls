@@ -527,6 +527,7 @@ type Query {
   getUserList: [AuthUser] @hasRole(roles: [ADMIN])
   getCurrentUserTasks: [ServerTask]
   getAgentTasks(proStepUUID: String!): [AgentTask]
+  getAllAgentStatus(buildUUID: String!): [AgentStatus]
 }
 
 type Mutation {
@@ -597,4 +598,5 @@ type Subscription {
   updatedServerTask: ServerTask!
   updatedBuild: Build!
   updatedCommit: BuildCommit!
+  updatedAgentTask: AgentTask!
 }

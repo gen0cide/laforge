@@ -404,6 +404,7 @@ type ComplexityRoot struct {
 		Environment         func(childComplexity int, envUUID string) int
 		Environments        func(childComplexity int) int
 		GetAgentTasks       func(childComplexity int, proStepUUID string) int
+		GetAllAgentStatus   func(childComplexity int, buildUUID string) int
 		GetCurrentUserTasks func(childComplexity int) int
 		GetServerTasks      func(childComplexity int) int
 		GetUserList         func(childComplexity int) int
@@ -468,6 +469,7 @@ type ComplexityRoot struct {
 
 	Subscription struct {
 		UpdatedAgentStatus func(childComplexity int) int
+		UpdatedAgentTask   func(childComplexity int) int
 		UpdatedBuild       func(childComplexity int) int
 		UpdatedCommit      func(childComplexity int) int
 		UpdatedServerTask  func(childComplexity int) int
@@ -654,6 +656,7 @@ type QueryResolver interface {
 	GetUserList(ctx context.Context) ([]*ent.AuthUser, error)
 	GetCurrentUserTasks(ctx context.Context) ([]*ent.ServerTask, error)
 	GetAgentTasks(ctx context.Context, proStepUUID string) ([]*ent.AgentTask, error)
+	GetAllAgentStatus(ctx context.Context, buildUUID string) ([]*ent.AgentStatus, error)
 }
 type RepositoryResolver interface {
 	ID(ctx context.Context, obj *ent.Repository) (string, error)
@@ -684,6 +687,7 @@ type SubscriptionResolver interface {
 	UpdatedServerTask(ctx context.Context) (<-chan *ent.ServerTask, error)
 	UpdatedBuild(ctx context.Context) (<-chan *ent.Build, error)
 	UpdatedCommit(ctx context.Context) (<-chan *ent.BuildCommit, error)
+	UpdatedAgentTask(ctx context.Context) (<-chan *ent.AgentTask, error)
 }
 type TeamResolver interface {
 	ID(ctx context.Context, obj *ent.Team) (string, error)
@@ -2592,6 +2596,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetAgentTasks(childComplexity, args["proStepUUID"].(string)), true
 
+	case "Query.getAllAgentStatus":
+		if e.complexity.Query.GetAllAgentStatus == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getAllAgentStatus_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetAllAgentStatus(childComplexity, args["buildUUID"].(string)), true
+
 	case "Query.getCurrentUserTasks":
 		if e.complexity.Query.GetCurrentUserTasks == nil {
 			break
@@ -2960,6 +2976,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Subscription.UpdatedAgentStatus(childComplexity), true
 
+	case "Subscription.updatedAgentTask":
+		if e.complexity.Subscription.UpdatedAgentTask == nil {
+			break
+		}
+
+		return e.complexity.Subscription.UpdatedAgentTask(childComplexity), true
+
 	case "Subscription.updatedBuild":
 		if e.complexity.Subscription.UpdatedBuild == nil {
 			break
@@ -3230,6 +3253,7 @@ enum ProvisionStatus {
   TODELETE
   DELETEINPROGRESS
   DELETED
+  TOREBUILD
 }
 
 enum ProvisionStatusFor {
@@ -3315,6 +3339,8 @@ enum BuildCommitState {
   PLANNING
   INPROGRESS
   APPLIED
+  CANCELLED
+  APPROVED
 }
 
 type AgentStatus {
@@ -3707,6 +3733,7 @@ type Query {
   getUserList: [AuthUser] @hasRole(roles: [ADMIN])
   getCurrentUserTasks: [ServerTask]
   getAgentTasks(proStepUUID: String!): [AgentTask]
+  getAllAgentStatus(buildUUID: String!): [AgentStatus]
 }
 
 type Mutation {
@@ -3777,6 +3804,7 @@ type Subscription {
   updatedServerTask: ServerTask!
   updatedBuild: Build!
   updatedCommit: BuildCommit!
+  updatedAgentTask: AgentTask!
 }
 `, BuiltIn: false},
 }
@@ -4338,6 +4366,21 @@ func (ec *executionContext) field_Query_getAgentTasks_args(ctx context.Context, 
 		}
 	}
 	args["proStepUUID"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getAllAgentStatus_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["buildUUID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("buildUUID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["buildUUID"] = arg0
 	return args, nil
 }
 
@@ -13942,6 +13985,45 @@ func (ec *executionContext) _Query_getAgentTasks(ctx context.Context, field grap
 	return ec.marshalOAgentTask2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAgentTask(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_getAllAgentStatus(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getAllAgentStatus_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetAllAgentStatus(rctx, args["buildUUID"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.AgentStatus)
+	fc.Result = res
+	return ec.marshalOAgentStatus2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAgentStatus(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -15606,6 +15688,51 @@ func (ec *executionContext) _Subscription_updatedCommit(ctx context.Context, fie
 			graphql.MarshalString(field.Alias).MarshalGQL(w)
 			w.Write([]byte{':'})
 			ec.marshalNBuildCommit2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐBuildCommit(ctx, field.Selections, res).MarshalGQL(w)
+			w.Write([]byte{'}'})
+		})
+	}
+}
+
+func (ec *executionContext) _Subscription_updatedAgentTask(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().UpdatedAgentTask(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return nil
+	}
+	return func() graphql.Marshaler {
+		res, ok := <-resTmp.(<-chan *ent.AgentTask)
+		if !ok {
+			return nil
+		}
+		return graphql.WriterFunc(func(w io.Writer) {
+			w.Write([]byte{'{'})
+			graphql.MarshalString(field.Alias).MarshalGQL(w)
+			w.Write([]byte{':'})
+			ec.marshalNAgentTask2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAgentTask(ctx, field.Selections, res).MarshalGQL(w)
 			w.Write([]byte{'}'})
 		})
 	}
@@ -20247,6 +20374,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_getAgentTasks(ctx, field)
 				return res
 			})
+		case "getAllAgentStatus":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getAllAgentStatus(ctx, field)
+				return res
+			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
@@ -20708,6 +20846,8 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 		return ec._Subscription_updatedBuild(ctx, fields[0])
 	case "updatedCommit":
 		return ec._Subscription_updatedCommit(ctx, fields[0])
+	case "updatedAgentTask":
+		return ec._Subscription_updatedAgentTask(ctx, fields[0])
 	default:
 		panic("unknown field " + strconv.Quote(fields[0].Name))
 	}
@@ -21224,6 +21364,20 @@ func (ec *executionContext) marshalNAgentStatus2ᚖgithubᚗcomᚋgen0cideᚋlaf
 		return graphql.Null
 	}
 	return ec._AgentStatus(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNAgentTask2githubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAgentTask(ctx context.Context, sel ast.SelectionSet, v ent.AgentTask) graphql.Marshaler {
+	return ec._AgentTask(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAgentTask2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAgentTask(ctx context.Context, sel ast.SelectionSet, v *ent.AgentTask) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._AgentTask(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNAgentTaskState2githubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐAgentTaskState(ctx context.Context, v interface{}) (model.AgentTaskState, error) {
@@ -22857,6 +23011,46 @@ func (ec *executionContext) marshalNvarsMap2ᚕᚖgithubᚗcomᚋgen0cideᚋlafo
 				defer wg.Done()
 			}
 			ret[i] = ec.marshalOvarsMap2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐVarsMap(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOAgentStatus2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAgentStatus(ctx context.Context, sel ast.SelectionSet, v []*ent.AgentStatus) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOAgentStatus2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAgentStatus(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)

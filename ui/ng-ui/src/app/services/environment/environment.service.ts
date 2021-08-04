@@ -17,7 +17,7 @@ import {
   LaForgeSubscribeUpdatedStatusSubscription
 } from '@graphql';
 import { ApiService } from '@services/api/api.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -33,6 +33,10 @@ export class EnvironmentService {
   // private agentStatusSubscription: Subscription;
   // private watchingAgentStatus = false;
   // public pollingInterval = 60;
+  private statusSubscription: Subscription;
+  private agentStatusSubscription: Subscription;
+  private buildSubscription: Subscription;
+  private buildCommitSubscription: Subscription;
   private environmentInfo: BehaviorSubject<LaForgeGetEnvironmentInfoQuery['environment']>;
   private buildTree: BehaviorSubject<LaForgeGetBuildTreeQuery['build']>;
   private statusMap: { [key: string]: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'] };
@@ -43,6 +47,7 @@ export class EnvironmentService {
   public planUpdate: BehaviorSubject<boolean>;
   private buildCommitMap: { [key: string]: LaForgeBuildCommitFieldsFragment };
   public buildCommitUpdate: BehaviorSubject<boolean>;
+  // private agentTaskMap: { [key: string]:}
 
   constructor(
     private api: ApiService,
@@ -68,10 +73,10 @@ export class EnvironmentService {
     this.buildCommitMap = {};
 
     this.initEnvironments();
-    this.startStatusSubscription();
-    this.startAgentStatusSubscription();
-    this.startBuildSubscription();
-    this.startBuildCommitSubscription();
+    // this.startStatusSubscription();
+    // this.startAgentStatusSubscription();
+    // this.startBuildSubscription();
+    // this.startBuildCommitSubscription();
     // this.environmentInfo = environmentInfoApolloQuery.watch()
   }
 
@@ -125,43 +130,65 @@ export class EnvironmentService {
     });
   }
 
-  public initPlanStatuses() {
-    if (!this.buildTree.getValue()) return;
-    this.api.pullAllPlanStatuses(this.buildTree.getValue().id).then((plans) => {
-      for (const plan of plans) {
-        this.statusMap[plan.PlanToStatus.id] = { ...plan.PlanToStatus };
-      }
-      this.statusUpdate.next(!this.statusUpdate.getValue());
-    }, console.error);
-  }
-
-  public initAgentStatuses() {
-    if (!this.buildTree.getValue()) return;
-    this.api.pullAllAgentStatuses(this.buildTree.getValue().id).then((build) => {
-      for (const team of build.buildToTeam) {
-        for (const pnet of team.TeamToProvisionedNetwork) {
-          for (const phost of pnet.ProvisionedNetworkToProvisionedHost) {
-            if (phost.ProvisionedHostToAgentStatus)
-              this.agentStatusMap[phost.ProvisionedHostToAgentStatus.clientId] = {
-                ...phost.ProvisionedHostToAgentStatus
-              };
+  public initPlanStatuses(): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      if (!this.buildTree.getValue()) return reject(new Error("Can't load Plan Statuses as Build Tree hasn't been loaded."));
+      this.api.pullAllPlanStatuses(this.buildTree.getValue().id).then(
+        (plans) => {
+          for (const plan of plans) {
+            this.statusMap[plan.PlanToStatus.id] = { ...plan.PlanToStatus };
           }
+          this.statusUpdate.next(!this.statusUpdate.getValue());
+          resolve(true);
+        },
+        (err) => {
+          console.error(err);
+          reject(err);
         }
-      }
-      this.agentStatusUpdate.next(!this.agentStatusUpdate.getValue());
-    }, console.error);
+      );
+    });
   }
 
-  public initPlans() {
-    if (!this.buildTree.getValue()) return;
-    this.api.pullBuildPlans(this.buildTree.getValue().id).then((build) => {
-      for (const plan of build.buildToPlan) {
-        this.planMap[plan.id] = {
-          ...plan
-        };
-      }
-      this.planUpdate.next(!this.planUpdate.getValue());
-    }, console.error);
+  public initAgentStatuses(): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      if (!this.buildTree.getValue()) return reject(new Error("Can't load Agent Statuses as Build Tree hasn't been loaded."));
+      this.api.pullAllAgentStatuses(this.buildTree.getValue().id).then(
+        (agentStatuses) => {
+          for (const agentStatus of agentStatuses) {
+            this.agentStatusMap[agentStatus.clientId] = {
+              ...agentStatus
+            };
+          }
+          this.agentStatusUpdate.next(!this.agentStatusUpdate.getValue());
+          resolve(true);
+        },
+        (err) => {
+          console.error(err);
+          reject(err);
+        }
+      );
+    });
+  }
+
+  public initPlans(): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      if (!this.buildTree.getValue()) return reject(new Error("Can't load Plans as Build Tree hasn't been loaded."));
+      this.api.pullBuildPlans(this.buildTree.getValue().id).then(
+        (build) => {
+          for (const plan of build.buildToPlan) {
+            this.planMap[plan.id] = {
+              ...plan
+            };
+          }
+          this.planUpdate.next(!this.planUpdate.getValue());
+          resolve(true);
+        },
+        (err) => {
+          console.error(err);
+          reject(err);
+        }
+      );
+    });
   }
 
   public initBuildCommits() {
@@ -223,8 +250,8 @@ export class EnvironmentService {
       .finally(() => this.buildIsLoading.next(false));
   }
 
-  private startStatusSubscription() {
-    this.subscribeUpdatedStatus.subscribe().subscribe(({ data: { updatedStatus }, errors }) => {
+  public startStatusSubscription() {
+    this.statusSubscription = this.subscribeUpdatedStatus.subscribe().subscribe(({ data: { updatedStatus }, errors }) => {
       // console.log('status subscribe');
       if (errors) {
         console.error(errors);
@@ -237,8 +264,12 @@ export class EnvironmentService {
     });
   }
 
-  private startAgentStatusSubscription() {
-    this.subscribeUpdatedAgentStatus.subscribe().subscribe(({ data: { updatedAgentStatus }, errors }) => {
+  public stopStatusSubscription(): void {
+    if (this.statusSubscription) this.statusSubscription.unsubscribe();
+  }
+
+  public startAgentStatusSubscription() {
+    this.agentStatusSubscription = this.subscribeUpdatedAgentStatus.subscribe().subscribe(({ data: { updatedAgentStatus }, errors }) => {
       if (errors) {
         console.error(errors);
       } else if (updatedAgentStatus) {
@@ -250,8 +281,12 @@ export class EnvironmentService {
     });
   }
 
-  private startBuildSubscription() {
-    this.subscribeUpdatedBuild.subscribe().subscribe(({ data: { updatedBuild }, errors }) => {
+  public stopAgentStatusSubscription(): void {
+    if (this.agentStatusSubscription) this.agentStatusSubscription.unsubscribe();
+  }
+
+  public startBuildSubscription() {
+    this.buildSubscription = this.subscribeUpdatedBuild.subscribe().subscribe(({ data: { updatedBuild }, errors }) => {
       if (errors) {
         console.error(errors);
       } else if (updatedBuild) {
@@ -267,8 +302,12 @@ export class EnvironmentService {
     });
   }
 
-  private startBuildCommitSubscription() {
-    this.subscribeUpdatedBuildCommit.subscribe().subscribe(({ data: { updatedCommit }, errors }) => {
+  public stopBuildSubscription(): void {
+    if (this.buildSubscription) this.buildSubscription.unsubscribe();
+  }
+
+  public startBuildCommitSubscription() {
+    this.buildCommitSubscription = this.subscribeUpdatedBuildCommit.subscribe().subscribe(({ data: { updatedCommit }, errors }) => {
       if (errors) {
         console.error(errors);
       } else if (updatedCommit) {
@@ -278,6 +317,10 @@ export class EnvironmentService {
         this.buildCommitUpdate.next(!this.buildCommitUpdate.getValue());
       }
     });
+  }
+
+  public stopBuildCommitSubscription(): void {
+    if (this.buildCommitSubscription) this.buildCommitSubscription.unsubscribe();
   }
 
   // public isWatchingAgentStatus(): boolean {

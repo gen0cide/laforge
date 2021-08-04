@@ -72,7 +72,12 @@
           <input matInput placeholder="envs/example/env.laforge" [formControl]="envFilePath" />
           <mat-error *ngIf="envFilePath.invalid">{{ getEnvFilePathErrorMessage() }}</mat-error>
         </mat-form-field>
-        <button mat-raised-button color="primary" class="submit-repo w-100">Test</button>
+        <button mat-raised-button color="primary" (click)="cloneEnvironmentFromGit()" class="submit-repo w-100">
+          <ng-container *ngIf="gitIsLoading | async">
+            <i class="fad fa-spinner-third fa-spin text-white"></i>
+          </ng-container>
+          <ng-container *ngIf="!(gitIsLoading | async)"> Import </ng-container>
+        </button>
       </div>
     </mat-card-content>
   </mat-card>

@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import {
   LaForgeGetEnvironmentInfoQuery,
@@ -26,12 +27,15 @@ export class ManageComponent implements OnInit, OnDestroy {
   environment: Observable<LaForgeGetEnvironmentInfoQuery['environment']>;
   build: Observable<LaForgeGetBuildTreeQuery['build']>;
   envIsLoading: Observable<boolean>;
+  buildIsLoading: Observable<boolean>;
   environmentDetailsCols: string[] = ['TeamCount', 'AdminCIDRs', 'ExposedVDIPorts'];
   selectionMode = false;
   isRebuildLoading = false;
   rebuildErrors: (GraphQLError | Error)[] = [];
   confirmDeleteBuild = false;
   buildStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
+  planStatusesLoading = false;
+  agentStatusesLoading = false;
 
   constructor(
     private dialog: MatDialog,
@@ -39,19 +43,56 @@ export class ManageComponent implements OnInit, OnDestroy {
     private subheader: SubheaderService,
     private envService: EnvironmentService,
     private rebuild: RebuildService,
-    private router: Router
+    private router: Router,
+    private snackbar: MatSnackBar
   ) {
     this.subheader.setTitle('Environment');
     this.subheader.setDescription('Manage your currently running environment');
+    this.subheader.setShowEnvDropdown(true);
 
     this.environment = this.envService.getEnvironmentInfo().asObservable();
     this.build = this.envService.getBuildTree().asObservable();
+    this.envIsLoading = this.envService.envIsLoading.asObservable();
+    this.buildIsLoading = this.envService.buildIsLoading.asObservable();
+    this.envService.buildIsLoading.subscribe((isLoading) => {
+      if (isLoading)
+        this.snackbar.open('Environment is loading...', null, {
+          panelClass: ['bg-info', 'text-white']
+        });
+      else if (!this.envService.buildIsLoading.getValue()) this.snackbar.dismiss();
+    });
+    this.envService.buildIsLoading.subscribe((isLoading) => {
+      if (isLoading)
+        this.snackbar.open('Build is loading...', null, {
+          panelClass: ['bg-info', 'text-white']
+        });
+      else if (!this.envService.envIsLoading.getValue()) this.snackbar.dismiss();
+    });
   }
 
   ngOnInit(): void {
-    const sub1 = this.envService.getBuildTree().subscribe(() => {
-      this.envService.initPlanStatuses();
-      this.envService.initAgentStatuses();
+    const sub1 = this.envService.getBuildTree().subscribe((buildTree) => {
+      if (!buildTree) return;
+      this.planStatusesLoading = true;
+      this.envService
+        .initPlanStatuses()
+        .catch((err) => {
+          this.snackbar.open(err, 'Okay', {
+            panelClass: ['bg-danger', 'text-white']
+          });
+        })
+        .finally(() => (this.planStatusesLoading = false));
+      this.agentStatusesLoading = true;
+      this.envService
+        .initAgentStatuses()
+        .catch((err) => {
+          this.snackbar.open(err, 'Okay', {
+            panelClass: ['bg-danger', 'text-white']
+          });
+        })
+        .finally(() => (this.agentStatusesLoading = false));
+      this.envService.startAgentStatusSubscription();
+      this.envService.startStatusSubscription();
     });
     this.unsubscribe.push(sub1);
     const sub2 = this.envService.statusUpdate.asObservable().subscribe(() => {
@@ -59,10 +100,16 @@ export class ManageComponent implements OnInit, OnDestroy {
       this.cdRef.detectChanges();
     });
     this.unsubscribe.push(sub2);
+    const sub3 = this.envService.agentStatusUpdate.asObservable().subscribe(() => {
+      this.cdRef.detectChanges();
+    });
+    this.unsubscribe.push(sub3);
   }
 
   ngOnDestroy(): void {
     this.unsubscribe.forEach((sub) => sub.unsubscribe());
+    this.envService.stopAgentStatusSubscription();
+    this.envService.stopStatusSubscription();
   }
 
   checkBuildStatus(): void {

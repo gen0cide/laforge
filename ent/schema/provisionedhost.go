@@ -43,6 +43,9 @@ func (ProvisionedHost) Edges() []ent.Edge {
 			Annotations(entsql.Annotation{
 				OnDelete: entsql.Cascade,
 			}),
+		edge.To("ProvisionedHostToBuild", Build.Type).
+			Unique().
+			Required(),
 		edge.From("ProvisionedHostToProvisioningStep", ProvisioningStep.Type).
 			Ref("ProvisioningStepToProvisionedHost"),
 		edge.From("ProvisionedHostToAgentStatus", AgentStatus.Type).

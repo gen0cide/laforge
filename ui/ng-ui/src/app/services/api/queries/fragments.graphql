@@ -69,3 +69,13 @@ fragment AuthUserFields on AuthUser {
   occupation
   publicKey
 }
+
+fragment AgentTaskFields on AgentTask {
+  id
+  state
+  command
+  args
+  number
+  output
+  error_message
+}
