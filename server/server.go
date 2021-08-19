@@ -18,6 +18,8 @@ import (
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
+	"github.com/gen0cide/laforge/ent/servertask"
+	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/graphql/auth"
 	"github.com/gen0cide/laforge/graphql/graph"
 	pb "github.com/gen0cide/laforge/grpc/proto"
@@ -194,15 +196,15 @@ func main() {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
-	pgHost, ok := os.LookupEnv("PG_HOST")
+	pgHost, ok := os.LookupEnv("PG_URI")
 	client := &ent.Client{}
 
 	if !ok {
-		client = ent.PGOpen("postgresql://laforger:laforge@127.0.0.1/laforge")
+		logrus.Errorf("no value set for PG_URI env variable. please set the postgres connection uri")
+		os.Exit(1)
 	} else {
 		client = ent.PGOpen(pgHost)
 	}
-	// client := ent.SQLLiteOpen("file:test.sqlite?_loc=auto&cache=shared&_fk=1")
 
 	ctx := context.Background()
 	defer ctx.Done()
@@ -223,6 +225,47 @@ func main() {
 			<-ticker.C
 			go auth.ClearTokens(client, ctx)
 
+		}
+	}(client, ctx)
+
+	// Fail all Server Tasks that got interrupted
+	go func(client *ent.Client, ctx context.Context) {
+		interruptedServerTasks, err := client.ServerTask.Query().Where(servertask.HasServerTaskToStatusWith(status.StateEQ(status.StateINPROGRESS))).All(ctx)
+		if err != nil {
+			if ent.IsNotFound(err) {
+				logrus.Info("no interrupted server tasks found.")
+			} else {
+				logrus.Errorf("error while querying interrupted server tasks: %v", err)
+			}
+			return
+		}
+		for _, task := range interruptedServerTasks {
+			entStatus, err := task.QueryServerTaskToStatus().Only(ctx)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"taskId": task.ID,
+				}).Errorf("error while querying status from server task: %v", err)
+				continue
+			}
+			err = task.Update().SetEndTime(time.Now()).Exec(ctx)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"taskId": task.ID,
+				}).Errorf("error while setting end time on server task: %v", err)
+				continue
+			}
+			err = entStatus.Update().SetState(status.StateFAILED).Exec(ctx)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"taskId": task.ID,
+				}).Errorf("error while setting FAILED status on server task: %v", err)
+				continue
+			}
+		}
+		if len(interruptedServerTasks) == 0 {
+			logrus.Info("No interrupted server tasks found")
+		} else {
+			logrus.Warnf("Failed %d interrupted server tasks", len(interruptedServerTasks))
 		}
 	}(client, ctx)
 

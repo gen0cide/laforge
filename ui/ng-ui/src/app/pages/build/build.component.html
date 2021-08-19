@@ -6,9 +6,13 @@
   <mat-card-header *ngIf="environment | async as _environment">
     <div class="env-header d-flex align-items-center justify-content-between">
       <div class="env-info w-50">
-        <mat-card-title
-          >{{ _environment.name }} <span *ngIf="build | async as _build">v{{ _build.revision }}</span></mat-card-title
-        >
+        <mat-card-title>
+          {{ _environment.name }} <span *ngIf="build | async as _build">v{{ _build.revision }}</span>
+          <ng-container *ngIf="planStatusesLoading || agentStatusesLoading">
+            <i class="fad fa-1x fa-spinner-third fa-spin mx-2"></i>
+            <small>Loading {{ agentStatusesLoading ? 'agent statuses' : 'plans' }}...</small>
+          </ng-container>
+        </mat-card-title>
         <mat-card-subtitle>{{ _environment.description }}</mat-card-subtitle>
       </div>
       <!-- <div class="controls">

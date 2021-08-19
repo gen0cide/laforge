@@ -7,7 +7,10 @@ import { HttpLink } from 'apollo-angular/http';
 import { environment } from 'src/environments/environment';
 
 export function createApollo(httpLink: HttpLink): ApolloClientOptions<any> {
-  const httpClient = httpLink.create({ uri: environment.graphqlUrl, withCredentials: true });
+  const httpClient = httpLink.create({
+    uri: environment.graphqlUrl,
+    withCredentials: true
+  });
   const wsClient = new WebSocketLink({
     uri: environment.wsUrl,
     options: {

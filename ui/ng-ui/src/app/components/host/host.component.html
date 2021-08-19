@@ -1,6 +1,6 @@
 <div
   class="host"
-  (click)="style === 'compact' && viewDetails()"
+  (click)="style === 'compact' && mode !== 'plan' && viewDetails()"
   [ngClass]="style"
   [class.selectable]="selectable"
   *ngIf="shouldHideLoading || !shouldHide"
@@ -28,7 +28,7 @@
           <i [ngClass]="getStatusIcon()"></i>
         </ng-container>
       </div>
-      <div class="host-preview" (click)="style !== 'compact' && viewDetails()">
+      <div class="host-preview" (click)="style !== 'compact' && mode !== 'plan' && viewDetails()">
         <span class="host-hostname">{{ provisionedHost ? provisionedHost.ProvisionedHostToHost.hostname : '' }}</span>
       </div>
       <div class="toggle-collapse" *ngIf="style !== 'compact' && shouldCollapse()">

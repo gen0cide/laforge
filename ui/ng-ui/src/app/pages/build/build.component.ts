@@ -23,13 +23,15 @@ export class BuildComponent implements OnInit, OnDestroy {
   build: Observable<LaForgeGetBuildTreeQuery['build']>;
   buildStatus: LaForgeSubscribeUpdatedStatusSubscription['updatedStatus'];
   executeBuildLoading = false;
+  planStatusesLoading = false;
+  agentStatusesLoading = false;
 
   constructor(
     private subheader: SubheaderService,
     public envService: EnvironmentService,
     private cdRef: ChangeDetectorRef,
     private executeBuild: LaForgeExecuteBuildGQL,
-    private snackBar: MatSnackBar
+    private snackbar: MatSnackBar
   ) {
     this.subheader.setTitle('Build');
     this.subheader.setDescription('Monitor the progress of a given build');
@@ -37,12 +39,54 @@ export class BuildComponent implements OnInit, OnDestroy {
 
     this.environment = this.envService.getEnvironmentInfo().asObservable();
     this.build = this.envService.getBuildTree().asObservable();
+    this.envService.buildIsLoading.subscribe((isLoading) => {
+      if (isLoading)
+        this.snackbar.open('Environment is loading...', null, {
+          panelClass: ['bg-info', 'text-white']
+        });
+      else if (!this.envService.buildIsLoading.getValue()) this.snackbar.dismiss();
+    });
+    this.envService.buildIsLoading.subscribe((isLoading) => {
+      if (isLoading)
+        this.snackbar.open('Build is loading...', null, {
+          panelClass: ['bg-info', 'text-white']
+        });
+      else if (!this.envService.envIsLoading.getValue()) this.snackbar.dismiss();
+    });
   }
 
   ngOnInit(): void {
-    const sub1 = this.envService.getBuildTree().subscribe(() => {
-      this.envService.initPlanStatuses();
-      // this.envService.initAgentStatuses();
+    const sub1 = this.envService.getBuildTree().subscribe((buildTree) => {
+      if (!buildTree) return;
+      this.planStatusesLoading = true;
+      this.envService
+        .initPlanStatuses()
+        .catch((err) => {
+          this.snackbar.open(err, 'Okay', {
+            panelClass: ['bg-danger', 'text-white']
+          });
+        })
+        .finally(() => {
+          this.planStatusesLoading = false;
+          this.cdRef.detectChanges();
+        });
+      this.agentStatusesLoading = true;
+      this.envService
+        .initAgentStatuses()
+        .catch((err) => {
+          this.snackbar.open(err, 'Okay', {
+            panelClass: ['bg-danger', 'text-white']
+          });
+        })
+        .finally(() => {
+          this.agentStatusesLoading = false;
+          this.cdRef.detectChanges();
+        });
+      this.envService.startAgentStatusSubscription();
+      this.envService.startStatusSubscription();
+      this.envService.startAgentTaskSubscription();
+      this.envService.startBuildCommitSubscription();
+      this.envService.startBuildSubscription();
     });
     this.unsubscribe.push(sub1);
     const sub2 = this.envService.statusUpdate.asObservable().subscribe(() => {
@@ -54,6 +98,11 @@ export class BuildComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.unsubscribe.forEach((sub) => sub.unsubscribe());
+    this.envService.stopAgentStatusSubscription();
+    this.envService.stopStatusSubscription();
+    this.envService.stopAgentTaskSubscription();
+    this.envService.stopBuildCommitSubscription();
+    this.envService.stopBuildSubscription();
   }
 
   checkBuildStatus(): void {
@@ -83,7 +132,7 @@ export class BuildComponent implements OnInit, OnDestroy {
       }, console.error)
       .finally(() => {
         this.executeBuildLoading = false;
-        this.snackBar.open('Successfully started build!', 'Cool', {
+        this.snackbar.open('Successfully started build!', 'Cool', {
           duration: 3000
         });
       });

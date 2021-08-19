@@ -689,6 +689,7 @@ export type LaForgeSubscription = {
   updatedServerTask: LaForgeServerTask;
   updatedBuild: LaForgeBuild;
   updatedCommit: LaForgeBuildCommit;
+  updatedAgentTask: LaForgeAgentTask;
 };
 
 export type LaForgeTeam = {
@@ -732,13 +733,7 @@ export type LaForgeGetAgentTasksQueryVariables = Exact<{
 }>;
 
 export type LaForgeGetAgentTasksQuery = { __typename?: 'Query' } & {
-  getAgentTasks?: Maybe<
-    Array<
-      Maybe<
-        { __typename?: 'AgentTask' } & Pick<LaForgeAgentTask, 'id' | 'state' | 'command' | 'args' | 'number' | 'output' | 'error_message'>
-      >
-    >
-  >;
+  getAgentTasks?: Maybe<Array<Maybe<{ __typename?: 'AgentTask' } & LaForgeAgentTaskFieldsFragment>>>;
 };
 
 export type LaForgeGetCurrentUserQueryVariables = Exact<{ [key: string]: never }>;
@@ -1121,6 +1116,11 @@ export type LaForgeAuthUserFieldsFragment = { __typename?: 'AuthUser' } & Pick<
   'id' | 'username' | 'role' | 'provider' | 'first_name' | 'last_name' | 'email' | 'phone' | 'company' | 'occupation' | 'publicKey'
 >;
 
+export type LaForgeAgentTaskFieldsFragment = { __typename?: 'AgentTask' } & Pick<
+  LaForgeAgentTask,
+  'id' | 'state' | 'command' | 'args' | 'number' | 'output' | 'error_message'
+>;
+
 export type LaForgeRebuildMutationVariables = Exact<{
   rootPlans: Array<Maybe<Scalars['String']>> | Maybe<Scalars['String']>;
 }>;
@@ -1273,6 +1273,12 @@ export type LaForgeSubscribeUpdatedBuildCommitSubscription = { __typename?: 'Sub
   updatedCommit: { __typename?: 'BuildCommit' } & LaForgeBuildCommitFieldsFragment;
 };
 
+export type LaForgeSubscribeUpdatedAgentTaskSubscriptionVariables = Exact<{ [key: string]: never }>;
+
+export type LaForgeSubscribeUpdatedAgentTaskSubscription = { __typename?: 'Subscription' } & {
+  updatedAgentTask: { __typename?: 'AgentTask' } & LaForgeAgentTaskFieldsFragment;
+};
+
 export type LaForgeServerTaskFieldsFragment = { __typename?: 'ServerTask' } & Pick<
   LaForgeServerTask,
   'id' | 'type' | 'start_time' | 'end_time' | 'errors' | 'log_file_path'
@@ -1366,6 +1372,17 @@ export const AuthUserFieldsFragmentDoc = gql`
     publicKey
   }
 `;
+export const AgentTaskFieldsFragmentDoc = gql`
+  fragment AgentTaskFields on AgentTask {
+    id
+    state
+    command
+    args
+    number
+    output
+    error_message
+  }
+`;
 export const ServerTaskFieldsFragmentDoc = gql`
   fragment ServerTaskFields on ServerTask {
     id
@@ -1391,15 +1408,10 @@ export const ServerTaskFieldsFragmentDoc = gql`
 export const GetAgentTasksDocument = gql`
   query GetAgentTasks($proStepId: String!) {
     getAgentTasks(proStepUUID: $proStepId) {
-      id
-      state
-      command
-      args
-      number
-      output
-      error_message
+      ...AgentTaskFields
     }
   }
+  ${AgentTaskFieldsFragmentDoc}
 `;
 
 @Injectable({
@@ -2307,6 +2319,28 @@ export class LaForgeSubscribeUpdatedBuildCommitGQL extends Apollo.Subscription<
   LaForgeSubscribeUpdatedBuildCommitSubscriptionVariables
 > {
   document = SubscribeUpdatedBuildCommitDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const SubscribeUpdatedAgentTaskDocument = gql`
+  subscription SubscribeUpdatedAgentTask {
+    updatedAgentTask {
+      ...AgentTaskFields
+    }
+  }
+  ${AgentTaskFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeSubscribeUpdatedAgentTaskGQL extends Apollo.Subscription<
+  LaForgeSubscribeUpdatedAgentTaskSubscription,
+  LaForgeSubscribeUpdatedAgentTaskSubscriptionVariables
+> {
+  document = SubscribeUpdatedAgentTaskDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);

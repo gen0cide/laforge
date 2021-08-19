@@ -29,6 +29,7 @@ import (
 	"github.com/gen0cide/laforge/graphql/graph/generated"
 	"github.com/gen0cide/laforge/graphql/graph/model"
 	"github.com/gen0cide/laforge/loader"
+	"github.com/gen0cide/laforge/logging"
 	"github.com/gen0cide/laforge/planner"
 	"github.com/gen0cide/laforge/server/utils"
 	"github.com/google/uuid"
@@ -353,7 +354,11 @@ func (r *mutationResolver) LoadEnvironment(ctx context.Context, envFilePath stri
 	if err != nil {
 		return nil, fmt.Errorf("error creating server task: %v", err)
 	}
-	results, err := loader.LoadEnvironment(ctx, r.client, envFilePath)
+	log, err := logging.CreateLoggerForServerTask(serverTask)
+	if err != nil {
+		return nil, err
+	}
+	results, err := loader.LoadEnvironment(ctx, r.client, log, envFilePath)
 	if err != nil {
 		taskStatus, serverTask, err = utils.FailServerTask(ctx, r.client, r.rdb, taskStatus, serverTask, err)
 		if err != nil {
@@ -1418,7 +1423,36 @@ func (r *subscriptionResolver) UpdatedCommit(ctx context.Context) (<-chan *ent.B
 }
 
 func (r *subscriptionResolver) UpdatedAgentTask(ctx context.Context) (<-chan *ent.AgentTask, error) {
-	panic(fmt.Errorf("not implemented"))
+	newAgentTask := make(chan *ent.AgentTask, 1)
+	go func() {
+		sub := r.rdb.Subscribe(ctx, "updatedAgentTask")
+		_, err := sub.Receive(ctx)
+		if err != nil {
+			return
+		}
+		ch := sub.Channel()
+		for {
+			select {
+			case message := <-ch:
+				uuid, err := uuid.Parse(message.Payload)
+				if err != nil {
+					sub.Close()
+					return
+				}
+				entAgentTask, err := r.client.AgentTask.Get(ctx, uuid)
+				if err != nil {
+					sub.Close()
+					return
+				}
+				newAgentTask <- entAgentTask
+			// close when context done
+			case <-ctx.Done():
+				sub.Close()
+				return
+			}
+		}
+	}()
+	return newAgentTask, nil
 }
 
 func (r *teamResolver) ID(ctx context.Context, obj *ent.Team) (string, error) {

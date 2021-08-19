@@ -7,6 +7,7 @@ import {
   LaForgeProvisionStatus,
   LaForgeStatus
 } from '@graphql';
+import { EnvironmentService } from '@services/environment/environment.service';
 import { BehaviorSubject } from 'rxjs';
 
 import { LaForgeGetAgentTasksGQL } from '../../../generated/graphql';
@@ -25,7 +26,8 @@ export class StepModalComponent implements OnInit {
     public dialogRef: MatDialogRef<StepModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { provisioningStep: LaForgeProvisioningStep; planStatus: LaForgeStatus },
     private getAgentTasks: LaForgeGetAgentTasksGQL,
-    private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef,
+    private envService: EnvironmentService
   ) {
     this.agentTasks = new BehaviorSubject([]);
   }
@@ -42,7 +44,12 @@ export class StepModalComponent implements OnInit {
         } else if (errors) {
           return this.agentTasks.error(errors);
         }
-        this.agentTasks.next([...data.getAgentTasks].sort((a, b) => a.number - b.number));
+        const tasks = [...data.getAgentTasks];
+        for (let i = 0; i < tasks.length; i++) {
+          const updatedTask = this.envService.getAgentTask(tasks[i].id);
+          if (updatedTask) tasks[i] = { ...updatedTask };
+        }
+        this.agentTasks.next(tasks.sort((a, b) => a.number - b.number));
       }, this.agentTasks.error);
   }
 

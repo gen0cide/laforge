@@ -30,3 +30,9 @@ subscription SubscribeUpdatedBuildCommit {
     ...BuildCommitFields
   }
 }
+
+subscription SubscribeUpdatedAgentTask {
+  updatedAgentTask {
+    ...AgentTaskFields
+  }
+}
