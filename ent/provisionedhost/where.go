@@ -384,6 +384,34 @@ func HasProvisionedHostToEndStepPlanWith(preds ...predicate.Plan) predicate.Prov
 	})
 }
 
+// HasProvisionedHostToBuild applies the HasEdge predicate on the "ProvisionedHostToBuild" edge.
+func HasProvisionedHostToBuild() predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToBuildTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProvisionedHostToBuildTable, ProvisionedHostToBuildColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProvisionedHostToBuildWith applies the HasEdge predicate on the "ProvisionedHostToBuild" edge with a given conditions (other predicates).
+func HasProvisionedHostToBuildWith(preds ...predicate.Build) predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToBuildInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProvisionedHostToBuildTable, ProvisionedHostToBuildColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasProvisionedHostToProvisioningStep applies the HasEdge predicate on the "ProvisionedHostToProvisioningStep" edge.
 func HasProvisionedHostToProvisioningStep() predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {

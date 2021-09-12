@@ -79,3 +79,8 @@ fragment AgentTaskFields on AgentTask {
   output
   error_message
 }
+
+fragment PageInfoFields on LaForgePageInfo {
+  total
+  nextOffset
+}

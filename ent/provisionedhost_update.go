@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/agenttask"
+	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/plan"
@@ -112,6 +113,17 @@ func (phu *ProvisionedHostUpdate) SetNillableProvisionedHostToEndStepPlanID(id *
 // SetProvisionedHostToEndStepPlan sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity.
 func (phu *ProvisionedHostUpdate) SetProvisionedHostToEndStepPlan(p *Plan) *ProvisionedHostUpdate {
 	return phu.SetProvisionedHostToEndStepPlanID(p.ID)
+}
+
+// SetProvisionedHostToBuildID sets the "ProvisionedHostToBuild" edge to the Build entity by ID.
+func (phu *ProvisionedHostUpdate) SetProvisionedHostToBuildID(id uuid.UUID) *ProvisionedHostUpdate {
+	phu.mutation.SetProvisionedHostToBuildID(id)
+	return phu
+}
+
+// SetProvisionedHostToBuild sets the "ProvisionedHostToBuild" edge to the Build entity.
+func (phu *ProvisionedHostUpdate) SetProvisionedHostToBuild(b *Build) *ProvisionedHostUpdate {
+	return phu.SetProvisionedHostToBuildID(b.ID)
 }
 
 // AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by IDs.
@@ -223,6 +235,12 @@ func (phu *ProvisionedHostUpdate) ClearProvisionedHostToHost() *ProvisionedHostU
 // ClearProvisionedHostToEndStepPlan clears the "ProvisionedHostToEndStepPlan" edge to the Plan entity.
 func (phu *ProvisionedHostUpdate) ClearProvisionedHostToEndStepPlan() *ProvisionedHostUpdate {
 	phu.mutation.ClearProvisionedHostToEndStepPlan()
+	return phu
+}
+
+// ClearProvisionedHostToBuild clears the "ProvisionedHostToBuild" edge to the Build entity.
+func (phu *ProvisionedHostUpdate) ClearProvisionedHostToBuild() *ProvisionedHostUpdate {
+	phu.mutation.ClearProvisionedHostToBuild()
 	return phu
 }
 
@@ -373,6 +391,9 @@ func (phu *ProvisionedHostUpdate) check() error {
 	}
 	if _, ok := phu.mutation.ProvisionedHostToHostID(); phu.mutation.ProvisionedHostToHostCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"ProvisionedHostToHost\"")
+	}
+	if _, ok := phu.mutation.ProvisionedHostToBuildID(); phu.mutation.ProvisionedHostToBuildCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"ProvisionedHostToBuild\"")
 	}
 	return nil
 }
@@ -547,6 +568,41 @@ func (phu *ProvisionedHostUpdate) sqlSave(ctx context.Context) (n int, err error
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if phu.mutation.ProvisionedHostToBuildCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToBuildTable,
+			Columns: []string{provisionedhost.ProvisionedHostToBuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: build.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phu.mutation.ProvisionedHostToBuildIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToBuildTable,
+			Columns: []string{provisionedhost.ProvisionedHostToBuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: build.FieldID,
 				},
 			},
 		}
@@ -884,6 +940,17 @@ func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToEndStepPlan(p *Plan) *
 	return phuo.SetProvisionedHostToEndStepPlanID(p.ID)
 }
 
+// SetProvisionedHostToBuildID sets the "ProvisionedHostToBuild" edge to the Build entity by ID.
+func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToBuildID(id uuid.UUID) *ProvisionedHostUpdateOne {
+	phuo.mutation.SetProvisionedHostToBuildID(id)
+	return phuo
+}
+
+// SetProvisionedHostToBuild sets the "ProvisionedHostToBuild" edge to the Build entity.
+func (phuo *ProvisionedHostUpdateOne) SetProvisionedHostToBuild(b *Build) *ProvisionedHostUpdateOne {
+	return phuo.SetProvisionedHostToBuildID(b.ID)
+}
+
 // AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by IDs.
 func (phuo *ProvisionedHostUpdateOne) AddProvisionedHostToProvisioningStepIDs(ids ...uuid.UUID) *ProvisionedHostUpdateOne {
 	phuo.mutation.AddProvisionedHostToProvisioningStepIDs(ids...)
@@ -993,6 +1060,12 @@ func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToHost() *ProvisionedH
 // ClearProvisionedHostToEndStepPlan clears the "ProvisionedHostToEndStepPlan" edge to the Plan entity.
 func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToEndStepPlan() *ProvisionedHostUpdateOne {
 	phuo.mutation.ClearProvisionedHostToEndStepPlan()
+	return phuo
+}
+
+// ClearProvisionedHostToBuild clears the "ProvisionedHostToBuild" edge to the Build entity.
+func (phuo *ProvisionedHostUpdateOne) ClearProvisionedHostToBuild() *ProvisionedHostUpdateOne {
+	phuo.mutation.ClearProvisionedHostToBuild()
 	return phuo
 }
 
@@ -1150,6 +1223,9 @@ func (phuo *ProvisionedHostUpdateOne) check() error {
 	}
 	if _, ok := phuo.mutation.ProvisionedHostToHostID(); phuo.mutation.ProvisionedHostToHostCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"ProvisionedHostToHost\"")
+	}
+	if _, ok := phuo.mutation.ProvisionedHostToBuildID(); phuo.mutation.ProvisionedHostToBuildCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"ProvisionedHostToBuild\"")
 	}
 	return nil
 }
@@ -1341,6 +1417,41 @@ func (phuo *ProvisionedHostUpdateOne) sqlSave(ctx context.Context) (_node *Provi
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if phuo.mutation.ProvisionedHostToBuildCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToBuildTable,
+			Columns: []string{provisionedhost.ProvisionedHostToBuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: build.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := phuo.mutation.ProvisionedHostToBuildIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToBuildTable,
+			Columns: []string{provisionedhost.ProvisionedHostToBuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: build.FieldID,
 				},
 			},
 		}

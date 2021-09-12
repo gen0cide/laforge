@@ -6,7 +6,24 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+
+	"github.com/gen0cide/laforge/ent"
 )
+
+type AgentStatusBatch struct {
+	AgentStatuses []*ent.AgentStatus `json:"agentStatuses"`
+	PageInfo      *LaForgePageInfo   `json:"pageInfo"`
+}
+
+type LaForgePageInfo struct {
+	Total      int `json:"total"`
+	NextOffset int `json:"nextOffset"`
+}
+
+type StatusBatch struct {
+	Statuses []*ent.Status    `json:"statuses"`
+	PageInfo *LaForgePageInfo `json:"pageInfo"`
+}
 
 type ConfigMap struct {
 	Key   string `json:"key"`

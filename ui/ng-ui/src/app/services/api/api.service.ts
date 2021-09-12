@@ -73,7 +73,9 @@ export class ApiService {
     return new Promise((resolve, reject) => {
       this.getAllAgentStatuses
         .fetch({
-          buildId
+          buildId,
+          count: 50,
+          offset: 0
         })
         .toPromise()
         .then(({ data, error, errors }) => {

@@ -52,6 +52,8 @@ var (
 		{Name: "used_mem", Type: field.TypeInt64},
 		{Name: "timestamp", Type: field.TypeInt64},
 		{Name: "agent_status_agent_status_to_provisioned_host", Type: field.TypeUUID, Nullable: true},
+		{Name: "agent_status_agent_status_to_provisioned_network", Type: field.TypeUUID, Nullable: true},
+		{Name: "agent_status_agent_status_to_build", Type: field.TypeUUID, Nullable: true},
 	}
 	// AgentStatusTable holds the schema information for the "agent_status" table.
 	AgentStatusTable = &schema.Table{
@@ -63,6 +65,18 @@ var (
 				Symbol:     "agent_status_provisioned_hosts_AgentStatusToProvisionedHost",
 				Columns:    []*schema.Column{AgentStatusColumns[15]},
 				RefColumns: []*schema.Column{ProvisionedHostsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "agent_status_provisioned_networks_AgentStatusToProvisionedNetwork",
+				Columns:    []*schema.Column{AgentStatusColumns[16]},
+				RefColumns: []*schema.Column{ProvisionedNetworksColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "agent_status_builds_AgentStatusToBuild",
+				Columns:    []*schema.Column{AgentStatusColumns[17]},
+				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -662,6 +676,7 @@ var (
 		{Name: "provisioned_host_provisioned_host_to_provisioned_network", Type: field.TypeUUID, Nullable: true},
 		{Name: "provisioned_host_provisioned_host_to_host", Type: field.TypeUUID, Nullable: true},
 		{Name: "provisioned_host_provisioned_host_to_end_step_plan", Type: field.TypeUUID, Nullable: true},
+		{Name: "provisioned_host_provisioned_host_to_build", Type: field.TypeUUID, Nullable: true},
 	}
 	// ProvisionedHostsTable holds the schema information for the "provisioned_hosts" table.
 	ProvisionedHostsTable = &schema.Table{
@@ -698,6 +713,12 @@ var (
 				Columns:    []*schema.Column{ProvisionedHostsColumns[7]},
 				RefColumns: []*schema.Column{PlansColumns[0]},
 				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "provisioned_hosts_builds_ProvisionedHostToBuild",
+				Columns:    []*schema.Column{ProvisionedHostsColumns[8]},
+				RefColumns: []*schema.Column{BuildsColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -910,7 +931,7 @@ var (
 	// StatusColumns holds the columns for the "status" table.
 	StatusColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "state", Type: field.TypeEnum, Enums: []string{"PLANNING", "AWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED", "TODELETE", "DELETEINPROGRESS", "DELETED", "TOREBUILD"}},
+		{Name: "state", Type: field.TypeEnum, Enums: []string{"PLANNING", "AWAITING", "PARENTAWAITING", "INPROGRESS", "FAILED", "COMPLETE", "TAINTED", "TODELETE", "DELETEINPROGRESS", "DELETED", "TOREBUILD"}},
 		{Name: "status_for", Type: field.TypeEnum, Enums: []string{"Build", "Team", "Plan", "ProvisionedNetwork", "ProvisionedHost", "ProvisioningStep", "ServerTask"}},
 		{Name: "started_at", Type: field.TypeTime, Nullable: true},
 		{Name: "ended_at", Type: field.TypeTime, Nullable: true},
@@ -1355,6 +1376,8 @@ func init() {
 	AdhocPlansTable.ForeignKeys[0].RefTable = BuildsTable
 	AdhocPlansTable.ForeignKeys[1].RefTable = AgentTasksTable
 	AgentStatusTable.ForeignKeys[0].RefTable = ProvisionedHostsTable
+	AgentStatusTable.ForeignKeys[1].RefTable = ProvisionedNetworksTable
+	AgentStatusTable.ForeignKeys[2].RefTable = BuildsTable
 	AgentTasksTable.ForeignKeys[0].RefTable = ProvisioningStepsTable
 	AgentTasksTable.ForeignKeys[1].RefTable = ProvisionedHostsTable
 	BuildsTable.ForeignKeys[0].RefTable = EnvironmentsTable
@@ -1388,6 +1411,7 @@ func init() {
 	ProvisionedHostsTable.ForeignKeys[2].RefTable = ProvisionedNetworksTable
 	ProvisionedHostsTable.ForeignKeys[3].RefTable = HostsTable
 	ProvisionedHostsTable.ForeignKeys[4].RefTable = PlansTable
+	ProvisionedHostsTable.ForeignKeys[5].RefTable = BuildsTable
 	ProvisionedNetworksTable.ForeignKeys[0].RefTable = PlansTable
 	ProvisionedNetworksTable.ForeignKeys[1].RefTable = NetworksTable
 	ProvisionedNetworksTable.ForeignKeys[2].RefTable = BuildsTable

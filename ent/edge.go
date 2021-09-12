@@ -52,6 +52,22 @@ func (as *AgentStatus) AgentStatusToProvisionedHost(ctx context.Context) (*Provi
 	return result, MaskNotFound(err)
 }
 
+func (as *AgentStatus) AgentStatusToProvisionedNetwork(ctx context.Context) (*ProvisionedNetwork, error) {
+	result, err := as.Edges.AgentStatusToProvisionedNetworkOrErr()
+	if IsNotLoaded(err) {
+		result, err = as.QueryAgentStatusToProvisionedNetwork().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
+func (as *AgentStatus) AgentStatusToBuild(ctx context.Context) (*Build, error) {
+	result, err := as.Edges.AgentStatusToBuildOrErr()
+	if IsNotLoaded(err) {
+		result, err = as.QueryAgentStatusToBuild().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (at *AgentTask) AgentTaskToProvisioningStep(ctx context.Context) (*ProvisioningStep, error) {
 	result, err := at.Edges.AgentTaskToProvisioningStepOrErr()
 	if IsNotLoaded(err) {
@@ -722,6 +738,14 @@ func (ph *ProvisionedHost) ProvisionedHostToEndStepPlan(ctx context.Context) (*P
 		result, err = ph.QueryProvisionedHostToEndStepPlan().Only(ctx)
 	}
 	return result, MaskNotFound(err)
+}
+
+func (ph *ProvisionedHost) ProvisionedHostToBuild(ctx context.Context) (*Build, error) {
+	result, err := ph.Edges.ProvisionedHostToBuildOrErr()
+	if IsNotLoaded(err) {
+		result, err = ph.QueryProvisionedHostToBuild().Only(ctx)
+	}
+	return result, err
 }
 
 func (ph *ProvisionedHost) ProvisionedHostToProvisioningStep(ctx context.Context) ([]*ProvisioningStep, error) {

@@ -10,7 +10,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
+	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/google/uuid"
 )
 
@@ -128,6 +130,44 @@ func (asc *AgentStatusCreate) SetNillableAgentStatusToProvisionedHostID(id *uuid
 // SetAgentStatusToProvisionedHost sets the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity.
 func (asc *AgentStatusCreate) SetAgentStatusToProvisionedHost(p *ProvisionedHost) *AgentStatusCreate {
 	return asc.SetAgentStatusToProvisionedHostID(p.ID)
+}
+
+// SetAgentStatusToProvisionedNetworkID sets the "AgentStatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
+func (asc *AgentStatusCreate) SetAgentStatusToProvisionedNetworkID(id uuid.UUID) *AgentStatusCreate {
+	asc.mutation.SetAgentStatusToProvisionedNetworkID(id)
+	return asc
+}
+
+// SetNillableAgentStatusToProvisionedNetworkID sets the "AgentStatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID if the given value is not nil.
+func (asc *AgentStatusCreate) SetNillableAgentStatusToProvisionedNetworkID(id *uuid.UUID) *AgentStatusCreate {
+	if id != nil {
+		asc = asc.SetAgentStatusToProvisionedNetworkID(*id)
+	}
+	return asc
+}
+
+// SetAgentStatusToProvisionedNetwork sets the "AgentStatusToProvisionedNetwork" edge to the ProvisionedNetwork entity.
+func (asc *AgentStatusCreate) SetAgentStatusToProvisionedNetwork(p *ProvisionedNetwork) *AgentStatusCreate {
+	return asc.SetAgentStatusToProvisionedNetworkID(p.ID)
+}
+
+// SetAgentStatusToBuildID sets the "AgentStatusToBuild" edge to the Build entity by ID.
+func (asc *AgentStatusCreate) SetAgentStatusToBuildID(id uuid.UUID) *AgentStatusCreate {
+	asc.mutation.SetAgentStatusToBuildID(id)
+	return asc
+}
+
+// SetNillableAgentStatusToBuildID sets the "AgentStatusToBuild" edge to the Build entity by ID if the given value is not nil.
+func (asc *AgentStatusCreate) SetNillableAgentStatusToBuildID(id *uuid.UUID) *AgentStatusCreate {
+	if id != nil {
+		asc = asc.SetAgentStatusToBuildID(*id)
+	}
+	return asc
+}
+
+// SetAgentStatusToBuild sets the "AgentStatusToBuild" edge to the Build entity.
+func (asc *AgentStatusCreate) SetAgentStatusToBuild(b *Build) *AgentStatusCreate {
+	return asc.SetAgentStatusToBuildID(b.ID)
 }
 
 // Mutation returns the AgentStatusMutation object of the builder.
@@ -391,6 +431,46 @@ func (asc *AgentStatusCreate) createSpec() (*AgentStatus, *sqlgraph.CreateSpec) 
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.agent_status_agent_status_to_provisioned_host = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := asc.mutation.AgentStatusToProvisionedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentstatus.AgentStatusToProvisionedNetworkTable,
+			Columns: []string{agentstatus.AgentStatusToProvisionedNetworkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.agent_status_agent_status_to_provisioned_network = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := asc.mutation.AgentStatusToBuildIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentstatus.AgentStatusToBuildTable,
+			Columns: []string{agentstatus.AgentStatusToBuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: build.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.agent_status_agent_status_to_build = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

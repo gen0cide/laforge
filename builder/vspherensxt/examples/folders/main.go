@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -15,21 +16,27 @@ func main() {
 	baseUrl, urlExists := os.LookupEnv("VSPHERE_URL")
 	username, usernameExists := os.LookupEnv("VSPHERE_USERNAME")
 	password, passwordExists := os.LookupEnv("VSPHERE_PASSWORD")
-	if !urlExists || !usernameExists || !passwordExists {
-		log.Fatalf("please set VSPHERE_URL (exists? %t), VSPHERE_USERNAME (exists? %t), and VSPHERE_PASSWORD (exists? %t)", urlExists, usernameExists, passwordExists)
+	folderName, folderExists := os.LookupEnv("VSPHERE_FOLDER")
+	if !urlExists || !usernameExists || !passwordExists || !folderExists {
+		log.Fatalf("please set VSPHERE_URL (exists? %t), VSPHERE_USERNAME (exists? %t), VSPHERE_PASSWORD (exists? %t), and VSPHERE_FOLDER (exists? %t)", urlExists, usernameExists, passwordExists, folderExists)
 	}
-	vshpere := vsphere.VSphere{
+	vs := vsphere.VSphere{
 		HttpClient: httpClient,
 		BaseUrl:    baseUrl,
 		Username:   username,
 		Password:   password,
 	}
 
-	folderList, err := vshpere.ListFolders()
+	vsphere.InitializeGovmomi(&vs, baseUrl, username, password)
+
+	ctx := context.Background()
+
+	folder, err := vs.GetFolderSummaryByName(ctx, folderName)
 	if err != nil {
 		log.Fatalf("error while getting folders: %v", err)
 	}
-	for _, folder := range folderList {
-		fmt.Printf("%s [%s]: %s\n", folder.Name, folder.Identifier, folder.Type)
-	}
+	logrus.WithFields(logrus.Fields{
+		"identifier": folder.Reference().Value,
+		"path":       folder.InventoryPath,
+	}).Info(folder.Name())
 }

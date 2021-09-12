@@ -140,7 +140,7 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 		ID:     as.ID,
 		Type:   "AgentStatus",
 		Fields: make([]*Field, 14),
-		Edges:  make([]*Edge, 1),
+		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(as.ClientID); err != nil {
@@ -262,6 +262,26 @@ func (as *AgentStatus) Node(ctx context.Context) (node *Node, err error) {
 	err = as.QueryAgentStatusToProvisionedHost().
 		Select(provisionedhost.FieldID).
 		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "ProvisionedNetwork",
+		Name: "AgentStatusToProvisionedNetwork",
+	}
+	err = as.QueryAgentStatusToProvisionedNetwork().
+		Select(provisionednetwork.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[2] = &Edge{
+		Type: "Build",
+		Name: "AgentStatusToBuild",
+	}
+	err = as.QueryAgentStatusToBuild().
+		Select(build.FieldID).
+		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}
@@ -2339,7 +2359,7 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		ID:     ph.ID,
 		Type:   "ProvisionedHost",
 		Fields: make([]*Field, 2),
-		Edges:  make([]*Edge, 9),
+		Edges:  make([]*Edge, 10),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(ph.SubnetIP); err != nil {
@@ -2399,52 +2419,62 @@ func (ph *ProvisionedHost) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Edges[4] = &Edge{
-		Type: "ProvisioningStep",
-		Name: "ProvisionedHostToProvisioningStep",
+		Type: "Build",
+		Name: "ProvisionedHostToBuild",
 	}
-	err = ph.QueryProvisionedHostToProvisioningStep().
-		Select(provisioningstep.FieldID).
+	err = ph.QueryProvisionedHostToBuild().
+		Select(build.FieldID).
 		Scan(ctx, &node.Edges[4].IDs)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[5] = &Edge{
-		Type: "AgentStatus",
-		Name: "ProvisionedHostToAgentStatus",
+		Type: "ProvisioningStep",
+		Name: "ProvisionedHostToProvisioningStep",
 	}
-	err = ph.QueryProvisionedHostToAgentStatus().
-		Select(agentstatus.FieldID).
+	err = ph.QueryProvisionedHostToProvisioningStep().
+		Select(provisioningstep.FieldID).
 		Scan(ctx, &node.Edges[5].IDs)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[6] = &Edge{
-		Type: "AgentTask",
-		Name: "ProvisionedHostToAgentTask",
+		Type: "AgentStatus",
+		Name: "ProvisionedHostToAgentStatus",
 	}
-	err = ph.QueryProvisionedHostToAgentTask().
-		Select(agenttask.FieldID).
+	err = ph.QueryProvisionedHostToAgentStatus().
+		Select(agentstatus.FieldID).
 		Scan(ctx, &node.Edges[6].IDs)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[7] = &Edge{
-		Type: "Plan",
-		Name: "ProvisionedHostToPlan",
+		Type: "AgentTask",
+		Name: "ProvisionedHostToAgentTask",
 	}
-	err = ph.QueryProvisionedHostToPlan().
-		Select(plan.FieldID).
+	err = ph.QueryProvisionedHostToAgentTask().
+		Select(agenttask.FieldID).
 		Scan(ctx, &node.Edges[7].IDs)
 	if err != nil {
 		return nil, err
 	}
 	node.Edges[8] = &Edge{
+		Type: "Plan",
+		Name: "ProvisionedHostToPlan",
+	}
+	err = ph.QueryProvisionedHostToPlan().
+		Select(plan.FieldID).
+		Scan(ctx, &node.Edges[8].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[9] = &Edge{
 		Type: "GinFileMiddleware",
 		Name: "ProvisionedHostToGinFileMiddleware",
 	}
 	err = ph.QueryProvisionedHostToGinFileMiddleware().
 		Select(ginfilemiddleware.FieldID).
-		Scan(ctx, &node.Edges[8].IDs)
+		Scan(ctx, &node.Edges[9].IDs)
 	if err != nil {
 		return nil, err
 	}

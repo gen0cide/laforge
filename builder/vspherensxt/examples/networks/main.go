@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -18,18 +19,26 @@ func main() {
 	if !urlExists || !usernameExists || !passwordExists {
 		log.Fatalf("please set VSPHERE_URL (exists? %t), VSPHERE_USERNAME (exists? %t), and VSPHERE_PASSWORD (exists? %t)", urlExists, usernameExists, passwordExists)
 	}
-	vshpere := vsphere.VSphere{
+	vs := vsphere.VSphere{
 		HttpClient: httpClient,
 		BaseUrl:    baseUrl,
 		Username:   username,
 		Password:   password,
 	}
 
-	networks, err := vshpere.ListNetworks()
+	vsphere.InitializeGovmomi(&vs, baseUrl, username, password)
+
+	ctx := context.Background()
+
+	networks, err := vs.ListNetworks(ctx)
 	if err != nil {
 		log.Fatalf("error while getting networks: %v", err)
 	}
 	for _, network := range networks {
-		fmt.Printf("%s [%s]: %s\n", network.Name, network.Identifier, network.Type)
+		// fmt.Printf("%s [%s]: %s\n", network.Name, network.Identifier, network.Type)
+		logrus.WithFields(logrus.Fields{
+			"identifier": network.Network.Value,
+			"type":       network.Network.Type,
+		}).Info(network.Name)
 	}
 }

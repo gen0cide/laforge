@@ -10,8 +10,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
+	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/google/uuid"
 )
 
@@ -201,6 +203,44 @@ func (asu *AgentStatusUpdate) SetAgentStatusToProvisionedHost(p *ProvisionedHost
 	return asu.SetAgentStatusToProvisionedHostID(p.ID)
 }
 
+// SetAgentStatusToProvisionedNetworkID sets the "AgentStatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
+func (asu *AgentStatusUpdate) SetAgentStatusToProvisionedNetworkID(id uuid.UUID) *AgentStatusUpdate {
+	asu.mutation.SetAgentStatusToProvisionedNetworkID(id)
+	return asu
+}
+
+// SetNillableAgentStatusToProvisionedNetworkID sets the "AgentStatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID if the given value is not nil.
+func (asu *AgentStatusUpdate) SetNillableAgentStatusToProvisionedNetworkID(id *uuid.UUID) *AgentStatusUpdate {
+	if id != nil {
+		asu = asu.SetAgentStatusToProvisionedNetworkID(*id)
+	}
+	return asu
+}
+
+// SetAgentStatusToProvisionedNetwork sets the "AgentStatusToProvisionedNetwork" edge to the ProvisionedNetwork entity.
+func (asu *AgentStatusUpdate) SetAgentStatusToProvisionedNetwork(p *ProvisionedNetwork) *AgentStatusUpdate {
+	return asu.SetAgentStatusToProvisionedNetworkID(p.ID)
+}
+
+// SetAgentStatusToBuildID sets the "AgentStatusToBuild" edge to the Build entity by ID.
+func (asu *AgentStatusUpdate) SetAgentStatusToBuildID(id uuid.UUID) *AgentStatusUpdate {
+	asu.mutation.SetAgentStatusToBuildID(id)
+	return asu
+}
+
+// SetNillableAgentStatusToBuildID sets the "AgentStatusToBuild" edge to the Build entity by ID if the given value is not nil.
+func (asu *AgentStatusUpdate) SetNillableAgentStatusToBuildID(id *uuid.UUID) *AgentStatusUpdate {
+	if id != nil {
+		asu = asu.SetAgentStatusToBuildID(*id)
+	}
+	return asu
+}
+
+// SetAgentStatusToBuild sets the "AgentStatusToBuild" edge to the Build entity.
+func (asu *AgentStatusUpdate) SetAgentStatusToBuild(b *Build) *AgentStatusUpdate {
+	return asu.SetAgentStatusToBuildID(b.ID)
+}
+
 // Mutation returns the AgentStatusMutation object of the builder.
 func (asu *AgentStatusUpdate) Mutation() *AgentStatusMutation {
 	return asu.mutation
@@ -209,6 +249,18 @@ func (asu *AgentStatusUpdate) Mutation() *AgentStatusMutation {
 // ClearAgentStatusToProvisionedHost clears the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity.
 func (asu *AgentStatusUpdate) ClearAgentStatusToProvisionedHost() *AgentStatusUpdate {
 	asu.mutation.ClearAgentStatusToProvisionedHost()
+	return asu
+}
+
+// ClearAgentStatusToProvisionedNetwork clears the "AgentStatusToProvisionedNetwork" edge to the ProvisionedNetwork entity.
+func (asu *AgentStatusUpdate) ClearAgentStatusToProvisionedNetwork() *AgentStatusUpdate {
+	asu.mutation.ClearAgentStatusToProvisionedNetwork()
+	return asu
+}
+
+// ClearAgentStatusToBuild clears the "AgentStatusToBuild" edge to the Build entity.
+func (asu *AgentStatusUpdate) ClearAgentStatusToBuild() *AgentStatusUpdate {
+	asu.mutation.ClearAgentStatusToBuild()
 	return asu
 }
 
@@ -484,6 +536,76 @@ func (asu *AgentStatusUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if asu.mutation.AgentStatusToProvisionedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentstatus.AgentStatusToProvisionedNetworkTable,
+			Columns: []string{agentstatus.AgentStatusToProvisionedNetworkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := asu.mutation.AgentStatusToProvisionedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentstatus.AgentStatusToProvisionedNetworkTable,
+			Columns: []string{agentstatus.AgentStatusToProvisionedNetworkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if asu.mutation.AgentStatusToBuildCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentstatus.AgentStatusToBuildTable,
+			Columns: []string{agentstatus.AgentStatusToBuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: build.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := asu.mutation.AgentStatusToBuildIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentstatus.AgentStatusToBuildTable,
+			Columns: []string{agentstatus.AgentStatusToBuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: build.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, asu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{agentstatus.Label}
@@ -676,6 +798,44 @@ func (asuo *AgentStatusUpdateOne) SetAgentStatusToProvisionedHost(p *Provisioned
 	return asuo.SetAgentStatusToProvisionedHostID(p.ID)
 }
 
+// SetAgentStatusToProvisionedNetworkID sets the "AgentStatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID.
+func (asuo *AgentStatusUpdateOne) SetAgentStatusToProvisionedNetworkID(id uuid.UUID) *AgentStatusUpdateOne {
+	asuo.mutation.SetAgentStatusToProvisionedNetworkID(id)
+	return asuo
+}
+
+// SetNillableAgentStatusToProvisionedNetworkID sets the "AgentStatusToProvisionedNetwork" edge to the ProvisionedNetwork entity by ID if the given value is not nil.
+func (asuo *AgentStatusUpdateOne) SetNillableAgentStatusToProvisionedNetworkID(id *uuid.UUID) *AgentStatusUpdateOne {
+	if id != nil {
+		asuo = asuo.SetAgentStatusToProvisionedNetworkID(*id)
+	}
+	return asuo
+}
+
+// SetAgentStatusToProvisionedNetwork sets the "AgentStatusToProvisionedNetwork" edge to the ProvisionedNetwork entity.
+func (asuo *AgentStatusUpdateOne) SetAgentStatusToProvisionedNetwork(p *ProvisionedNetwork) *AgentStatusUpdateOne {
+	return asuo.SetAgentStatusToProvisionedNetworkID(p.ID)
+}
+
+// SetAgentStatusToBuildID sets the "AgentStatusToBuild" edge to the Build entity by ID.
+func (asuo *AgentStatusUpdateOne) SetAgentStatusToBuildID(id uuid.UUID) *AgentStatusUpdateOne {
+	asuo.mutation.SetAgentStatusToBuildID(id)
+	return asuo
+}
+
+// SetNillableAgentStatusToBuildID sets the "AgentStatusToBuild" edge to the Build entity by ID if the given value is not nil.
+func (asuo *AgentStatusUpdateOne) SetNillableAgentStatusToBuildID(id *uuid.UUID) *AgentStatusUpdateOne {
+	if id != nil {
+		asuo = asuo.SetAgentStatusToBuildID(*id)
+	}
+	return asuo
+}
+
+// SetAgentStatusToBuild sets the "AgentStatusToBuild" edge to the Build entity.
+func (asuo *AgentStatusUpdateOne) SetAgentStatusToBuild(b *Build) *AgentStatusUpdateOne {
+	return asuo.SetAgentStatusToBuildID(b.ID)
+}
+
 // Mutation returns the AgentStatusMutation object of the builder.
 func (asuo *AgentStatusUpdateOne) Mutation() *AgentStatusMutation {
 	return asuo.mutation
@@ -684,6 +844,18 @@ func (asuo *AgentStatusUpdateOne) Mutation() *AgentStatusMutation {
 // ClearAgentStatusToProvisionedHost clears the "AgentStatusToProvisionedHost" edge to the ProvisionedHost entity.
 func (asuo *AgentStatusUpdateOne) ClearAgentStatusToProvisionedHost() *AgentStatusUpdateOne {
 	asuo.mutation.ClearAgentStatusToProvisionedHost()
+	return asuo
+}
+
+// ClearAgentStatusToProvisionedNetwork clears the "AgentStatusToProvisionedNetwork" edge to the ProvisionedNetwork entity.
+func (asuo *AgentStatusUpdateOne) ClearAgentStatusToProvisionedNetwork() *AgentStatusUpdateOne {
+	asuo.mutation.ClearAgentStatusToProvisionedNetwork()
+	return asuo
+}
+
+// ClearAgentStatusToBuild clears the "AgentStatusToBuild" edge to the Build entity.
+func (asuo *AgentStatusUpdateOne) ClearAgentStatusToBuild() *AgentStatusUpdateOne {
+	asuo.mutation.ClearAgentStatusToBuild()
 	return asuo
 }
 
@@ -975,6 +1147,76 @@ func (asuo *AgentStatusUpdateOne) sqlSave(ctx context.Context) (_node *AgentStat
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: provisionedhost.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if asuo.mutation.AgentStatusToProvisionedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentstatus.AgentStatusToProvisionedNetworkTable,
+			Columns: []string{agentstatus.AgentStatusToProvisionedNetworkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := asuo.mutation.AgentStatusToProvisionedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentstatus.AgentStatusToProvisionedNetworkTable,
+			Columns: []string{agentstatus.AgentStatusToProvisionedNetworkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: provisionednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if asuo.mutation.AgentStatusToBuildCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentstatus.AgentStatusToBuildTable,
+			Columns: []string{agentstatus.AgentStatusToBuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: build.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := asuo.mutation.AgentStatusToBuildIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentstatus.AgentStatusToBuildTable,
+			Columns: []string{agentstatus.AgentStatusToBuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: build.FieldID,
 				},
 			},
 		}

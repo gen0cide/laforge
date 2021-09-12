@@ -14,35 +14,16 @@ import (
 	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
-	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/gen0cide/laforge/logging"
 	"github.com/gen0cide/laforge/server/utils"
 	"github.com/sirupsen/logrus"
 )
 
-func StartBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Build) error {
+func StartBuild(client *ent.Client, logger *logging.Logger, currentUser *ent.AuthUser, serverTask *ent.ServerTask, taskStatus *ent.Status, entBuild *ent.Build) error {
+	logger.Log.Debug("BUILDER | START BUILD")
 	ctx := context.Background()
 	defer ctx.Done()
-
-	entEnvironment, err := entBuild.QueryBuildToEnvironment().Only(ctx)
-	if err != nil {
-		logrus.Errorf("failed to query environment from build: %v", err)
-		return err
-	}
-
-	taskStatus, serverTask, err := utils.CreateServerTask(ctx, client, rdb, currentUser, servertask.TypeEXECUTEBUILD)
-	if err != nil {
-		return fmt.Errorf("error creating server task: %v", err)
-	}
-	serverTask, err = client.ServerTask.UpdateOne(serverTask).SetServerTaskToBuild(entBuild).SetServerTaskToEnvironment(entEnvironment).Save(ctx)
-	if err != nil {
-		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
-		if err != nil {
-			return fmt.Errorf("error failing execute build server task: %v", err)
-		}
-		return fmt.Errorf("error assigning environment and build to execute build server task: %v", err)
-	}
-	rdb.Publish(ctx, "updatedServerTask", serverTask.ID.String())
 
 	entPlans, err := entBuild.QueryBuildToPlan().Where(plan.HasPlanToStatusWith(status.StateEQ(status.StatePLANNING))).All(ctx)
 
@@ -51,7 +32,7 @@ func StartBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bui
 		if err != nil {
 			return fmt.Errorf("error failing execute build server task: %v", err)
 		}
-		logrus.Errorf("Failed to Query Plan Nodes %v. Err: %v", entPlans, err)
+		logger.Log.Errorf("Failed to Query Plan Nodes %v. Err: %v", entPlans, err)
 		return err
 	}
 
@@ -61,7 +42,7 @@ func StartBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bui
 		entStatus, err := entPlan.PlanToStatus(ctx)
 
 		if err != nil {
-			logrus.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+			logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
 			return err
 		}
 
@@ -84,55 +65,55 @@ func StartBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bui
 			case plan.TypeProvisionNetwork:
 				entProNetwork, err := entPlan.QueryPlanToProvisionedNetwork().Only(ctx)
 				if err != nil {
-					logrus.Errorf("Failed to Query Provisioned Network. Err: %v", err)
+					logger.Log.Errorf("Failed to Query Provisioned Network. Err: %v", err)
 				}
 				entStatus, err := entProNetwork.ProvisionedNetworkToStatus(ctx)
 				if err != nil {
-					logrus.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+					logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
 				}
 				entStatus.Update().SetState(status.StateAWAITING).Save(ctx)
 				rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
 			case plan.TypeProvisionHost:
 				entProHost, err := entPlan.QueryPlanToProvisionedHost().Only(ctx)
 				if err != nil {
-					logrus.Errorf("Failed to Query Provisioned Host. Err: %v", err)
+					logger.Log.Errorf("Failed to Query Provisioned Host. Err: %v", err)
 				}
 				entStatus, err := entProHost.ProvisionedHostToStatus(ctx)
 				if err != nil {
-					logrus.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+					logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
 				}
 				entStatus.Update().SetState(status.StateAWAITING).Save(ctx)
 				rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
 			case plan.TypeExecuteStep:
 				entProvisioningStep, err := entPlan.QueryPlanToProvisioningStep().Only(ctx)
 				if err != nil {
-					logrus.Errorf("Failed to Query Provisioning Step. Err: %v", err)
+					logger.Log.Errorf("Failed to Query Provisioning Step. Err: %v", err)
 				}
 				entStatus, err := entProvisioningStep.ProvisioningStepToStatus(ctx)
 				if err != nil {
-					logrus.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+					logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
 				}
 				entStatus.Update().SetState(status.StateAWAITING).Save(ctx)
 				rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
 			case plan.TypeStartTeam:
 				entTeam, err := entPlan.QueryPlanToTeam().Only(ctx)
 				if err != nil {
-					logrus.Errorf("Failed to Query Provisioning Step. Err: %v", err)
+					logger.Log.Errorf("Failed to Query Provisioning Step. Err: %v", err)
 				}
 				entStatus, err := entTeam.TeamToStatus(ctx)
 				if err != nil {
-					logrus.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+					logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
 				}
 				entStatus.Update().SetState(status.StateAWAITING).Save(ctx)
 				rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
 			case plan.TypeStartBuild:
 				entBuild, err := entPlan.QueryPlanToBuild().Only(ctx)
 				if err != nil {
-					logrus.Errorf("Failed to Query Provisioning Step. Err: %v", err)
+					logger.Log.Errorf("Failed to Query Provisioning Step. Err: %v", err)
 				}
 				entStatus, err := entBuild.BuildToStatus(ctx)
 				if err != nil {
-					logrus.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+					logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
 				}
 				entStatus.Update().SetState(status.StateAWAITING).Save(ctx)
 				rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
@@ -150,7 +131,7 @@ func StartBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bui
 		if err != nil {
 			return fmt.Errorf("error failing execute build server task: %v", err)
 		}
-		logrus.Errorf("Failed to Query Start Plan Nodes. Err: %v", err)
+		logger.Log.Errorf("Failed to Query Start Plan Nodes. Err: %v", err)
 		return err
 	}
 	environment, err := entBuild.QueryBuildToEnvironment().Only(ctx)
@@ -159,7 +140,7 @@ func StartBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bui
 		if err != nil {
 			return fmt.Errorf("error failing execute build server task: %v", err)
 		}
-		logrus.Errorf("Failed to Query Environment. Err: %v", err)
+		logger.Log.Errorf("Failed to Query Environment. Err: %v", err)
 		return err
 	}
 
@@ -174,32 +155,32 @@ func StartBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bui
 	// 	}
 	// }
 
-	genericBuilder, err := builder.BuilderFromEnvironment(environment)
+	genericBuilder, err := builder.BuilderFromEnvironment(environment, logger)
 	if err != nil {
 		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
 		if err != nil {
 			return fmt.Errorf("error failing execute build server task: %v", err)
 		}
-		logrus.Errorf("error generating builder: %v", err)
+		logger.Log.Errorf("error generating builder: %v", err)
 		return err
 	}
 
 	entRootCommit, err := entBuild.QueryBuildToLatestBuildCommit().Only(ctx)
 	if err != nil {
-		logrus.Errorf("error while querying lastest commit from build: %v", err)
+		logger.Log.Errorf("error while querying lastest commit from build: %v", err)
 		return fmt.Errorf("error while querying lastest commit from build: %v", err)
 	}
 
 	err = entRootCommit.Update().SetState(buildcommit.StateINPROGRESS).Exec(ctx)
 	if err != nil {
-		logrus.Errorf("error while cancelling rebuild commit: %v", err)
+		logger.Log.Errorf("error while cancelling rebuild commit: %v", err)
 		return err
 	}
 	rdb.Publish(ctx, "updatedBuildCommit", entRootCommit.ID.String())
 
 	for _, entPlan := range rootPlans {
 		wg.Add(1)
-		go buildRoutine(client, &genericBuilder, ctx, entPlan, &wg)
+		go buildRoutine(client, logger, &genericBuilder, ctx, entPlan, &wg)
 	}
 
 	wg.Wait()
@@ -211,7 +192,7 @@ func StartBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bui
 
 	err = entRootCommit.Update().SetState(buildcommit.StateAPPLIED).Exec(ctx)
 	if err != nil {
-		logrus.Errorf("error while cancelling rebuild commit: %v", err)
+		logger.Log.Errorf("error while cancelling rebuild commit: %v", err)
 		return err
 	}
 	rdb.Publish(ctx, "updatedBuildCommit", entRootCommit.ID.String())
@@ -219,27 +200,53 @@ func StartBuild(client *ent.Client, currentUser *ent.AuthUser, entBuild *ent.Bui
 	return nil
 }
 
-func buildRoutine(client *ent.Client, builder *builder.Builder, ctx context.Context, entPlan *ent.Plan, wg *sync.WaitGroup) {
+func buildRoutine(client *ent.Client, logger *logging.Logger, builder *builder.Builder, ctx context.Context, entPlan *ent.Plan, wg *sync.WaitGroup) {
+	logger.Log.WithFields(logrus.Fields{
+		"plan": entPlan.ID,
+	}).Debugf("BUILDER | BUILD ROUTINE START")
 	defer wg.Done()
 
 	entStatus, err := entPlan.PlanToStatus(ctx)
 
 	if err != nil {
-		logrus.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+		logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
 	}
 
 	// If it isn't marked for planning, don't worry about traversing to it
 	if entStatus.State != status.StateAWAITING {
+		logger.Log.WithFields(logrus.Fields{
+			"plan": entPlan.ID,
+		}).Debugf("BUILDER | already awaiting. EXITING")
+		return
+	}
+
+	// If it's already in progress, don't worry about traversing to it
+	if entStatus.State == status.StatePARENTAWAITING || entStatus.State == status.StateINPROGRESS || entStatus.State == status.StateCOMPLETE {
+		logger.Log.WithFields(logrus.Fields{
+			"plan": entPlan.ID,
+		}).Debugf("BUILDER | node already in progress. EXITING")
 		return
 	}
 
 	prevNodes, err := entPlan.QueryPrevPlan().All(ctx)
 
 	if err != nil {
-		logrus.Errorf("Failed to Query Plan Start %v. Err: %v", prevNodes, err)
+		logger.Log.Errorf("Failed to Query Plan Start %v. Err: %v", prevNodes, err)
 	}
 
+	logger.Log.WithFields(logrus.Fields{
+		"plan": entPlan.ID,
+	}).Debugf("BUILDER | waiting on parents")
+
 	parentNodeFailed := false
+
+	entStatus, err = entStatus.Update().SetState(status.StatePARENTAWAITING).Save(ctx)
+	if err != nil {
+		logger.Log.WithFields(logrus.Fields{
+			"plan": entPlan.ID,
+		}).Error("BUILDER | failed to set PARENTAWAITING status. EXITING")
+		return
+	}
 
 	for _, prevNode := range prevNodes {
 		for {
@@ -255,7 +262,7 @@ func buildRoutine(client *ent.Client, builder *builder.Builder, ctx context.Cont
 			).Exist(ctx)
 
 			if err != nil {
-				logrus.Errorf("Failed to Query Status %v. Err: %v", prevNode, err)
+				logger.Log.Errorf("Failed to Query Status %v. Err: %v", prevNode, err)
 			}
 
 			prevFailedStatus, err := prevNode.QueryPlanToStatus().Where(
@@ -265,7 +272,7 @@ func buildRoutine(client *ent.Client, builder *builder.Builder, ctx context.Cont
 			).Exist(ctx)
 
 			if err != nil {
-				logrus.Errorf("Failed to Query Status %v. Err: %v", prevNode, err)
+				logger.Log.Errorf("Failed to Query Status %v. Err: %v", prevNode, err)
 			}
 
 			if !prevCompletedStatus {
@@ -280,15 +287,13 @@ func buildRoutine(client *ent.Client, builder *builder.Builder, ctx context.Cont
 			time.Sleep(time.Second)
 		}
 	}
+	logger.Log.WithFields(logrus.Fields{
+		"plan": entPlan.ID,
+	}).Debugf("BUILDER | done waiting on parents")
 	entStatus, err = entPlan.PlanToStatus(ctx)
 
 	if err != nil {
-		logrus.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
-	}
-
-	// If it's already in progress, don't worry about traversing to it
-	if entStatus.State == status.StateINPROGRESS || entStatus.State == status.StateCOMPLETE {
-		return
+		logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
 	}
 
 	entStatus.Update().SetState(status.StateINPROGRESS).Save(ctx)
@@ -299,79 +304,79 @@ func buildRoutine(client *ent.Client, builder *builder.Builder, ctx context.Cont
 	case plan.TypeProvisionNetwork:
 		entProNetwork, err := entPlan.QueryPlanToProvisionedNetwork().Only(ctx)
 		if err != nil {
-			logrus.Errorf("Failed to Query Provisioned Network. Err: %v", err)
+			logger.Log.Errorf("Failed to Query Provisioned Network. Err: %v", err)
 		}
 		if parentNodeFailed {
 			networkStatus, err := entProNetwork.QueryProvisionedNetworkToStatus().Only(ctx)
 			if err != nil {
-				logrus.Errorf("Error while getting Provisioned Network status: %v", err)
+				logger.Log.Errorf("Error while getting Provisioned Network status: %v", err)
 			}
 			_, saveErr := networkStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
 			if saveErr != nil {
-				logrus.Errorf("Error while setting Provisioned Network status to FAILED: %v", saveErr)
+				logger.Log.Errorf("Error while setting Provisioned Network status to FAILED: %v", saveErr)
 			}
 			rdb.Publish(ctx, "updatedStatus", networkStatus.ID.String())
 			planErr = fmt.Errorf("parent node for Provionded Network has failed")
 		} else {
-			planErr = buildNetwork(client, builder, ctx, entProNetwork)
+			planErr = buildNetwork(client, logger, builder, ctx, entProNetwork)
 		}
 	case plan.TypeProvisionHost:
 		entProHost, err := entPlan.QueryPlanToProvisionedHost().Only(ctx)
 		if err != nil {
-			logrus.Errorf("Failed to Query Provisioned Host. Err: %v", err)
+			logger.Log.Errorf("Failed to Query Provisioned Host. Err: %v", err)
 		}
 		if parentNodeFailed {
 			hostStatus, err := entProHost.QueryProvisionedHostToStatus().Only(ctx)
 			if err != nil {
-				logrus.Errorf("Error while getting Provisioned Network status: %v", err)
+				logger.Log.Errorf("Error while getting Provisioned Network status: %v", err)
 			}
 			_, saveErr := hostStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
 			if saveErr != nil {
-				logrus.Errorf("Error while setting Provisioned Network status to FAILED: %v", saveErr)
+				logger.Log.Errorf("Error while setting Provisioned Network status to FAILED: %v", saveErr)
 			}
 			rdb.Publish(ctx, "updatedStatus", hostStatus.ID.String())
 			planErr = fmt.Errorf("parent node for Provionded Host has failed")
 		} else {
-			planErr = buildHost(client, builder, ctx, entProHost)
+			planErr = buildHost(client, logger, builder, ctx, entProHost)
 		}
 	case plan.TypeExecuteStep:
 		entProvisioningStep, err := entPlan.QueryPlanToProvisioningStep().Only(ctx)
 		if err != nil {
-			logrus.Errorf("Failed to Query Provisioning Step. Err: %v", err)
+			logger.Log.Errorf("Failed to Query Provisioning Step. Err: %v", err)
 		}
 		if parentNodeFailed {
 			stepStatus, err := entProvisioningStep.QueryProvisioningStepToStatus().Only(ctx)
 			if err != nil {
-				logrus.Errorf("Failed to Query Provisioning Step Status. Err: %v", err)
+				logger.Log.Errorf("Failed to Query Provisioning Step Status. Err: %v", err)
 			}
 			_, err = stepStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
 			if err != nil {
-				logrus.Errorf("error while trying to set ent.ProvisioningStep.Status.State to status.StateFAILED: %v", err)
+				logger.Log.Errorf("error while trying to set ent.ProvisioningStep.Status.State to status.StateFAILED: %v", err)
 			}
 			rdb.Publish(ctx, "updatedStatus", stepStatus.ID.String())
 			planErr = fmt.Errorf("parent node for Provisioning Step has failed")
 		} else {
-			planErr = execStep(client, ctx, entProvisioningStep)
+			planErr = execStep(client, logger, ctx, entProvisioningStep)
 		}
 	case plan.TypeStartTeam:
 		entTeam, err := entPlan.QueryPlanToTeam().Only(ctx)
 		if err != nil {
-			logrus.Errorf("Failed to Query Provisioning Step. Err: %v", err)
+			logger.Log.Errorf("Failed to Query Provisioning Step. Err: %v", err)
 		}
 		entStatus, err := entTeam.TeamToStatus(ctx)
 		if err != nil {
-			logrus.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+			logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
 		}
 		entStatus.Update().SetState(status.StateCOMPLETE).Save(ctx)
 		rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
 	case plan.TypeStartBuild:
 		entBuild, err := entPlan.QueryPlanToBuild().Only(ctx)
 		if err != nil {
-			logrus.Errorf("Failed to Query Provisioning Step. Err: %v", err)
+			logger.Log.Errorf("Failed to Query Provisioning Step. Err: %v", err)
 		}
 		entStatus, err := entBuild.BuildToStatus(ctx)
 		if err != nil {
-			logrus.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+			logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
 		}
 		entStatus.Update().SetState(status.StateCOMPLETE).Save(ctx)
 		rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
@@ -382,7 +387,7 @@ func buildRoutine(client *ent.Client, builder *builder.Builder, ctx context.Cont
 	if planErr != nil {
 		entStatus.Update().SetState(status.StateFAILED).SetFailed(true).Save(ctx)
 		rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
-		logrus.WithFields(logrus.Fields{
+		logger.Log.WithFields(logrus.Fields{
 			"type":    entPlan.Type,
 			"builder": (*builder).ID(),
 		}).Errorf("error while executing plan: %v", planErr)
@@ -391,93 +396,116 @@ func buildRoutine(client *ent.Client, builder *builder.Builder, ctx context.Cont
 		rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
 	}
 
+	logger.Log.WithFields(logrus.Fields{
+		"plan": entPlan.ID,
+	}).Debugf("BUILDER | plan done. SPAWNING CHILDREN")
+
 	nextPlans, err := entPlan.QueryNextPlan().All(ctx)
 	for _, nextPlan := range nextPlans {
 		wg.Add(1)
-		go buildRoutine(client, builder, ctx, nextPlan, wg)
+		go buildRoutine(client, logger, builder, ctx, nextPlan, wg)
 	}
 
 }
 
-func buildHost(client *ent.Client, builder *builder.Builder, ctx context.Context, entProHost *ent.ProvisionedHost) error {
-	logrus.Infof("deploying %s", entProHost.SubnetIP)
+func buildHost(client *ent.Client, logger *logging.Logger, builder *builder.Builder, ctx context.Context, entProHost *ent.ProvisionedHost) error {
+	entProNet, err := entProHost.QueryProvisionedHostToProvisionedNetwork().First(ctx)
+	if err != nil {
+		logger.Log.WithFields(logrus.Fields{
+			"entProHost": entProHost.ID,
+		}).Error("error querying host and provisioned network from provisioned host")
+	} else {
+		entTeam, err := entProNet.QueryProvisionedNetworkToTeam().First(ctx)
+		if err != nil {
+			logger.Log.WithFields(logrus.Fields{
+				"entProNet": entProNet.ID,
+			}).Error("error querying team from provisioned network")
+		} else {
+			logger.Log.WithFields(logrus.Fields{
+				"subnetIp":  entProHost.SubnetIP,
+				"entProNet": entProNet.Name,
+				"entTeam":   entTeam.TeamNumber,
+			}).Debugf("BUILDER | BUILD ROUTINE START")
+		}
+	}
+	logger.Log.Infof("deploying %s", entProHost.SubnetIP)
 	hostStatus, err := entProHost.QueryProvisionedHostToStatus().Only(ctx)
 	if err != nil {
-		logrus.Errorf("Error while getting Provisioned Host status: %v", err)
+		logger.Log.Errorf("Error while getting Provisioned Host status: %v", err)
 		return err
 	}
 	_, saveErr := hostStatus.Update().SetState(status.StateINPROGRESS).Save(ctx)
 	if saveErr != nil {
-		logrus.Errorf("Error while setting Provisioned Host status to INPROGRESS: %v", saveErr)
+		logger.Log.Errorf("Error while setting Provisioned Host status to INPROGRESS: %v", saveErr)
 		return saveErr
 	}
 	rdb.Publish(ctx, "updatedStatus", hostStatus.ID.String())
 	err = (*builder).DeployHost(ctx, entProHost)
 	if err != nil {
-		logrus.Errorf("Error while deploying host: %v", err)
+		logger.Log.Errorf("Error while deploying host: %v", err)
 		_, saveErr := hostStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
 		if saveErr != nil {
-			logrus.Errorf("Error while setting Provisioned Host status to FAILED: %v", saveErr)
+			logger.Log.Errorf("Error while setting Provisioned Host status to FAILED: %v", saveErr)
 			return saveErr
 		}
 		rdb.Publish(ctx, "updatedStatus", hostStatus.ID.String())
 		return err
 	}
-	logrus.Infof("deployed %s successfully", entProHost.SubnetIP)
+	logger.Log.Infof("deployed %s successfully", entProHost.SubnetIP)
 	_, saveErr = hostStatus.Update().SetCompleted(true).SetState(status.StateCOMPLETE).Save(ctx)
 	if saveErr != nil {
-		logrus.Errorf("Error while setting Provisioned Host status to COMPLETE: %v", saveErr)
+		logger.Log.Errorf("Error while setting Provisioned Host status to COMPLETE: %v", saveErr)
 		return saveErr
 	}
 	rdb.Publish(ctx, "updatedStatus", hostStatus.ID.String())
 	return nil
 }
 
-func buildNetwork(client *ent.Client, builder *builder.Builder, ctx context.Context, entProNetwork *ent.ProvisionedNetwork) error {
-	logrus.Infof("deploying %s", entProNetwork.Name)
+func buildNetwork(client *ent.Client, logger *logging.Logger, builder *builder.Builder, ctx context.Context, entProNetwork *ent.ProvisionedNetwork) error {
+	logger.Log.Infof("deploying %s", entProNetwork.Name)
 	networkStatus, err := entProNetwork.QueryProvisionedNetworkToStatus().Only(ctx)
 	if err != nil {
-		logrus.Errorf("Error while getting Provisioned Network status: %v", err)
+		logger.Log.Errorf("Error while getting Provisioned Network status: %v", err)
 		return err
 	}
 	_, saveErr := networkStatus.Update().SetState(status.StateINPROGRESS).Save(ctx)
 	if saveErr != nil {
-		logrus.Errorf("Error while setting Provisioned Network status to INPROGRESS: %v", saveErr)
+		logger.Log.Errorf("Error while setting Provisioned Network status to INPROGRESS: %v", saveErr)
 		return saveErr
 	}
 	rdb.Publish(ctx, "updatedStatus", networkStatus.ID.String())
 	err = (*builder).DeployNetwork(ctx, entProNetwork)
 	if err != nil {
-		logrus.Errorf("Error while deploying network: %v", err)
+		logger.Log.Errorf("Error while deploying network: %v", err)
 		_, saveErr := networkStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
 		if saveErr != nil {
-			logrus.Errorf("Error while setting Provisioned Network status to FAILED: %v", saveErr)
+			logger.Log.Errorf("Error while setting Provisioned Network status to FAILED: %v", saveErr)
 			return saveErr
 		}
 		rdb.Publish(ctx, "updatedStatus", networkStatus.ID.String())
 		return err
 	}
-	logrus.Infof("deployed %s successfully", entProNetwork.Name)
+	logger.Log.Infof("deployed %s successfully", entProNetwork.Name)
 	// Allow networks to set up
 	time.Sleep(1 * time.Minute)
 
 	_, saveErr = networkStatus.Update().SetCompleted(true).SetState(status.StateCOMPLETE).Save(ctx)
 	if saveErr != nil {
-		logrus.Errorf("Error while setting Provisioned Network status to COMPLETE: %v", saveErr)
+		logger.Log.Errorf("Error while setting Provisioned Network status to COMPLETE: %v", saveErr)
 		return saveErr
 	}
 	rdb.Publish(ctx, "updatedStatus", networkStatus.ID.String())
 	return nil
 }
 
-func execStep(client *ent.Client, ctx context.Context, entStep *ent.ProvisioningStep) error {
+func execStep(client *ent.Client, logger *logging.Logger, ctx context.Context, entStep *ent.ProvisioningStep) error {
 	stepStatus, err := entStep.QueryProvisioningStepToStatus().Only(ctx)
 	if err != nil {
-		logrus.Errorf("Failed to Query Provisioning Step Status. Err: %v", err)
+		logger.Log.Errorf("Failed to Query Provisioning Step Status. Err: %v", err)
 	}
 	_, err = stepStatus.Update().SetState(status.StateINPROGRESS).Save(ctx)
 	if err != nil {
-		logrus.Errorf("error while trying to set ent.ProvisioningStep.Status.State to status.StateCOMPLETED: %v", err)
+		logger.Log.Errorf("error while trying to set ent.ProvisioningStep.Status.State to status.StateCOMPLETED: %v", err)
 	}
 	rdb.Publish(ctx, "updatedStatus", stepStatus.ID.String())
 	GQLHostName, ok := os.LookupEnv("GRAPHQL_HOSTNAME")
@@ -640,13 +668,13 @@ func execStep(client *ent.Client, ctx context.Context, entStep *ent.Provisioning
 		).Exist(ctx)
 
 		if err != nil {
-			logrus.Errorf("Failed to Query Agent Task State. Err: %v", err)
+			logger.Log.Errorf("Failed to Query Agent Task State. Err: %v", err)
 		}
 
 		if taskFailed {
 			_, err = stepStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
 			if err != nil {
-				logrus.Errorf("error while trying to set ent.ProvisioningStep.Status.State to status.StateFAILED: %v", err)
+				logger.Log.Errorf("error while trying to set ent.ProvisioningStep.Status.State to status.StateFAILED: %v", err)
 			}
 			rdb.Publish(ctx, "updatedStatus", stepStatus.ID.String())
 			return fmt.Errorf("one or more agent tasks failed")
@@ -659,7 +687,7 @@ func execStep(client *ent.Client, ctx context.Context, entStep *ent.Provisioning
 		).Exist(ctx)
 
 		if err != nil {
-			logrus.Errorf("Failed to Query Agent Task State. Err: %v", err)
+			logger.Log.Errorf("Failed to Query Agent Task State. Err: %v", err)
 		}
 
 		if !taskRunning {
@@ -670,7 +698,7 @@ func execStep(client *ent.Client, ctx context.Context, entStep *ent.Provisioning
 	}
 	_, err = stepStatus.Update().SetCompleted(true).SetState(status.StateCOMPLETE).Save(ctx)
 	if err != nil {
-		logrus.Errorf("error while trying to set ent.ProvisioningStep.Status.State to status.StateCOMPLETED: %v", err)
+		logger.Log.Errorf("error while trying to set ent.ProvisioningStep.Status.State to status.StateCOMPLETED: %v", err)
 	}
 	rdb.Publish(ctx, "updatedStatus", stepStatus.ID.String())
 

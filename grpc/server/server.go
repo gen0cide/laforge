@@ -60,6 +60,16 @@ func (s *Server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb
 		logrus.Errorf("GRPC SERVER ERROR: Cannot find client %v. Error: %v", in.GetClientId(), err)
 		return &pb.HeartbeatReply{Status: message, AvalibleTasks: false}, nil
 	}
+	pn, err := ph.QueryProvisionedHostToProvisionedNetwork().Only(ctx)
+	if err != nil {
+		logrus.Errorf("GRPC SERVER ERROR: Cannot find client %v network. Error: %v", in.GetClientId(), err)
+		return &pb.HeartbeatReply{Status: message, AvalibleTasks: false}, nil
+	}
+	b, err := pn.QueryProvisionedNetworkToBuild().Only(ctx)
+	if err != nil {
+		logrus.Errorf("GRPC SERVER ERROR: Cannot find client %v build. Error: %v", in.GetClientId(), err)
+		return &pb.HeartbeatReply{Status: message, AvalibleTasks: false}, nil
+	}
 	// logrus.Debugf("GRPC SERVER DEBUG: Agent for client %v has sent heartbeat", in.GetClientId())
 	createdEntAgentStatus, err := s.Client.AgentStatus.
 		Create().
@@ -78,6 +88,8 @@ func (s *Server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb
 		SetUsedMem(int64(in.GetUsedmem())).
 		SetTimestamp(time.Now().Unix()).
 		SetAgentStatusToProvisionedHost(ph).
+		SetAgentStatusToProvisionedNetwork(pn).
+		SetAgentStatusToBuild(b).
 		Save(ctx)
 
 	if err != nil {

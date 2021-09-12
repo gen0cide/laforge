@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gen0cide/laforge/logging"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -20,10 +21,9 @@ type NSXTClient struct {
 	HttpClient    http.Client
 	IpPoolName    string
 	MaxRetries    int
+	Logger        *logging.Logger
 	tier0Cache    []NSXTTier0
 	ipSubnetCache []NSXTIpSubnet
-	tier1Cache    *map[string]bool
-	natCache      *map[string]bool
 }
 
 type NSXTResourceType string
@@ -303,7 +303,7 @@ func (nsxt *NSXTClient) executeRequestWithRetry(request *http.Request, acceptabl
 					if err != nil {
 						return response, nil, nil
 					}
-					log.WithFields(log.Fields{
+					nsxt.Logger.Log.WithFields(log.Fields{
 						"module":     nsxtError.ModuleName,
 						"httpStatus": nsxtError.HttpStatus,
 						"code":       nsxtError.ErrorCode,
@@ -330,7 +330,7 @@ func allowedStatusCodes(statusCodes ...int) (statusMap map[int]struct{}) {
 }
 
 func (nsxt *NSXTClient) CreateTier1(name string, tier0Path string, edgeClusterPath string) (nsxtError *NSXTErrorResponse, err error) {
-	log.WithFields(log.Fields{
+	nsxt.Logger.Log.WithFields(log.Fields{
 		"name": name,
 	}).Debug("NSX-T | CreateTier1")
 	payload := NSXTCreateTier1Payload{
@@ -375,14 +375,14 @@ func (nsxt *NSXTClient) CreateTier1(name string, tier0Path string, edgeClusterPa
 		return
 	}
 	if nsxtError != nil {
-		log.Errorf("nsx-t error while creating tier-1: %v", nsxtError.Message)
+		nsxt.Logger.Log.Errorf("nsx-t error while creating tier-1: %v", nsxtError.Message)
 	}
 	// (*nsxt.tier1Cache)[name] = true
 	return
 }
 
 func (nsxt *NSXTClient) DeleteTier1(name string) (nsxtError *NSXTErrorResponse, err error) {
-	log.WithFields(log.Fields{
+	nsxt.Logger.Log.WithFields(log.Fields{
 		"name": name,
 	}).Debug("NSX-T | DeleteTier1")
 	edgeRoutingRequest, err := nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/tier-1s/" + name + "/locale-services/" + name + "-Edge-Routing"))
@@ -394,7 +394,7 @@ func (nsxt *NSXTClient) DeleteTier1(name string) (nsxtError *NSXTErrorResponse, 
 		return
 	}
 	if nsxtError != nil {
-		log.Errorf("error while deleting tier-1: %v", nsxtError)
+		nsxt.Logger.Log.Errorf("error while deleting tier-1: %v", nsxtError)
 		return
 	}
 	tier1Request, err := nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/tier-1s/" + name))
@@ -406,13 +406,13 @@ func (nsxt *NSXTClient) DeleteTier1(name string) (nsxtError *NSXTErrorResponse, 
 		return
 	}
 	if nsxtError != nil {
-		log.Errorf("error while deleting tier-1: %v", nsxtError)
+		nsxt.Logger.Log.Errorf("error while deleting tier-1: %v", nsxtError)
 	}
 	return
 }
 
 func (nsxt *NSXTClient) CreateSegment(name string, tier1path string, gatewayAddress string) (nsxtError *NSXTErrorResponse, err error) {
-	log.WithFields(log.Fields{
+	nsxt.Logger.Log.WithFields(log.Fields{
 		"name":           name,
 		"tier1path":      tier1path,
 		"gatewayAddress": gatewayAddress,
@@ -448,13 +448,13 @@ func (nsxt *NSXTClient) CreateSegment(name string, tier1path string, gatewayAddr
 		return
 	}
 	if nsxtError != nil {
-		log.Errorf("error while creating segment: %v", nsxtError)
+		nsxt.Logger.Log.Errorf("error while creating segment: %v", nsxtError)
 	}
 	return
 }
 
 func (nsxt *NSXTClient) DeleteSegment(name string) (nsxtError *NSXTErrorResponse, err error) {
-	log.WithFields(log.Fields{
+	nsxt.Logger.Log.WithFields(log.Fields{
 		"name": name,
 	}).Debug("NSX-T | DeleteSegment")
 	request, err := nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/segments/" + name))
@@ -466,13 +466,13 @@ func (nsxt *NSXTClient) DeleteSegment(name string) (nsxtError *NSXTErrorResponse
 		return
 	}
 	if nsxtError != nil {
-		log.Errorf("error while deleting segment: %v", nsxtError)
+		nsxt.Logger.Log.Errorf("error while deleting segment: %v", nsxtError)
 	}
 	return
 }
 
 func (nsxt *NSXTClient) CheckExistsTier1(name string) (exists bool, nsxtError *NSXTErrorResponse, err error) {
-	log.WithFields(log.Fields{
+	nsxt.Logger.Log.WithFields(log.Fields{
 		"name": name,
 	}).Debug("NSX-T | CheckExistsTier1")
 	request, err := nsxt.generateAuthorizedRequest(http.MethodGet, ("/policy/api/v1/infra/tier-1s/" + name))
@@ -488,13 +488,13 @@ func (nsxt *NSXTClient) CheckExistsTier1(name string) (exists bool, nsxtError *N
 	} else if response.StatusCode == http.StatusNotFound {
 		exists = false
 	} else if nsxtError != nil {
-		log.Errorf("error while checking if tier 1 exists: %v", nsxtError)
+		nsxt.Logger.Log.Errorf("error while checking if tier 1 exists: %v", nsxtError)
 	}
 	return
 }
 
 func (nsxt *NSXTClient) GetTier0s() (tier0s []NSXTTier0, nsxtError *NSXTErrorResponse, err error) {
-	log.Debug("NSX-T | GetTier0s")
+	nsxt.Logger.Log.Debug("NSX-T | GetTier0s")
 	// Cache these results as they don't usually change
 	// Note: just restart the server to reset the cache
 	if nsxt.tier0Cache == nil {
@@ -512,7 +512,7 @@ func (nsxt *NSXTClient) GetTier0s() (tier0s []NSXTTier0, nsxtError *NSXTErrorRes
 		return
 	}
 	if nsxtError != nil {
-		log.Errorf("error while getting Tier 0s: %v", nsxtError)
+		nsxt.Logger.Log.Errorf("error while getting Tier 0s: %v", nsxtError)
 		return
 	}
 
@@ -531,7 +531,7 @@ func (nsxt *NSXTClient) GetTier0s() (tier0s []NSXTTier0, nsxtError *NSXTErrorRes
 }
 
 func (nsxt *NSXTClient) GetIpPoolSubnets(ipPoolName string) (ipSubnets []NSXTIpSubnet, nsxtError *NSXTErrorResponse, err error) {
-	log.WithFields(log.Fields{
+	nsxt.Logger.Log.WithFields(log.Fields{
 		"ipPoolName": ipPoolName,
 	}).Debug("NSX-T | GetIpPoolSubnets")
 	// Cache these results as they don't usually change
@@ -554,7 +554,7 @@ func (nsxt *NSXTClient) GetIpPoolSubnets(ipPoolName string) (ipSubnets []NSXTIpS
 		return
 	}
 	if nsxtError != nil {
-		log.Errorf("error while getting IP subnets: %v", nsxtError)
+		nsxt.Logger.Log.Errorf("error while getting IP subnets: %v", nsxtError)
 		return
 	}
 
@@ -574,7 +574,7 @@ func (nsxt *NSXTClient) GetIpPoolSubnets(ipPoolName string) (ipSubnets []NSXTIpS
 }
 
 func (nsxt *NSXTClient) CreateNATRule(tier1Name string, sourceNetwork NSXTIPElementList, translatedNetwork NSXTIPElementList) (nsxtError *NSXTErrorResponse, err error) {
-	log.WithFields(log.Fields{
+	nsxt.Logger.Log.WithFields(log.Fields{
 		"tier1Name":         tier1Name,
 		"sourceNetwork":     sourceNetwork,
 		"translatedNetwork": translatedNetwork,
@@ -602,13 +602,13 @@ func (nsxt *NSXTClient) CreateNATRule(tier1Name string, sourceNetwork NSXTIPElem
 		return
 	}
 	if nsxtError != nil {
-		log.Errorf("error while creating NAT Rule: %v", nsxtError)
+		nsxt.Logger.Log.Errorf("error while creating NAT Rule: %v", nsxtError)
 	}
 	return
 }
 
 func (nsxt *NSXTClient) DeleteNATRule(tier1Name string) (nsxtError *NSXTErrorResponse, err error) {
-	log.WithFields(log.Fields{
+	nsxt.Logger.Log.WithFields(log.Fields{
 		"tier1Name": tier1Name,
 	}).Debug("NSX-T | DeleteNATRule")
 	request, err := nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-NAT"))
@@ -620,7 +620,7 @@ func (nsxt *NSXTClient) DeleteNATRule(tier1Name string) (nsxtError *NSXTErrorRes
 		return
 	}
 	if nsxtError != nil {
-		log.Errorf("error while deleting NAT Rule: %v", nsxtError)
+		nsxt.Logger.Log.Errorf("error while deleting NAT Rule: %v", nsxtError)
 	}
 	return
 }

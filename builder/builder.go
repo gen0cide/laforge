@@ -3,20 +3,17 @@ package builder
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/gen0cide/laforge/builder/vspherensxt"
 	"github.com/gen0cide/laforge/builder/vspherensxt/nsxt"
 	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/logging"
 	"github.com/sirupsen/logrus"
-	"github.com/vmware/govmomi"
-	"github.com/vmware/govmomi/find"
-	"github.com/vmware/govmomi/object"
-	"github.com/vmware/govmomi/vim25"
 )
 
 type Builder interface {
@@ -31,10 +28,10 @@ type Builder interface {
 	TeardownNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error)
 }
 
-func BuilderFromEnvironment(environment *ent.Environment) (genericBuilder Builder, err error) {
+func BuilderFromEnvironment(environment *ent.Environment, logger *logging.Logger) (genericBuilder Builder, err error) {
 	switch environment.Builder {
 	case "vsphere-nsxt":
-		genericBuilder, err = NewVSphereNSXTBuilder(environment)
+		genericBuilder, err = NewVSphereNSXTBuilder(environment, logger)
 		if err != nil {
 			logrus.Errorf("Failed to make vSphere NSX-T builder. Err: %v", err)
 			return
@@ -44,7 +41,7 @@ func BuilderFromEnvironment(environment *ent.Environment) (genericBuilder Builde
 }
 
 // NewVSphereNSXTBuilder creates a builder instance to deploy environments to VSphere and NSX-T
-func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSXTBuilder, err error) {
+func NewVSphereNSXTBuilder(env *ent.Environment, logger *logging.Logger) (builder vspherensxt.VSphereNSXTBuilder, err error) {
 	laforgeServerUrl, exists := env.Config["laforge_server_url"]
 	if !exists {
 		err = errors.New("laforge_server_url doesn't exist in the environment configuration")
@@ -120,32 +117,6 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 		Timeout: 5 * time.Minute,
 	}
 
-	ctx := context.Background()
-	u, err := url.Parse(vsphereBaseUrl + "/sdk")
-	if err != nil {
-		log.Fatalf("error parsing url: %v", err)
-	}
-	u.User = url.UserPassword(vsphereUsername, vspherePassword)
-
-	govmomiClient, err := govmomi.NewClient(ctx, u, false)
-	if err != nil {
-		log.Fatalf("error creating govmomi client: %v", err)
-	}
-
-	v25, err := vim25.NewClient(ctx, govmomiClient.RoundTripper)
-	if err != nil {
-		log.Fatalf("error creating vim25 thingy: %v", err)
-	}
-
-	finder := find.NewFinder(v25, true)
-	dc, err := finder.DefaultDatacenter(ctx)
-	if err != nil {
-		log.Fatalf("error finding datacenter: %v", err)
-	}
-	finder.SetDatacenter(dc)
-
-	gc := object.NewCustomizationSpecManager(govmomiClient.Client)
-
 	nsxtHttpClient, err := nsxt.NewPrincipalIdentityClient(nsxtCertPath, nsxtKeyPath, nsxtCACertPath)
 	if err != nil {
 		return
@@ -156,32 +127,38 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 		BaseUrl:    nsxtBaseUrl,
 		IpPoolName: nsxtIpPoolName,
 		MaxRetries: 10,
+		Logger:     logger,
 	}
 
 	vsphereClient := vsphere.VSphere{
-		HttpClient:  httpClient,
-		SoapClient:  govmomiClient,
-		Vim25Client: v25,
-		Finder:      finder,
-		GCManager:   *gc,
-		ServerUrl:   laforgeServerUrl,
-		BaseUrl:     vsphereBaseUrl,
-		Username:    vsphereUsername,
-		Password:    vspherePassword,
-		MaxRetries:  10,
+		HttpClient: httpClient,
+		ServerUrl:  laforgeServerUrl,
+		BaseUrl:    vsphereBaseUrl,
+		Username:   vsphereUsername,
+		Password:   vspherePassword,
+		MaxRetries: 10,
+		Logger:     logger,
 	}
 
-	datastore, err := vsphereClient.GetDatastoreByName(datastoreName)
+	vsphere.InitializeGovmomi(&vsphereClient, vsphereBaseUrl, vsphereUsername, vspherePassword)
+
+	ctx := context.Background()
+
+	datastore, exists, err := vsphereClient.GetDatastoreSummaryByName(ctx, datastoreName)
 	if err != nil {
 		return
 	}
+	if !exists {
+		err = fmt.Errorf("error datastore \"%s\" doesn't exist", datastoreName)
+		return
+	}
 
-	folder, err := finder.Folder(ctx, folderName)
+	folder, err := vsphereClient.GetFolderSummaryByName(ctx, folderName)
 	if err != nil {
 		log.Fatalf("error finding folder: %v", err)
 	}
 
-	resourcePool, err := finder.ResourcePool(ctx, resourcePoolName)
+	resourcePool, err := vsphereClient.Finder.ResourcePool(ctx, resourcePoolName)
 	if err != nil {
 		log.Fatalf("error finding resource pool: %v", err)
 	}
@@ -207,6 +184,7 @@ func NewVSphereNSXTBuilder(env *ent.Environment) (builder vspherensxt.VSphereNSX
 		VSphereDatastore:          datastore,
 		VSphereResourcePool:       resourcePool,
 		VSphereFolder:             folder,
+		Logger:                    logger,
 	}
 	return
 }

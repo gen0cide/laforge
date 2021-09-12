@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/agenttask"
+	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/plan"
@@ -104,6 +105,17 @@ func (phc *ProvisionedHostCreate) SetNillableProvisionedHostToEndStepPlanID(id *
 // SetProvisionedHostToEndStepPlan sets the "ProvisionedHostToEndStepPlan" edge to the Plan entity.
 func (phc *ProvisionedHostCreate) SetProvisionedHostToEndStepPlan(p *Plan) *ProvisionedHostCreate {
 	return phc.SetProvisionedHostToEndStepPlanID(p.ID)
+}
+
+// SetProvisionedHostToBuildID sets the "ProvisionedHostToBuild" edge to the Build entity by ID.
+func (phc *ProvisionedHostCreate) SetProvisionedHostToBuildID(id uuid.UUID) *ProvisionedHostCreate {
+	phc.mutation.SetProvisionedHostToBuildID(id)
+	return phc
+}
+
+// SetProvisionedHostToBuild sets the "ProvisionedHostToBuild" edge to the Build entity.
+func (phc *ProvisionedHostCreate) SetProvisionedHostToBuild(b *Build) *ProvisionedHostCreate {
+	return phc.SetProvisionedHostToBuildID(b.ID)
 }
 
 // AddProvisionedHostToProvisioningStepIDs adds the "ProvisionedHostToProvisioningStep" edge to the ProvisioningStep entity by IDs.
@@ -266,6 +278,9 @@ func (phc *ProvisionedHostCreate) check() error {
 	if _, ok := phc.mutation.ProvisionedHostToHostID(); !ok {
 		return &ValidationError{Name: "ProvisionedHostToHost", err: errors.New("ent: missing required edge \"ProvisionedHostToHost\"")}
 	}
+	if _, ok := phc.mutation.ProvisionedHostToBuildID(); !ok {
+		return &ValidationError{Name: "ProvisionedHostToBuild", err: errors.New("ent: missing required edge \"ProvisionedHostToBuild\"")}
+	}
 	return nil
 }
 
@@ -388,6 +403,26 @@ func (phc *ProvisionedHostCreate) createSpec() (*ProvisionedHost, *sqlgraph.Crea
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.provisioned_host_provisioned_host_to_end_step_plan = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := phc.mutation.ProvisionedHostToBuildIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   provisionedhost.ProvisionedHostToBuildTable,
+			Columns: []string{provisionedhost.ProvisionedHostToBuildColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: build.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.provisioned_host_provisioned_host_to_build = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := phc.mutation.ProvisionedHostToProvisioningStepIDs(); len(nodes) > 0 {

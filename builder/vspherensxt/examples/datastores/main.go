@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -18,18 +19,26 @@ func main() {
 	if !urlExists || !usernameExists || !passwordExists {
 		log.Fatalf("please set VSPHERE_URL (exists? %t), VSPHERE_USERNAME (exists? %t), and VSPHERE_PASSWORD (exists? %t)", urlExists, usernameExists, passwordExists)
 	}
-	vshpere := vsphere.VSphere{
+	vs := vsphere.VSphere{
 		HttpClient: httpClient,
 		BaseUrl:    baseUrl,
 		Username:   username,
 		Password:   password,
 	}
 
-	datastoreList, err := vshpere.ListDatastores()
+	vsphere.InitializeGovmomi(&vs, baseUrl, username, password)
+
+	ctx := context.Background()
+
+	datastoreList, err := vs.ListDatastores(ctx)
 	if err != nil {
 		log.Fatalf("error while getting datastores: %v", err)
 	}
 	for _, datastore := range datastoreList {
-		fmt.Printf("%s [%s]: %d Gb / %d Gb\n", datastore.Name, datastore.Identifier, datastore.FreeSpace/1000/1000/1000, datastore.Capacity/1000/1000/1000)
+		logrus.WithFields(logrus.Fields{
+			"identifier":    datastore.Datastore.Value,
+			"freeSpace(Gb)": datastore.FreeSpace / 1024 / 1024 / 1024,
+			"capacity(Gb)":  datastore.Capacity / 1024 / 1024 / 1024,
+		}).Info(datastore.Name)
 	}
 }

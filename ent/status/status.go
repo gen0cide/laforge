@@ -161,6 +161,7 @@ type State string
 const (
 	StatePLANNING         State = "PLANNING"
 	StateAWAITING         State = "AWAITING"
+	StatePARENTAWAITING   State = "PARENTAWAITING"
 	StateINPROGRESS       State = "INPROGRESS"
 	StateFAILED           State = "FAILED"
 	StateCOMPLETE         State = "COMPLETE"
@@ -178,7 +179,7 @@ func (s State) String() string {
 // StateValidator is a validator for the "state" field enum values. It is called by the builders before save.
 func StateValidator(s State) error {
 	switch s {
-	case StatePLANNING, StateAWAITING, StateINPROGRESS, StateFAILED, StateCOMPLETE, StateTAINTED, StateTODELETE, StateDELETEINPROGRESS, StateDELETED, StateTOREBUILD:
+	case StatePLANNING, StateAWAITING, StatePARENTAWAITING, StateINPROGRESS, StateFAILED, StateCOMPLETE, StateTAINTED, StateTODELETE, StateDELETEINPROGRESS, StateDELETED, StateTOREBUILD:
 		return nil
 	default:
 		return fmt.Errorf("status: invalid enum value for state field: %q", s)

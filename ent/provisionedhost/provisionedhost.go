@@ -27,6 +27,8 @@ const (
 	EdgeProvisionedHostToHost = "ProvisionedHostToHost"
 	// EdgeProvisionedHostToEndStepPlan holds the string denoting the provisionedhosttoendstepplan edge name in mutations.
 	EdgeProvisionedHostToEndStepPlan = "ProvisionedHostToEndStepPlan"
+	// EdgeProvisionedHostToBuild holds the string denoting the provisionedhosttobuild edge name in mutations.
+	EdgeProvisionedHostToBuild = "ProvisionedHostToBuild"
 	// EdgeProvisionedHostToProvisioningStep holds the string denoting the provisionedhosttoprovisioningstep edge name in mutations.
 	EdgeProvisionedHostToProvisioningStep = "ProvisionedHostToProvisioningStep"
 	// EdgeProvisionedHostToAgentStatus holds the string denoting the provisionedhosttoagentstatus edge name in mutations.
@@ -67,6 +69,13 @@ const (
 	ProvisionedHostToEndStepPlanInverseTable = "plans"
 	// ProvisionedHostToEndStepPlanColumn is the table column denoting the ProvisionedHostToEndStepPlan relation/edge.
 	ProvisionedHostToEndStepPlanColumn = "provisioned_host_provisioned_host_to_end_step_plan"
+	// ProvisionedHostToBuildTable is the table the holds the ProvisionedHostToBuild relation/edge.
+	ProvisionedHostToBuildTable = "provisioned_hosts"
+	// ProvisionedHostToBuildInverseTable is the table name for the Build entity.
+	// It exists in this package in order to avoid circular dependency with the "build" package.
+	ProvisionedHostToBuildInverseTable = "builds"
+	// ProvisionedHostToBuildColumn is the table column denoting the ProvisionedHostToBuild relation/edge.
+	ProvisionedHostToBuildColumn = "provisioned_host_provisioned_host_to_build"
 	// ProvisionedHostToProvisioningStepTable is the table the holds the ProvisionedHostToProvisioningStep relation/edge.
 	ProvisionedHostToProvisioningStepTable = "provisioning_steps"
 	// ProvisionedHostToProvisioningStepInverseTable is the table name for the ProvisioningStep entity.
@@ -119,6 +128,7 @@ var ForeignKeys = []string{
 	"provisioned_host_provisioned_host_to_provisioned_network",
 	"provisioned_host_provisioned_host_to_host",
 	"provisioned_host_provisioned_host_to_end_step_plan",
+	"provisioned_host_provisioned_host_to_build",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

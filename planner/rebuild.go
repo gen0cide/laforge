@@ -12,28 +12,27 @@ import (
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/plandiff"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/gen0cide/laforge/logging"
 	"github.com/gen0cide/laforge/server/utils"
 	"github.com/go-redis/redis/v8"
-	"github.com/sirupsen/logrus"
 )
 
-func Rebuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUser, entPlans []*ent.Plan, spawnedRebuildSuccessfully chan bool) (bool, error) {
+func Rebuild(client *ent.Client, rdb *redis.Client, logger *logging.Logger, currentUser *ent.AuthUser, serverTask *ent.ServerTask, taskStatus *ent.Status, entPlans []*ent.Plan, spawnedRebuildSuccessfully chan bool) (bool, error) {
 	ctx := context.Background()
 	defer ctx.Done()
 
 	entBuild, err := entPlans[0].QueryPlanToBuild().Only(ctx)
 	if err != nil {
 		spawnedRebuildSuccessfully <- false
-		logrus.Errorf("error getting build from plan: %v", err)
+		logger.Log.Errorf("error getting build from plan: %v", err)
 		return false, err
 	}
 
 	rebuildRevision, err := entBuild.QueryBuildToBuildCommits().Count(ctx)
 	if err != nil {
 		spawnedRebuildSuccessfully <- false
-		logrus.Errorf("error counting commits on build: %v", err)
+		logger.Log.Errorf("error counting commits on build: %v", err)
 		return false, err
 	}
 
@@ -45,14 +44,14 @@ func Rebuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUser, e
 		Save(ctx)
 	if err != nil {
 		spawnedRebuildSuccessfully <- false
-		logrus.Errorf("error while creating rebuild commit: %v", err)
+		logger.Log.Errorf("error while creating rebuild commit: %v", err)
 		return false, fmt.Errorf("error while creating rebuild commit: %v", err)
 	}
 	rdb.Publish(ctx, "updatedBuildCommit", entRebuildCommit.ID.String())
 	err = entBuild.Update().SetBuildToLatestBuildCommit(entRebuildCommit).Exec(ctx)
 	if err != nil {
 		spawnedRebuildSuccessfully <- false
-		logrus.Errorf("error while setting latest commit on build: %v", err)
+		logger.Log.Errorf("error while setting latest commit on build: %v", err)
 		return false, fmt.Errorf("error while setting latest commit on build: %v", err)
 	}
 	rdb.Publish(ctx, "updatedBuild", entBuild.ID.String())
@@ -61,23 +60,23 @@ func Rebuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUser, e
 		err = generateRebuildCommitPlans(client, ctx, rootPlan, entRebuildCommit)
 		if err != nil {
 			spawnedRebuildSuccessfully <- false
-			logrus.Errorf("error generating plans for rebuild commit")
+			logger.Log.Errorf("error generating plans for rebuild commit")
 			return false, err
 		}
 		err = generateRebuildCommitPreviousPlans(client, ctx, rootPlan, entRebuildCommit)
 		if err != nil {
 			spawnedRebuildSuccessfully <- false
-			logrus.Errorf("error generating previous plans for rebuild commit")
+			logger.Log.Errorf("error generating previous plans for rebuild commit")
 			return false, err
 		}
 	}
 
 	spawnedRebuildSuccessfully <- true
 
-	logrus.Debug("-----\nWAITING FOR COMMIT REVIEW\n-----")
+	logger.Log.Debug("-----\nWAITING FOR COMMIT REVIEW\n-----")
 	isApproved, err := utils.WaitForCommitReview(client, entRebuildCommit, 20*time.Minute)
 	if err != nil {
-		logrus.Errorf("error while waiting for rebuild commit to be reviewed: %v", err)
+		logger.Log.Errorf("error while waiting for rebuild commit to be reviewed: %v", err)
 		entRebuildCommit.Update().SetState(buildcommit.StateCANCELLED).Exec(ctx)
 		rdb.Publish(ctx, "updatedBuildCommit", entRebuildCommit.ID.String())
 		return false, err
@@ -85,37 +84,27 @@ func Rebuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUser, e
 
 	// Cancelled or timeout reached
 	if !isApproved {
-		logrus.Debug("-----\nCOMMIT CANCELLED/TIMED OUT\n-----")
-		logrus.Errorf("rebuild commit has been cancelled or 20 minute timeout has been reached")
+		logger.Log.Debug("-----\nCOMMIT CANCELLED/TIMED OUT\n-----")
+		logger.Log.Errorf("rebuild commit has been cancelled or 20 minute timeout has been reached")
 		err = entRebuildCommit.Update().SetState(buildcommit.StateCANCELLED).Exec(ctx)
 		if err != nil {
-			logrus.Errorf("error while cancelling rebuild commit: %v", err)
+			logger.Log.Errorf("error while cancelling rebuild commit: %v", err)
 			return false, err
 		}
 		rdb.Publish(ctx, "updatedBuildCommit", entRebuildCommit.ID.String())
+		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
+		if err != nil {
+			return false, fmt.Errorf("error failing execute build server task: %v", err)
+		}
 		return false, fmt.Errorf("commit has been cancelled or 20 minute timeout has been reached")
 	}
-	logrus.Debug("-----\nCOMMIT APPROVED\n-----")
+	logger.Log.Debug("-----\nCOMMIT APPROVED\n-----")
 
 	env, err := entBuild.QueryBuildToEnvironment().Only(ctx)
 	if err != nil {
-		logrus.Errorf("error querying environment from build: %v", err)
+		logger.Log.Errorf("error querying environment from build: %v", err)
 		return false, err
 	}
-
-	taskStatus, serverTask, err := utils.CreateServerTask(ctx, client, rdb, currentUser, servertask.TypeREBUILD)
-	if err != nil {
-		return false, fmt.Errorf("error creating server task: %v", err)
-	}
-	serverTask, err = client.ServerTask.UpdateOne(serverTask).SetServerTaskToBuild(entBuild).SetServerTaskToEnvironment(env).Save(ctx)
-	if err != nil {
-		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
-		if err != nil {
-			return false, fmt.Errorf("error failing execute rebuild server task: %v", err)
-		}
-		return false, fmt.Errorf("error assigning environment and build to execute rebuild server task: %v", err)
-	}
-	rdb.Publish(ctx, "updatedServerTask", serverTask.ID.String())
 
 	err = entRebuildCommit.Update().SetState(buildcommit.StateINPROGRESS).Exec(ctx)
 	if err != nil {
@@ -123,25 +112,25 @@ func Rebuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUser, e
 		if err != nil {
 			return false, fmt.Errorf("error failing execute build server task: %v", err)
 		}
-		logrus.Errorf("error while cancelling rebuild commit: %v", err)
+		logger.Log.Errorf("error while cancelling rebuild commit: %v", err)
 		return false, err
 	}
 	rdb.Publish(ctx, "updatedBuildCommit", entRebuildCommit.ID.String())
 
-	genericBuilder, err := builder.BuilderFromEnvironment(env)
+	genericBuilder, err := builder.BuilderFromEnvironment(env, logger)
 	if err != nil {
 		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
 		if err != nil {
 			return false, fmt.Errorf("error failing execute build server task: %v", err)
 		}
-		logrus.Errorf("error generating builder: %v", err)
+		logger.Log.Errorf("error generating builder: %v", err)
 		return false, err
 	}
 
 	deleteContext := context.Background()
 	// Mark all plans involved for rebuild
 	// for _, entPlan := range entPlans {
-	err = markForRoutine(deleteContext, status.StateTODELETE, entRebuildCommit)
+	err = markForRoutine(deleteContext, logger, status.StateTODELETE, entRebuildCommit)
 	if err != nil {
 		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
 		if err != nil {
@@ -151,23 +140,23 @@ func Rebuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUser, e
 	}
 	// }
 
-	// logrus.Debug("Marked plans for deletion, pausing for 1 minute so you can double check the statuses...")
+	// logger.Log.Debug("Marked plans for deletion, pausing for 1 minute so you can double check the statuses...")
 	// time.Sleep(1 * time.Minute)
 
 	var wg sync.WaitGroup
 	for _, entPlan := range entPlans {
 		wg.Add(1)
-		go deleteRoutine(client, &genericBuilder, deleteContext, entPlan, &wg)
+		go deleteRoutine(client, logger, &genericBuilder, deleteContext, entPlan, &wg)
 	}
 	wg.Wait()
 
-	logrus.Debug("waiting for deletion to propagate to all systems")
+	logger.Log.Debug("waiting for deletion to propagate to all systems")
 	time.Sleep(1 * time.Minute)
 
 	buildContext := context.Background()
 	defer buildContext.Done()
 	// for _, entPlan := range entPlans {
-	err = markForRoutine(buildContext, status.StateAWAITING, entRebuildCommit)
+	err = markForRoutine(buildContext, logger, status.StateAWAITING, entRebuildCommit)
 	if err != nil {
 		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
 		if err != nil {
@@ -183,7 +172,7 @@ func Rebuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUser, e
 	var wg2 sync.WaitGroup
 	for _, entPlan := range entPlans {
 		wg2.Add(1)
-		go buildRoutine(client, &genericBuilder, buildContext, entPlan, &wg2)
+		go buildRoutine(client, logger, &genericBuilder, buildContext, entPlan, &wg2)
 	}
 	wg2.Wait()
 
@@ -193,7 +182,7 @@ func Rebuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUser, e
 		if err != nil {
 			return false, fmt.Errorf("error failing execute build server task: %v", err)
 		}
-		logrus.Errorf("error while cancelling rebuild commit: %v", err)
+		logger.Log.Errorf("error while cancelling rebuild commit: %v", err)
 		return false, err
 	}
 	rdb.Publish(ctx, "updatedBuildCommit", entRebuildCommit.ID.String())
@@ -284,7 +273,7 @@ func generateRebuildCommitPreviousPlans(client *ent.Client, ctx context.Context,
 	return nil
 }
 
-func markForRoutine(ctx context.Context, targetStatus status.State, entRebuildCommit *ent.BuildCommit) error {
+func markForRoutine(ctx context.Context, logger *logging.Logger, targetStatus status.State, entRebuildCommit *ent.BuildCommit) error {
 	entPlanDiffs, err := entRebuildCommit.QueryBuildCommitToPlanDiffs().All(ctx)
 	if err != nil {
 		return err
@@ -342,11 +331,9 @@ func markForRoutine(ctx context.Context, targetStatus status.State, entRebuildCo
 				break
 			}
 			provisionedStatus, getStatusError = step.QueryProvisioningStepToStatus().Only(ctx)
-		default:
-			break
 		}
 		if getStatusError != nil {
-			logrus.Errorf("error getting status of provisioned object: %v", getStatusError)
+			logger.Log.Errorf("error getting status of provisioned object: %v", getStatusError)
 		}
 		if provisionedStatus.State != targetStatus {
 			err = provisionedStatus.Update().SetState(targetStatus).Exec(ctx)

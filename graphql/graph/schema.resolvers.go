@@ -10,7 +10,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"sync"
 
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/agentstatus"
@@ -23,6 +22,7 @@ import (
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
+	"github.com/gen0cide/laforge/ent/repository"
 	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/graphql/auth"
@@ -33,6 +33,7 @@ import (
 	"github.com/gen0cide/laforge/planner"
 	"github.com/gen0cide/laforge/server/utils"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -439,7 +440,31 @@ func (r *mutationResolver) ExecutePlan(ctx context.Context, buildUUID string) (*
 		return nil, fmt.Errorf("failed querying Build: %v", err)
 	}
 
-	go planner.StartBuild(r.client, currentUser, b)
+	entEnvironment, err := b.QueryBuildToEnvironment().Only(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query environment from build: %v", err)
+	}
+
+	taskStatus, serverTask, err := utils.CreateServerTask(ctx, r.client, r.rdb, currentUser, servertask.TypeEXECUTEBUILD)
+	if err != nil {
+		return nil, fmt.Errorf("error creating server task: %v", err)
+	}
+	serverTask, err = r.client.ServerTask.UpdateOne(serverTask).SetServerTaskToBuild(b).SetServerTaskToEnvironment(entEnvironment).Save(ctx)
+	if err != nil {
+		taskStatus, serverTask, err = utils.FailServerTask(ctx, r.client, r.rdb, taskStatus, serverTask)
+		if err != nil {
+			return nil, fmt.Errorf("error failing execute build server task: %v", err)
+		}
+		return nil, fmt.Errorf("error assigning environment and build to execute build server task: %v", err)
+	}
+	r.rdb.Publish(ctx, "updatedServerTask", serverTask.ID.String())
+
+	logger, err := logging.CreateLoggerForServerTask(serverTask)
+	if err != nil {
+		return nil, err
+	}
+
+	go planner.StartBuild(r.client, logger, currentUser, serverTask, taskStatus, b)
 
 	return b, nil
 }
@@ -462,12 +487,40 @@ func (r *mutationResolver) DeleteBuild(ctx context.Context, buildUUID string) (b
 		return false, fmt.Errorf("failed querying Build: %v", err)
 	}
 
+	entEnvironment, err := b.QueryBuildToEnvironment().Only(ctx)
+	if err != nil {
+		logrus.Errorf("failed to query environment from build: %v", err)
+		return false, err
+	}
+
+	taskStatus, serverTask, err := utils.CreateServerTask(ctx, r.client, r.rdb, currentUser, servertask.TypeDELETEBUILD)
+	if err != nil {
+		return false, fmt.Errorf("error creating server task: %v", err)
+	}
+	serverTask, err = r.client.ServerTask.UpdateOne(serverTask).SetServerTaskToBuild(b).SetServerTaskToEnvironment(entEnvironment).Save(ctx)
+	if err != nil {
+		taskStatus, serverTask, err = utils.FailServerTask(ctx, r.client, r.rdb, taskStatus, serverTask)
+		if err != nil {
+			return false, fmt.Errorf("error failing execute build server task: %v", err)
+		}
+		return false, fmt.Errorf("error assigning environment and build to execute build server task: %v", err)
+	}
+	r.rdb.Publish(ctx, "updatedServerTask", serverTask.ID.String())
+	log, err := logging.CreateLoggerForServerTask(serverTask)
+	if err != nil {
+		return false, fmt.Errorf("error creating logger for build delete: %v", err)
+	}
+
 	spawnedDelete := make(chan bool, 1)
-	go planner.DeleteBuild(r.client, r.rdb, currentUser, b, spawnedDelete)
+	go planner.DeleteBuild(r.client, r.rdb, log, currentUser, serverTask, taskStatus, b, spawnedDelete)
 
 	deleteIsSuccess := <-spawnedDelete
 	if deleteIsSuccess {
 		return true, nil
+	}
+	taskStatus, serverTask, err = utils.FailServerTask(ctx, r.client, r.rdb, taskStatus, serverTask)
+	if err != nil {
+		return false, fmt.Errorf("error failing execute build server task: %v", err)
 	}
 	return false, nil
 }
@@ -519,9 +572,36 @@ func (r *mutationResolver) Rebuild(ctx context.Context, rootPlans []*string) (bo
 	if err != nil {
 		return false, err
 	}
+	b, err := entPlans[0].QueryPlanToBuild().First(ctx)
+	if err != nil {
+		return false, err
+	}
+	env, err := b.QueryBuildToEnvironment().First(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	taskStatus, serverTask, err := utils.CreateServerTask(ctx, r.client, r.rdb, currentUser, servertask.TypeREBUILD)
+	if err != nil {
+		return false, fmt.Errorf("error creating server task: %v", err)
+	}
+	serverTask, err = r.client.ServerTask.UpdateOne(serverTask).SetServerTaskToBuild(b).SetServerTaskToEnvironment(env).Save(ctx)
+	if err != nil {
+		taskStatus, serverTask, err = utils.FailServerTask(ctx, r.client, r.rdb, taskStatus, serverTask)
+		if err != nil {
+			return false, fmt.Errorf("error failing execute rebuild server task: %v", err)
+		}
+		return false, fmt.Errorf("error assigning environment and build to execute rebuild server task: %v", err)
+	}
+	r.rdb.Publish(ctx, "updatedServerTask", serverTask.ID.String())
+
+	logger, err := logging.CreateLoggerForServerTask(serverTask)
+	if err != nil {
+		return false, err
+	}
 
 	spawnedRebuild := make(chan bool, 1)
-	go planner.Rebuild(r.client, r.rdb, currentUser, entPlans, spawnedRebuild)
+	go planner.Rebuild(r.client, r.rdb, logger, currentUser, serverTask, taskStatus, entPlans, spawnedRebuild)
 
 	rebuildStartedSuccess := <-spawnedRebuild
 	if rebuildStartedSuccess {
@@ -563,6 +643,20 @@ func (r *mutationResolver) CreateEnviromentFromRepo(ctx context.Context, repoURL
 	}
 
 	repoFolderPath := fmt.Sprintf(utils.RepoPath, strings.ToLower(string(currentUser.Provider)), currentUser.Username, repoName, branchName)
+
+	foundRepo, _ := r.client.Repository.Query().Where(
+		repository.And(
+			repository.BranchName(branchName),
+			repository.EnviromentFilepath(envFilePath),
+			repository.RepoURL(repoURL),
+		),
+	).First(ctx)
+
+	fmt.Println(foundRepo)
+
+	if foundRepo != nil {
+		return r.UpdateEnviromentViaPull(ctx, foundRepo.ID.String())
+	}
 
 	commit_info, err := utils.CloneGit(repoURL, repoFolderPath, currentUser.PrivateKeyPath, branchName)
 	if err != nil {
@@ -608,7 +702,7 @@ func (r *mutationResolver) UpdateEnviromentViaPull(ctx context.Context, repoUUID
 		return nil, err
 	}
 
-	commit_info, err := utils.PullGit(entRepo.FolderPath, currentUser.PrivateKeyPath)
+	commit_info, err := utils.PullGit(entRepo.FolderPath, currentUser.PrivateKeyPath, entRepo.BranchName)
 	if err != nil {
 		return nil, err
 	}
@@ -1098,99 +1192,54 @@ func (r *queryResolver) GetAgentTasks(ctx context.Context, proStepUUID string) (
 	return agentTasks, err
 }
 
-func (r *queryResolver) GetAllAgentStatus(ctx context.Context, buildUUID string) ([]*ent.AgentStatus, error) {
+func (r *queryResolver) GetAllAgentStatus(ctx context.Context, buildUUID string, count int, offset int) (*model.AgentStatusBatch, error) {
 	uuid, err := uuid.Parse(buildUUID)
 	if err != nil {
 		return nil, err
 	}
 
-	/*
-				var slice []T
-		    var wg sync.WaitGroup
-
-		    queue := make(chan T, 1)
-
-		    // Create our data and send it into the queue.
-		    wg.Add(100)
-		    for i := 0; i < 100; i++ {
-		        go func(i int) {
-		            // defer wg.Done()  <- will result in the last int to be missed in the receiving channel
-		            queue <- T(i)
-		        }(i)
-		    }
-
-		    go func() {
-		        // defer wg.Done() <- Never gets called since the 100 `Done()` calls are made above, resulting in the `Wait()` to continue on before this is executed
-		        for t := range queue {
-		            slice = append(slice, t)
-		            wg.Done()   // ** move the `Done()` call here
-		        }
-		    }()
-
-		    wg.Wait()
-
-		    // now prints off all 100 int values
-		    fmt.Println(slice)
-	*/
-
-	build, err := r.client.Build.Query().Where(build.IDEQ(uuid)).Only(ctx)
-	if err != nil {
-		return nil, err
-	}
-	teams, err := build.QueryBuildToTeam().All(ctx)
+	totalAgentStatuses, err := r.client.AgentStatus.Query().Where(agentstatus.HasAgentStatusToBuildWith(build.IDEQ(uuid))).Count(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var agentStatuses []*ent.AgentStatus
-	var wg sync.WaitGroup
-	var routineErr error
-
-	mu := &sync.Mutex{}
-
-	for _, team := range teams {
-		wg.Add(1)
-		go func(ctx context.Context, wg *sync.WaitGroup, team *ent.Team) {
-			defer wg.Done()
-			pnets, routineErr := team.QueryTeamToProvisionedNetwork().All(ctx)
-			if routineErr != nil {
-				return
-			}
-			for _, pnet := range pnets {
-				wg.Add(1)
-				go func(ctx context.Context, wg *sync.WaitGroup, pnet *ent.ProvisionedNetwork) {
-					defer wg.Done()
-					phosts, routineErr := pnet.QueryProvisionedNetworkToProvisionedHost().All(ctx)
-					if routineErr != nil {
-						return
-					}
-					for _, phost := range phosts {
-						wg.Add(1)
-						go func(ctx context.Context, wg *sync.WaitGroup, phost *ent.ProvisionedHost) {
-							defer wg.Done()
-							agentStatus, routineErr := phost.QueryProvisionedHostToAgentStatus().Order(
-								ent.Desc(agentstatus.FieldTimestamp),
-							).First(ctx)
-							if routineErr != nil {
-								return
-							}
-							mu.Lock()
-							agentStatuses = append(agentStatuses, agentStatus)
-							mu.Unlock()
-						}(ctx, wg, phost)
-					}
-				}(ctx, wg, pnet)
-			}
-		}(ctx, &wg, team)
+	agentStatuses, err := r.client.AgentStatus.Query().Where(agentstatus.HasAgentStatusToBuildWith(build.IDEQ(uuid))).Order(ent.Asc(agentstatus.FieldTimestamp)).Limit(count).Offset(offset).All(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	wg.Wait()
+	return &model.AgentStatusBatch{
+		AgentStatuses: agentStatuses,
+		PageInfo: &model.LaForgePageInfo{
+			Total:      totalAgentStatuses,
+			NextOffset: offset + count,
+		},
+	}, nil
+}
 
-	if routineErr != nil {
-		return nil, routineErr
+func (r *queryResolver) GetAllPlanStatus(ctx context.Context, buildUUID string, count int, offset int) (*model.StatusBatch, error) {
+	uuid, err := uuid.Parse(buildUUID)
+	if err != nil {
+		return nil, err
 	}
 
-	return agentStatuses, nil
+	totalStatuses, err := r.client.Status.Query().Where(status.HasStatusToPlanWith(plan.HasPlanToBuildWith(build.IDEQ(uuid)))).Count(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	statuses, err := r.client.Status.Query().Where(status.HasStatusToPlanWith(plan.HasPlanToBuildWith(build.IDEQ(uuid)))).Order(ent.Asc(status.FieldStartedAt)).Limit(count).Offset(offset).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.StatusBatch{
+		Statuses: statuses,
+		PageInfo: &model.LaForgePageInfo{
+			Total:      totalStatuses,
+			NextOffset: offset + count,
+		},
+	}, nil
 }
 
 func (r *repositoryResolver) ID(ctx context.Context, obj *ent.Repository) (string, error) {
@@ -1596,8 +1645,3 @@ type userResolver struct{ *Resolver }
 //  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
 //    it when you're done.
 //  - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *provisionedHostResolver) CombinedOutput(ctx context.Context, obj *ent.ProvisionedHost) (*string, error) {
-	// TODO: Implement CombinedOutput
-	todo := "not implemented"
-	return &todo, nil
-}

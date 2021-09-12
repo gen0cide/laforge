@@ -1422,6 +1422,62 @@ func HasAgentStatusToProvisionedHostWith(preds ...predicate.ProvisionedHost) pre
 	})
 }
 
+// HasAgentStatusToProvisionedNetwork applies the HasEdge predicate on the "AgentStatusToProvisionedNetwork" edge.
+func HasAgentStatusToProvisionedNetwork() predicate.AgentStatus {
+	return predicate.AgentStatus(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(AgentStatusToProvisionedNetworkTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, AgentStatusToProvisionedNetworkTable, AgentStatusToProvisionedNetworkColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAgentStatusToProvisionedNetworkWith applies the HasEdge predicate on the "AgentStatusToProvisionedNetwork" edge with a given conditions (other predicates).
+func HasAgentStatusToProvisionedNetworkWith(preds ...predicate.ProvisionedNetwork) predicate.AgentStatus {
+	return predicate.AgentStatus(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(AgentStatusToProvisionedNetworkInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, AgentStatusToProvisionedNetworkTable, AgentStatusToProvisionedNetworkColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAgentStatusToBuild applies the HasEdge predicate on the "AgentStatusToBuild" edge.
+func HasAgentStatusToBuild() predicate.AgentStatus {
+	return predicate.AgentStatus(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(AgentStatusToBuildTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, AgentStatusToBuildTable, AgentStatusToBuildColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAgentStatusToBuildWith applies the HasEdge predicate on the "AgentStatusToBuild" edge with a given conditions (other predicates).
+func HasAgentStatusToBuildWith(preds ...predicate.Build) predicate.AgentStatus {
+	return predicate.AgentStatus(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(AgentStatusToBuildInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, AgentStatusToBuildTable, AgentStatusToBuildColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.AgentStatus) predicate.AgentStatus {
 	return predicate.AgentStatus(func(s *sql.Selector) {

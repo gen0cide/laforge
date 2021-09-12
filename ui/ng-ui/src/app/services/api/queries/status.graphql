@@ -10,38 +10,54 @@ query GetAgentStatus($clientId: String!) {
   }
 }
 
-query PullPlanStatuses($buildId: String!) {
-  build(buildUUID: $buildId) {
-    id
-    buildToPlan {
-      id
-      PlanToStatus {
-        ...StatusFields
-      }
+# query PullPlanStatuses($buildId: String!) {
+#   build(buildUUID: $buildId) {
+#     id
+#     buildToPlan {
+#       id
+#       PlanToStatus {
+#         ...StatusFields
+#       }
+#     }
+#   }
+# }
+
+query GetAllPlanStatuses($buildId: String!, $count: Int!, $offset: Int!) {
+  getAllPlanStatus(buildUUID: $buildId, count: $count, offset: $offset) {
+    statuses {
+      ...StatusFields
+    }
+    pageInfo {
+      ...PageInfoFields
     }
   }
 }
 
-query PullAgentStatuses($buildId: String!) {
-  build(buildUUID: $buildId) {
-    id
-    buildToTeam {
-      id
-      TeamToProvisionedNetwork {
-        id
-        ProvisionedNetworkToProvisionedHost {
-          id
-          ProvisionedHostToAgentStatus {
-            ...AgentStatusFields
-          }
-        }
-      }
-    }
-  }
-}
+# query PullAgentStatuses($buildId: String!) {
+#   build(buildUUID: $buildId) {
+#     id
+#     buildToTeam {
+#       id
+#       TeamToProvisionedNetwork {
+#         id
+#         ProvisionedNetworkToProvisionedHost {
+#           id
+#           ProvisionedHostToAgentStatus {
+#             ...AgentStatusFields
+#           }
+#         }
+#       }
+#     }
+#   }
+# }
 
-query GetAllAgentStatuses($buildId: String!) {
-  getAllAgentStatus(buildUUID: $buildId) {
-    ...AgentStatusFields
+query GetAllAgentStatuses($buildId: String!, $count: Int!, $offset: Int!) {
+  getAllAgentStatus(buildUUID: $buildId, count: $count, offset: $offset) {
+    agentStatuses {
+      ...AgentStatusFields
+    }
+    pageInfo {
+      ...PageInfoFields
+    }
   }
 }

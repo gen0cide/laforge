@@ -10,10 +10,11 @@ import (
 	"strings"
 
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/logging"
 	"github.com/sirupsen/logrus"
 )
 
-func BuildAgent(agentID string, serverAddress string, binarypath string, isWindows bool) {
+func BuildAgent(logger *logging.Logger, agentID string, serverAddress string, binarypath string, isWindows bool) {
 	command := ""
 	if isWindows {
 		command = "CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=\"zcc\" go build -ldflags=\" -X 'main.clientID=" + agentID + "' -X 'main.address=" + serverAddress + "'\" -o " + binarypath + " github.com/gen0cide/laforge/grpc/agent"
@@ -26,7 +27,7 @@ func BuildAgent(agentID string, serverAddress string, binarypath string, isWindo
 	if err != nil {
 		logrus.Fatal(err)
 	}
-	logrus.Debugf("Created %s, Output %s\n", binarypath, stdoutStderr)
+	logger.Log.Debugf("Created %s, Output %s\n", binarypath, stdoutStderr)
 }
 
 func main() {
@@ -93,7 +94,12 @@ func main() {
 		}
 		envName := env.Name
 
+		logger := logging.Logger{
+			Log:     &logrus.Logger{},
+			LogFile: "",
+		}
+
 		binaryName := filepath.Join(envName, "team", fmt.Sprint(teamName), networkName, hostName)
-		BuildAgent(fmt.Sprint(ph.ID), serverAddress, binaryName, false)
+		BuildAgent(&logger, fmt.Sprint(ph.ID), serverAddress, binaryName, false)
 	}
 }

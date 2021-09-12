@@ -509,41 +509,68 @@ type AuthUser {
   publicKey: String!
 }
 
+type LaForgePageInfo {
+  total: Int!
+  nextOffset: Int!
+}
+
+type AgentStatusBatch {
+  agentStatuses: [AgentStatus]!
+  pageInfo: LaForgePageInfo!
+}
+
+type StatusBatch {
+  statuses: [Status]!
+  pageInfo: LaForgePageInfo!
+}
+
 # TODO: Can use on INPUT_FIELD_DEFINITION if wanna have auth on a per variable level
 directive @hasRole(roles: [RoleLevel!]!) on FIELD_DEFINITION
 
 type Query {
-  environments: [Environment]
-  environment(envUUID: String!): Environment
+  environments: [Environment] @hasRole(roles: [ADMIN, USER])
+  environment(envUUID: String!): Environment @hasRole(roles: [ADMIN, USER])
   provisionedHost(proHostUUID: String!): ProvisionedHost
+    @hasRole(roles: [ADMIN, USER])
   provisionedNetwork(proNetUUID: String!): ProvisionedNetwork
+    @hasRole(roles: [ADMIN, USER])
   provisionedStep(proStepUUID: String!): ProvisioningStep
-  plan(planUUID: String!): Plan
-  build(buildUUID: String!): Build
-  status(statusUUID: String!): Status
-  agentStatus(clientId: String!): AgentStatus
+    @hasRole(roles: [ADMIN, USER])
+  plan(planUUID: String!): Plan @hasRole(roles: [ADMIN, USER])
+  build(buildUUID: String!): Build @hasRole(roles: [ADMIN, USER])
+  status(statusUUID: String!): Status @hasRole(roles: [ADMIN, USER])
+  agentStatus(clientId: String!): AgentStatus @hasRole(roles: [ADMIN, USER])
   getServerTasks: [ServerTask] @hasRole(roles: [ADMIN])
-  currentUser: AuthUser
+  currentUser: AuthUser @hasRole(roles: [ADMIN, USER])
   getUserList: [AuthUser] @hasRole(roles: [ADMIN])
-  getCurrentUserTasks: [ServerTask]
+  getCurrentUserTasks: [ServerTask] @hasRole(roles: [ADMIN, USER])
   getAgentTasks(proStepUUID: String!): [AgentTask]
-  getAllAgentStatus(buildUUID: String!): [AgentStatus]
+    @hasRole(roles: [ADMIN, USER])
+  getAllAgentStatus(
+    buildUUID: String!
+    count: Int!
+    offset: Int!
+  ): AgentStatusBatch @hasRole(roles: [ADMIN, USER])
+  getAllPlanStatus(buildUUID: String!, count: Int!, offset: Int!): StatusBatch
+    @hasRole(roles: [ADMIN, USER])
 }
 
 type Mutation {
   loadEnvironment(envFilePath: String!): [Environment]
+    @hasRole(roles: [ADMIN, USER])
   createBuild(envUUID: String!, renderFiles: Boolean! = true): Build
-  deleteUser(userUUID: String!): Boolean!
-  executePlan(buildUUID: String!): Build
-  deleteBuild(buildUUID: String!): Boolean!
+    @hasRole(roles: [ADMIN, USER])
+  deleteUser(userUUID: String!): Boolean! @hasRole(roles: [ADMIN, USER])
+  executePlan(buildUUID: String!): Build @hasRole(roles: [ADMIN, USER])
+  deleteBuild(buildUUID: String!): Boolean! @hasRole(roles: [ADMIN, USER])
   createTask(
     proHostUUID: String!
     command: AgentCommand!
     args: String!
   ): Boolean! @hasRole(roles: [ADMIN, USER])
-  rebuild(rootPlans: [String]!): Boolean!
-  approveCommit(commitUUID: String!): Boolean!
-  cancelCommit(commitUUID: String!): Boolean!
+  rebuild(rootPlans: [String]!): Boolean! @hasRole(roles: [ADMIN, USER])
+  approveCommit(commitUUID: String!): Boolean! @hasRole(roles: [ADMIN, USER])
+  cancelCommit(commitUUID: String!): Boolean! @hasRole(roles: [ADMIN, USER])
 
   # createAdhoc(rootPlans: [AdhocPlan]!): Boolean!
 
@@ -593,10 +620,10 @@ type Mutation {
 }
 
 type Subscription {
-  updatedAgentStatus: AgentStatus!
-  updatedStatus: Status!
-  updatedServerTask: ServerTask!
-  updatedBuild: Build!
-  updatedCommit: BuildCommit!
-  updatedAgentTask: AgentTask!
+  updatedAgentStatus: AgentStatus! @hasRole(roles: [ADMIN, USER])
+  updatedStatus: Status! @hasRole(roles: [ADMIN, USER])
+  updatedServerTask: ServerTask! @hasRole(roles: [ADMIN, USER])
+  updatedBuild: Build! @hasRole(roles: [ADMIN, USER])
+  updatedCommit: BuildCommit! @hasRole(roles: [ADMIN, USER])
+  updatedAgentTask: AgentTask! @hasRole(roles: [ADMIN, USER])
 }

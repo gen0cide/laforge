@@ -12,8 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
+	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/google/uuid"
 )
 
@@ -27,8 +29,10 @@ type AgentStatusQuery struct {
 	fields     []string
 	predicates []predicate.AgentStatus
 	// eager-loading edges.
-	withAgentStatusToProvisionedHost *ProvisionedHostQuery
-	withFKs                          bool
+	withAgentStatusToProvisionedHost    *ProvisionedHostQuery
+	withAgentStatusToProvisionedNetwork *ProvisionedNetworkQuery
+	withAgentStatusToBuild              *BuildQuery
+	withFKs                             bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -80,6 +84,50 @@ func (asq *AgentStatusQuery) QueryAgentStatusToProvisionedHost() *ProvisionedHos
 			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, selector),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, agentstatus.AgentStatusToProvisionedHostTable, agentstatus.AgentStatusToProvisionedHostColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(asq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAgentStatusToProvisionedNetwork chains the current query on the "AgentStatusToProvisionedNetwork" edge.
+func (asq *AgentStatusQuery) QueryAgentStatusToProvisionedNetwork() *ProvisionedNetworkQuery {
+	query := &ProvisionedNetworkQuery{config: asq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := asq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := asq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, selector),
+			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentstatus.AgentStatusToProvisionedNetworkTable, agentstatus.AgentStatusToProvisionedNetworkColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(asq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAgentStatusToBuild chains the current query on the "AgentStatusToBuild" edge.
+func (asq *AgentStatusQuery) QueryAgentStatusToBuild() *BuildQuery {
+	query := &BuildQuery{config: asq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := asq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := asq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, selector),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentstatus.AgentStatusToBuildTable, agentstatus.AgentStatusToBuildColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(asq.driver.Dialect(), step)
 		return fromU, nil
@@ -263,12 +311,14 @@ func (asq *AgentStatusQuery) Clone() *AgentStatusQuery {
 		return nil
 	}
 	return &AgentStatusQuery{
-		config:                           asq.config,
-		limit:                            asq.limit,
-		offset:                           asq.offset,
-		order:                            append([]OrderFunc{}, asq.order...),
-		predicates:                       append([]predicate.AgentStatus{}, asq.predicates...),
-		withAgentStatusToProvisionedHost: asq.withAgentStatusToProvisionedHost.Clone(),
+		config:                              asq.config,
+		limit:                               asq.limit,
+		offset:                              asq.offset,
+		order:                               append([]OrderFunc{}, asq.order...),
+		predicates:                          append([]predicate.AgentStatus{}, asq.predicates...),
+		withAgentStatusToProvisionedHost:    asq.withAgentStatusToProvisionedHost.Clone(),
+		withAgentStatusToProvisionedNetwork: asq.withAgentStatusToProvisionedNetwork.Clone(),
+		withAgentStatusToBuild:              asq.withAgentStatusToBuild.Clone(),
 		// clone intermediate query.
 		sql:  asq.sql.Clone(),
 		path: asq.path,
@@ -283,6 +333,28 @@ func (asq *AgentStatusQuery) WithAgentStatusToProvisionedHost(opts ...func(*Prov
 		opt(query)
 	}
 	asq.withAgentStatusToProvisionedHost = query
+	return asq
+}
+
+// WithAgentStatusToProvisionedNetwork tells the query-builder to eager-load the nodes that are connected to
+// the "AgentStatusToProvisionedNetwork" edge. The optional arguments are used to configure the query builder of the edge.
+func (asq *AgentStatusQuery) WithAgentStatusToProvisionedNetwork(opts ...func(*ProvisionedNetworkQuery)) *AgentStatusQuery {
+	query := &ProvisionedNetworkQuery{config: asq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	asq.withAgentStatusToProvisionedNetwork = query
+	return asq
+}
+
+// WithAgentStatusToBuild tells the query-builder to eager-load the nodes that are connected to
+// the "AgentStatusToBuild" edge. The optional arguments are used to configure the query builder of the edge.
+func (asq *AgentStatusQuery) WithAgentStatusToBuild(opts ...func(*BuildQuery)) *AgentStatusQuery {
+	query := &BuildQuery{config: asq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	asq.withAgentStatusToBuild = query
 	return asq
 }
 
@@ -352,11 +424,13 @@ func (asq *AgentStatusQuery) sqlAll(ctx context.Context) ([]*AgentStatus, error)
 		nodes       = []*AgentStatus{}
 		withFKs     = asq.withFKs
 		_spec       = asq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [3]bool{
 			asq.withAgentStatusToProvisionedHost != nil,
+			asq.withAgentStatusToProvisionedNetwork != nil,
+			asq.withAgentStatusToBuild != nil,
 		}
 	)
-	if asq.withAgentStatusToProvisionedHost != nil {
+	if asq.withAgentStatusToProvisionedHost != nil || asq.withAgentStatusToProvisionedNetwork != nil || asq.withAgentStatusToBuild != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -407,6 +481,64 @@ func (asq *AgentStatusQuery) sqlAll(ctx context.Context) ([]*AgentStatus, error)
 			}
 			for i := range nodes {
 				nodes[i].Edges.AgentStatusToProvisionedHost = n
+			}
+		}
+	}
+
+	if query := asq.withAgentStatusToProvisionedNetwork; query != nil {
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*AgentStatus)
+		for i := range nodes {
+			if nodes[i].agent_status_agent_status_to_provisioned_network == nil {
+				continue
+			}
+			fk := *nodes[i].agent_status_agent_status_to_provisioned_network
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(provisionednetwork.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "agent_status_agent_status_to_provisioned_network" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.AgentStatusToProvisionedNetwork = n
+			}
+		}
+	}
+
+	if query := asq.withAgentStatusToBuild; query != nil {
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*AgentStatus)
+		for i := range nodes {
+			if nodes[i].agent_status_agent_status_to_build == nil {
+				continue
+			}
+			fk := *nodes[i].agent_status_agent_status_to_build
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(build.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "agent_status_agent_status_to_build" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.AgentStatusToBuild = n
 			}
 		}
 	}

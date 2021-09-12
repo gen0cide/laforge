@@ -35,8 +35,6 @@ func CloneGit(repoURL, repoPath, privateKey, branchName string) (string, error) 
 		Auth:          publicKeys,
 		URL:           repoURL,
 		ReferenceName: plumbing.ReferenceName(branch),
-		Progress:      os.Stdout,
-		// SingleBranch:  true,
 	})
 	if err != nil {
 		err := fmt.Errorf("unable to clone repo: %s", err.Error())
@@ -59,7 +57,7 @@ func CloneGit(repoURL, repoPath, privateKey, branchName string) (string, error) 
 	return commit.String(), err
 }
 
-func PullGit(repoPath, privateKey string) (string, error) {
+func PullGit(repoPath, privateKey, branchName string) (string, error) {
 
 	_, err := os.Stat(privateKey)
 	if err != nil {
@@ -86,7 +84,15 @@ func PullGit(repoPath, privateKey string) (string, error) {
 		err := fmt.Errorf("getting git working directory failed: %s", err.Error())
 		return "", err
 	}
-	err = w.Pull(&git.PullOptions{RemoteName: "origin", Auth: publicKeys})
+	branch := fmt.Sprintf("refs/heads/%s", branchName)
+	if err = w.Pull(&git.PullOptions{
+		ReferenceName: plumbing.ReferenceName(branch),
+		SingleBranch:  true,
+		Force:         true,
+		Auth:          publicKeys,
+	}); err != nil && err != git.NoErrAlreadyUpToDate {
+		return "", err
+	}
 
 	// Print the latest commit that was just pulled
 	ref, err := repo.Head()

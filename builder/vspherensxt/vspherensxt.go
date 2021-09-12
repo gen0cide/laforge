@@ -13,6 +13,7 @@ import (
 	"github.com/gen0cide/laforge/builder/vspherensxt/nsxt"
 	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/logging"
 	"github.com/vmware/govmomi/object"
 	"github.com/vmware/govmomi/vim25/types"
 )
@@ -33,9 +34,10 @@ type VSphereNSXTBuilder struct {
 	VSphereClient             vsphere.VSphere
 	TemplatePrefix            string
 	VSphereContentLibraryName string
-	VSphereDatastore          vsphere.Datastore
+	VSphereDatastore          *types.DatastoreSummary
 	VSphereResourcePool       *object.ResourcePool
 	VSphereFolder             *object.Folder
+	Logger                    *logging.Logger
 }
 
 func (builder VSphereNSXTBuilder) ID() string {
@@ -407,12 +409,12 @@ func (builder VSphereNSXTBuilder) TeardownHost(ctx context.Context, provisionedH
 		}
 	}
 
-	_, vmExists, err := builder.VSphereClient.GetVm(vmName)
+	_, vmExists, err := builder.VSphereClient.GetVmSummary(ctx, vmName)
 	if err != nil {
 		return fmt.Errorf("error while checking if vm exists: %v", err)
 	}
 	if vmExists {
-		vsphereErr := builder.VSphereClient.DeleteVM(vmName)
+		vsphereErr := builder.VSphereClient.DeleteVM(ctx, vmName)
 		if err != nil {
 			return fmt.Errorf("error while tearing down VM \"%s\": %v", vmName, vsphereErr)
 		}

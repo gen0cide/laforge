@@ -23,12 +23,13 @@ type Logger struct {
 // CreateNewLogger creates a Logger object set to output to the specified log file
 func CreateNewLogger(logFilePath string) Logger {
 	var log = logrus.New()
+	log.SetLevel(logrus.GetLevel())
 
 	file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err == nil {
 		log.Out = file
 	} else {
-		log.Error("Failed create log file")
+		logrus.Error("Failed create log file")
 	}
 
 	return Logger{
@@ -43,7 +44,7 @@ func CreateLoggerForServerTask(serverTask *ent.ServerTask) (*Logger, error) {
 	logFolder, ok := os.LookupEnv("LAFORGE_LOG_FOLDER")
 	if !ok {
 		// Default log location
-		logFolder = "/var/logs/laforge"
+		logFolder = "/var/log/laforge"
 	}
 	absPath, err := filepath.Abs(logFolder)
 	if err != nil {
@@ -61,8 +62,9 @@ func CreateLoggerForServerTask(serverTask *ent.ServerTask) (*Logger, error) {
 		}).Errorf("error creating log folder: %v", err)
 		return nil, fmt.Errorf("error creating logger: %v", err)
 	}
-	filename := fmt.Sprintf("%s_%s.log", time.Now().Format("20060102-15-04-05"), serverTask.Type)
+	filename := fmt.Sprintf("%s_%s.lfglog", time.Now().Format("20060102-15-04-05"), serverTask.Type)
 	logPath := path.Join(absPath, filename)
+	logrus.Info(logPath)
 	log := CreateNewLogger(logPath)
 
 	err = serverTask.Update().SetLogFilePath(logPath).Exec(ctx)

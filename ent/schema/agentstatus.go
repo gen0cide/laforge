@@ -39,5 +39,9 @@ func (AgentStatus) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("AgentStatusToProvisionedHost", ProvisionedHost.Type).
 			Unique(),
+		edge.To("AgentStatusToProvisionedNetwork", ProvisionedNetwork.Type).
+			Unique(),
+		edge.To("AgentStatusToBuild", Build.Type).
+			Unique(),
 	}
 }

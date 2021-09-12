@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -15,21 +16,27 @@ func main() {
 	baseUrl, urlExists := os.LookupEnv("VSPHERE_URL")
 	username, usernameExists := os.LookupEnv("VSPHERE_USERNAME")
 	password, passwordExists := os.LookupEnv("VSPHERE_PASSWORD")
-	if !urlExists || !usernameExists || !passwordExists {
-		log.Fatalf("please set VSPHERE_URL (exists? %t), VSPHERE_USERNAME (exists? %t), and VSPHERE_PASSWORD (exists? %t)", urlExists, usernameExists, passwordExists)
+	resourcePoolName, resourcePoolExists := os.LookupEnv("VSPHERE_RESOURCE_POOL")
+	if !urlExists || !usernameExists || !passwordExists || !resourcePoolExists {
+		log.Fatalf("please set VSPHERE_URL (exists? %t), VSPHERE_USERNAME (exists? %t), VSPHERE_PASSWORD (exists? %t), and VSPHERE_RESOURCE_POOL (exists? %t)", urlExists, usernameExists, passwordExists, resourcePoolExists)
 	}
-	vshpere := vsphere.VSphere{
+	vs := vsphere.VSphere{
 		HttpClient: httpClient,
 		BaseUrl:    baseUrl,
 		Username:   username,
 		Password:   password,
 	}
 
-	resourcePools, err := vshpere.ListResourcePools()
+	vsphere.InitializeGovmomi(&vs, baseUrl, username, password)
+
+	ctx := context.Background()
+
+	resourcePool, err := vs.GetResourcePoolByName(ctx, resourcePoolName)
 	if err != nil {
-		log.Fatalf("error while getting resource pools: %v", err)
+		log.Fatalf("error while getting folders: %v", err)
 	}
-	for _, resourcePool := range resourcePools {
-		fmt.Printf("%s [%s]\n", resourcePool.Name, resourcePool.Identifier)
-	}
+	logrus.WithFields(logrus.Fields{
+		"identifier": resourcePool.Reference().Value,
+		"path":       resourcePool.InventoryPath,
+	}).Info(resourcePool.Name())
 }

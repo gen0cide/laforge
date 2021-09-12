@@ -17,14 +17,14 @@ import (
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
-	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/gen0cide/laforge/logging"
 	"github.com/gen0cide/laforge/server/utils"
 	"github.com/go-redis/redis/v8"
 	"github.com/sirupsen/logrus"
 )
 
-func DeleteBuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUser, entBuild *ent.Build, spawnedDelete chan bool) (bool, error) {
+func DeleteBuild(client *ent.Client, rdb *redis.Client, logger *logging.Logger, currentUser *ent.AuthUser, serverTask *ent.ServerTask, taskStatus *ent.Status, entBuild *ent.Build, spawnedDelete chan bool) (bool, error) {
 	deleteContext := context.Background()
 	defer deleteContext.Done()
 
@@ -37,17 +37,17 @@ func DeleteBuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUse
 	err = entBuild.Update().SetBuildToLatestBuildCommit(entDeleteCommit).Exec(deleteContext)
 	if err != nil {
 		spawnedDelete <- false
-		logrus.Errorf("error while setting latest commit on build: %v", err)
+		logger.Log.Errorf("error while setting latest commit on build: %v", err)
 		return false, fmt.Errorf("error while setting latest commit on build: %v", err)
 	}
 	rdb.Publish(deleteContext, "updatedBuild", entBuild.ID.String())
 
 	spawnedDelete <- true
 
-	logrus.Debug("-----\nWAITING FOR COMMIT REVIEW\n-----")
+	logger.Log.Debug("-----\nWAITING FOR COMMIT REVIEW\n-----")
 	isApproved, err := utils.WaitForCommitReview(client, entDeleteCommit, 20*time.Minute)
 	if err != nil {
-		logrus.Errorf("error while waiting for delete commit to be reviewed: %v", err)
+		logger.Log.Errorf("error while waiting for delete commit to be reviewed: %v", err)
 		entDeleteCommit.Update().SetState(buildcommit.StateCANCELLED).Exec(deleteContext)
 		rdb.Publish(deleteContext, "updatedBuildCommit", entDeleteCommit.ID.String())
 		return false, err
@@ -55,37 +55,17 @@ func DeleteBuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUse
 
 	// Cancelled or timeout reached
 	if !isApproved {
-		logrus.Debug("-----\nCOMMIT CANCELLED/TIMED OUT\n-----")
-		logrus.Errorf("delete commit has been cancelled or 20 minute timeout has been reached")
+		logger.Log.Debug("-----\nCOMMIT CANCELLED/TIMED OUT\n-----")
+		logger.Log.Errorf("delete commit has been cancelled or 20 minute timeout has been reached")
 		err = entDeleteCommit.Update().SetState(buildcommit.StateCANCELLED).Exec(deleteContext)
 		if err != nil {
-			logrus.Errorf("error while cancelling delete commit: %v", err)
+			logger.Log.Errorf("error while cancelling delete commit: %v", err)
 			return false, err
 		}
 		rdb.Publish(deleteContext, "updatedBuildCommit", entDeleteCommit.ID.String())
 		return false, fmt.Errorf("commit has been cancelled or 20 minute timeout has been reached")
 	}
-	logrus.Debug("-----\nCOMMIT APPROVED\n-----")
-
-	entEnvironment, err := entBuild.QueryBuildToEnvironment().Only(deleteContext)
-	if err != nil {
-		logrus.Errorf("failed to query environment from build: %v", err)
-		return false, err
-	}
-
-	taskStatus, serverTask, err := utils.CreateServerTask(deleteContext, client, rdb, currentUser, servertask.TypeDELETEBUILD)
-	if err != nil {
-		return false, fmt.Errorf("error creating server task: %v", err)
-	}
-	serverTask, err = client.ServerTask.UpdateOne(serverTask).SetServerTaskToBuild(entBuild).SetServerTaskToEnvironment(entEnvironment).Save(deleteContext)
-	if err != nil {
-		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
-		if err != nil {
-			return false, fmt.Errorf("error failing execute build server task: %v", err)
-		}
-		return false, fmt.Errorf("error assigning environment and build to execute build server task: %v", err)
-	}
-	rdb.Publish(deleteContext, "updatedServerTask", serverTask.ID.String())
+	logger.Log.Debug("-----\nCOMMIT APPROVED\n-----")
 
 	err = entDeleteCommit.Update().SetState(buildcommit.StateINPROGRESS).Exec(deleteContext)
 	if err != nil {
@@ -93,7 +73,7 @@ func DeleteBuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUse
 		if err != nil {
 			return false, fmt.Errorf("error failing execute build server task: %v", err)
 		}
-		logrus.Errorf("error while cancelling rebuild commit: %v", err)
+		logger.Log.Errorf("error while cancelling rebuild commit: %v", err)
 		return false, err
 	}
 	rdb.Publish(deleteContext, "updatedBuildCommit", entDeleteCommit.ID.String())
@@ -131,17 +111,17 @@ func DeleteBuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUse
 
 	rootPlans, err := entBuild.QueryBuildToPlan().Where(plan.TypeEQ(plan.TypeStartBuild)).All(deleteContext)
 	if err != nil {
-		logrus.Errorf("error querying root plans from build: %v", err)
+		logger.Log.Errorf("error querying root plans from build: %v", err)
 		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
 		if err != nil {
 			return false, fmt.Errorf("error failing execute build server task: %v", err)
 		}
 		return false, err
 	}
-	logrus.Infof("ROOT PLANS: %v", rootPlans)
+	logger.Log.Infof("ROOT PLANS: %v", rootPlans)
 	environment, err := entBuild.QueryBuildToEnvironment().Only(deleteContext)
 	if err != nil {
-		logrus.Errorf("error querying environment from build: %v", err)
+		logger.Log.Errorf("error querying environment from build: %v", err)
 		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
 		if err != nil {
 			return false, fmt.Errorf("error failing execute build server task: %v", err)
@@ -149,9 +129,9 @@ func DeleteBuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUse
 		return false, err
 	}
 
-	genericBuilder, err := builder.BuilderFromEnvironment(environment)
+	genericBuilder, err := builder.BuilderFromEnvironment(environment, logger)
 	if err != nil {
-		logrus.Errorf("error generating builder: %v", err)
+		logger.Log.Errorf("error generating builder: %v", err)
 		taskStatus, serverTask, err = utils.FailServerTask(deleteContext, client, rdb, taskStatus, serverTask)
 		if err != nil {
 			return false, fmt.Errorf("error failing execute build server task: %v", err)
@@ -159,19 +139,19 @@ func DeleteBuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUse
 		return false, err
 	}
 
-	logrus.WithFields(logrus.Fields{
+	logger.Log.WithFields(logrus.Fields{
 		"rootPlanCount": len(rootPlans),
 	}).Debug("found root plans")
 
 	deleteCtx := context.Background()
 	for _, entPlan := range rootPlans {
 		wg.Add(1)
-		go deleteRoutine(client, &genericBuilder, deleteCtx, entPlan, &wg)
+		go deleteRoutine(client, logger, &genericBuilder, deleteCtx, entPlan, &wg)
 	}
 
 	wg.Wait()
 
-	logrus.Debug("delete build done")
+	logger.Log.Debug("delete build done")
 
 	// Remove all rendered files
 	err = os.RemoveAll(environment.Name + "/" + fmt.Sprint(entBuild.Revision))
@@ -193,7 +173,7 @@ func DeleteBuild(client *ent.Client, rdb *redis.Client, currentUser *ent.AuthUse
 		if err != nil {
 			return false, fmt.Errorf("error failing execute build server task: %v", err)
 		}
-		logrus.Errorf("error while cancelling rebuild commit: %v", err)
+		logger.Log.Errorf("error while cancelling rebuild commit: %v", err)
 		return false, err
 	}
 	rdb.Publish(deleteContext, "updatedBuildCommit", entDeleteCommit.ID.String())
@@ -313,12 +293,12 @@ func generateDeleteBuildCommit(ctx context.Context, client *ent.Client, entBuild
 // 	}
 // }
 
-func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Context, entPlan *ent.Plan, wg *sync.WaitGroup) {
+func deleteRoutine(client *ent.Client, logger *logging.Logger, builder *builder.Builder, ctx context.Context, entPlan *ent.Plan, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	planStatus, err := entPlan.QueryPlanToStatus().Only(ctx)
 	if err != nil {
-		logrus.Errorf("error while getting plan status: %v", err)
+		logger.Log.Errorf("error while getting plan status: %v", err)
 		return
 	}
 	if planStatus.State != status.StateTODELETE {
@@ -363,7 +343,7 @@ func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Con
 	}
 
 	if getStatusError != nil {
-		logrus.Errorf("error getting status of provisioned object: %v", getStatusError)
+		logger.Log.Errorf("error getting status of provisioned object: %v", getStatusError)
 	}
 
 	// Only allow tree spidering in a specific order (don't follow dependency links)
@@ -384,21 +364,21 @@ func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Con
 	}
 	nextPlans, err := entPlan.QueryNextPlan().Where(planFilter).All(ctx)
 	if err != nil {
-		logrus.Errorf("error querying next plan from ent plan: %v", err)
+		logger.Log.Errorf("error querying next plan from ent plan: %v", err)
 		return
 	}
 
-	logrus.Debugf("start delete | %s - %s", entPlan.Type, entPlan.ID)
-	// logrus.Infof("next plans   | %s - %s | %v", entPlan.Type, entPlan.ID, nextPlans)
+	logger.Log.Debugf("start delete | %s - %s", entPlan.Type, entPlan.ID)
+	// logger.Log.Infof("next plans   | %s - %s | %v", entPlan.Type, entPlan.ID, nextPlans)
 
 	var nextPlanWg sync.WaitGroup
 	for _, nextPlan := range nextPlans {
 		nextPlanWg.Add(1)
-		go deleteRoutine(client, builder, ctx, nextPlan, &nextPlanWg)
+		go deleteRoutine(client, logger, builder, ctx, nextPlan, &nextPlanWg)
 	}
 	nextPlanWg.Wait()
 
-	logrus.Debugf("wait childs  | %s - %s", entPlan.Type, entPlan.ID)
+	logger.Log.Debugf("wait childs  | %s - %s", entPlan.Type, entPlan.ID)
 	for {
 		hasTaintedNextPlans, err := entPlan.QueryNextPlan().Where(
 			plan.And(
@@ -408,26 +388,26 @@ func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Con
 		).Exist(ctx)
 
 		if err != nil {
-			logrus.Errorf("error checking for nextPlans that are TAINTED: %v", err)
+			logger.Log.Errorf("error checking for nextPlans that are TAINTED: %v", err)
 			return
 		}
 
 		if hasTaintedNextPlans {
-			logrus.Errorf("error: children are TAINTED for entPlan %s", entPlan.ID)
+			logger.Log.Errorf("error: children are TAINTED for entPlan %s", entPlan.ID)
 			entStatus, err := entPlan.PlanToStatus(ctx)
 			if err != nil {
-				logrus.Errorf("error querying status from ent plan: %v", err)
+				logger.Log.Errorf("error querying status from ent plan: %v", err)
 				return
 			}
 			_, err = entStatus.Update().SetState(status.StateTAINTED).Save(ctx)
 			if err != nil {
-				logrus.Errorf("error updating ent plan status to TAINTED: %v", err)
+				logger.Log.Errorf("error updating ent plan status to TAINTED: %v", err)
 				return
 			}
 			rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
 			_, err = provisionedStatus.Update().SetState(status.StateTAINTED).Save(ctx)
 			if err != nil {
-				logrus.Errorf("error updating provisioned object status to TAINTED: %v", err)
+				logger.Log.Errorf("error updating provisioned object status to TAINTED: %v", err)
 				return
 			}
 			rdb.Publish(ctx, "updatedStatus", provisionedStatus.ID.String())
@@ -447,7 +427,7 @@ func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Con
 		).Exist(ctx)
 
 		if err != nil {
-			logrus.Errorf("error checking for nextPlans that are not DELETE: %v", err)
+			logger.Log.Errorf("error checking for nextPlans that are not DELETE: %v", err)
 			return
 		}
 
@@ -458,11 +438,11 @@ func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Con
 		time.Sleep(time.Second)
 	}
 
-	logrus.Debugf("fr deleting  | %s - %s", entPlan.Type, entPlan.ID)
+	logger.Log.Debugf("fr deleting  | %s - %s", entPlan.Type, entPlan.ID)
 
 	entStatus, err := entPlan.PlanToStatus(ctx)
 	if err != nil {
-		logrus.Errorf("error querying status from ent plan: %v", err)
+		logger.Log.Errorf("error querying status from ent plan: %v", err)
 		return
 	}
 
@@ -473,13 +453,13 @@ func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Con
 
 	entStatus, err = entStatus.Update().SetState(status.StateDELETEINPROGRESS).Save(ctx)
 	if err != nil {
-		logrus.Errorf("error updating ent plan status: %v", err)
+		logger.Log.Errorf("error updating ent plan status: %v", err)
 		return
 	}
 	rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
 	provisionedStatus, err = provisionedStatus.Update().SetState(status.StateDELETEINPROGRESS).Save(ctx)
 	if err != nil {
-		logrus.Errorf("error updating ent provisioned status: %v", err)
+		logger.Log.Errorf("error updating ent provisioned status: %v", err)
 		return
 	}
 	rdb.Publish(ctx, "updatedStatus", provisionedStatus.ID.String())
@@ -495,19 +475,19 @@ func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Con
 	case plan.TypeProvisionNetwork:
 		entProNetwork, err := entPlan.PlanToProvisionedNetwork(ctx)
 		if err != nil {
-			logrus.Errorf("error querying provisioned network from ent plan: %v", err)
+			logger.Log.Errorf("error querying provisioned network from ent plan: %v", err)
 			return
 		}
-		logrus.Debugf("del network  | %s", entPlan.ID)
-		deleteErr = deleteNetwork(client, builder, ctx, entProNetwork)
+		logger.Log.Debugf("del network  | %s", entPlan.ID)
+		deleteErr = deleteNetwork(client, logger, builder, ctx, entProNetwork)
 	case plan.TypeProvisionHost:
 		entProHost, err := entPlan.PlanToProvisionedHost(ctx)
 		if err != nil {
-			logrus.Errorf("error querying provisioned host from ent plan: %v", err)
+			logger.Log.Errorf("error querying provisioned host from ent plan: %v", err)
 			return
 		}
-		logrus.Debugf("del host     | %s", entPlan.ID)
-		deleteErr = deleteHost(client, builder, ctx, entProHost)
+		logger.Log.Debugf("del host     | %s", entPlan.ID)
+		deleteErr = deleteHost(client, logger, builder, ctx, entProHost)
 	case plan.TypeExecuteStep:
 		step, deleteErr := entPlan.QueryPlanToProvisioningStep().Only(ctx)
 		if deleteErr != nil {
@@ -531,35 +511,35 @@ func deleteRoutine(client *ent.Client, builder *builder.Builder, ctx context.Con
 	if deleteErr != nil {
 		entStatus.Update().SetState(status.StateTAINTED).SetFailed(true).Save(ctx)
 		rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
-		logrus.WithFields(logrus.Fields{
+		logger.Log.WithFields(logrus.Fields{
 			"type":    entPlan.Type,
 			"builder": (*builder).ID(),
 		}).Errorf("error while deleting plan: %v", deleteErr)
 	} else {
-		logrus.Debugf("del ent plan | %s - %s", entPlan.Type, entPlan.ID)
+		logger.Log.Debugf("del ent plan | %s - %s", entPlan.Type, entPlan.ID)
 		_, deleteErr = entStatus.Update().SetState(status.StateDELETED).Save(ctx)
 		if deleteErr != nil {
-			logrus.Errorf("error while setting entStatus to DELETED: %v", err)
+			logger.Log.Errorf("error while setting entStatus to DELETED: %v", err)
 			return
 		}
 		rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
 	}
 }
 
-func deleteHost(client *ent.Client, builder *builder.Builder, ctx context.Context, entProHost *ent.ProvisionedHost) error {
-	logrus.Infof("del host     | %s", entProHost.SubnetIP)
+func deleteHost(client *ent.Client, logger *logging.Logger, builder *builder.Builder, ctx context.Context, entProHost *ent.ProvisionedHost) error {
+	logger.Log.Infof("del host     | %s", entProHost.SubnetIP)
 	hostStatus, err := entProHost.QueryProvisionedHostToStatus().Only(ctx)
 	if err != nil {
-		logrus.Errorf("Error while getting Provisioned Host status: %v", err)
+		logger.Log.Errorf("Error while getting Provisioned Host status: %v", err)
 		return err
 	}
 	err = (*builder).TeardownHost(ctx, entProHost)
 	if err != nil {
 		// Tainted state tells us something went wrong with deletion
-		logrus.Errorf("error while deleting host: %v", err)
+		logger.Log.Errorf("error while deleting host: %v", err)
 		_, saveErr := hostStatus.Update().SetState(status.StateTAINTED).Save(ctx)
 		if saveErr != nil {
-			logrus.Errorf("error while setting Provisioned Host status to TAINTED: %v", saveErr)
+			logger.Log.Errorf("error while setting Provisioned Host status to TAINTED: %v", saveErr)
 			return saveErr
 		}
 		rdb.Publish(ctx, "updatedStatus", hostStatus.ID.String())
@@ -567,68 +547,68 @@ func deleteHost(client *ent.Client, builder *builder.Builder, ctx context.Contex
 	} else {
 		_, saveErr := hostStatus.Update().SetState(status.StateDELETED).Save(ctx)
 		if saveErr != nil {
-			logrus.Errorf("error while setting Provisioned Host status to DELETED: %v", saveErr)
+			logger.Log.Errorf("error while setting Provisioned Host status to DELETED: %v", saveErr)
 			return saveErr
 		}
 		rdb.Publish(ctx, "updatedStatus", hostStatus.ID.String())
 		// Set delete on the User Data script
 		step, saveErr := entProHost.QueryProvisionedHostToProvisioningStep().Where(provisioningstep.StepNumberEQ(0)).Only(ctx)
 		if saveErr != nil {
-			logrus.Errorf("error while querying userdata script from Provisioned Host: %v", saveErr)
+			logger.Log.Errorf("error while querying userdata script from Provisioned Host: %v", saveErr)
 			return saveErr
 		}
 		ginFileMiddleware, saveErr := step.QueryProvisioningStepToGinFileMiddleware().Only(ctx)
 		if saveErr != nil {
-			logrus.Errorf("error while querying Gin File Middleware from provisioning step: %v", saveErr)
+			logger.Log.Errorf("error while querying Gin File Middleware from provisioning step: %v", saveErr)
 			return saveErr
 		}
 		saveErr = ginFileMiddleware.Update().SetAccessed(false).Exec(ctx)
 		if saveErr != nil {
-			logrus.Errorf("error while setting Gin File Middleware accessed to false: %v", saveErr)
+			logger.Log.Errorf("error while setting Gin File Middleware accessed to false: %v", saveErr)
 			return saveErr
 		}
 		provisionedStatus, saveErr := step.QueryProvisioningStepToStatus().Only(ctx)
 		if saveErr != nil {
-			logrus.Errorf("error while querying Status from Provisioning Step: %v", saveErr)
+			logger.Log.Errorf("error while querying Status from Provisioning Step: %v", saveErr)
 			return saveErr
 		}
 		saveErr = provisionedStatus.Update().SetState(status.StateDELETED).Exec(ctx)
 		if saveErr != nil {
-			logrus.Errorf("error while setting Provisioning Step status to DELETED: %v", saveErr)
+			logger.Log.Errorf("error while setting Provisioning Step status to DELETED: %v", saveErr)
 			return saveErr
 		}
 		rdb.Publish(ctx, "updatedStatus", provisionedStatus.ID.String())
 	}
-	logrus.Infof("deleted %s successfully", entProHost.SubnetIP)
+	logger.Log.Infof("deleted %s successfully", entProHost.SubnetIP)
 
 	// Cleanup agent tasks
 	_, deleteErr := client.AgentTask.Delete().Where(agenttask.HasAgentTaskToProvisionedHostWith(provisionedhost.IDEQ(entProHost.ID))).Exec(ctx)
 	if deleteErr != nil {
-		logrus.Errorf("error while deleting Agent Tasks for Provisioned Host: %v", err)
+		logger.Log.Errorf("error while deleting Agent Tasks for Provisioned Host: %v", err)
 		return deleteErr
 	}
 	// Cleanup agent statuses
 	_, deleteErr = client.AgentStatus.Delete().Where(agentstatus.HasAgentStatusToProvisionedHostWith(provisionedhost.IDEQ(entProHost.ID))).Exec(ctx)
 	if deleteErr != nil {
-		logrus.Errorf("error while deleting Agent Statuses for Provisioned Host: %v", err)
+		logger.Log.Errorf("error while deleting Agent Statuses for Provisioned Host: %v", err)
 		return deleteErr
 	}
 	return nil
 }
 
-func deleteNetwork(client *ent.Client, builder *builder.Builder, ctx context.Context, entProNetwork *ent.ProvisionedNetwork) error {
-	logrus.Infof("del network  | %s", entProNetwork.Name)
+func deleteNetwork(client *ent.Client, logger *logging.Logger, builder *builder.Builder, ctx context.Context, entProNetwork *ent.ProvisionedNetwork) error {
+	logger.Log.Infof("del network  | %s", entProNetwork.Name)
 	networkStatus, err := entProNetwork.QueryProvisionedNetworkToStatus().Only(ctx)
 	if err != nil {
-		logrus.Errorf("Error while getting Provisioned Network status: %v", err)
+		logger.Log.Errorf("Error while getting Provisioned Network status: %v", err)
 		return err
 	}
 	err = (*builder).TeardownNetwork(ctx, entProNetwork)
 	if err != nil {
-		logrus.Errorf("error while deleteing network: %v", err)
+		logger.Log.Errorf("error while deleteing network: %v", err)
 		_, saveErr := networkStatus.Update().SetState(status.StateTAINTED).Save(ctx)
 		if saveErr != nil {
-			logrus.Errorf("error while setting Provisioned Network status to TAINTED: %v", saveErr)
+			logger.Log.Errorf("error while setting Provisioned Network status to TAINTED: %v", saveErr)
 			return saveErr
 		}
 		rdb.Publish(ctx, "updatedStatus", networkStatus.ID.String())
@@ -636,11 +616,11 @@ func deleteNetwork(client *ent.Client, builder *builder.Builder, ctx context.Con
 	} else {
 		_, saveErr := networkStatus.Update().SetState(status.StateDELETED).Save(ctx)
 		if saveErr != nil {
-			logrus.Errorf("error while setting Provisioned Network status to DELETED: %v", saveErr)
+			logger.Log.Errorf("error while setting Provisioned Network status to DELETED: %v", saveErr)
 			return saveErr
 		}
 		rdb.Publish(ctx, "updatedStatus", networkStatus.ID.String())
 	}
-	logrus.Infof("deleted %s successfully", entProNetwork.Name)
+	logger.Log.Infof("deleted %s successfully", entProNetwork.Name)
 	return nil
 }

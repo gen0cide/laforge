@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/agenttask"
+	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/plan"
@@ -39,6 +40,7 @@ type ProvisionedHostQuery struct {
 	withProvisionedHostToProvisionedNetwork *ProvisionedNetworkQuery
 	withProvisionedHostToHost               *HostQuery
 	withProvisionedHostToEndStepPlan        *PlanQuery
+	withProvisionedHostToBuild              *BuildQuery
 	withProvisionedHostToProvisioningStep   *ProvisioningStepQuery
 	withProvisionedHostToAgentStatus        *AgentStatusQuery
 	withProvisionedHostToAgentTask          *AgentTaskQuery
@@ -162,6 +164,28 @@ func (phq *ProvisionedHostQuery) QueryProvisionedHostToEndStepPlan() *PlanQuery 
 			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, selector),
 			sqlgraph.To(plan.Table, plan.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, provisionedhost.ProvisionedHostToEndStepPlanTable, provisionedhost.ProvisionedHostToEndStepPlanColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(phq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProvisionedHostToBuild chains the current query on the "ProvisionedHostToBuild" edge.
+func (phq *ProvisionedHostQuery) QueryProvisionedHostToBuild() *BuildQuery {
+	query := &BuildQuery{config: phq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := phq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := phq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, selector),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisionedhost.ProvisionedHostToBuildTable, provisionedhost.ProvisionedHostToBuildColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(phq.driver.Dialect(), step)
 		return fromU, nil
@@ -464,6 +488,7 @@ func (phq *ProvisionedHostQuery) Clone() *ProvisionedHostQuery {
 		withProvisionedHostToProvisionedNetwork: phq.withProvisionedHostToProvisionedNetwork.Clone(),
 		withProvisionedHostToHost:               phq.withProvisionedHostToHost.Clone(),
 		withProvisionedHostToEndStepPlan:        phq.withProvisionedHostToEndStepPlan.Clone(),
+		withProvisionedHostToBuild:              phq.withProvisionedHostToBuild.Clone(),
 		withProvisionedHostToProvisioningStep:   phq.withProvisionedHostToProvisioningStep.Clone(),
 		withProvisionedHostToAgentStatus:        phq.withProvisionedHostToAgentStatus.Clone(),
 		withProvisionedHostToAgentTask:          phq.withProvisionedHostToAgentTask.Clone(),
@@ -516,6 +541,17 @@ func (phq *ProvisionedHostQuery) WithProvisionedHostToEndStepPlan(opts ...func(*
 		opt(query)
 	}
 	phq.withProvisionedHostToEndStepPlan = query
+	return phq
+}
+
+// WithProvisionedHostToBuild tells the query-builder to eager-load the nodes that are connected to
+// the "ProvisionedHostToBuild" edge. The optional arguments are used to configure the query builder of the edge.
+func (phq *ProvisionedHostQuery) WithProvisionedHostToBuild(opts ...func(*BuildQuery)) *ProvisionedHostQuery {
+	query := &BuildQuery{config: phq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	phq.withProvisionedHostToBuild = query
 	return phq
 }
 
@@ -640,11 +676,12 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 		nodes       = []*ProvisionedHost{}
 		withFKs     = phq.withFKs
 		_spec       = phq.querySpec()
-		loadedTypes = [9]bool{
+		loadedTypes = [10]bool{
 			phq.withProvisionedHostToStatus != nil,
 			phq.withProvisionedHostToProvisionedNetwork != nil,
 			phq.withProvisionedHostToHost != nil,
 			phq.withProvisionedHostToEndStepPlan != nil,
+			phq.withProvisionedHostToBuild != nil,
 			phq.withProvisionedHostToProvisioningStep != nil,
 			phq.withProvisionedHostToAgentStatus != nil,
 			phq.withProvisionedHostToAgentTask != nil,
@@ -652,7 +689,7 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 			phq.withProvisionedHostToGinFileMiddleware != nil,
 		}
 	)
-	if phq.withProvisionedHostToProvisionedNetwork != nil || phq.withProvisionedHostToHost != nil || phq.withProvisionedHostToEndStepPlan != nil || phq.withProvisionedHostToPlan != nil || phq.withProvisionedHostToGinFileMiddleware != nil {
+	if phq.withProvisionedHostToProvisionedNetwork != nil || phq.withProvisionedHostToHost != nil || phq.withProvisionedHostToEndStepPlan != nil || phq.withProvisionedHostToBuild != nil || phq.withProvisionedHostToPlan != nil || phq.withProvisionedHostToGinFileMiddleware != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -789,6 +826,35 @@ func (phq *ProvisionedHostQuery) sqlAll(ctx context.Context) ([]*ProvisionedHost
 			}
 			for i := range nodes {
 				nodes[i].Edges.ProvisionedHostToEndStepPlan = n
+			}
+		}
+	}
+
+	if query := phq.withProvisionedHostToBuild; query != nil {
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*ProvisionedHost)
+		for i := range nodes {
+			if nodes[i].provisioned_host_provisioned_host_to_build == nil {
+				continue
+			}
+			fk := *nodes[i].provisioned_host_provisioned_host_to_build
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(build.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "provisioned_host_provisioned_host_to_build" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.ProvisionedHostToBuild = n
 			}
 		}
 	}
