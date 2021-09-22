@@ -287,13 +287,13 @@ func (builder VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisioned
 			tier0Path = tier0s[0].Path
 		}
 
-		edgeClusterPath, edgeClusterPathExists := network.Vars["nsxt_edge_cluster_path"]
-		if !edgeClusterPathExists {
-			return errors.New("nsxt_edge_cluster_path doesn't exist in the network vars for " + network.Name)
-		}
+		// edgeClusterPath, edgeClusterPathExists := network.Vars["nsxt_edge_cluster_path"]
+		// if !edgeClusterPathExists {
+		// 	return errors.New("nsxt_edge_cluster_path doesn't exist in the network vars for " + network.Name)
+		// }
 
 		fmt.Println("Tier-1 router not found for Team " + fmt.Sprint(team.TeamNumber) + ", creating one...")
-		nsxtError, err = builder.NsxtClient.CreateTier1(tier1Name, tier0Path, edgeClusterPath)
+		nsxtError, err = builder.NsxtClient.CreateTier1(tier1Name, tier0Path, builder.NsxtClient.EdgeClusterPath)
 		if err != nil {
 			return err
 		}

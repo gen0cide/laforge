@@ -87,6 +87,11 @@ func NewVSphereNSXTBuilder(env *ent.Environment, logger *logging.Logger) (builde
 		err = errors.New("nsxt_ip_pool_name doesn't exist in the environment configuration")
 		return
 	}
+	nsxtEdgeClusterPath, exists := env.Config["nsxt_edge_cluster_path"]
+	if !exists {
+		err = errors.New("nsxt_edge_cluster_path doesn't exist in the environment configuration")
+		return
+	}
 	contentLibraryName, exists := env.Config["vsphere_content_library"]
 	if !exists {
 		err = errors.New("vsphere_content_library doesn't exist in the environment configuration")
@@ -123,11 +128,12 @@ func NewVSphereNSXTBuilder(env *ent.Environment, logger *logging.Logger) (builde
 	}
 
 	nsxtClient := nsxt.NSXTClient{
-		HttpClient: nsxtHttpClient,
-		BaseUrl:    nsxtBaseUrl,
-		IpPoolName: nsxtIpPoolName,
-		MaxRetries: 10,
-		Logger:     logger,
+		HttpClient:      nsxtHttpClient,
+		BaseUrl:         nsxtBaseUrl,
+		IpPoolName:      nsxtIpPoolName,
+		EdgeClusterPath: nsxtEdgeClusterPath,
+		MaxRetries:      10,
+		Logger:          logger,
 	}
 
 	vsphereClient := vsphere.VSphere{

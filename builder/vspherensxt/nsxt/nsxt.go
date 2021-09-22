@@ -17,13 +17,14 @@ import (
 )
 
 type NSXTClient struct {
-	BaseUrl       string
-	HttpClient    http.Client
-	IpPoolName    string
-	MaxRetries    int
-	Logger        *logging.Logger
-	tier0Cache    []NSXTTier0
-	ipSubnetCache []NSXTIpSubnet
+	BaseUrl         string
+	HttpClient      http.Client
+	IpPoolName      string
+	EdgeClusterPath string
+	MaxRetries      int
+	Logger          *logging.Logger
+	tier0Cache      []NSXTTier0
+	ipSubnetCache   []NSXTIpSubnet
 }
 
 type NSXTResourceType string

@@ -140,42 +140,58 @@ export class EnvironmentService {
   }
 
   public initPlanStatuses(): Promise<boolean> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       if (!this.buildTree.getValue()) return reject(new Error("Can't load Plan Statuses as Build Tree hasn't been loaded."));
-      this.api.pullAllPlanStatuses(this.buildTree.getValue().id).then(
-        (plans) => {
-          for (const plan of plans) {
-            this.statusMap[plan.PlanToStatus.id] = { ...plan.PlanToStatus };
+      const count = 50;
+      let offset = 0;
+      let total = 1;
+      while (offset < total) {
+        console.log(`Getting status | count: ${count}, offset: ${offset}`);
+        await this.api.pullAllPlanStatuses(this.buildTree.getValue().id, count, offset).then(
+          (data) => {
+            for (const status of data.statuses) {
+              this.statusMap[status.id] = { ...status };
+            }
+            this.statusUpdate.next(!this.statusUpdate.getValue());
+            total = data.pageInfo.total;
+            offset = data.pageInfo.nextOffset;
+          },
+          (err) => {
+            console.error(err);
+            reject(err);
           }
-          this.statusUpdate.next(!this.statusUpdate.getValue());
-          resolve(true);
-        },
-        (err) => {
-          console.error(err);
-          reject(err);
-        }
-      );
+        );
+      }
+      resolve(true);
     });
   }
 
   public initAgentStatuses(): Promise<boolean> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       if (!this.buildTree.getValue()) return reject(new Error("Can't load Agent Statuses as Build Tree hasn't been loaded."));
-      this.api.pullAllAgentStatuses(this.buildTree.getValue().id).then(
-        (agentStatuses) => {
-          for (const agentStatus of agentStatuses) {
-            this.agentStatusMap[agentStatus.clientId] = {
-              ...agentStatus
-            };
+      const count = 50;
+      let offset = 0;
+      let total = 1;
+      while (offset < total) {
+        console.log(`Getting agent status | count: ${count}, offset: ${offset}`);
+        await this.api.pullAllAgentStatuses(this.buildTree.getValue().id, count, offset).then(
+          (data) => {
+            for (const agentStatus of data.agentStatuses) {
+              this.agentStatusMap[agentStatus.clientId] = {
+                ...agentStatus
+              };
+            }
+            this.agentStatusUpdate.next(!this.agentStatusUpdate.getValue());
+            total = data.pageInfo.total;
+            offset = data.pageInfo.nextOffset;
+          },
+          (err) => {
+            console.error(err);
+            reject(err);
           }
-          this.agentStatusUpdate.next(!this.agentStatusUpdate.getValue());
-          resolve(true);
-        },
-        (err) => {
-          console.error(err);
-          reject(err);
-        }
-      );
+        );
+      }
+      resolve(true);
     });
   }
 

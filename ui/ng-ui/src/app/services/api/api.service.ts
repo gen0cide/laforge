@@ -6,6 +6,8 @@ import {
   LaForgeCreateEnvironmentFromGitMutation,
   LaForgeGetAllAgentStatusesGQL,
   LaForgeGetAllAgentStatusesQuery,
+  LaForgeGetAllPlanStatusesGQL,
+  LaForgeGetAllPlanStatusesQuery,
   LaForgeGetBuildCommitsGQL,
   LaForgeGetBuildCommitsQuery,
   LaForgeGetBuildPlansGQL,
@@ -17,10 +19,7 @@ import {
   LaForgeGetEnvironmentsGQL,
   LaForgeGetEnvironmentsQuery,
   LaForgeModifyCurrentUserGQL,
-  LaForgeModifyCurrentUserMutation,
-  LaForgePullAgentStatusesGQL,
-  LaForgePullPlanStatusesGQL,
-  LaForgePullPlanStatusesQuery
+  LaForgeModifyCurrentUserMutation
 } from '@graphql';
 
 @Injectable({
@@ -29,9 +28,10 @@ import {
 export class ApiService {
   constructor(
     private getEnvironments: LaForgeGetEnvironmentsGQL,
-    private pullPlanStatuses: LaForgePullPlanStatusesGQL,
-    private pullAgentStatuses: LaForgePullAgentStatusesGQL,
+    // private pullPlanStatuses: LaForgePullPlanStatusesGQL,
+    // private pullAgentStatuses: LaForgePullAgentStatusesGQL,
     private getAllAgentStatuses: LaForgeGetAllAgentStatusesGQL,
+    private getAllPlanStatuses: LaForgeGetAllPlanStatusesGQL,
     private getEnvironmentInfoGQL: LaForgeGetEnvironmentInfoGQL,
     private getBuildTreeGQL: LaForgeGetBuildTreeGQL,
     private getBuildPlansGQL: LaForgeGetBuildPlansGQL,
@@ -46,11 +46,13 @@ export class ApiService {
    * @param buildId The build ID that contains plans
    * @returns All plan objects relating to a build
    */
-  public pullAllPlanStatuses(buildId: string): Promise<LaForgePullPlanStatusesQuery['build']['buildToPlan']> {
+  public pullAllPlanStatuses(buildId: string, count: number, offset: number): Promise<LaForgeGetAllPlanStatusesQuery['getAllPlanStatus']> {
     return new Promise((resolve, reject) => {
-      this.pullPlanStatuses
+      this.getAllPlanStatuses
         .fetch({
-          buildId
+          buildId,
+          count,
+          offset
         })
         .toPromise()
         .then(({ data, error, errors }) => {
@@ -59,7 +61,7 @@ export class ApiService {
           } else if (errors) {
             return reject(errors);
           }
-          resolve(data.build.buildToPlan);
+          resolve(data.getAllPlanStatus);
         });
     });
   }
@@ -69,13 +71,17 @@ export class ApiService {
    * @param buildId The build ID that agents relate to
    * @returns The build tree with only agents as full objects
    */
-  public pullAllAgentStatuses(buildId: string): Promise<LaForgeGetAllAgentStatusesQuery['getAllAgentStatus']> {
+  public pullAllAgentStatuses(
+    buildId: string,
+    count: number,
+    offset: number
+  ): Promise<LaForgeGetAllAgentStatusesQuery['getAllAgentStatus']> {
     return new Promise((resolve, reject) => {
       this.getAllAgentStatuses
         .fetch({
           buildId,
-          count: 50,
-          offset: 0
+          count,
+          offset
         })
         .toPromise()
         .then(({ data, error, errors }) => {
