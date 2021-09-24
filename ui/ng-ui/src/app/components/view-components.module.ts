@@ -1,11 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 
 import { MomentModule } from 'ngx-moment';
@@ -13,6 +15,7 @@ import { MomentModule } from 'ngx-moment';
 import { LaforgePipesModule } from '../pipes/pipes.module';
 
 import { DeleteBuildModalComponent } from './delete-build-modal/delete-build-modal.component';
+import { EditUserModalComponent } from './edit-user-modal/edit-user-modal.component';
 import { HostModalComponent } from './host-modal/host-modal.component';
 import { HostComponent } from './host/host.component';
 import { NetworkModalComponent } from './network-modal/network-modal.component';
@@ -34,7 +37,8 @@ import { TeamComponent } from './team/team.component';
     StepComponent,
     TaskListComponent,
     TaskComponent,
-    StepModalComponent
+    StepModalComponent,
+    EditUserModalComponent
   ],
   imports: [
     CommonModule,
@@ -45,7 +49,9 @@ import { TeamComponent } from './team/team.component';
     MomentModule,
     LaforgePipesModule,
     MatInputModule,
-    MatFormFieldModule
+    MatFormFieldModule,
+    ReactiveFormsModule,
+    MatSelectModule
   ],
   exports: [NetworkComponent, HostComponent, TeamComponent, TaskListComponent, TaskComponent]
 })

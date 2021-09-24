@@ -321,4 +321,9 @@ $dark-text-on-error: #000;
   .env-header button:not(:disabled):hover {
     box-shadow: 0 0 4px 2px $dark-background !important;
   }
+
+  .mat-flat-button.mat-link {
+    background-color: transparent !important;
+    color: white !important;
+  }
 }

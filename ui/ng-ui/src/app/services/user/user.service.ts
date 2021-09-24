@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { LaForgeAuthUser } from '@graphql';
-import { AuthUser } from '@models/user.model';
 
 import { Observable } from 'rxjs';
 
@@ -10,7 +9,7 @@ import { AuthService } from '../../modules/auth/_services/auth.service';
   providedIn: 'root'
 })
 export class UserService {
-  private user: AuthUser;
+  private user: LaForgeAuthUser;
 
   constructor(private authService: AuthService) {
     // TODO: refresh user session with refreshToken
@@ -37,11 +36,11 @@ export class UserService {
     window.location.reload(); // reload window to reset them to auth screen
   }
 
-  public me(): AuthUser {
+  public me(): LaForgeAuthUser {
     return this.user;
   }
 
-  public updateUser(user: AuthUser) {
+  public updateUser(user: LaForgeAuthUser) {
     // TODO: update the user in the DB with new details
   }
 
@@ -49,7 +48,7 @@ export class UserService {
     // TODO: create the user in the DB
   }
 
-  public getUsers(): Promise<AuthUser[]> {
+  public getUsers(): Promise<LaForgeAuthUser[]> {
     // TODO: Pull a list of the users from the DB
     return Promise.reject({ message: 'Feature not implemented yet' });
   }

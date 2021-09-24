@@ -4,6 +4,8 @@ import {
   LaForgeCreateBuildMutation,
   LaForgeCreateEnvironmentFromGitGQL,
   LaForgeCreateEnvironmentFromGitMutation,
+  LaForgeCreateUserGQL,
+  LaForgeCreateUserMutation,
   LaForgeGetAllAgentStatusesGQL,
   LaForgeGetAllAgentStatusesQuery,
   LaForgeGetAllPlanStatusesGQL,
@@ -18,8 +20,14 @@ import {
   LaForgeGetEnvironmentInfoQuery,
   LaForgeGetEnvironmentsGQL,
   LaForgeGetEnvironmentsQuery,
+  LaForgeGetUserListGQL,
+  LaForgeGetUserListQuery,
   LaForgeModifyCurrentUserGQL,
-  LaForgeModifyCurrentUserMutation
+  LaForgeModifyCurrentUserMutation,
+  LaForgeProviderType,
+  LaForgeRoleLevel,
+  LaForgeUpdateUserGQL,
+  LaForgeUpdateUserMutation
 } from '@graphql';
 
 @Injectable({
@@ -38,7 +46,10 @@ export class ApiService {
     private getBuildCommitsGQL: LaForgeGetBuildCommitsGQL,
     private createBuildGQL: LaForgeCreateBuildGQL,
     private modifyCurrentUserGQL: LaForgeModifyCurrentUserGQL,
-    private createEnvironmentFromGitGQL: LaForgeCreateEnvironmentFromGitGQL
+    private createEnvironmentFromGitGQL: LaForgeCreateEnvironmentFromGitGQL,
+    private getUserListGQL: LaForgeGetUserListGQL,
+    private updateUserGQL: LaForgeUpdateUserGQL,
+    private createUserGQL: LaForgeCreateUserGQL
   ) {}
 
   /**
@@ -249,6 +260,76 @@ export class ApiService {
             return resolve(data.createEnviromentFromRepo);
           }
           reject(new Error('unknown error occurred while cloning env from git'));
+        }, reject);
+    });
+  }
+
+  public async getAllUsers(): Promise<LaForgeGetUserListQuery['getUserList']> {
+    return new Promise((resolve, reject) => {
+      this.getUserListGQL
+        .fetch()
+        .toPromise()
+        .then(({ data, errors }) => {
+          if (errors) {
+            return reject(errors);
+          } else if (data.getUserList) {
+            return resolve(data.getUserList);
+          }
+          reject(new Error('unknown error occurred while getting user list'));
+        }, reject);
+    });
+  }
+
+  public async modifyUser(
+    userId: string,
+    input: {
+      firstName?: string;
+      lastName?: string;
+      email: string;
+      phone?: string;
+      company?: string;
+      occupation?: string;
+      role: LaForgeRoleLevel;
+      provider: LaForgeProviderType;
+    }
+  ): Promise<LaForgeUpdateUserMutation['modifyAdminUserInfo']> {
+    return new Promise((resolve, reject) => {
+      this.updateUserGQL
+        .mutate({
+          userId,
+          ...input
+        })
+        .toPromise()
+        .then(({ data, errors }) => {
+          if (errors) {
+            return reject(errors);
+          } else if (data.modifyAdminUserInfo) {
+            return resolve(data.modifyAdminUserInfo);
+          }
+          reject(new Error('unknown error occurred while updating user'));
+        }, reject);
+    });
+  }
+
+  public async createUser(input: {
+    username: string;
+    password: string;
+    role: LaForgeRoleLevel;
+    provider: LaForgeProviderType;
+  }): Promise<LaForgeCreateUserMutation['createUser']> {
+    return new Promise((resolve, reject) => {
+      this.createUserGQL
+        .mutate({
+          ...input
+        })
+        .toPromise()
+        .then(({ data, errors }) => {
+          if (errors) {
+            return reject(errors);
+          } else if (data.createUser) {
+            return resolve(data.createUser);
+          }
+          reject(new Error('unknown error occurred while creating user'));
         }, reject);
     });
   }

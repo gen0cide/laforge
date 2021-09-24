@@ -1,0 +1,50 @@
+<mat-card class="laforge-card">
+  <mat-card-header class="d-flex align-items-center justify-content-between">
+    <mat-card-title>
+      Manage Users
+      <ng-container *ngIf="loading | async">
+        <i class="fad fa-1x fa-spinner-third fa-spin ml-3"></i>
+      </ng-container>
+    </mat-card-title>
+    <button mat-flat-button (click)="createUser()" color="primary" class="mb-3">Create</button>
+  </mat-card-header>
+  <mat-card-content>
+    <ng-container *ngIf="userList | async as _userList">
+      <mat-table [dataSource]="_userList" class="bg-gray-100">
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
+          <mat-cell *matCellDef="let user">{{ user.first_name }} {{ user.last_name }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="username">
+          <mat-header-cell *matHeaderCellDef>Username</mat-header-cell>
+          <mat-cell *matCellDef="let user"
+            ><code>{{ user.username }}</code></mat-cell
+          >
+        </ng-container>
+        <ng-container matColumnDef="email">
+          <mat-header-cell *matHeaderCellDef>Email</mat-header-cell>
+          <mat-cell *matCellDef="let user">{{ user.email }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="provider">
+          <mat-header-cell *matHeaderCellDef>Provider</mat-header-cell>
+          <mat-cell *matCellDef="let user">{{ user.provider }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="role">
+          <mat-header-cell *matHeaderCellDef>Role</mat-header-cell>
+          <mat-cell *matCellDef="let user">{{ user.role }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="controls">
+          <mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let user">
+            <button mat-flat-button (click)="editUser(user)" color="primary">
+              <i class="fad fa-pencil-alt text-light"></i>
+            </button>
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="userListCols"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: userListCols"></mat-row>
+      </mat-table>
+      <div *ngIf="_userList?.length === 0" class="text-center my-2 text-muted">No users found</div>
+    </ng-container>
+  </mat-card-content>
+</mat-card>

@@ -82,7 +82,7 @@ export function getHighlightLanguages() {
     },
     {
       provide: APP_BASE_HREF,
-      useValue: environment.production ? '/ui/' : '/'
+      useValue: '/'
     }
   ],
   bootstrap: [AppComponent]

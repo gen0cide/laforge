@@ -84,3 +84,16 @@ fragment PageInfoFields on LaForgePageInfo {
   total
   nextOffset
 }
+
+fragment UserListFields on AuthUser {
+  id
+  first_name
+  last_name
+  username
+  provider
+  role
+  email
+  phone
+  company
+  occupation
+}

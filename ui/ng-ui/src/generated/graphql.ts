@@ -755,6 +755,39 @@ export type LaForgeVarsMap = {
   value: Scalars['String'];
 };
 
+export type LaForgeGetUserListQueryVariables = Exact<{ [key: string]: never }>;
+
+export type LaForgeGetUserListQuery = { __typename?: 'Query' } & {
+  getUserList?: Maybe<Array<Maybe<{ __typename?: 'AuthUser' } & LaForgeUserListFieldsFragment>>>;
+};
+
+export type LaForgeUpdateUserMutationVariables = Exact<{
+  userId: Scalars['String'];
+  firstName?: Maybe<Scalars['String']>;
+  lastName?: Maybe<Scalars['String']>;
+  email: Scalars['String'];
+  phone?: Maybe<Scalars['String']>;
+  company?: Maybe<Scalars['String']>;
+  occupation?: Maybe<Scalars['String']>;
+  role: LaForgeRoleLevel;
+  provider: LaForgeProviderType;
+}>;
+
+export type LaForgeUpdateUserMutation = { __typename?: 'Mutation' } & {
+  modifyAdminUserInfo?: Maybe<{ __typename?: 'AuthUser' } & LaForgeUserListFieldsFragment>;
+};
+
+export type LaForgeCreateUserMutationVariables = Exact<{
+  username: Scalars['String'];
+  password: Scalars['String'];
+  provider: LaForgeProviderType;
+  role: LaForgeRoleLevel;
+}>;
+
+export type LaForgeCreateUserMutation = { __typename?: 'Mutation' } & {
+  createUser?: Maybe<{ __typename?: 'AuthUser' } & LaForgeUserListFieldsFragment>;
+};
+
 export type LaForgeGetAgentTasksQueryVariables = Exact<{
   proStepId: Scalars['String'];
 }>;
@@ -1150,6 +1183,11 @@ export type LaForgeAgentTaskFieldsFragment = { __typename?: 'AgentTask' } & Pick
 
 export type LaForgePageInfoFieldsFragment = { __typename?: 'LaForgePageInfo' } & Pick<LaForgeLaForgePageInfo, 'total' | 'nextOffset'>;
 
+export type LaForgeUserListFieldsFragment = { __typename?: 'AuthUser' } & Pick<
+  LaForgeAuthUser,
+  'id' | 'first_name' | 'last_name' | 'username' | 'provider' | 'role' | 'email' | 'phone' | 'company' | 'occupation'
+>;
+
 export type LaForgeRebuildMutationVariables = Exact<{
   rootPlans: Array<Maybe<Scalars['String']>> | Maybe<Scalars['String']>;
 }>;
@@ -1394,6 +1432,20 @@ export const PageInfoFieldsFragmentDoc = gql`
     nextOffset
   }
 `;
+export const UserListFieldsFragmentDoc = gql`
+  fragment UserListFields on AuthUser {
+    id
+    first_name
+    last_name
+    username
+    provider
+    role
+    email
+    phone
+    company
+    occupation
+  }
+`;
 export const ServerTaskFieldsFragmentDoc = gql`
   fragment ServerTaskFields on ServerTask {
     id
@@ -1416,6 +1468,83 @@ export const ServerTaskFieldsFragmentDoc = gql`
   }
   ${StatusFieldsFragmentDoc}
 `;
+export const GetUserListDocument = gql`
+  query GetUserList {
+    getUserList {
+      ...UserListFields
+    }
+  }
+  ${UserListFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeGetUserListGQL extends Apollo.Query<LaForgeGetUserListQuery, LaForgeGetUserListQueryVariables> {
+  document = GetUserListDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const UpdateUserDocument = gql`
+  mutation UpdateUser(
+    $userId: String!
+    $firstName: String
+    $lastName: String
+    $email: String!
+    $phone: String
+    $company: String
+    $occupation: String
+    $role: RoleLevel!
+    $provider: ProviderType!
+  ) {
+    modifyAdminUserInfo(
+      userID: $userId
+      firstName: $firstName
+      lastName: $lastName
+      email: $email
+      phone: $phone
+      company: $company
+      occupation: $occupation
+      role: $role
+      provider: $provider
+    ) {
+      ...UserListFields
+    }
+  }
+  ${UserListFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeUpdateUserGQL extends Apollo.Mutation<LaForgeUpdateUserMutation, LaForgeUpdateUserMutationVariables> {
+  document = UpdateUserDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const CreateUserDocument = gql`
+  mutation CreateUser($username: String!, $password: String!, $provider: ProviderType!, $role: RoleLevel!) {
+    createUser(username: $username, password: $password, provider: $provider, role: $role) {
+      ...UserListFields
+    }
+  }
+  ${UserListFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeCreateUserGQL extends Apollo.Mutation<LaForgeCreateUserMutation, LaForgeCreateUserMutationVariables> {
+  document = CreateUserDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
 export const GetAgentTasksDocument = gql`
   query GetAgentTasks($proStepId: String!) {
     getAgentTasks(proStepUUID: $proStepId) {
