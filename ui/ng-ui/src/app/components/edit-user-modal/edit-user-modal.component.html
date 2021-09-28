@@ -49,11 +49,13 @@
         <mat-select mat [formControl]="role">
           <mat-option *ngFor="let role of roleList" [value]="role">{{ role }}</mat-option>
         </mat-select>
-        <mat-error *ngIf="provider.invalid">{{ getProviderErrorMessage() }}</mat-error>
+        <mat-error *ngIf="provider.invalid">{{ getRoleErrorMessage() }}</mat-error>
       </mat-form-field>
       <mat-form-field appearance="fill" class="w-100 mb-5">
-        <mat-label>Provider</mat-label>
-        <input matInput [formControl]="provider" readonly />
+        <mat-label>Provider *</mat-label>
+        <mat-select mat [formControl]="provider">
+          <mat-option *ngFor="let provider of providerList" [value]="provider">{{ provider }}</mat-option>
+        </mat-select>
         <mat-error *ngIf="provider.invalid">{{ getProviderErrorMessage() }}</mat-error>
       </mat-form-field>
     </div>

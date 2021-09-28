@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { LaForgeAuthUser, LaForgeRoleLevel } from '@graphql';
+import { LaForgeAuthUser, LaForgeRoleLevel, LaForgeProviderType } from '@graphql';
 import { ApiService } from '@services/api/api.service';
 import { BehaviorSubject } from 'rxjs';
 
@@ -22,6 +22,7 @@ export class EditUserModalComponent implements OnInit {
   role = new FormControl('', Validators.required);
   roleList: string[] = [LaForgeRoleLevel.Admin, LaForgeRoleLevel.User];
   provider = new FormControl('', Validators.required);
+  providerList: string[] = [LaForgeProviderType.Local, LaForgeProviderType.Github, LaForgeProviderType.Openid];
   errorMessage: BehaviorSubject<string>;
 
   constructor(
