@@ -39,6 +39,7 @@ func BuilderFromEnvironment(environment *ent.Environment, logger *logging.Logger
 			return
 		}
 	}
+	err = fmt.Errorf("error: builder not found")
 	return
 }
 

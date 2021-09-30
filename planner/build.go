@@ -157,11 +157,11 @@ func StartBuild(client *ent.Client, logger *logging.Logger, currentUser *ent.Aut
 
 	genericBuilder, err := builder.BuilderFromEnvironment(environment, logger)
 	if err != nil {
+		logger.Log.Errorf("error generating builder: %v", err)
 		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
 		if err != nil {
 			return fmt.Errorf("error failing execute build server task: %v", err)
 		}
-		logger.Log.Errorf("error generating builder: %v", err)
 		return err
 	}
 
