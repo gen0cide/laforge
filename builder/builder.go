@@ -38,6 +38,7 @@ func BuilderFromEnvironment(environment *ent.Environment, logger *logging.Logger
 			logrus.Errorf("Failed to make vSphere NSX-T builder. Err: %v", err)
 			return
 		}
+		return
 	}
 	err = fmt.Errorf("error: builder not found")
 	return
