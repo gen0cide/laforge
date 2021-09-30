@@ -9,6 +9,7 @@ import (
 	"github.com/gen0cide/laforge/builder"
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/logging"
 )
 
 func main() {
@@ -36,8 +37,10 @@ func main() {
 		log.Fatalf("error querying env: %v", err)
 	}
 
+	defaultLogger := logging.CreateNewLogger("./output.lfglog")
+
 	fmt.Println("Creating vSphere/NSX-T builder...")
-	vsphereNsxt, err := builder.NewVSphereNSXTBuilder(env)
+	vsphereNsxt, err := builder.NewVSphereNSXTBuilder(env, &defaultLogger)
 	if err != nil {
 		log.Fatalf("error while creating vCenter/NSX-T builder: %v", err)
 	}

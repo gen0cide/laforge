@@ -351,29 +351,6 @@ func (l *Loader) merger(filenames []string) (*DefinedConfigs, error) {
 	return combinedConfigs, nil
 }
 
-// func main() {
-// 	client, err := ent.Open("sqlite3", "file:test.sqlite?_loc=auto&cache=shared&_fk=1")
-// 	ctx := context.Background()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer client.Close()
-
-// 	// Run the auto migration tool.
-// 	if err := client.Schema.Create(ctx); err != nil {
-// 		logrus.Errorf("failed creating schema resources: %v", err)
-// 	}
-
-// 	tloader := NewLoader()
-// 	tloader.ParseConfigFile("/home/red/Documents/infra/envs/finals/env.laforge")
-// 	loadedConfig, err := tloader.Bind()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	envs, _ := createEnviroments(ctx, client, loadedConfig.Environments, loadedConfig)
-// 	fmt.Println(envs)
-// }
-
 // LoadEnvironment Loads in enviroment at specified filepath
 func LoadEnvironment(ctx context.Context, client *ent.Client, log *logging.Logger, filePath string) ([]*ent.Environment, error) {
 	tloader := NewLoader()
@@ -632,7 +609,7 @@ func createHosts(ctx context.Context, client *ent.Client, log *logging.Logger, c
 		if !ok {
 			return nil, nil, fmt.Errorf("err: Host %v was not defined in the Enviroment %v", cHostID, envHclID)
 		}
-		returnedDisk, err := createDisk(ctx, client, log, cHost.HCLHostToDisk, cHost.HclID)
+		returnedDisk, err := createDisk(ctx, client, log, cHost.HCLHostToDisk, cHost.HclID, envHclID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -1332,12 +1309,17 @@ func createDNS(ctx context.Context, client *ent.Client, log *logging.Logger, con
 	return returnedDNS, nil
 }
 
-func createDisk(ctx context.Context, client *ent.Client, log *logging.Logger, configDisk *ent.Disk, hostHclID string) (*ent.Disk, error) {
+func createDisk(ctx context.Context, client *ent.Client, log *logging.Logger, configDisk *ent.Disk, hostHclID string, envHclID string) (*ent.Disk, error) {
 	entDisk, err := client.Disk.
 		Query().
 		Where(
 			disk.And(
-				disk.HasDiskToHostWith(host.HclIDEQ(hostHclID)),
+				disk.HasDiskToHostWith(
+					host.And(
+						host.HclIDEQ(hostHclID),
+						host.HasHostToEnvironmentWith(environment.HclIDEQ(envHclID)),
+					),
+				),
 			),
 		).
 		Only(ctx)

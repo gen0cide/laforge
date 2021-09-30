@@ -16,6 +16,7 @@ import (
 	"github.com/gen0cide/laforge/logging"
 	"github.com/vmware/govmomi/object"
 	"github.com/vmware/govmomi/vim25/types"
+	"golang.org/x/sync/semaphore"
 )
 
 const (
@@ -38,6 +39,8 @@ type VSphereNSXTBuilder struct {
 	VSphereResourcePool       *object.ResourcePool
 	VSphereFolder             *object.Folder
 	Logger                    *logging.Logger
+	MaxWorkers                int
+	WorkerPool                *semaphore.Weighted
 }
 
 func (builder VSphereNSXTBuilder) ID() string {
@@ -132,36 +135,12 @@ func (builder VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHos
 
 	networkName := builder.generateNetworkName(competition, team, network, build)
 
-	// nsxtNetwork, err := builder.VSphereClient.GetNetworkByName(networkName)
-	// if err != nil {
-	// 	return
-	// }
-
-	// templateId, err := builder.VSphereClient.GetTemplateIDByName(builder.VSphereContentLibraryName, )
-	// if err != nil {
-	// 	return
-	// }
-	// template, err := builder.VSphereClient.GetTemplate(templateId)
-	// if err != nil {
-	// 	return
-	// }
-
-	// nicId, exists := host.Vars["nic_id"]
-	// if !exists {
-	// 	if len(template.Nics) > 0 {
-	// 		nicIds := make([]string, 0, len(template.Nics))
-	// 		for key := range template.Nics {
-	// 			nicIds = append(nicIds, key)
-	// 		}
-	// 		if len(nicIds) < 1 {
-	// 			return fmt.Errorf("no nics exist in the vm template for template %s", (builder.TemplatePrefix + host.OS))
-	// 		}
-	// 		nicId = nicIds[0]
-	// 	} else {
-	// 		err = errors.New("nic_id doesn't exist in the host vars for " + host.Hostname)
-	// 		return err
-	// 	}
-	// }
+	// Only allow a certain amount of threads to touch VSphere at the same time
+	err = builder.WorkerPool.Acquire(ctx, int64(1))
+	if err != nil {
+		return
+	}
+	defer builder.WorkerPool.Release(int64(1))
 
 	templateName := (builder.TemplatePrefix + host.OS)
 	vmName := builder.generateVmName(competition, team, host, build)
@@ -169,11 +148,6 @@ func (builder VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHos
 
 	var guestCustomizationSpec *types.CustomizationSpecItem
 
-	// specAlreadyExists, err := builder.VSphereClient.GuestCustomizationExists(ctx, guestCustomizationName)
-	// if err != nil {
-	// 	return
-	// }
-	// if !specAlreadyExists {
 	guestCustomizationSpec, err = builder.VSphereClient.GenerateGuestCustomization(ctx, guestCustomizationName, templateName, provisionedHost)
 	if err != nil {
 		return err
@@ -183,49 +157,7 @@ func (builder VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHos
 	if err != nil {
 		return err
 	}
-	// }
 
-	// logrus.Debug(guestCustomizationSpec)
-
-	// templateSpec := vsphere.DeployTemplateSpec{
-	// 	Description: host.Description,
-	// 	DiskStorage: vsphere.TemplateDiskStorage{
-	// 		DatastoreIdentifier: builder.VSphereDatastore.Identifier,
-	// 	},
-	// 	DiskStorageOverrides: map[string]vsphere.DeploySpecDiskStorage{},
-	// 	GuestCustomization: vsphere.DeployGuestCustomization{
-	// 		Name: guestCustomizationName,
-	// 	},
-	// 	HardwareCustomization: vsphere.HardwareCustomization{
-	// 		CpuUpdate: vsphere.CpuUpdate{
-	// 			NumCoresPerSocket: 2,
-	// 			NumCpus:           cpuCount,
-	// 		},
-	// 		DisksToRemove: []string{},
-	// 		DisksToUpdate: map[string]vsphere.DiskUpdateSpec{},
-	// 		MemoryUpdate: vsphere.MemoryUpdate{
-	// 			Memory: memorySize,
-	// 		},
-	// 		Nics: map[string]vsphere.HCNicUpdateSpec{
-	// 			nicId: {
-	// 				Identifier: nsxtNetwork.Identifier,
-	// 			},
-	// 		},
-	// 	},
-	// 	Name: vmName,
-	// 	Placement: vsphere.DeployPlacement{
-	// 		ClusterId:      null.String{},
-	// 		FolderId:       null.StringFrom(string(builder.VSphereFolder.Identifier)),
-	// 		HostId:         null.String{},
-	// 		ResourcePoolId: null.StringFrom(string(builder.VSphereResourcePool.Identifier)),
-	// 	},
-	// 	PoweredOn: true,
-	// 	VmHomeStorage: vsphere.DeployHomeStorage{
-	// 		DatastoreId: builder.VSphereDatastore.Identifier,
-	// 	},
-	// }
-
-	// err = builder.VSphereClient.DeployTemplate(templateId, templateSpec)
 	err = builder.VSphereClient.DeployLinkedClone(ctx, templateName, vmName, networkName, cpuCount, memorySize, builder.VSphereFolder, builder.VSphereResourcePool, guestCustomizationSpec)
 	if err != nil {
 		return
@@ -256,6 +188,16 @@ func (builder VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisioned
 	}
 
 	tier1Name := builder.generateRouterName(competition[0], team, build)
+
+	// Only allow a certain amount of threads to touch VSphere at the same time
+	fmt.Printf("%v\n", builder.WorkerPool)
+	fmt.Printf("%v\n", ctx)
+	err = builder.WorkerPool.Acquire(ctx, int64(1))
+	if err != nil {
+		return
+	}
+	defer builder.WorkerPool.Release(int64(1))
+
 	tier1Exists, nsxtError, err := builder.NsxtClient.CheckExistsTier1(tier1Name)
 	if err != nil {
 		return
@@ -398,6 +340,13 @@ func (builder VSphereNSXTBuilder) TeardownHost(ctx context.Context, provisionedH
 	vmName := builder.generateVmName(competition, team, host, build)
 	guestCustomizationName := (vmName + "-Customization-Spec")
 
+	// Only allow a certain amount of threads to touch VSphere at the same time
+	err = builder.WorkerPool.Acquire(ctx, int64(1))
+	if err != nil {
+		return
+	}
+	defer builder.WorkerPool.Release(int64(1))
+
 	specExists, err := builder.VSphereClient.GuestCustomizationExists(ctx, guestCustomizationName)
 	if err != nil {
 		return fmt.Errorf("error while checking if guest customization spec exists: %v", err)
@@ -448,6 +397,14 @@ func (builder VSphereNSXTBuilder) TeardownNetwork(ctx context.Context, provision
 
 	// Teardown Segment
 	networkName := builder.generateNetworkName(competition[0], team, network, build)
+
+	// Only allow a certain amount of threads to touch VSphere at the same time
+	err = builder.WorkerPool.Acquire(ctx, int64(1))
+	if err != nil {
+		return
+	}
+	defer builder.WorkerPool.Release(int64(1))
+
 	nsxtError, err := builder.NsxtClient.DeleteSegment(networkName)
 	if err != nil {
 		return

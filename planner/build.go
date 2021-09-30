@@ -508,13 +508,10 @@ func execStep(client *ent.Client, logger *logging.Logger, ctx context.Context, e
 		logger.Log.Errorf("error while trying to set ent.ProvisioningStep.Status.State to status.StateCOMPLETED: %v", err)
 	}
 	rdb.Publish(ctx, "updatedStatus", stepStatus.ID.String())
-	GQLHostName, ok := os.LookupEnv("GRAPHQL_HOSTNAME")
-	downloadURL := ""
+	downloadURL, ok := os.LookupEnv("API_DOWNLOAD_URL")
 
 	if !ok {
 		downloadURL = "http://localhost:8080/api/download/"
-	} else {
-		downloadURL = "http://" + GQLHostName + "/api/download/"
 	}
 
 	entPorovisionedHost, err := entStep.QueryProvisioningStepToProvisionedHost().Only(ctx)

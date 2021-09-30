@@ -16,16 +16,11 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "/Users/flint/Code/go/src/github.com/gen0cide/laforge/cmd/laforge/main.go",
-      "env": {},
-      "cwd": "/Users/flint/Code/cptc/infra/envs/lfdev/tfgcp",
-      "args": [
-        "-d",
-        "infra",
-        "run",
-        "/envs/lfdev/tfgcp/teams/0/networks/vdi/hosts/win06/steps/0-set-local-dns"
-        // "/hosts/windows/ad-00",
-      ]
+      "program": "${workspaceFolder}/server/server.go",
+      "envFile": "${workspaceFolder}/.env",
+      "showLog": true,
+      "cwd": "${workspaceFolder}/server",
+      "args": []
     },
     {
       "name": "Swagger",

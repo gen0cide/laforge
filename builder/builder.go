@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gen0cide/laforge/builder/vspherensxt"
@@ -14,6 +15,7 @@ import (
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/logging"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/semaphore"
 )
 
 type Builder interface {
@@ -117,6 +119,14 @@ func NewVSphereNSXTBuilder(env *ent.Environment, logger *logging.Logger) (builde
 		err = errors.New("vsphere_template_prefix doesn't exist in the environment configuration")
 		return
 	}
+	maxWorkersString, exists := env.Config["vsphere_max_workers"]
+	if !exists {
+		maxWorkersString = "8"
+	}
+	maxWorkers, err := strconv.Atoi(maxWorkersString)
+	if err != nil {
+		maxWorkers = 8
+	}
 
 	httpClient := http.Client{
 		Timeout: 5 * time.Minute,
@@ -179,6 +189,9 @@ func NewVSphereNSXTBuilder(env *ent.Environment, logger *logging.Logger) (builde
 	// 	return
 	// }
 
+	workerPool := semaphore.NewWeighted(int64(maxWorkers))
+	fmt.Printf("%+v", workerPool)
+
 	builder = vspherensxt.VSphereNSXTBuilder{
 		HttpClient:                httpClient,
 		Username:                  vsphereUsername,
@@ -191,6 +204,8 @@ func NewVSphereNSXTBuilder(env *ent.Environment, logger *logging.Logger) (builde
 		VSphereResourcePool:       resourcePool,
 		VSphereFolder:             folder,
 		Logger:                    logger,
+		MaxWorkers:                maxWorkers,
+		WorkerPool:                workerPool,
 	}
 	return
 }
