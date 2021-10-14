@@ -16,6 +16,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type NSXTErrorCode int
+
+const (
+	NSXTERROR_Body_Missing         NSXTErrorCode = 002000
+	NSXTERROR_Tier1_Has_Children   NSXTErrorCode = 500030
+	NSXTERROR_Ip_Allocation_Exists NSXTErrorCode = 500172
+	NSXTERROR_Segment_Has_VMs      NSXTErrorCode = 503040
+	NSXTERROR_Ip_Already_Allocated NSXTErrorCode = 520010
+)
+
 type NSXTClient struct {
 	BaseUrl         string
 	HttpClient      http.Client
@@ -25,6 +35,7 @@ type NSXTClient struct {
 	Logger          *logging.Logger
 	tier0Cache      []NSXTTier0
 	ipSubnetCache   []NSXTIpSubnet
+	cachedIpPoolId  string
 }
 
 type NSXTResourceType string
@@ -162,13 +173,6 @@ type NSXTListTier0Result struct {
 	SortAscending bool        `json:"sort_ascending"`
 }
 
-type NSXTErrorCode int
-
-const (
-	NSXT_Tier1_Has_Children NSXTErrorCode = 500030
-	NSXT_Segment_Has_VMs    NSXTErrorCode = 503040
-)
-
 type NSXTErrorResponse struct {
 	HttpStatus string        `json:"httpStatus"`
 	ErrorCode  NSXTErrorCode `json:"error_code"`
@@ -229,6 +233,61 @@ type NSXTNATRule struct {
 	SourceNetwork     NSXTIPElementList `json:"source_network"`
 	TranslatedNetwork NSXTIPElementList `json:"translated_network"`
 }
+
+type NSXTIpAllocationRequest struct {
+	IpAddress *string `json:"allocation_id"`
+}
+
+type NSXTIpAllocationResult struct {
+	IpAddress  *string `json:"allocation_id"`
+	Protection string  `json:"_protection"`
+}
+
+type NSXTIpPoolUsage struct {
+	TotalIds     int `json:"total_ids"`
+	AllocatedIds int `json:"allocated_ids"`
+	FreeIds      int `json:"free_ids"`
+}
+
+type NSXTIpPoolSubnetAllocationRange struct {
+	Start string `json:"start"`
+	End   string `json:"end"`
+}
+
+type NSXTTag struct {
+	Scope string `json:"scope"`
+	Tag   string `json:"tag"`
+}
+
+type NSXTIpPool struct {
+	PoolUsage        NSXTIpPoolUsage `json:"pool_usage"`
+	Subnets          []NSXTIpSubnet  `json:"subnets"`
+	ResourceType     string          `json:"resource_type"`
+	Id               string          `json:"id"`
+	DisplayName      string          `json:"display_name"`
+	Tags             []NSXTTag       `json:"tags"`
+	CreateUser       string          `json:"_create_user"`
+	CreateTime       uint64          `json:"_create_time"`
+	LastModifiedUser string          `json:"_last_modified_user"`
+	LastModifiedTime uint64          `json:"_last_modified_time"`
+	SystemOwned      bool            `json:"_system_owned"`
+	Protection       string          `json:"_protection"`
+	Revision         int             `json:"_revision"`
+}
+
+type NSXTGetIpPoolsResponse struct {
+	Results       []NSXTIpPool `json:"results"`
+	ResultCount   int          `json:"result_count"`
+	SortBy        string       `json:"sort_by"`
+	SortAscending bool         `json:"sort_ascending"`
+}
+
+type NSXTIpPoolAction string
+
+const (
+	NSXT_IP_POOL_ALLOCATE NSXTIpPoolAction = "ALLOCATE"
+	NSXT_IP_POOL_RELEASE  NSXTIpPoolAction = "RELEASE"
+)
 
 func NewPrincipalIdentityClient(certPath, keyPath, caCertPath string) (client http.Client, err error) {
 	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
@@ -531,6 +590,93 @@ func (nsxt *NSXTClient) GetTier0s() (tier0s []NSXTTier0, nsxtError *NSXTErrorRes
 	return
 }
 
+func (nsxt *NSXTClient) CreateNATRule(tier1Name string, sourceNetwork NSXTIPElementList) (nsxtError *NSXTErrorResponse, err error) {
+	nsxt.Logger.Log.WithFields(log.Fields{
+		"tier1Name":     tier1Name,
+		"sourceNetwork": sourceNetwork,
+	}).Debug("NSX-T | CreateNATRule")
+
+	allocatedIpResult, nsxtError, err := nsxt.ManageIpAllocation("", NSXT_IP_POOL_ALLOCATE)
+	if err != nil {
+		return nil, err
+	}
+	if nsxtError != nil {
+		return nsxtError, nil
+	}
+
+	payload := NSXTNATRule{
+		Description:       "NAT for CPTC Competition",
+		Action:            NSXT_NAT_SNAT,
+		Id:                (tier1Name + "-NAT"),
+		SourceNetwork:     sourceNetwork,
+		TranslatedNetwork: NSXTIPElementList(*allocatedIpResult.IpAddress),
+	}
+
+	jsonString, err := json.Marshal(payload)
+	if err != nil {
+		err = fmt.Errorf("error while marshalling CreateNATRule payload: %v", err)
+		return
+	}
+	request, err := nsxt.generateAuthorizedRequestWithData(http.MethodPatch, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-NAT"), bytes.NewBuffer(jsonString))
+	if err != nil {
+		return
+	}
+	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK, http.StatusBadRequest)
+	if err != nil {
+		err = fmt.Errorf("error while creating NAT Rule: %v", err)
+		return
+	}
+	if nsxtError != nil {
+		nsxt.Logger.Log.Errorf("error while creating NAT Rule: %v", nsxtError)
+	}
+	return
+}
+
+func (nsxt *NSXTClient) DeleteNATRule(tier1Name string) (nsxtError *NSXTErrorResponse, err error) {
+	nsxt.Logger.Log.WithFields(log.Fields{
+		"tier1Name": tier1Name,
+	}).Debug("NSX-T | DeleteNATRule")
+	request, err := nsxt.generateAuthorizedRequest(http.MethodGet, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-NAT"))
+	if err != nil {
+		return nil, fmt.Errorf("error generating GET request for NAT rule for tier-1 %s: %v", tier1Name, err)
+	}
+	response, nsxtError, err := nsxt.executeRequestWithRetry(request, http.StatusOK)
+	if err != nil {
+		return nil, fmt.Errorf("error while getting NAT rule for tier-1 %s: %v", tier1Name, err)
+	}
+	if nsxtError != nil {
+		nsxt.Logger.Log.Errorf("error while deleteing NAT rule: %+v", nsxtError)
+		return
+	}
+	var natRule NSXTNATRule
+	err = json.NewDecoder(response.Body).Decode(&natRule)
+	if err != nil {
+		return nil, fmt.Errorf("error while decoding nat rule json: %v", err)
+	}
+
+	_, nsxtError, err = nsxt.ManageIpAllocation(string(natRule.TranslatedNetwork), NSXT_IP_POOL_RELEASE)
+	if err != nil {
+		return nil, err
+	}
+	if nsxtError != nil {
+		return nsxtError, nil
+	}
+
+	request, err = nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-NAT"))
+	if err != nil {
+		return nil, fmt.Errorf("error while making the DELETE request for the NAT Rule for %s: %v", tier1Name, err)
+	}
+	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK)
+	if err != nil {
+		return
+	}
+	if nsxtError != nil {
+		nsxt.Logger.Log.Errorf("error while deleting NAT Rule: %v", nsxtError)
+	}
+
+	return
+}
+
 func (nsxt *NSXTClient) GetIpPoolSubnets(ipPoolName string) (ipSubnets []NSXTIpSubnet, nsxtError *NSXTErrorResponse, err error) {
 	nsxt.Logger.Log.WithFields(log.Fields{
 		"ipPoolName": ipPoolName,
@@ -574,54 +720,76 @@ func (nsxt *NSXTClient) GetIpPoolSubnets(ipPoolName string) (ipSubnets []NSXTIpS
 	return
 }
 
-func (nsxt *NSXTClient) CreateNATRule(tier1Name string, sourceNetwork NSXTIPElementList, translatedNetwork NSXTIPElementList) (nsxtError *NSXTErrorResponse, err error) {
-	nsxt.Logger.Log.WithFields(log.Fields{
-		"tier1Name":         tier1Name,
-		"sourceNetwork":     sourceNetwork,
-		"translatedNetwork": translatedNetwork,
-	}).Debug("NSX-T | CreateNATRule")
-	payload := NSXTNATRule{
-		Description:       "NAT for CPTC Competition",
-		Action:            NSXT_NAT_SNAT,
-		Id:                (tier1Name + "-NAT"),
-		SourceNetwork:     sourceNetwork,
-		TranslatedNetwork: translatedNetwork,
-	}
+func (nsxt *NSXTClient) GetIpPools() (ipPoolsResponse NSXTGetIpPoolsResponse, nsxtError *NSXTErrorResponse, err error) {
+	nsxt.Logger.Log.Debug("NSX-T | GetIpPools")
 
-	jsonString, err := json.Marshal(payload)
+	request, err := nsxt.generateAuthorizedRequest(http.MethodGet, "/api/v1/pools/ip-pools/")
 	if err != nil {
-		err = fmt.Errorf("error while marshalling CreateNATRule payload: %v", err)
-		return
+		return NSXTGetIpPoolsResponse{}, nil, fmt.Errorf("error while making the GET request for ip pools: %v", err)
 	}
-	request, err := nsxt.generateAuthorizedRequestWithData(http.MethodPatch, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-NAT"), bytes.NewBuffer(jsonString))
+	response, nsxtError, err := nsxt.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
-		return
-	}
-	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK, http.StatusBadRequest)
-	if err != nil {
-		err = fmt.Errorf("error while creating NAT Rule: %v", err)
 		return
 	}
 	if nsxtError != nil {
-		nsxt.Logger.Log.Errorf("error while creating NAT Rule: %v", nsxtError)
+		nsxt.Logger.Log.Errorf("error while deleting NAT Rule: %+v", nsxtError)
+		return
 	}
-	return
+	var ipAllocation NSXTGetIpPoolsResponse
+	err = json.NewDecoder(response.Body).Decode(&ipAllocation)
+	if err != nil {
+		return NSXTGetIpPoolsResponse{}, nil, fmt.Errorf("error while decoding NSX-T ip pools json response: %v", err)
+	}
+	return ipAllocation, nil, nil
 }
 
-func (nsxt *NSXTClient) DeleteNATRule(tier1Name string) (nsxtError *NSXTErrorResponse, err error) {
-	nsxt.Logger.Log.WithFields(log.Fields{
-		"tier1Name": tier1Name,
-	}).Debug("NSX-T | DeleteNATRule")
-	request, err := nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-NAT"))
-	if err != nil {
-		return nil, fmt.Errorf("error while making the DELETE request for the NAT Rule for %s: %v", tier1Name, err)
+func (nsxt *NSXTClient) ManageIpAllocation(ip string, action NSXTIpPoolAction) (allocation NSXTIpAllocationResult, nsxtError *NSXTErrorResponse, err error) {
+	if nsxt.cachedIpPoolId == "" {
+		ipPoolsResponse, nsxtError, err := nsxt.GetIpPools()
+		if err != nil {
+			return NSXTIpAllocationResult{}, nil, fmt.Errorf("error while allocating ip from ip pool: %v", err)
+		}
+		if nsxtError != nil {
+			return NSXTIpAllocationResult{}, nsxtError, nil
+		}
+		for _, ipPool := range ipPoolsResponse.Results {
+			if ipPool.DisplayName == nsxt.IpPoolName {
+				nsxt.cachedIpPoolId = ipPool.Id
+				break
+			}
+		}
 	}
-	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK)
+	nsxt.Logger.Log.WithFields(log.Fields{
+		"ipPoolId": nsxt.cachedIpPoolId,
+	}).Debug("NSX-T | GetIpFromIpPool")
+
+	var payload NSXTIpAllocationRequest
+	if action == NSXT_IP_POOL_ALLOCATE {
+		payload = NSXTIpAllocationRequest{}
+	} else if action == NSXT_IP_POOL_RELEASE {
+		payload = NSXTIpAllocationRequest{
+			IpAddress: &ip,
+		}
+	}
+	jsonString, err := json.Marshal(payload)
+	if err != nil {
+		return
+	}
+	request, err := nsxt.generateAuthorizedRequestWithData(http.MethodPost, ("/api/v1/pools/ip-pools/" + nsxt.cachedIpPoolId + "?action=" + string(action)), bytes.NewBuffer(jsonString))
+	if err != nil {
+		return NSXTIpAllocationResult{}, nil, fmt.Errorf("error while making the POST request for ip allocation for ip pool: %v", err)
+	}
+	response, nsxtError, err := nsxt.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
 	if nsxtError != nil {
-		nsxt.Logger.Log.Errorf("error while deleting NAT Rule: %v", nsxtError)
+		nsxt.Logger.Log.Errorf("error while allocating Ip from Ip pool: %+v", nsxtError)
 	}
-	return
+	var ipAllocation NSXTIpAllocationResult
+	err = json.NewDecoder(response.Body).Decode(&ipAllocation)
+	if err != nil {
+		return NSXTIpAllocationResult{}, nil, fmt.Errorf("error while decoding NSX-T ip allocation json response: %v", err)
+	}
+	return ipAllocation, nil, nil
 }

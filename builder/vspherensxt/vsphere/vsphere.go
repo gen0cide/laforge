@@ -1595,7 +1595,11 @@ func (vs *VSphere) GenerateGuestCustomization(ctx context.Context, specName stri
 		}
 		configScript := fmt.Sprintf(`#!/bin/bash
 if [ x$1 == x"postcustomization" ]; then
+while [ ! -f "/laforge.bin" ]
+do
 curl -sL -o /laforge.bin %s
+sleep 10
+done
 chmod +x /laforge.bin
 cd /
 ./laforge.bin -service install

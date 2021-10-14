@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -234,7 +233,7 @@ func (builder VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisioned
 		// 	return errors.New("nsxt_edge_cluster_path doesn't exist in the network vars for " + network.Name)
 		// }
 
-		fmt.Println("Tier-1 router not found for Team " + fmt.Sprint(team.TeamNumber) + ", creating one...")
+		builder.Logger.Log.Println("Tier-1 router not found for Team " + fmt.Sprint(team.TeamNumber) + ", creating one...")
 		nsxtError, err = builder.NsxtClient.CreateTier1(tier1Name, tier0Path, builder.NsxtClient.EdgeClusterPath)
 		if err != nil {
 			return err
@@ -255,37 +254,37 @@ func (builder VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisioned
 			natSourceAddress = octets[0] + ".0.0.0/8"
 		}
 
-		ipPoolSubnets, nsxtError, err := builder.NsxtClient.GetIpPoolSubnets(builder.NsxtClient.IpPoolName)
-		if err != nil {
-			return err
-		}
-		if nsxtError != nil {
-			return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
-		}
-		if len(ipPoolSubnets) <= 0 {
-			return fmt.Errorf("error: no ip subnets found under the IP Pool \"%s\"", builder.NsxtClient.IpPoolName)
-		}
+		// ipPoolSubnets, nsxtError, err := builder.NsxtClient.GetIpPoolSubnets(builder.NsxtClient.IpPoolName)
+		// if err != nil {
+		// 	return err
+		// }
+		// if nsxtError != nil {
+		// 	return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
+		// }
+		// if len(ipPoolSubnets) <= 0 {
+		// 	return fmt.Errorf("error: no ip subnets found under the IP Pool \"%s\"", builder.NsxtClient.IpPoolName)
+		// }
 
-		startingIp := ipPoolSubnets[0].AllocationRanges[0].Start
-		endingIp := ipPoolSubnets[0].AllocationRanges[0].End
-		octets := strings.Split(string(startingIp), ".")
-		endOctets := strings.Split(string(endingIp), ".")
-		lastOctet, err := strconv.Atoi(octets[3])
-		if err != nil {
-			return fmt.Errorf("error while reading last octet: %v", err)
-		}
-		endLastOctet, err := strconv.Atoi(endOctets[3])
-		if err != nil {
-			return fmt.Errorf("error while reading last endoctet: %v", err)
-		}
-		lastOctet = lastOctet + team.TeamNumber
-		octets[3] = strconv.Itoa(lastOctet)
-		natTranslatedAddress := strings.Join(octets, ".")
-		if lastOctet > endLastOctet {
-			return fmt.Errorf("NAT IP %s is out of the range %s-%s", natTranslatedAddress, startingIp, endingIp)
-		}
+		// startingIp := ipPoolSubnets[0].AllocationRanges[0].Start
+		// endingIp := ipPoolSubnets[0].AllocationRanges[0].End
+		// octets := strings.Split(string(startingIp), ".")
+		// endOctets := strings.Split(string(endingIp), ".")
+		// lastOctet, err := strconv.Atoi(octets[3])
+		// if err != nil {
+		// 	return fmt.Errorf("error while reading last octet: %v", err)
+		// }
+		// endLastOctet, err := strconv.Atoi(endOctets[3])
+		// if err != nil {
+		// 	return fmt.Errorf("error while reading last endoctet: %v", err)
+		// }
+		// lastOctet = lastOctet + team.TeamNumber
+		// octets[3] = strconv.Itoa(lastOctet)
+		// natTranslatedAddress := strings.Join(octets, ".")
+		// if lastOctet > endLastOctet {
+		// 	return fmt.Errorf("NAT IP %s is out of the range %s-%s", natTranslatedAddress, startingIp, endingIp)
+		// }
 
-		nsxtError, err = builder.NsxtClient.CreateNATRule(tier1Name, nsxt.NSXTIPElementList(natSourceAddress), nsxt.NSXTIPElementList(natTranslatedAddress))
+		nsxtError, err = builder.NsxtClient.CreateNATRule(tier1Name, nsxt.NSXTIPElementList(natSourceAddress))
 		if err != nil {
 			return err
 		}
@@ -411,7 +410,7 @@ func (builder VSphereNSXTBuilder) TeardownNetwork(ctx context.Context, provision
 	}
 	// Gotta remove those VMs first
 	if nsxtError != nil {
-		if nsxtError.ErrorCode == nsxt.NSXT_Segment_Has_VMs {
+		if nsxtError.ErrorCode == nsxt.NSXTERROR_Segment_Has_VMs {
 			return fmt.Errorf("nsx-t error: please remove all VMs from segment \"%s\" before deletion", networkName)
 		}
 		return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
@@ -435,7 +434,7 @@ func (builder VSphereNSXTBuilder) TeardownNetwork(ctx context.Context, provision
 		return
 	}
 	// If this wasn't the last segment on the Tier 1, don't worry about it
-	if nsxtError != nil && nsxtError.ErrorCode != nsxt.NSXT_Tier1_Has_Children {
+	if nsxtError != nil && nsxtError.ErrorCode != nsxt.NSXTERROR_Tier1_Has_Children {
 		return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
 	}
 	return
