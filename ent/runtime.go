@@ -270,6 +270,10 @@ func init() {
 	repositoryDescBranchName := repositoryFields[2].Descriptor()
 	// repository.DefaultBranchName holds the default value on creation for the branch_name field.
 	repository.DefaultBranchName = repositoryDescBranchName.Default.(string)
+	// repositoryDescFolderPath is the schema descriptor for folder_path field.
+	repositoryDescFolderPath := repositoryFields[4].Descriptor()
+	// repository.DefaultFolderPath holds the default value on creation for the folder_path field.
+	repository.DefaultFolderPath = repositoryDescFolderPath.Default.(string)
 	// repositoryDescCommitInfo is the schema descriptor for commit_info field.
 	repositoryDescCommitInfo := repositoryFields[5].Descriptor()
 	// repository.DefaultCommitInfo holds the default value on creation for the commit_info field.

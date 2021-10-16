@@ -53,6 +53,14 @@ func (rc *RepositoryCreate) SetFolderPath(s string) *RepositoryCreate {
 	return rc
 }
 
+// SetNillableFolderPath sets the "folder_path" field if the given value is not nil.
+func (rc *RepositoryCreate) SetNillableFolderPath(s *string) *RepositoryCreate {
+	if s != nil {
+		rc.SetFolderPath(*s)
+	}
+	return rc
+}
+
 // SetCommitInfo sets the "commit_info" field.
 func (rc *RepositoryCreate) SetCommitInfo(s string) *RepositoryCreate {
 	rc.mutation.SetCommitInfo(s)
@@ -143,6 +151,10 @@ func (rc *RepositoryCreate) defaults() {
 	if _, ok := rc.mutation.BranchName(); !ok {
 		v := repository.DefaultBranchName
 		rc.mutation.SetBranchName(v)
+	}
+	if _, ok := rc.mutation.FolderPath(); !ok {
+		v := repository.DefaultFolderPath
+		rc.mutation.SetFolderPath(v)
 	}
 	if _, ok := rc.mutation.CommitInfo(); !ok {
 		v := repository.DefaultCommitInfo

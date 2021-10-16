@@ -847,7 +847,7 @@ var (
 		{Name: "repo_url", Type: field.TypeString},
 		{Name: "branch_name", Type: field.TypeString, Default: "master"},
 		{Name: "enviroment_filepath", Type: field.TypeString},
-		{Name: "folder_path", Type: field.TypeString},
+		{Name: "folder_path", Type: field.TypeString, Default: "N/A"},
 		{Name: "commit_info", Type: field.TypeString, Default: "N/A"},
 	}
 	// RepositoriesTable holds the schema information for the "repositories" table.

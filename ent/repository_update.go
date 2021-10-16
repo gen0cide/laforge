@@ -60,6 +60,14 @@ func (ru *RepositoryUpdate) SetFolderPath(s string) *RepositoryUpdate {
 	return ru
 }
 
+// SetNillableFolderPath sets the "folder_path" field if the given value is not nil.
+func (ru *RepositoryUpdate) SetNillableFolderPath(s *string) *RepositoryUpdate {
+	if s != nil {
+		ru.SetFolderPath(*s)
+	}
+	return ru
+}
+
 // SetCommitInfo sets the "commit_info" field.
 func (ru *RepositoryUpdate) SetCommitInfo(s string) *RepositoryUpdate {
 	ru.mutation.SetCommitInfo(s)
@@ -321,6 +329,14 @@ func (ruo *RepositoryUpdateOne) SetEnviromentFilepath(s string) *RepositoryUpdat
 // SetFolderPath sets the "folder_path" field.
 func (ruo *RepositoryUpdateOne) SetFolderPath(s string) *RepositoryUpdateOne {
 	ruo.mutation.SetFolderPath(s)
+	return ruo
+}
+
+// SetNillableFolderPath sets the "folder_path" field if the given value is not nil.
+func (ruo *RepositoryUpdateOne) SetNillableFolderPath(s *string) *RepositoryUpdateOne {
+	if s != nil {
+		ruo.SetFolderPath(*s)
+	}
 	return ruo
 }
 

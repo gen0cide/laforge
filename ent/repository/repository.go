@@ -61,6 +61,8 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultBranchName holds the default value on creation for the "branch_name" field.
 	DefaultBranchName string
+	// DefaultFolderPath holds the default value on creation for the "folder_path" field.
+	DefaultFolderPath string
 	// DefaultCommitInfo holds the default value on creation for the "commit_info" field.
 	DefaultCommitInfo string
 	// DefaultID holds the default value on creation for the "id" field.
