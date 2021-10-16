@@ -24,7 +24,7 @@ func main() {
 	// s = strings.ReplaceAll(s, "🔥", "\n")
 	// fmt.Printf("%s\n---\n", s)
 	logrus.SetLevel(logrus.DebugLevel)
-	pgHost, ok := os.LookupEnv("PG_HOST")
+	pgHost, ok := os.LookupEnv("PG_URI")
 	client := &ent.Client{}
 
 	if !ok {

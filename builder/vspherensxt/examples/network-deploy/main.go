@@ -15,7 +15,7 @@ import (
 
 func main() {
 
-	pgHost, ok := os.LookupEnv("PG_HOST")
+	pgHost, ok := os.LookupEnv("PG_URI")
 	client := &ent.Client{}
 
 	if !ok {

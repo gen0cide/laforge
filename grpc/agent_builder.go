@@ -34,7 +34,7 @@ func main() {
 
 	client := &ent.Client{}
 
-	pgHost, ok := os.LookupEnv("PG_HOST")
+	pgHost, ok := os.LookupEnv("PG_URI")
 	if !ok {
 		client = ent.PGOpen("postgresql://laforger:laforge@127.0.0.1/laforge")
 	} else {
