@@ -30,7 +30,8 @@ func StartBuild(client *ent.Client, logger *logging.Logger, currentUser *ent.Aut
 	if err != nil {
 		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
 		if err != nil {
-			return fmt.Errorf("error failing execute build server task: %v", err)
+			logger.Log.Errorf("Failed to Query Plan Nodes %v. Err: %v", entPlans, err)
+			return err
 		}
 		logger.Log.Errorf("Failed to Query Plan Nodes %v. Err: %v", entPlans, err)
 		return err
@@ -66,10 +67,12 @@ func StartBuild(client *ent.Client, logger *logging.Logger, currentUser *ent.Aut
 				entProNetwork, err := entPlan.QueryPlanToProvisionedNetwork().Only(ctx)
 				if err != nil {
 					logger.Log.Errorf("Failed to Query Provisioned Network. Err: %v", err)
+					return
 				}
 				entStatus, err := entProNetwork.ProvisionedNetworkToStatus(ctx)
 				if err != nil {
 					logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+					return
 				}
 				entStatus.Update().SetState(status.StateAWAITING).Save(ctx)
 				rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
@@ -77,10 +80,12 @@ func StartBuild(client *ent.Client, logger *logging.Logger, currentUser *ent.Aut
 				entProHost, err := entPlan.QueryPlanToProvisionedHost().Only(ctx)
 				if err != nil {
 					logger.Log.Errorf("Failed to Query Provisioned Host. Err: %v", err)
+					return
 				}
 				entStatus, err := entProHost.ProvisionedHostToStatus(ctx)
 				if err != nil {
 					logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+					return
 				}
 				entStatus.Update().SetState(status.StateAWAITING).Save(ctx)
 				rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
@@ -88,10 +93,12 @@ func StartBuild(client *ent.Client, logger *logging.Logger, currentUser *ent.Aut
 				entProvisioningStep, err := entPlan.QueryPlanToProvisioningStep().Only(ctx)
 				if err != nil {
 					logger.Log.Errorf("Failed to Query Provisioning Step. Err: %v", err)
+					return
 				}
 				entStatus, err := entProvisioningStep.ProvisioningStepToStatus(ctx)
 				if err != nil {
 					logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+					return
 				}
 				entStatus.Update().SetState(status.StateAWAITING).Save(ctx)
 				rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
@@ -99,10 +106,12 @@ func StartBuild(client *ent.Client, logger *logging.Logger, currentUser *ent.Aut
 				entTeam, err := entPlan.QueryPlanToTeam().Only(ctx)
 				if err != nil {
 					logger.Log.Errorf("Failed to Query Provisioning Step. Err: %v", err)
+					return
 				}
 				entStatus, err := entTeam.TeamToStatus(ctx)
 				if err != nil {
 					logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+					return
 				}
 				entStatus.Update().SetState(status.StateAWAITING).Save(ctx)
 				rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
@@ -110,10 +119,12 @@ func StartBuild(client *ent.Client, logger *logging.Logger, currentUser *ent.Aut
 				entBuild, err := entPlan.QueryPlanToBuild().Only(ctx)
 				if err != nil {
 					logger.Log.Errorf("Failed to Query Provisioning Step. Err: %v", err)
+					return
 				}
 				entStatus, err := entBuild.BuildToStatus(ctx)
 				if err != nil {
 					logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+					return
 				}
 				entStatus.Update().SetState(status.StateAWAITING).Save(ctx)
 				rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
@@ -129,7 +140,8 @@ func StartBuild(client *ent.Client, logger *logging.Logger, currentUser *ent.Aut
 	if err != nil {
 		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
 		if err != nil {
-			return fmt.Errorf("error failing execute build server task: %v", err)
+			logger.Log.Errorf("error failing execute build server task: %v", err)
+			return err
 		}
 		logger.Log.Errorf("Failed to Query Start Plan Nodes. Err: %v", err)
 		return err
@@ -138,29 +150,20 @@ func StartBuild(client *ent.Client, logger *logging.Logger, currentUser *ent.Aut
 	if err != nil {
 		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
 		if err != nil {
-			return fmt.Errorf("error failing execute build server task: %v", err)
+			logger.Log.Errorf("error failing execute build server task: %v", err)
+			return err
 		}
 		logger.Log.Errorf("Failed to Query Environment. Err: %v", err)
 		return err
 	}
-
-	// var genericBuilder builder.Builder
-
-	// switch environment.Builder {
-	// case "vsphere-nsxt":
-	// 	genericBuilder, err = builder.NewVSphereNSXTBuilder(environment)
-	// 	if err != nil {
-	// 		logrus.Errorf("Failed to make vSphere NSX-T builder. Err: %v", err)
-	// 		return err
-	// 	}
-	// }
 
 	genericBuilder, err := builder.BuilderFromEnvironment(environment, logger)
 	if err != nil {
 		logger.Log.Errorf("error generating builder: %v", err)
 		taskStatus, serverTask, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask)
 		if err != nil {
-			return fmt.Errorf("error failing execute build server task: %v", err)
+			logger.Log.Errorf("error failing execute build server task: %v", err)
+			return err
 		}
 		return err
 	}
@@ -168,7 +171,7 @@ func StartBuild(client *ent.Client, logger *logging.Logger, currentUser *ent.Aut
 	entRootCommit, err := entBuild.QueryBuildToLatestBuildCommit().Only(ctx)
 	if err != nil {
 		logger.Log.Errorf("error while querying lastest commit from build: %v", err)
-		return fmt.Errorf("error while querying lastest commit from build: %v", err)
+		return err
 	}
 
 	err = entRootCommit.Update().SetState(buildcommit.StateINPROGRESS).Exec(ctx)
@@ -187,7 +190,8 @@ func StartBuild(client *ent.Client, logger *logging.Logger, currentUser *ent.Aut
 
 	taskStatus, serverTask, err = utils.CompleteServerTask(ctx, client, rdb, taskStatus, serverTask)
 	if err != nil {
-		return fmt.Errorf("error completing execute build server task: %v", err)
+		logger.Log.Errorf("error completing execute build server task: %v", err)
+		return err
 	}
 
 	err = entRootCommit.Update().SetState(buildcommit.StateAPPLIED).Exec(ctx)
@@ -210,6 +214,7 @@ func buildRoutine(client *ent.Client, logger *logging.Logger, builder *builder.B
 
 	if err != nil {
 		logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+		return
 	}
 
 	// If it isn't marked for planning, don't worry about traversing to it
@@ -232,6 +237,7 @@ func buildRoutine(client *ent.Client, logger *logging.Logger, builder *builder.B
 
 	if err != nil {
 		logger.Log.Errorf("Failed to Query Plan Start %v. Err: %v", prevNodes, err)
+		return
 	}
 
 	logger.Log.WithFields(logrus.Fields{
@@ -263,6 +269,7 @@ func buildRoutine(client *ent.Client, logger *logging.Logger, builder *builder.B
 
 			if err != nil {
 				logger.Log.Errorf("Failed to Query Status %v. Err: %v", prevNode, err)
+				return
 			}
 
 			prevFailedStatus, err := prevNode.QueryPlanToStatus().Where(
@@ -273,6 +280,7 @@ func buildRoutine(client *ent.Client, logger *logging.Logger, builder *builder.B
 
 			if err != nil {
 				logger.Log.Errorf("Failed to Query Status %v. Err: %v", prevNode, err)
+				return
 			}
 
 			if !prevCompletedStatus {
@@ -294,6 +302,7 @@ func buildRoutine(client *ent.Client, logger *logging.Logger, builder *builder.B
 
 	if err != nil {
 		logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+		return
 	}
 
 	entStatus.Update().SetState(status.StateINPROGRESS).Save(ctx)
@@ -305,15 +314,18 @@ func buildRoutine(client *ent.Client, logger *logging.Logger, builder *builder.B
 		entProNetwork, err := entPlan.QueryPlanToProvisionedNetwork().Only(ctx)
 		if err != nil {
 			logger.Log.Errorf("Failed to Query Provisioned Network. Err: %v", err)
+			return
 		}
 		if parentNodeFailed {
 			networkStatus, err := entProNetwork.QueryProvisionedNetworkToStatus().Only(ctx)
 			if err != nil {
 				logger.Log.Errorf("Error while getting Provisioned Network status: %v", err)
+				return
 			}
 			_, saveErr := networkStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
 			if saveErr != nil {
 				logger.Log.Errorf("Error while setting Provisioned Network status to FAILED: %v", saveErr)
+				return
 			}
 			rdb.Publish(ctx, "updatedStatus", networkStatus.ID.String())
 			planErr = fmt.Errorf("parent node for Provionded Network has failed")
@@ -324,15 +336,18 @@ func buildRoutine(client *ent.Client, logger *logging.Logger, builder *builder.B
 		entProHost, err := entPlan.QueryPlanToProvisionedHost().Only(ctx)
 		if err != nil {
 			logger.Log.Errorf("Failed to Query Provisioned Host. Err: %v", err)
+			return
 		}
 		if parentNodeFailed {
 			hostStatus, err := entProHost.QueryProvisionedHostToStatus().Only(ctx)
 			if err != nil {
 				logger.Log.Errorf("Error while getting Provisioned Network status: %v", err)
+				return
 			}
 			_, saveErr := hostStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
 			if saveErr != nil {
 				logger.Log.Errorf("Error while setting Provisioned Network status to FAILED: %v", saveErr)
+				return
 			}
 			rdb.Publish(ctx, "updatedStatus", hostStatus.ID.String())
 			planErr = fmt.Errorf("parent node for Provionded Host has failed")
@@ -343,15 +358,18 @@ func buildRoutine(client *ent.Client, logger *logging.Logger, builder *builder.B
 		entProvisioningStep, err := entPlan.QueryPlanToProvisioningStep().Only(ctx)
 		if err != nil {
 			logger.Log.Errorf("Failed to Query Provisioning Step. Err: %v", err)
+			return
 		}
 		if parentNodeFailed {
 			stepStatus, err := entProvisioningStep.QueryProvisioningStepToStatus().Only(ctx)
 			if err != nil {
 				logger.Log.Errorf("Failed to Query Provisioning Step Status. Err: %v", err)
+				return
 			}
 			_, err = stepStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
 			if err != nil {
 				logger.Log.Errorf("error while trying to set ent.ProvisioningStep.Status.State to status.StateFAILED: %v", err)
+				return
 			}
 			rdb.Publish(ctx, "updatedStatus", stepStatus.ID.String())
 			planErr = fmt.Errorf("parent node for Provisioning Step has failed")
@@ -362,10 +380,12 @@ func buildRoutine(client *ent.Client, logger *logging.Logger, builder *builder.B
 		entTeam, err := entPlan.QueryPlanToTeam().Only(ctx)
 		if err != nil {
 			logger.Log.Errorf("Failed to Query Provisioning Step. Err: %v", err)
+			return
 		}
 		entStatus, err := entTeam.TeamToStatus(ctx)
 		if err != nil {
 			logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+			return
 		}
 		entStatus.Update().SetState(status.StateCOMPLETE).Save(ctx)
 		rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
@@ -373,10 +393,12 @@ func buildRoutine(client *ent.Client, logger *logging.Logger, builder *builder.B
 		entBuild, err := entPlan.QueryPlanToBuild().Only(ctx)
 		if err != nil {
 			logger.Log.Errorf("Failed to Query Provisioning Step. Err: %v", err)
+			return
 		}
 		entStatus, err := entBuild.BuildToStatus(ctx)
 		if err != nil {
 			logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
+			return
 		}
 		entStatus.Update().SetState(status.StateCOMPLETE).Save(ctx)
 		rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
@@ -391,6 +413,7 @@ func buildRoutine(client *ent.Client, logger *logging.Logger, builder *builder.B
 			"type":    entPlan.Type,
 			"builder": (*builder).ID(),
 		}).Errorf("error while executing plan: %v", planErr)
+		return
 	} else {
 		entStatus.Update().SetState(status.StateCOMPLETE).SetCompleted(true).Save(ctx)
 		rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
@@ -414,12 +437,14 @@ func buildHost(client *ent.Client, logger *logging.Logger, builder *builder.Buil
 		logger.Log.WithFields(logrus.Fields{
 			"entProHost": entProHost.ID,
 		}).Error("error querying host and provisioned network from provisioned host")
+		return err
 	} else {
 		entTeam, err := entProNet.QueryProvisionedNetworkToTeam().First(ctx)
 		if err != nil {
 			logger.Log.WithFields(logrus.Fields{
 				"entProNet": entProNet.ID,
 			}).Error("error querying team from provisioned network")
+			return err
 		} else {
 			logger.Log.WithFields(logrus.Fields{
 				"subnetIp":  entProHost.SubnetIP,
@@ -502,10 +527,12 @@ func execStep(client *ent.Client, logger *logging.Logger, ctx context.Context, e
 	stepStatus, err := entStep.QueryProvisioningStepToStatus().Only(ctx)
 	if err != nil {
 		logger.Log.Errorf("Failed to Query Provisioning Step Status. Err: %v", err)
+		return err
 	}
 	_, err = stepStatus.Update().SetState(status.StateINPROGRESS).Save(ctx)
 	if err != nil {
 		logger.Log.Errorf("error while trying to set ent.ProvisioningStep.Status.State to status.StateCOMPLETED: %v", err)
+		return err
 	}
 	rdb.Publish(ctx, "updatedStatus", stepStatus.ID.String())
 	downloadURL, ok := os.LookupEnv("API_DOWNLOAD_URL")
@@ -514,36 +541,41 @@ func execStep(client *ent.Client, logger *logging.Logger, ctx context.Context, e
 		downloadURL = "http://localhost:8080/api/download/"
 	}
 
-	entPorovisionedHost, err := entStep.QueryProvisioningStepToProvisionedHost().Only(ctx)
+	entProvisionedHost, err := entStep.QueryProvisioningStepToProvisionedHost().Only(ctx)
 	if err != nil {
-		return fmt.Errorf("failed querying Provisioned Host for Provioning Step: %v", err)
+		logger.Log.Errorf("failed querying Provisioned Host for Provioning Step: %v", err)
+		return err
 	}
 
-	taskCount, err := entPorovisionedHost.QueryProvisionedHostToAgentTask().Count(ctx)
+	taskCount, err := entProvisionedHost.QueryProvisionedHostToAgentTask().Count(ctx)
 	if err != nil {
-		return fmt.Errorf("failed querying Number of Tasks: %v", err)
+		logger.Log.Errorf("failed querying Number of Tasks: %v", err)
+		return err
 	}
 
 	switch entStep.Type {
 	case provisioningstep.TypeScript:
 		entScript, err := entStep.QueryProvisioningStepToScript().Only(ctx)
 		if err != nil {
-			return fmt.Errorf("failed querying Script for Provioning Step: %v", err)
+			logger.Log.Errorf("failed querying Script for Provioning Step: %v", err)
+			return err
 		}
 		entGinMiddleware, err := entStep.QueryProvisioningStepToGinFileMiddleware().Only(ctx)
 		if err != nil {
-			return fmt.Errorf("failed querying Gin File Middleware for Script: %v", err)
+			logger.Log.Errorf("failed querying Gin File Middleware for Script: %v", err)
+			return err
 		}
 		_, err = client.AgentTask.Create().
 			SetCommand(agenttask.CommandDOWNLOAD).
 			SetArgs(entScript.Source + "💔" + downloadURL + entGinMiddleware.URLID).
 			SetNumber(taskCount).
 			SetState(agenttask.StateAWAITING).
-			SetAgentTaskToProvisionedHost(entPorovisionedHost).
+			SetAgentTaskToProvisionedHost(entProvisionedHost).
 			SetAgentTaskToProvisioningStep(entStep).
 			Save(ctx)
 		if err != nil {
-			return fmt.Errorf("failed Creating Agent Task for Script Download: %v", err)
+			logger.Log.Errorf("failed Creating Agent Task for Script Download: %v", err)
+			return err
 		}
 		// TODO: Add the Ability to change permissions of a file into the agent
 		_, err = client.AgentTask.Create().
@@ -551,27 +583,30 @@ func execStep(client *ent.Client, logger *logging.Logger, ctx context.Context, e
 			SetArgs(entScript.Source + "💔" + strings.Join(entScript.Args, " ")).
 			SetNumber(taskCount + 1).
 			SetState(agenttask.StateAWAITING).
-			SetAgentTaskToProvisionedHost(entPorovisionedHost).
+			SetAgentTaskToProvisionedHost(entProvisionedHost).
 			SetAgentTaskToProvisioningStep(entStep).
 			Save(ctx)
 		if err != nil {
-			return fmt.Errorf("failed Creating Agent Task for Script Execute: %v", err)
+			logger.Log.Errorf("failed Creating Agent Task for Script Execute: %v", err)
+			return err
 		}
 		_, err = client.AgentTask.Create().
 			SetCommand(agenttask.CommandDELETE).
 			SetArgs(entScript.Source).
 			SetNumber(taskCount + 2).
 			SetState(agenttask.StateAWAITING).
-			SetAgentTaskToProvisionedHost(entPorovisionedHost).
+			SetAgentTaskToProvisionedHost(entProvisionedHost).
 			SetAgentTaskToProvisioningStep(entStep).
 			Save(ctx)
 		if err != nil {
-			return fmt.Errorf("failed Creating Agent Task for Script Delete: %v", err)
+			logger.Log.Errorf("failed Creating Agent Task for Script Delete: %v", err)
+			return err
 		}
 	case provisioningstep.TypeCommand:
 		entCommand, err := entStep.QueryProvisioningStepToCommand().Only(ctx)
 		if err != nil {
-			return fmt.Errorf("failed querying Command for Provioning Step: %v", err)
+			logger.Log.Errorf("failed querying Command for Provioning Step: %v", err)
+			return err
 		}
 		// Check if reboot command
 		if entCommand.Program == "REBOOT" {
@@ -580,11 +615,12 @@ func execStep(client *ent.Client, logger *logging.Logger, ctx context.Context, e
 				SetArgs("").
 				SetNumber(taskCount).
 				SetState(agenttask.StateAWAITING).
-				SetAgentTaskToProvisionedHost(entPorovisionedHost).
+				SetAgentTaskToProvisionedHost(entProvisionedHost).
 				SetAgentTaskToProvisioningStep(entStep).
 				Save(ctx)
 			if err != nil {
-				return fmt.Errorf("failed Creating Agent Task for Reboot Command: %v", err)
+				logger.Log.Errorf("failed Creating Agent Task for Reboot Command: %v", err)
+				return err
 			}
 		} else {
 			_, err = client.AgentTask.Create().
@@ -592,64 +628,72 @@ func execStep(client *ent.Client, logger *logging.Logger, ctx context.Context, e
 				SetArgs(entCommand.Program + "💔" + strings.Join(entCommand.Args, " ")).
 				SetNumber(taskCount).
 				SetState(agenttask.StateAWAITING).
-				SetAgentTaskToProvisionedHost(entPorovisionedHost).
+				SetAgentTaskToProvisionedHost(entProvisionedHost).
 				SetAgentTaskToProvisioningStep(entStep).
 				Save(ctx)
 			if err != nil {
-				return fmt.Errorf("failed Creating Agent Task for Command: %v", err)
+				logger.Log.Errorf("failed Creating Agent Task for Command: %v", err)
+				return err
 			}
 		}
 	case provisioningstep.TypeFileDelete:
 		entFileDelete, err := entStep.QueryProvisioningStepToFileDelete().Only(ctx)
 		if err != nil {
-			return fmt.Errorf("failed querying File Delete for Provioning Step: %v", err)
+			logger.Log.Errorf("failed querying File Delete for Provioning Step: %v", err)
+			return err
 		}
 		_, err = client.AgentTask.Create().
 			SetCommand(agenttask.CommandDELETE).
 			SetArgs(entFileDelete.Path).
 			SetNumber(taskCount).
 			SetState(agenttask.StateAWAITING).
-			SetAgentTaskToProvisionedHost(entPorovisionedHost).
+			SetAgentTaskToProvisionedHost(entProvisionedHost).
 			SetAgentTaskToProvisioningStep(entStep).
 			Save(ctx)
 		if err != nil {
-			return fmt.Errorf("failed Creating Agent Task for File Delete: %v", err)
+			logger.Log.Errorf("failed Creating Agent Task for File Delete: %v", err)
+			return err
 		}
 	case provisioningstep.TypeFileDownload:
 		entFileDownload, err := entStep.QueryProvisioningStepToFileDownload().Only(ctx)
 		if err != nil {
-			return fmt.Errorf("failed querying File Download for Provioning Step: %v", err)
+			logger.Log.Errorf("failed querying File Download for Provioning Step: %v", err)
+			return err
 		}
 		entGinMiddleware, err := entStep.QueryProvisioningStepToGinFileMiddleware().Only(ctx)
 		if err != nil {
-			return fmt.Errorf("failed querying Gin File Middleware for File Download: %v", err)
+			logger.Log.Errorf("failed querying Gin File Middleware for File Download: %v", err)
+			return err
 		}
 		_, err = client.AgentTask.Create().
 			SetCommand(agenttask.CommandDOWNLOAD).
 			SetArgs(entFileDownload.Destination + "💔" + downloadURL + entGinMiddleware.URLID).
 			SetNumber(taskCount).
 			SetState(agenttask.StateAWAITING).
-			SetAgentTaskToProvisionedHost(entPorovisionedHost).
+			SetAgentTaskToProvisionedHost(entProvisionedHost).
 			SetAgentTaskToProvisioningStep(entStep).
 			Save(ctx)
 		if err != nil {
-			return fmt.Errorf("failed Creating Agent Task for File Download: %v", err)
+			logger.Log.Errorf("failed Creating Agent Task for File Download: %v", err)
+			return err
 		}
 	case provisioningstep.TypeFileExtract:
 		entFileExtract, err := entStep.QueryProvisioningStepToFileExtract().Only(ctx)
 		if err != nil {
-			return fmt.Errorf("failed querying File Extract for Provioning Step: %v", err)
+			logger.Log.Errorf("failed querying File Extract for Provioning Step: %v", err)
+			return err
 		}
 		_, err = client.AgentTask.Create().
 			SetCommand(agenttask.CommandEXTRACT).
 			SetArgs(entFileExtract.Source + "💔" + entFileExtract.Destination).
 			SetNumber(taskCount).
 			SetState(agenttask.StateAWAITING).
-			SetAgentTaskToProvisionedHost(entPorovisionedHost).
+			SetAgentTaskToProvisionedHost(entProvisionedHost).
 			SetAgentTaskToProvisioningStep(entStep).
 			Save(ctx)
 		if err != nil {
-			return fmt.Errorf("failed Creating Agent Task for File Extract: %v", err)
+			logger.Log.Errorf("failed Creating Agent Task for File Extract: %v", err)
+			return err
 		}
 	case provisioningstep.TypeDNSRecord:
 		break
@@ -666,12 +710,14 @@ func execStep(client *ent.Client, logger *logging.Logger, ctx context.Context, e
 
 		if err != nil {
 			logger.Log.Errorf("Failed to Query Agent Task State. Err: %v", err)
+			return err
 		}
 
 		if taskFailed {
 			_, err = stepStatus.Update().SetFailed(true).SetState(status.StateFAILED).Save(ctx)
 			if err != nil {
 				logger.Log.Errorf("error while trying to set ent.ProvisioningStep.Status.State to status.StateFAILED: %v", err)
+				return err
 			}
 			rdb.Publish(ctx, "updatedStatus", stepStatus.ID.String())
 			return fmt.Errorf("one or more agent tasks failed")
@@ -685,6 +731,7 @@ func execStep(client *ent.Client, logger *logging.Logger, ctx context.Context, e
 
 		if err != nil {
 			logger.Log.Errorf("Failed to Query Agent Task State. Err: %v", err)
+			return err
 		}
 
 		if !taskRunning {
@@ -696,6 +743,7 @@ func execStep(client *ent.Client, logger *logging.Logger, ctx context.Context, e
 	_, err = stepStatus.Update().SetCompleted(true).SetState(status.StateCOMPLETE).Save(ctx)
 	if err != nil {
 		logger.Log.Errorf("error while trying to set ent.ProvisioningStep.Status.State to status.StateCOMPLETED: %v", err)
+		return err
 	}
 	rdb.Publish(ctx, "updatedStatus", stepStatus.ID.String())
 

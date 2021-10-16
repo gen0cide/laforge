@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -41,6 +40,7 @@ func BuilderFromEnvironment(environment *ent.Environment, logger *logging.Logger
 		return
 	}
 	err = fmt.Errorf("error: builder not found")
+	logrus.Error(err)
 	return
 }
 
@@ -168,17 +168,22 @@ func NewVSphereNSXTBuilder(env *ent.Environment, logger *logging.Logger) (builde
 	}
 	if !exists {
 		err = fmt.Errorf("error datastore \"%s\" doesn't exist", datastoreName)
+		logrus.Error(err)
 		return
 	}
 
 	folder, err := vsphereClient.GetFolderSummaryByName(ctx, folderName)
 	if err != nil {
-		log.Fatalf("error finding folder: %v", err)
+		err = fmt.Errorf("error finding folder: %v", err)
+		logrus.Error(err)
+		return
 	}
 
 	resourcePool, err := vsphereClient.Finder.ResourcePool(ctx, resourcePoolName)
 	if err != nil {
-		log.Fatalf("error finding resource pool: %v", err)
+		err = fmt.Errorf("error finding resource pool: %v", err)
+		logrus.Error(err)
+		return
 	}
 
 	// resourcePool, err := vsphereClient.GetResourcePoolByName(resourcePoolName)

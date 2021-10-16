@@ -607,6 +607,7 @@ func createHosts(ctx context.Context, client *ent.Client, log *logging.Logger, c
 	for _, cHostID := range environmentHosts {
 		cHost, ok := configHosts[cHostID]
 		if !ok {
+			log.Log.Errorf("Host %v was not defined in the Enviroment %v", cHostID, envHclID)
 			return nil, nil, fmt.Errorf("err: Host %v was not defined in the Enviroment %v", cHostID, envHclID)
 		}
 		returnedDisk, err := createDisk(ctx, client, log, cHost.HCLHostToDisk, cHost.HclID, envHclID)
@@ -642,7 +643,7 @@ func createHosts(ctx context.Context, client *ent.Client, log *logging.Logger, c
 					SetHostToDisk(returnedDisk).
 					Save(ctx)
 				if err != nil {
-					log.Log.Errorf("Failed to Update Host %v. Err: %v", cHost.HclID, err)
+					log.Log.Errorf("Failed to Create Host %v. Err: %v", cHost.HclID, err)
 					return nil, nil, err
 				}
 			} else {
@@ -732,7 +733,7 @@ func createNetworks(ctx context.Context, client *ent.Client, log *logging.Logger
 			SetVdiVisible(cNetwork.VdiVisible).
 			Save(ctx)
 		if err != nil {
-			log.Log.Errorf("Failed to Update Script %v. Err: %v", cNetwork.HclID, err)
+			log.Log.Errorf("Failed to Update Network %v. Err: %v", cNetwork.HclID, err)
 			return nil, err
 		}
 		returnedNetworks = append(returnedNetworks, entNetwork)
@@ -1329,7 +1330,7 @@ func createDisk(ctx context.Context, client *ent.Client, log *logging.Logger, co
 				SetSize(configDisk.Size).
 				Save(ctx)
 			if err != nil {
-				log.Log.Errorf("Failed to create Disks. Err: %v", err)
+				log.Log.Errorf("Failed to create Disk for Host %v. Err: %v", hostHclID, err)
 				return nil, err
 			}
 		}
@@ -1338,7 +1339,7 @@ func createDisk(ctx context.Context, client *ent.Client, log *logging.Logger, co
 		SetSize(configDisk.Size).
 		Save(ctx)
 	if err != nil {
-		log.Log.Errorf("Failed to update Disk Size for %v. Err: %v", hostHclID, err)
+		log.Log.Errorf("Failed to update Disk Size for Host %v. Err: %v", hostHclID, err)
 		return nil, err
 	}
 	return entDisk, nil
@@ -1460,7 +1461,7 @@ func validateHostDependencies(ctx context.Context, client *ent.Client, log *logg
 			),
 		).Only(ctx)
 		if err != nil {
-			log.Log.Errorf("Unable to %v host in %v network while loading %v enviroment. Err: %v", uncheckedHostDependency.HostID, uncheckedHostDependency.NetworkID, envHclID, err)
+			log.Log.Errorf("Unable to Verify %v host in %v network while loading %v enviroment. Err: %v", uncheckedHostDependency.HostID, uncheckedHostDependency.NetworkID, envHclID, err)
 			return nil, err
 		}
 		uncheckedHostDependency, err := uncheckedHostDependency.Update().
@@ -1470,7 +1471,7 @@ func validateHostDependencies(ctx context.Context, client *ent.Client, log *logg
 		if err != nil {
 			dependedByHost, queryErr := uncheckedHostDependency.HostDependencyToDependByHost(ctx)
 			if queryErr != nil {
-				log.Log.Errorf("Unable to find the host Depended by Err: %v", queryErr)
+				log.Log.Errorf("Unable to find the host depended by %v Err: %v", uncheckedHostDependency.HostID, queryErr)
 				return nil, queryErr
 			}
 			log.Log.Errorf("Failed to clear the Host dependency of %v which relies on %v host in %v network. Err: %v", dependedByHost.HclID, uncheckedHostDependency.HostID, uncheckedHostDependency.NetworkID, err)
@@ -1483,7 +1484,7 @@ func validateHostDependencies(ctx context.Context, client *ent.Client, log *logg
 		if err != nil {
 			dependedByHost, queryErr := uncheckedHostDependency.HostDependencyToDependByHost(ctx)
 			if queryErr != nil {
-				log.Log.Errorf("Unable to find the host Depended by Err: %v", queryErr)
+				log.Log.Errorf("Unable to find the host depended by %v Err: %v", uncheckedHostDependency.HostID, queryErr)
 				return nil, queryErr
 			}
 			log.Log.Errorf("Failed to update the Host dependency of %v which relies on %v host in %v network. Err: %v", dependedByHost.HclID, uncheckedHostDependency.HostID, uncheckedHostDependency.NetworkID, err)
