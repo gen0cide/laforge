@@ -20,7 +20,7 @@ func (Repository) Fields() []ent.Field {
 		field.String("repo_url"),
 		field.String("branch_name").Default("master"),
 		field.String("enviroment_filepath"),
-		field.String("folder_path"),
+		field.String("folder_path").Default("N/A"),
 		field.String("commit_info").Default("N/A"),
 	}
 }

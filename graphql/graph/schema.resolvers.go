@@ -642,8 +642,6 @@ func (r *mutationResolver) CreateEnviromentFromRepo(ctx context.Context, repoURL
 		return nil, err
 	}
 
-	repoFolderPath := fmt.Sprintf(utils.RepoPath, strings.ToLower(string(currentUser.Provider)), currentUser.Username, repoName, branchName)
-
 	foundRepo, _ := r.client.Repository.Query().Where(
 		repository.And(
 			repository.BranchName(branchName),
@@ -652,11 +650,21 @@ func (r *mutationResolver) CreateEnviromentFromRepo(ctx context.Context, repoURL
 		),
 	).First(ctx)
 
-	fmt.Println(foundRepo)
-
 	if foundRepo != nil {
 		return r.UpdateEnviromentViaPull(ctx, foundRepo.ID.String())
 	}
+
+	entRepo, err := r.client.Repository.Create().
+		SetRepoURL(repoURL).
+		SetBranchName(branchName).
+		SetEnviromentFilepath(envFilePath).
+		Save(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	repoFolderPath := fmt.Sprintf(utils.RepoPath, entRepo.ID.String(), branchName)
 
 	commit_info, err := utils.CloneGit(repoURL, repoFolderPath, currentUser.PrivateKeyPath, branchName)
 	if err != nil {
@@ -670,15 +678,11 @@ func (r *mutationResolver) CreateEnviromentFromRepo(ctx context.Context, repoURL
 		return nil, err
 	}
 
-	_, err = r.client.Repository.Create().
-		SetRepoURL(repoURL).
-		SetBranchName(branchName).
-		SetEnviromentFilepath(envFilePath).
+	_, err = entRepo.Update().
 		SetFolderPath(repoFolderPath).
 		SetCommitInfo(commit_info).
 		AddRepositoryToEnvironment(loadedEnviroments...).
 		Save(ctx)
-
 	if err != nil {
 		return nil, err
 	}

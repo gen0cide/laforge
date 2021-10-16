@@ -17,7 +17,7 @@ import (
 
 var (
 	UserKeyPath = path.Join("users", "%s", "%s", "keys")
-	RepoPath    = path.Join("repos", "%s", "%s", "%s", "%s")
+	RepoPath    = path.Join("repos", "%s", "%s")
 )
 
 func CreateTempURL(ctx context.Context, client *ent.Client, filePath string) (*ent.GinFileMiddleware, error) {
