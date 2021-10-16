@@ -608,7 +608,15 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, logger *log
 	}
 	userDataScriptID, ok := entHost.Vars["user_data_script_id"]
 	if ok {
-		userDataScript, err := client.Script.Query().Where(script.HclIDEQ(userDataScriptID)).Only(ctx)
+		currentEnvironment, err := entProvisionedHost.QueryProvisionedHostToHost().QueryHostToEnvironment().Only(ctx)
+		userDataScript, err := client.Script.Query().Where(
+			script.And(
+				script.HasScriptToEnvironmentWith(
+					environment.IDEQ(currentEnvironment.ID),
+				),
+				script.HclIDEQ(userDataScriptID),
+			),
+		).Only(ctx)
 		if err != nil {
 			logger.Log.Errorf("Failed to Query Script %v. Err: %v", userDataScriptID, err)
 			return nil, err
