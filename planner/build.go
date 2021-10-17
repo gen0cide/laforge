@@ -560,6 +560,16 @@ func execStep(client *ent.Client, logger *logging.Logger, ctx context.Context, e
 			logger.Log.Errorf("failed querying Script for Provioning Step: %v", err)
 			return err
 		}
+		if val, ok := entScript.Vars["build_render"]; ok {
+			if val == "true" {
+				_, err := renderScript(ctx, client, logger, entStep)
+				if err != nil {
+					logger.Log.Errorf("failed rerendering Script: %v", err)
+					return err
+				}
+				logger.Log.Debug("sucessful rerendering for Script: %v", err)
+			}
+		}
 		entGinMiddleware, err := entStep.QueryProvisioningStepToGinFileMiddleware().Only(ctx)
 		if err != nil {
 			logger.Log.Errorf("failed querying Gin File Middleware for Script: %v", err)
