@@ -681,8 +681,14 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, logger *log
 }
 
 func createProvisioningStep(ctx context.Context, client *ent.Client, logger *logging.Logger, hclID string, stepNumber int, pHost *ent.ProvisionedHost, prevPlan *ent.Plan) (*ent.ProvisioningStep, error) {
+	entHost, err := pHost.QueryProvisionedHostToHost().Only(ctx)
+	if err != nil {
+		logger.Log.Errorf("Failed to Query Host for Provisoned Host %v. Err: %v", pHost.ID, err)
+		return nil, err
+	}
 	logger.Log.WithFields(logrus.Fields{
 		"pHost":               pHost.ID,
+		"pHost.HCLID":         entHost.HclID,
 		"pHost.SubnetIP":      pHost.SubnetIP,
 		"stepNumber":          stepNumber,
 		"prevPlan":            prevPlan.ID,
@@ -712,6 +718,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, logger *log
 		if err != err.(*ent.NotFoundError) {
 			logger.Log.WithFields(logrus.Fields{
 				"pHost":               pHost.ID,
+				"pHost.HCLID":         entHost.HclID,
 				"pHost.SubnetIP":      pHost.SubnetIP,
 				"stepNumber":          stepNumber,
 				"prevPlan":            prevPlan.ID,
@@ -731,6 +738,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, logger *log
 				if err != err.(*ent.NotFoundError) {
 					logger.Log.WithFields(logrus.Fields{
 						"pHost":               pHost.ID,
+						"pHost.HCLID":         entHost.HclID,
 						"pHost.SubnetIP":      pHost.SubnetIP,
 						"stepNumber":          stepNumber,
 						"prevPlan":            prevPlan.ID,
@@ -750,6 +758,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, logger *log
 						if err != err.(*ent.NotFoundError) {
 							logger.Log.WithFields(logrus.Fields{
 								"pHost":               pHost.ID,
+								"pHost.HCLID":         entHost.HclID,
 								"pHost.SubnetIP":      pHost.SubnetIP,
 								"stepNumber":          stepNumber,
 								"prevPlan":            prevPlan.ID,
@@ -769,6 +778,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, logger *log
 								if err != err.(*ent.NotFoundError) {
 									logger.Log.WithFields(logrus.Fields{
 										"pHost":               pHost.ID,
+										"pHost.HCLID":         entHost.HclID,
 										"pHost.SubnetIP":      pHost.SubnetIP,
 										"stepNumber":          stepNumber,
 										"prevPlan":            prevPlan.ID,
@@ -788,6 +798,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, logger *log
 										if err != err.(*ent.NotFoundError) {
 											logger.Log.WithFields(logrus.Fields{
 												"pHost":               pHost.ID,
+												"pHost.HCLID":         entHost.HclID,
 												"pHost.SubnetIP":      pHost.SubnetIP,
 												"stepNumber":          stepNumber,
 												"prevPlan":            prevPlan.ID,
@@ -807,6 +818,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, logger *log
 												if err != err.(*ent.NotFoundError) {
 													logger.Log.WithFields(logrus.Fields{
 														"pHost":               pHost.ID,
+														"pHost.HCLID":         entHost.HclID,
 														"pHost.SubnetIP":      pHost.SubnetIP,
 														"stepNumber":          stepNumber,
 														"prevPlan":            prevPlan.ID,
@@ -817,6 +829,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, logger *log
 												} else {
 													logger.Log.WithFields(logrus.Fields{
 														"pHost":               pHost.ID,
+														"pHost.HCLID":         entHost.HclID,
 														"pHost.SubnetIP":      pHost.SubnetIP,
 														"stepNumber":          stepNumber,
 														"prevPlan":            prevPlan.ID,
@@ -835,6 +848,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, logger *log
 												if err != nil {
 													logger.Log.WithFields(logrus.Fields{
 														"pHost":               pHost.ID,
+														"pHost.HCLID":         entHost.HclID,
 														"pHost.SubnetIP":      pHost.SubnetIP,
 														"stepNumber":          stepNumber,
 														"prevPlan":            prevPlan.ID,
@@ -855,6 +869,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, logger *log
 										if err != nil {
 											logger.Log.WithFields(logrus.Fields{
 												"pHost":               pHost.ID,
+												"pHost.HCLID":         entHost.HclID,
 												"pHost.SubnetIP":      pHost.SubnetIP,
 												"stepNumber":          stepNumber,
 												"prevPlan":            prevPlan.ID,
@@ -876,6 +891,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, logger *log
 								if err != nil {
 									logger.Log.WithFields(logrus.Fields{
 										"pHost":               pHost.ID,
+										"pHost.HCLID":         entHost.HclID,
 										"pHost.SubnetIP":      pHost.SubnetIP,
 										"stepNumber":          stepNumber,
 										"prevPlan":            prevPlan.ID,
@@ -897,6 +913,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, logger *log
 						if err != nil {
 							logger.Log.WithFields(logrus.Fields{
 								"pHost":               pHost.ID,
+								"pHost.HCLID":         entHost.HclID,
 								"pHost.SubnetIP":      pHost.SubnetIP,
 								"stepNumber":          stepNumber,
 								"prevPlan":            prevPlan.ID,
@@ -938,6 +955,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, logger *log
 				if err != nil {
 					logger.Log.WithFields(logrus.Fields{
 						"pHost":               pHost.ID,
+						"pHost.HCLID":         entHost.HclID,
 						"pHost.SubnetIP":      pHost.SubnetIP,
 						"stepNumber":          stepNumber,
 						"prevPlan":            prevPlan.ID,
@@ -959,6 +977,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, logger *log
 		if err != nil {
 			logger.Log.WithFields(logrus.Fields{
 				"pHost":               pHost.ID,
+				"pHost.HCLID":         entHost.HclID,
 				"pHost.SubnetIP":      pHost.SubnetIP,
 				"stepNumber":          stepNumber,
 				"prevPlan":            prevPlan.ID,
@@ -1007,6 +1026,7 @@ func createProvisioningStep(ctx context.Context, client *ent.Client, logger *log
 	if err != nil {
 		logger.Log.WithFields(logrus.Fields{
 			"pHost":               pHost.ID,
+			"pHost.HCLID":         entHost.HclID,
 			"pHost.SubnetIP":      pHost.SubnetIP,
 			"stepNumber":          stepNumber,
 			"prevPlan":            prevPlan.ID,
