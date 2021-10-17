@@ -18,6 +18,7 @@ func (Team) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
 		field.Int("team_number"),
+		field.JSON("vars", map[string]string{}),
 	}
 }
 

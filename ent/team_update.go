@@ -45,6 +45,12 @@ func (tu *TeamUpdate) AddTeamNumber(i int) *TeamUpdate {
 	return tu
 }
 
+// SetVars sets the "vars" field.
+func (tu *TeamUpdate) SetVars(m map[string]string) *TeamUpdate {
+	tu.mutation.SetVars(m)
+	return tu
+}
+
 // SetTeamToBuildID sets the "TeamToBuild" edge to the Build entity by ID.
 func (tu *TeamUpdate) SetTeamToBuildID(id uuid.UUID) *TeamUpdate {
 	tu.mutation.SetTeamToBuildID(id)
@@ -250,6 +256,13 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: team.FieldTeamNumber,
 		})
 	}
+	if value, ok := tu.mutation.Vars(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: team.FieldVars,
+		})
+	}
 	if tu.mutation.TeamToBuildCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -438,6 +451,12 @@ func (tuo *TeamUpdateOne) SetTeamNumber(i int) *TeamUpdateOne {
 // AddTeamNumber adds i to the "team_number" field.
 func (tuo *TeamUpdateOne) AddTeamNumber(i int) *TeamUpdateOne {
 	tuo.mutation.AddTeamNumber(i)
+	return tuo
+}
+
+// SetVars sets the "vars" field.
+func (tuo *TeamUpdateOne) SetVars(m map[string]string) *TeamUpdateOne {
+	tuo.mutation.SetVars(m)
 	return tuo
 }
 
@@ -668,6 +687,13 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 			Type:   field.TypeInt,
 			Value:  value,
 			Column: team.FieldTeamNumber,
+		})
+	}
+	if value, ok := tuo.mutation.Vars(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: team.FieldVars,
 		})
 	}
 	if tuo.mutation.TeamToBuildCleared() {

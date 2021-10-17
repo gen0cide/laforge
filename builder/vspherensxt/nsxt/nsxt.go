@@ -222,16 +222,18 @@ type NSXTNATAction string
 
 const (
 	NSXT_NAT_SNAT NSXTNATAction = "SNAT"
+	NSXT_NAT_DNAT NSXTNATAction = "DNAT"
 )
 
 type NSXTIPElementList string
 
 type NSXTNATRule struct {
-	Description       string            `json:"description"`
-	Action            NSXTNATAction     `json:"action"`
-	Id                string            `json:"id"`
-	SourceNetwork     NSXTIPElementList `json:"source_network"`
-	TranslatedNetwork NSXTIPElementList `json:"translated_network"`
+	Description        string             `json:"description"`
+	Action             NSXTNATAction      `json:"action"`
+	Id                 string             `json:"id"`
+	SourceNetwork      *NSXTIPElementList `json:"source_network"`
+	DestinationNetwork *NSXTIPElementList `json:"destination_network"`
+	TranslatedNetwork  NSXTIPElementList  `json:"translated_network"`
 }
 
 type NSXTIpAllocationRequest struct {
@@ -590,34 +592,34 @@ func (nsxt *NSXTClient) GetTier0s() (tier0s []NSXTTier0, nsxtError *NSXTErrorRes
 	return
 }
 
-func (nsxt *NSXTClient) CreateNATRule(tier1Name string, sourceNetwork NSXTIPElementList) (nsxtError *NSXTErrorResponse, err error) {
+func (nsxt *NSXTClient) CreateSNATRule(tier1Name string, sourceNetwork NSXTIPElementList) (translatedIp string, nsxtError *NSXTErrorResponse, err error) {
 	nsxt.Logger.Log.WithFields(log.Fields{
 		"tier1Name":     tier1Name,
 		"sourceNetwork": sourceNetwork,
-	}).Debug("NSX-T | CreateNATRule")
+	}).Debug("NSX-T | CreateSNATRule")
 
 	allocatedIpResult, nsxtError, err := nsxt.ManageIpAllocation("", NSXT_IP_POOL_ALLOCATE)
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 	if nsxtError != nil {
-		return nsxtError, nil
+		return "", nsxtError, nil
 	}
 
 	payload := NSXTNATRule{
-		Description:       "NAT for CPTC Competition",
+		// Id:                (tier1Name + "-SNAT"),
+		Description:       "SNAT for LaForge",
 		Action:            NSXT_NAT_SNAT,
-		Id:                (tier1Name + "-NAT"),
-		SourceNetwork:     sourceNetwork,
+		SourceNetwork:     &sourceNetwork,
 		TranslatedNetwork: NSXTIPElementList(*allocatedIpResult.IpAddress),
 	}
 
 	jsonString, err := json.Marshal(payload)
 	if err != nil {
-		err = fmt.Errorf("error while marshalling CreateNATRule payload: %v", err)
+		err = fmt.Errorf("error while marshalling CreateSNATRule payload: %v", err)
 		return
 	}
-	request, err := nsxt.generateAuthorizedRequestWithData(http.MethodPatch, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-NAT"), bytes.NewBuffer(jsonString))
+	request, err := nsxt.generateAuthorizedRequestWithData(http.MethodPatch, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-SNAT"), bytes.NewBuffer(jsonString))
 	if err != nil {
 		return
 	}
@@ -629,29 +631,41 @@ func (nsxt *NSXTClient) CreateNATRule(tier1Name string, sourceNetwork NSXTIPElem
 	if nsxtError != nil {
 		nsxt.Logger.Log.Errorf("error while creating NAT Rule: %v", nsxtError)
 	}
-	return
+	return *allocatedIpResult.IpAddress, nil, nil
 }
 
-func (nsxt *NSXTClient) DeleteNATRule(tier1Name string) (nsxtError *NSXTErrorResponse, err error) {
+func (nsxt *NSXTClient) DeleteSNATRule(tier1Name string) (nsxtError *NSXTErrorResponse, err error) {
 	nsxt.Logger.Log.WithFields(log.Fields{
 		"tier1Name": tier1Name,
-	}).Debug("NSX-T | DeleteNATRule")
-	request, err := nsxt.generateAuthorizedRequest(http.MethodGet, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-NAT"))
+	}).Debug("NSX-T | DeleteSNATRule")
+	request, err := nsxt.generateAuthorizedRequest(http.MethodGet, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-SNAT"))
 	if err != nil {
-		return nil, fmt.Errorf("error generating GET request for NAT rule for tier-1 %s: %v", tier1Name, err)
+		return nil, fmt.Errorf("error generating GET request for SNAT rule for tier-1 %s: %v", tier1Name, err)
 	}
 	response, nsxtError, err := nsxt.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
-		return nil, fmt.Errorf("error while getting NAT rule for tier-1 %s: %v", tier1Name, err)
+		return nil, fmt.Errorf("error while getting SNAT rule for tier-1 %s: %v", tier1Name, err)
 	}
 	if nsxtError != nil {
-		nsxt.Logger.Log.Errorf("error while deleteing NAT rule: %+v", nsxtError)
+		nsxt.Logger.Log.Errorf("error while deleteing SNAT rule: %+v", nsxtError)
 		return
 	}
 	var natRule NSXTNATRule
 	err = json.NewDecoder(response.Body).Decode(&natRule)
 	if err != nil {
-		return nil, fmt.Errorf("error while decoding nat rule json: %v", err)
+		return nil, fmt.Errorf("error while decoding snat rule json: %v", err)
+	}
+
+	request, err = nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-SNAT"))
+	if err != nil {
+		return nil, fmt.Errorf("error while making the DELETE request for the SNAT Rule for %s: %v", tier1Name, err)
+	}
+	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK)
+	if err != nil {
+		return
+	}
+	if nsxtError != nil {
+		nsxt.Logger.Log.Errorf("error while deleting SNAT Rule: %v", nsxtError)
 	}
 
 	_, nsxtError, err = nsxt.ManageIpAllocation(string(natRule.TranslatedNetwork), NSXT_IP_POOL_RELEASE)
@@ -662,16 +676,58 @@ func (nsxt *NSXTClient) DeleteNATRule(tier1Name string) (nsxtError *NSXTErrorRes
 		return nsxtError, nil
 	}
 
-	request, err = nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-NAT"))
+	return
+}
+
+func (nsxt *NSXTClient) CreateDNATRule(gatewayIp, vpnIp NSXTIPElementList, port, tier1Name string) (nsxtError *NSXTErrorResponse, err error) {
+	nsxt.Logger.Log.WithFields(log.Fields{
+		"gatewayIp": gatewayIp,
+		"vpnIp":     vpnIp,
+		"port":      port,
+	}).Debug("NSX-T | CreateDNATRule")
+
+	payload := NSXTNATRule{
+		Description:        "DNAT for LaForge",
+		Action:             NSXT_NAT_DNAT,
+		DestinationNetwork: &gatewayIp,
+		TranslatedNetwork:  vpnIp,
+	}
+
+	jsonString, err := json.Marshal(payload)
 	if err != nil {
-		return nil, fmt.Errorf("error while making the DELETE request for the NAT Rule for %s: %v", tier1Name, err)
+		err = fmt.Errorf("error while marshalling CreateDNATRule payload: %v", err)
+		return
+	}
+	request, err := nsxt.generateAuthorizedRequestWithData(http.MethodPatch, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-DNAT"), bytes.NewBuffer(jsonString))
+	if err != nil {
+		return
+	}
+	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK, http.StatusBadRequest)
+	if err != nil {
+		err = fmt.Errorf("error while creating DNAT Rule: %v", err)
+		return
+	}
+	if nsxtError != nil {
+		nsxt.Logger.Log.Errorf("error while creating DNAT Rule: %v", nsxtError)
+	}
+	return
+}
+
+func (nsxt *NSXTClient) DeleteDNATRule(tier1Name string) (nsxtError *NSXTErrorResponse, err error) {
+	nsxt.Logger.Log.WithFields(log.Fields{
+		"tier1Name": tier1Name,
+	}).Debug("NSX-T | DeleteDNATRule")
+
+	request, err := nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-DNAT"))
+	if err != nil {
+		return nil, fmt.Errorf("error while making the DELETE request for the DNAT Rule for %s: %v", tier1Name, err)
 	}
 	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		return
 	}
 	if nsxtError != nil {
-		nsxt.Logger.Log.Errorf("error while deleting NAT Rule: %v", nsxtError)
+		nsxt.Logger.Log.Errorf("error while deleting DNAT Rule: %v", nsxtError)
 	}
 
 	return

@@ -13,6 +13,8 @@ const (
 	FieldID = "id"
 	// FieldTeamNumber holds the string denoting the team_number field in the database.
 	FieldTeamNumber = "team_number"
+	// FieldVars holds the string denoting the vars field in the database.
+	FieldVars = "vars"
 	// EdgeTeamToBuild holds the string denoting the teamtobuild edge name in mutations.
 	EdgeTeamToBuild = "TeamToBuild"
 	// EdgeTeamToStatus holds the string denoting the teamtostatus edge name in mutations.
@@ -57,6 +59,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTeamNumber,
+	FieldVars,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "teams"

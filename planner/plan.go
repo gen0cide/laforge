@@ -299,6 +299,7 @@ func createTeam(client *ent.Client, logger *logging.Logger, entBuild *ent.Build,
 		SetTeamNumber(teamNumber).
 		SetTeamToBuild(entBuild).
 		SetTeamToStatus(entStatus).
+		SetVars(map[string]string{}).
 		Save(ctx)
 	if err != nil {
 		logger.Log.Errorf("Failed to create Team Number %v for Build %v. Err: %v", teamNumber, entBuild.ID, err)

@@ -30,6 +30,12 @@ func (tc *TeamCreate) SetTeamNumber(i int) *TeamCreate {
 	return tc
 }
 
+// SetVars sets the "vars" field.
+func (tc *TeamCreate) SetVars(m map[string]string) *TeamCreate {
+	tc.mutation.SetVars(m)
+	return tc
+}
+
 // SetID sets the "id" field.
 func (tc *TeamCreate) SetID(u uuid.UUID) *TeamCreate {
 	tc.mutation.SetID(u)
@@ -163,6 +169,9 @@ func (tc *TeamCreate) check() error {
 	if _, ok := tc.mutation.TeamNumber(); !ok {
 		return &ValidationError{Name: "team_number", err: errors.New("ent: missing required field \"team_number\"")}
 	}
+	if _, ok := tc.mutation.Vars(); !ok {
+		return &ValidationError{Name: "vars", err: errors.New("ent: missing required field \"vars\"")}
+	}
 	if _, ok := tc.mutation.TeamToBuildID(); !ok {
 		return &ValidationError{Name: "TeamToBuild", err: errors.New("ent: missing required edge \"TeamToBuild\"")}
 	}
@@ -202,6 +211,14 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 			Column: team.FieldTeamNumber,
 		})
 		_node.TeamNumber = value
+	}
+	if value, ok := tc.mutation.Vars(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: team.FieldVars,
+		})
+		_node.Vars = value
 	}
 	if nodes := tc.mutation.TeamToBuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

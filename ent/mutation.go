@@ -27978,6 +27978,7 @@ type TeamMutation struct {
 	id                               *uuid.UUID
 	team_number                      *int
 	addteam_number                   *int
+	vars                             *map[string]string
 	clearedFields                    map[string]struct{}
 	_TeamToBuild                     *uuid.UUID
 	cleared_TeamToBuild              bool
@@ -28132,6 +28133,42 @@ func (m *TeamMutation) AddedTeamNumber() (r int, exists bool) {
 func (m *TeamMutation) ResetTeamNumber() {
 	m.team_number = nil
 	m.addteam_number = nil
+}
+
+// SetVars sets the "vars" field.
+func (m *TeamMutation) SetVars(value map[string]string) {
+	m.vars = &value
+}
+
+// Vars returns the value of the "vars" field in the mutation.
+func (m *TeamMutation) Vars() (r map[string]string, exists bool) {
+	v := m.vars
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVars returns the old "vars" field's value of the Team entity.
+// If the Team object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamMutation) OldVars(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldVars is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldVars requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVars: %w", err)
+	}
+	return oldValue.Vars, nil
+}
+
+// ResetVars resets all changes to the "vars" field.
+func (m *TeamMutation) ResetVars() {
+	m.vars = nil
 }
 
 // SetTeamToBuildID sets the "TeamToBuild" edge to the Build entity by id.
@@ -28318,9 +28355,12 @@ func (m *TeamMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TeamMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 2)
 	if m.team_number != nil {
 		fields = append(fields, team.FieldTeamNumber)
+	}
+	if m.vars != nil {
+		fields = append(fields, team.FieldVars)
 	}
 	return fields
 }
@@ -28332,6 +28372,8 @@ func (m *TeamMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case team.FieldTeamNumber:
 		return m.TeamNumber()
+	case team.FieldVars:
+		return m.Vars()
 	}
 	return nil, false
 }
@@ -28343,6 +28385,8 @@ func (m *TeamMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case team.FieldTeamNumber:
 		return m.OldTeamNumber(ctx)
+	case team.FieldVars:
+		return m.OldVars(ctx)
 	}
 	return nil, fmt.Errorf("unknown Team field %s", name)
 }
@@ -28358,6 +28402,13 @@ func (m *TeamMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTeamNumber(v)
+		return nil
+	case team.FieldVars:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVars(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Team field %s", name)
@@ -28425,6 +28476,9 @@ func (m *TeamMutation) ResetField(name string) error {
 	switch name {
 	case team.FieldTeamNumber:
 		m.ResetTeamNumber()
+		return nil
+	case team.FieldVars:
+		m.ResetVars()
 		return nil
 	}
 	return fmt.Errorf("unknown Team field %s", name)

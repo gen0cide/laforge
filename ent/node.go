@@ -3206,7 +3206,7 @@ func (t *Team) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     t.ID,
 		Type:   "Team",
-		Fields: make([]*Field, 1),
+		Fields: make([]*Field, 2),
 		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
@@ -3216,6 +3216,14 @@ func (t *Team) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[0] = &Field{
 		Type:  "int",
 		Name:  "team_number",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(t.Vars); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "map[string]string",
+		Name:  "vars",
 		Value: string(buf),
 	}
 	node.Edges[0] = &Edge{

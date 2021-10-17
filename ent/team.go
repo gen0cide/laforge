@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -21,6 +22,8 @@ type Team struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TeamNumber holds the value of the "team_number" field.
 	TeamNumber int `json:"team_number,omitempty"`
+	// Vars holds the value of the "vars" field.
+	Vars map[string]string `json:"vars,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TeamQuery when eager-loading is set.
 	Edges TeamEdges `json:"edges"`
@@ -110,6 +113,8 @@ func (*Team) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case team.FieldVars:
+			values[i] = new([]byte)
 		case team.FieldTeamNumber:
 			values[i] = new(sql.NullInt64)
 		case team.FieldID:
@@ -144,6 +149,15 @@ func (t *Team) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field team_number", values[i])
 			} else if value.Valid {
 				t.TeamNumber = int(value.Int64)
+			}
+		case team.FieldVars:
+
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field vars", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &t.Vars); err != nil {
+					return fmt.Errorf("unmarshal field vars: %w", err)
+				}
 			}
 		case team.ForeignKeys[0]:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -207,6 +221,8 @@ func (t *Team) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", t.ID))
 	builder.WriteString(", team_number=")
 	builder.WriteString(fmt.Sprintf("%v", t.TeamNumber))
+	builder.WriteString(", vars=")
+	builder.WriteString(fmt.Sprintf("%v", t.Vars))
 	builder.WriteByte(')')
 	return builder.String()
 }

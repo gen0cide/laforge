@@ -1036,6 +1036,7 @@ var (
 	TeamsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "team_number", Type: field.TypeInt},
+		{Name: "vars", Type: field.TypeJSON},
 		{Name: "plan_plan_to_team", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "team_team_to_build", Type: field.TypeUUID, Nullable: true},
 	}
@@ -1047,13 +1048,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "teams_plans_PlanToTeam",
-				Columns:    []*schema.Column{TeamsColumns[2]},
+				Columns:    []*schema.Column{TeamsColumns[3]},
 				RefColumns: []*schema.Column{PlansColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "teams_builds_TeamToBuild",
-				Columns:    []*schema.Column{TeamsColumns[3]},
+				Columns:    []*schema.Column{TeamsColumns[4]},
 				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
