@@ -293,6 +293,27 @@ func main() {
 		})
 	}
 
+	go func() {
+		go func() {
+			sub := rdb.Subscribe(ctx, "newAgentStatus", "updatedStatus", "updatedServerTask", "updatedBuild", "updatedBuildCommit", "updatedAgentTask")
+			_, err := sub.Receive(ctx)
+			if err != nil {
+				return
+			}
+			ch := sub.Channel()
+			for {
+				select {
+				case <-ch:
+					continue
+				// close when context done
+				case <-ctx.Done():
+					sub.Close()
+					return
+				}
+			}
+		}()
+	}()
+
 	auth.InitGoth()
 
 	router := gin.Default()
