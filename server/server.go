@@ -39,20 +39,6 @@ import (
 
 const defaultPort = ":8080"
 
-// Defining the Graphql handler
-func redirectToRootHandler(client *ent.Client) gin.HandlerFunc {
-	// NewExecutableSchema and Config are in the generated.go file
-	// Resolver is in the resolver.go file
-	// h := handler.NewDefaultServer(graph.NewSchema(client))
-
-	return func(c *gin.Context) {
-		// h.ServeHTTP(c.Writer, c.Request)
-		// c.AbortWithStatus(503)
-		c.Redirect(301, "/ui")
-		c.Abort()
-	}
-}
-
 // tempURLHandler Checks ENT to verify that the url results in a file
 func tempURLHandler(client *ent.Client) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -294,34 +280,37 @@ func main() {
 	}
 
 	go func() {
-		go func() {
-			sub := rdb.Subscribe(ctx, "newAgentStatus", "updatedStatus", "updatedServerTask", "updatedBuild", "updatedBuildCommit", "updatedAgentTask")
-			_, err := sub.Receive(ctx)
-			if err != nil {
+		sub := rdb.Subscribe(ctx, "newAgentStatus", "updatedStatus", "updatedServerTask", "updatedBuild", "updatedBuildCommit", "updatedAgentTask")
+		_, err := sub.Receive(ctx)
+		if err != nil {
+			return
+		}
+		ch := sub.Channel()
+		for {
+			select {
+			case <-ch:
+				continue
+			// close when context done
+			case <-ctx.Done():
+				sub.Close()
 				return
 			}
-			ch := sub.Channel()
-			for {
-				select {
-				case <-ch:
-					continue
-				// close when context done
-				case <-ctx.Done():
-					sub.Close()
-					return
-				}
-			}
-		}()
+		}
 	}()
 
 	auth.InitGoth()
 
 	router := gin.Default()
 
+	cors_urls := []string{"http://localhost", "http://localhost:4200"}
+	if env_value, exists := os.LookupEnv("CORS_ALLOWED_ORIGINS"); exists {
+		cors_urls = strings.Split(env_value, ",")
+	}
+
 	// Add CORS middleware around every request
 	// See https://github.com/rs/cors for full option listing
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://laforge-dev.cyberrange.rit.edu", "http://laforge-dev.cyberrange.rit.edu:4200"},
+		AllowOrigins:     cors_urls,
 		AllowMethods:     []string{"GET", "PUT", "PATCH"},
 		AllowHeaders:     []string{"Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "accept", "origin", "Cache-Control", "X-Requested-With"},
 		AllowCredentials: true,
@@ -334,20 +323,6 @@ func main() {
 	}
 
 	gqlHandler := graphqlHandler(client, rdb)
-	redirectHandler := redirectToRootHandler(client)
-	router.GET("/", redirectHandler)
-	// router.Static("/ui/", "./dist")
-	router.GET("/ui/*filename", func(c *gin.Context) {
-		filename := c.Param("filename")
-		fmt.Println(contains([]string{"manage", "dashboard", "plan", "build"}, filename))
-		if contains([]string{"manage", "dashboard", "plan", "build"}, filename) {
-			c.Redirect(301, "/ui/")
-		} else {
-			c.File("./dist/" + filename)
-		}
-	})
-	router.Static("/assets/", "./dist/assets")
-	router.GET("/playground", playgroundHandler())
 
 	authGroup := router.Group("/auth")
 	authGroup.GET("/login", func(c *gin.Context) {
@@ -364,6 +339,7 @@ func main() {
 	api.POST("/query", gqlHandler)
 	api.GET("/query", gqlHandler)
 	api.GET("/download/:url_id", tempURLHandler(client))
+	api.GET("/playground", playgroundHandler())
 	go router.Run(port)
 
 	// secure server
