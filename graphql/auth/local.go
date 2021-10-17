@@ -32,7 +32,7 @@ func LocalLogin(client *ent.Client) gin.HandlerFunc {
 			}
 		}
 		secure_cookie := false
-		if env_value, exists := os.LookupEnv("SECURE_COOKIE"); exists {
+		if env_value, exists := os.LookupEnv("HTTPS_ENABLED"); exists {
 			if env_value == "true" {
 				secure_cookie = true
 			}

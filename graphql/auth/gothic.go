@@ -24,16 +24,22 @@ import (
 )
 
 func InitGoth() {
+	url_start := "http://"
+	if env_value, exists := os.LookupEnv("HTTPS_ENABLED"); exists {
+		if env_value == "true" {
+			url_start = "https://"
+		}
+	}
 	goth.UseProviders(
-		github.New(os.Getenv("GITHUB_ID"), os.Getenv("GITHUB_SECRET"), "http://"+os.Getenv("GRAPHQL_HOSTNAME")+"/auth/github/callback"),
-		slack.New(os.Getenv("SLACK_KEY"), os.Getenv("SLACK_SECRET"), "http://"+os.Getenv("GRAPHQL_HOSTNAME")+"/auth/slack/callback"),
-		gitlab.New(os.Getenv("GITLAB_KEY"), os.Getenv("GITLAB_SECRET"), "http://"+os.Getenv("GRAPHQL_HOSTNAME")+"/auth/gitlab/callback"),
+		github.New(os.Getenv("GITHUB_ID"), os.Getenv("GITHUB_SECRET"), url_start+os.Getenv("GRAPHQL_HOSTNAME")+"/auth/github/callback"),
+		slack.New(os.Getenv("SLACK_KEY"), os.Getenv("SLACK_SECRET"), url_start+os.Getenv("GRAPHQL_HOSTNAME")+"/auth/slack/callback"),
+		gitlab.New(os.Getenv("GITLAB_KEY"), os.Getenv("GITLAB_SECRET"), url_start+os.Getenv("GRAPHQL_HOSTNAME")+"/auth/gitlab/callback"),
 	)
 
 	// OpenID Connect is based on OpenID Connect Auto Discovery URL (https://openid.net/specs/openid-connect-discovery-1_0-17.html)
 	// because the OpenID Connect provider initialize it self in the New(), it can return an error which should be handled or ignored
 	// ignore the error for now
-	openidConnect, _ := openidConnect.New(os.Getenv("OPENID_CONNECT_KEY"), os.Getenv("OPENID_CONNECT_SECRET"), "http://"+os.Getenv("GRAPHQL_HOSTNAME")+"/auth/openid-connect/callback", os.Getenv("OPENID_CONNECT_DISCOVERY_URL"))
+	openidConnect, _ := openidConnect.New(os.Getenv("OPENID_CONNECT_KEY"), os.Getenv("OPENID_CONNECT_SECRET"), url_start+os.Getenv("GRAPHQL_HOSTNAME")+"/auth/openid-connect/callback", os.Getenv("OPENID_CONNECT_DISCOVERY_URL"))
 	if openidConnect != nil {
 		goth.UseProviders(openidConnect)
 		// FIX 3
@@ -82,7 +88,7 @@ func GothicCallbackHandler(client *ent.Client) gin.HandlerFunc {
 			}
 		}
 		secure_cookie := false
-		if env_value, exists := os.LookupEnv("SECURE_COOKIE"); exists {
+		if env_value, exists := os.LookupEnv("HTTPS_ENABLED"); exists {
 			if env_value == "true" {
 				secure_cookie = true
 			}
