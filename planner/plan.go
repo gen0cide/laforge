@@ -120,7 +120,7 @@ func CreateBuild(ctx context.Context, client *ent.Client, rdb *redis.Client, cur
 		}
 		return nil, err
 	}
-	entCompetition, err := client.Competition.Query().Where(competition.HclIDEQ(entEnvironment.CompetitionID)).Only(ctx)
+	entCompetition, err := entEnvironment.QueryEnvironmentToCompetition().Where(competition.HclIDEQ(entEnvironment.CompetitionID)).Only(ctx)
 	if err != nil {
 		logger.Log.Errorf("Failed to Query Competition %v for Environment %v. Err: %v", len(entEnvironment.CompetitionID), entEnvironment.HclID, err)
 		_, _, err = utils.FailServerTask(ctx, client, rdb, taskStatus, serverTask, err)
