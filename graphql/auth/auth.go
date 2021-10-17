@@ -36,11 +36,20 @@ func Middleware(client *ent.Client) gin.HandlerFunc {
 		if !ok {
 			hostname = "localhost"
 		}
+		secure_cookie := false
+		if env_value, exists := os.LookupEnv("SECURE_COOKIE"); exists {
+			if env_value == "true" {
+				secure_cookie = true
+			}
+		}
 
 		authCookie, err := ctx.Cookie("auth-cookie")
 		if err != nil || authCookie == "" {
-			// TODO: Change Cookie to be secure
-			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			if secure_cookie {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, true, true)
+			} else {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			}
 			return
 		}
 
@@ -59,8 +68,11 @@ func Middleware(client *ent.Client) gin.HandlerFunc {
 		})
 
 		if err != nil {
-			// TODO: Change Cookie to be secure
-			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			if secure_cookie {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, true, true)
+			} else {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			}
 			if err == jwt.ErrSignatureInvalid {
 				ctx.AbortWithStatus(http.StatusUnauthorized)
 				return
@@ -69,24 +81,33 @@ func Middleware(client *ent.Client) gin.HandlerFunc {
 			return
 		}
 		if !tkn.Valid {
-			// TODO: Change Cookie to be secure
-			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			if secure_cookie {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, true, true)
+			} else {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			}
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
 		entToken, err := client.Token.Query().Where(token.TokenEQ(authCookie)).Only(ctx)
 		if err != nil {
-			// TODO: Change Cookie to be secure
-			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			if secure_cookie {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, true, true)
+			} else {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			}
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err})
 			return
 		}
 
 		entAuthUser, err := entToken.QueryTokenToAuthUser().Only(ctx)
 		if err != nil {
-			// TODO: Change Cookie to be secure
-			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			if secure_cookie {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, true, true)
+			} else {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			}
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err})
 			return
 		}
@@ -105,13 +126,22 @@ func Logout(client *ent.Client) gin.HandlerFunc {
 		if !ok {
 			hostname = "localhost"
 		}
+		secure_cookie := false
+		if env_value, exists := os.LookupEnv("SECURE_COOKIE"); exists {
+			if env_value == "true" {
+				secure_cookie = true
+			}
+		}
 
 		authCookie, err := ctx.Cookie("auth-cookie")
 
 		// Allow unauthenticated users in
 		if err != nil || authCookie == "" {
-			// TODO: Change Cookie to be secure
-			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			if secure_cookie {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, true, true)
+			} else {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			}
 			return
 		}
 
@@ -130,8 +160,11 @@ func Logout(client *ent.Client) gin.HandlerFunc {
 		})
 
 		if err != nil {
-			// TODO: Change Cookie to be secure
-			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			if secure_cookie {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, true, true)
+			} else {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			}
 			if err == jwt.ErrSignatureInvalid {
 				ctx.AbortWithStatus(http.StatusUnauthorized)
 				return
@@ -140,28 +173,41 @@ func Logout(client *ent.Client) gin.HandlerFunc {
 			return
 		}
 		if !tkn.Valid {
-			// TODO: Change Cookie to be secure
-			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			if secure_cookie {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, true, true)
+			} else {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			}
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
 		_, err = client.Token.Delete().Where(token.TokenEQ(authCookie)).Exec(ctx)
 		if err != nil {
-			// TODO: Change Cookie to be secure
-			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			if secure_cookie {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, true, true)
+			} else {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			}
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err})
 			return
 		}
 
 		if err != nil {
-			// TODO: Change Cookie to be secure
-			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			if secure_cookie {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, true, true)
+			} else {
+				ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+			}
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Error updating token"})
 			return
 		}
 
-		ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+		if secure_cookie {
+			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, true, true)
+		} else {
+			ctx.SetCookie("auth-cookie", "", 0, "/", hostname, false, false)
+		}
 
 		ctx.Next()
 	}
