@@ -7,6 +7,8 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -25,6 +27,7 @@ import (
 	pb "github.com/gen0cide/laforge/grpc/proto"
 	"github.com/gen0cide/laforge/grpc/server"
 	"github.com/gen0cide/laforge/grpc/server/static"
+	"github.com/gen0cide/laforge/logging"
 	"github.com/gen0cide/laforge/server/utils"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -280,18 +283,43 @@ func main() {
 	}
 
 	go func() {
-		sub := rdb.Subscribe(ctx, "newAgentStatus", "updatedStatus", "updatedServerTask", "updatedBuild", "updatedBuildCommit", "updatedAgentTask")
-		_, err := sub.Receive(ctx)
+		logFolder, ok := os.LookupEnv("LAFORGE_LOG_FOLDER")
+		if !ok {
+			// Default log location
+			logFolder = "/var/log/laforge"
+		}
+		absPath, err := filepath.Abs(logFolder)
 		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"logFolder": logFolder,
+			}).Errorf("error getting absolute path from log folder: %v", err)
+			return
+		}
+		err = os.MkdirAll(absPath, 0755)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"logFolder": logFolder,
+			}).Errorf("error creating log folder: %v", err)
+			return
+		}
+		filename := fmt.Sprintf("%s_%s.lfglog", time.Now().Format("20060102-15-04-05"), "InternalPubSub")
+		logPath := path.Join(absPath, filename)
+		logrus.Info(logPath)
+		subLog := logging.CreateNewLogger(logPath)
+		sub := rdb.Subscribe(ctx, "newAgentStatus", "updatedStatus", "updatedServerTask", "updatedBuild", "updatedBuildCommit", "updatedAgentTask")
+		_, err = sub.Receive(ctx)
+		if err != nil {
+			subLog.Log.Errorf("error reciving from subscription: %v", err)
 			return
 		}
 		ch := sub.Channel()
 		for {
 			select {
-			case <-ch:
-				continue
+			case message := <-ch:
+				subLog.Log.Infof("Message %v recived from %v", message.Payload, message.Channel)
 			// close when context done
 			case <-ctx.Done():
+				subLog.Log.Infof("Main Channel CTX Closing, Closing Sub Channel")
 				sub.Close()
 				return
 			}

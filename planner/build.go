@@ -673,14 +673,25 @@ func execStep(client *ent.Client, logger *logging.Logger, ctx context.Context, e
 			logger.Log.Errorf("failed querying Gin File Middleware for File Download: %v", err)
 			return err
 		}
-		_, err = client.AgentTask.Create().
-			SetCommand(agenttask.CommandDOWNLOAD).
-			SetArgs(entFileDownload.Destination + "💔" + downloadURL + entGinMiddleware.URLID).
-			SetNumber(taskCount).
-			SetState(agenttask.StateAWAITING).
-			SetAgentTaskToProvisionedHost(entProvisionedHost).
-			SetAgentTaskToProvisioningStep(entStep).
-			Save(ctx)
+		if entFileDownload.SourceType == "remote" {
+			_, err = client.AgentTask.Create().
+				SetCommand(agenttask.CommandDOWNLOAD).
+				SetArgs(entFileDownload.Destination + "💔" + entFileDownload.Source).
+				SetNumber(taskCount).
+				SetState(agenttask.StateAWAITING).
+				SetAgentTaskToProvisionedHost(entProvisionedHost).
+				SetAgentTaskToProvisioningStep(entStep).
+				Save(ctx)
+		} else {
+			_, err = client.AgentTask.Create().
+				SetCommand(agenttask.CommandDOWNLOAD).
+				SetArgs(entFileDownload.Destination + "💔" + downloadURL + entGinMiddleware.URLID).
+				SetNumber(taskCount).
+				SetState(agenttask.StateAWAITING).
+				SetAgentTaskToProvisionedHost(entProvisionedHost).
+				SetAgentTaskToProvisioningStep(entStep).
+				Save(ctx)
+		}
 		if err != nil {
 			logger.Log.Errorf("failed Creating Agent Task for File Download: %v", err)
 			return err
