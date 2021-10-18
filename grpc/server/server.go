@@ -70,34 +70,70 @@ func (s *Server) GetHeartBeat(ctx context.Context, in *pb.HeartbeatRequest) (*pb
 		logrus.Errorf("GRPC SERVER ERROR: Cannot find client %v build. Error: %v", in.GetClientId(), err)
 		return &pb.HeartbeatReply{Status: message, AvalibleTasks: false}, nil
 	}
-	// logrus.Debugf("GRPC SERVER DEBUG: Agent for client %v has sent heartbeat", in.GetClientId())
-	createdEntAgentStatus, err := s.Client.AgentStatus.
-		Create().
-		SetClientID(in.GetClientId()).
-		SetHostname(in.GetHostname()).
-		SetUpTime(int64(in.GetUptime())).
-		SetBootTime(int64(in.GetBoottime())).
-		SetNumProcs(int64(in.GetNumprocs())).
-		SetOs(in.GetOs()).
-		SetHostID(in.GetHostid()).
-		SetLoad1(in.GetLoad1()).
-		SetLoad5(in.GetLoad5()).
-		SetLoad15(in.GetLoad15()).
-		SetTotalMem(int64(in.GetTotalmem())).
-		SetFreeMem(int64(in.GetFreemem())).
-		SetUsedMem(int64(in.GetUsedmem())).
-		SetTimestamp(time.Now().Unix()).
-		SetAgentStatusToProvisionedHost(ph).
-		SetAgentStatusToProvisionedNetwork(pn).
-		SetAgentStatusToBuild(b).
-		Save(ctx)
-
+	existingEntAgentStatus, err := ph.QueryProvisionedHostToAgentStatus().First(ctx)
 	if err != nil {
-		logrus.Errorf("GRPC SERVER ERROR: failed Creating Agent Status: %v", err)
-		return &pb.HeartbeatReply{Status: message, AvalibleTasks: false}, nil
-	}
+		if ent.IsNotFound(err) {
+			createdEntAgentStatus, err := s.Client.AgentStatus.
+				Create().
+				SetClientID(in.GetClientId()).
+				SetHostname(in.GetHostname()).
+				SetUpTime(int64(in.GetUptime())).
+				SetBootTime(int64(in.GetBoottime())).
+				SetNumProcs(int64(in.GetNumprocs())).
+				SetOs(in.GetOs()).
+				SetHostID(in.GetHostid()).
+				SetLoad1(in.GetLoad1()).
+				SetLoad5(in.GetLoad5()).
+				SetLoad15(in.GetLoad15()).
+				SetTotalMem(int64(in.GetTotalmem())).
+				SetFreeMem(int64(in.GetFreemem())).
+				SetUsedMem(int64(in.GetUsedmem())).
+				SetTimestamp(time.Now().Unix()).
+				SetAgentStatusToProvisionedHost(ph).
+				SetAgentStatusToProvisionedNetwork(pn).
+				SetAgentStatusToBuild(b).
+				Save(ctx)
 
-	s.RDB.Publish(ctx, "newAgentStatus", createdEntAgentStatus.ID.String())
+			if err != nil {
+				logrus.Errorf("GRPC SERVER ERROR: failed Creating Agent Status: %v", err)
+				return &pb.HeartbeatReply{Status: message, AvalibleTasks: false}, nil
+			}
+
+			s.RDB.Publish(ctx, "newAgentStatus", createdEntAgentStatus.ID.String())
+		} else {
+			logrus.Errorf("GRPC SERVER ERROR: failed Query Agent Status: %v", err)
+			return &pb.HeartbeatReply{Status: message, AvalibleTasks: false}, nil
+		}
+	} else {
+		existingEntAgentStatus, err = existingEntAgentStatus.
+			Update().
+			SetClientID(in.GetClientId()).
+			SetHostname(in.GetHostname()).
+			SetUpTime(int64(in.GetUptime())).
+			SetBootTime(int64(in.GetBoottime())).
+			SetNumProcs(int64(in.GetNumprocs())).
+			SetOs(in.GetOs()).
+			SetHostID(in.GetHostid()).
+			SetLoad1(in.GetLoad1()).
+			SetLoad5(in.GetLoad5()).
+			SetLoad15(in.GetLoad15()).
+			SetTotalMem(int64(in.GetTotalmem())).
+			SetFreeMem(int64(in.GetFreemem())).
+			SetUsedMem(int64(in.GetUsedmem())).
+			SetTimestamp(time.Now().Unix()).
+			SetAgentStatusToProvisionedHost(ph).
+			SetAgentStatusToProvisionedNetwork(pn).
+			SetAgentStatusToBuild(b).
+			Save(ctx)
+
+		if err != nil {
+			logrus.Errorf("GRPC SERVER ERROR: failed Update Agent Status: %v", err)
+			return &pb.HeartbeatReply{Status: message, AvalibleTasks: false}, nil
+		}
+
+		s.RDB.Publish(ctx, "newAgentStatus", existingEntAgentStatus.ID.String())
+	}
+	// logrus.Debugf("GRPC SERVER DEBUG: Agent for client %v has sent heartbeat", in.GetClientId())
 
 	avalibleTasks, err := ph.QueryProvisionedHostToAgentTask().Where(
 		agenttask.Or(
