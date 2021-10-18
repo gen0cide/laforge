@@ -19,7 +19,7 @@ export class DashboardComponent implements OnInit {
   repoName = new FormControl('', Validators.required);
   branchName = new FormControl('', Validators.required);
   envFilePath = new FormControl('', Validators.required);
-  environmentsCols: string[] = ['name', 'competition_id', 'build_count', 'actions'];
+  environmentsCols: string[] = ['name', 'competition_id', 'build_count','revision','pull-actions', 'actions'];
   environments: Observable<LaForgeGetEnvironmentsQuery['environments']>;
   gitIsLoading: BehaviorSubject<boolean>;
 
@@ -129,4 +129,27 @@ export class DashboardComponent implements OnInit {
       )
       .finally(() => this.gitIsLoading.next(false));
   }
+
+  updateEnvironmentFromGit(envId: string) {
+    this.api
+      .updateEnvFromGit(envId)
+      .then(
+        (env) => {
+          if (env.length > 0) {
+            this.snackbar.open('Environment successfully loaded. Refreshing page...', null, {
+              panelClass: ['bg-success', 'text-white']
+            });
+            window.location.reload();
+          }
+        },
+        (err) => {
+          console.error(err);
+          this.snackbar.open('Error while pulling repo from git. See console/logs for details.', 'Okay', {
+            panelClass: ['bg-danger', 'text-white']
+          });
+        }
+      );
+  }
 }
+
+

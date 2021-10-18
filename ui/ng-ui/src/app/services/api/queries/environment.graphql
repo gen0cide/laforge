@@ -6,6 +6,7 @@ query GetEnvironment($envId: String!) {
     description
     builder
     team_count
+    revision
     admin_cidrs
     exposed_vdi_ports
     tags {
@@ -182,6 +183,7 @@ query GetEnvironments {
     id
     name
     competition_id
+    revision
     EnvironmentToBuild {
       id
       revision
@@ -197,6 +199,7 @@ query GetEnvironmentInfo($envId: String!) {
     description
     builder
     team_count
+    revision
     admin_cidrs
     exposed_vdi_ports
     tags {

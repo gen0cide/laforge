@@ -690,18 +690,23 @@ func (r *mutationResolver) CreateEnviromentFromRepo(ctx context.Context, repoURL
 	return loadedEnviroments, nil
 }
 
-func (r *mutationResolver) UpdateEnviromentViaPull(ctx context.Context, repoUUID string) ([]*ent.Environment, error) {
+func (r *mutationResolver) UpdateEnviromentViaPull(ctx context.Context, envUUID string) ([]*ent.Environment, error) {
 	currentUser, err := auth.ForContext(ctx)
 	if err != nil {
 		return nil, err
 	}
-	uuid, err := uuid.Parse(repoUUID)
+	uuid, err := uuid.Parse(envUUID)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
 	}
 
-	entRepo, err := r.client.Repository.Get(ctx, uuid)
+	entEnvironment, err := r.client.Environment.Get(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+
+	entRepo, err := entEnvironment.QueryEnvironmentToRepository().Only(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1642,10 +1647,3 @@ type statusResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
 type teamResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.

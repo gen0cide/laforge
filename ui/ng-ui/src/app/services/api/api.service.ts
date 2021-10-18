@@ -27,7 +27,9 @@ import {
   LaForgeProviderType,
   LaForgeRoleLevel,
   LaForgeUpdateUserGQL,
-  LaForgeUpdateUserMutation
+  LaForgeUpdateUserMutation,
+  LaForgeUpdateEnviromentViaPullGQL,
+  LaForgeUpdateEnviromentViaPullMutation
 } from '@graphql';
 
 @Injectable({
@@ -49,7 +51,8 @@ export class ApiService {
     private createEnvironmentFromGitGQL: LaForgeCreateEnvironmentFromGitGQL,
     private getUserListGQL: LaForgeGetUserListGQL,
     private updateUserGQL: LaForgeUpdateUserGQL,
-    private createUserGQL: LaForgeCreateUserGQL
+    private createUserGQL: LaForgeCreateUserGQL,
+    private updateEnviromentViaPullGQL: LaForgeUpdateEnviromentViaPullGQL
   ) {}
 
   /**
@@ -212,6 +215,24 @@ export class ApiService {
             return resolve(data.createBuild);
           }
           reject(new Error('unknown error occurred while creating build'));
+        }, reject);
+    });
+  }
+
+  public async updateEnvFromGit(envId: string): Promise<LaForgeUpdateEnviromentViaPullMutation['updateEnviromentViaPull']> {
+    return new Promise((resolve, reject) => {
+      this.updateEnviromentViaPullGQL
+        .mutate({
+          envId
+        })
+        .toPromise()
+        .then(({ data, errors }) => {
+          if (errors) {
+            return reject(errors);
+          } else if (data) {
+            return resolve(data.updateEnviromentViaPull);
+          }
+          reject(new Error('unknown error occurred while updating enviroment'));
         }, reject);
     });
   }

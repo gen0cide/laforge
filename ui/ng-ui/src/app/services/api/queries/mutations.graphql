@@ -29,3 +29,9 @@ mutation CreateEnvironmentFromGit($repoURL: String!, $repoName: String!, $branch
     id
   }
 }
+
+mutation UpdateEnviromentViaPull($envId: String!) {
+  updateEnviromentViaPull(envUUID: $envId) {
+    id
+  }
+}

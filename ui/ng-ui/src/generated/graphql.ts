@@ -388,12 +388,12 @@ export type LaForgeMutationCancelCommitArgs = {
 export type LaForgeMutationCreateEnviromentFromRepoArgs = {
   repoURL: Scalars['String'];
   branchName?: Scalars['String'];
-  repoName: Scalars['String'];
+  repoName?: Scalars['String'];
   envFilePath: Scalars['String'];
 };
 
 export type LaForgeMutationUpdateEnviromentViaPullArgs = {
-  repoUUID: Scalars['String'];
+  envUUID: Scalars['String'];
 };
 
 export type LaForgeMutationModifySelfPasswordArgs = {
@@ -967,7 +967,7 @@ export type LaForgeGetEnvironmentQuery = { __typename?: 'Query' } & {
   environment?: Maybe<
     { __typename?: 'Environment' } & Pick<
       LaForgeEnvironment,
-      'id' | 'competition_id' | 'name' | 'description' | 'builder' | 'team_count' | 'admin_cidrs' | 'exposed_vdi_ports'
+      'id' | 'competition_id' | 'name' | 'description' | 'builder' | 'team_count' | 'revision' | 'admin_cidrs' | 'exposed_vdi_ports'
     > & {
         tags?: Maybe<Array<Maybe<{ __typename?: 'tagMap' } & Pick<LaForgeTagMap, 'key' | 'value'>>>>;
         config?: Maybe<Array<Maybe<{ __typename?: 'configMap' } & Pick<LaForgeConfigMap, 'key' | 'value'>>>>;
@@ -1104,7 +1104,7 @@ export type LaForgeGetEnvironmentsQuery = { __typename?: 'Query' } & {
   environments?: Maybe<
     Array<
       Maybe<
-        { __typename?: 'Environment' } & Pick<LaForgeEnvironment, 'id' | 'name' | 'competition_id'> & {
+        { __typename?: 'Environment' } & Pick<LaForgeEnvironment, 'id' | 'name' | 'competition_id' | 'revision'> & {
             EnvironmentToBuild: Array<Maybe<{ __typename?: 'Build' } & Pick<LaForgeBuild, 'id' | 'revision'>>>;
           }
       >
@@ -1120,7 +1120,7 @@ export type LaForgeGetEnvironmentInfoQuery = { __typename?: 'Query' } & {
   environment?: Maybe<
     { __typename?: 'Environment' } & Pick<
       LaForgeEnvironment,
-      'id' | 'competition_id' | 'name' | 'description' | 'builder' | 'team_count' | 'admin_cidrs' | 'exposed_vdi_ports'
+      'id' | 'competition_id' | 'name' | 'description' | 'builder' | 'team_count' | 'revision' | 'admin_cidrs' | 'exposed_vdi_ports'
     > & {
         tags?: Maybe<Array<Maybe<{ __typename?: 'tagMap' } & Pick<LaForgeTagMap, 'key' | 'value'>>>>;
         config?: Maybe<Array<Maybe<{ __typename?: 'configMap' } & Pick<LaForgeConfigMap, 'key' | 'value'>>>>;
@@ -1238,6 +1238,14 @@ export type LaForgeCreateEnvironmentFromGitMutationVariables = Exact<{
 
 export type LaForgeCreateEnvironmentFromGitMutation = { __typename?: 'Mutation' } & {
   createEnviromentFromRepo: Array<Maybe<{ __typename?: 'Environment' } & Pick<LaForgeEnvironment, 'id'>>>;
+};
+
+export type LaForgeUpdateEnviromentViaPullMutationVariables = Exact<{
+  envId: Scalars['String'];
+}>;
+
+export type LaForgeUpdateEnviromentViaPullMutation = { __typename?: 'Mutation' } & {
+  updateEnviromentViaPull: Array<Maybe<{ __typename?: 'Environment' } & Pick<LaForgeEnvironment, 'id'>>>;
 };
 
 export type LaForgeGetStatusQueryVariables = Exact<{
@@ -1867,6 +1875,7 @@ export const GetEnvironmentDocument = gql`
       description
       builder
       team_count
+      revision
       admin_cidrs
       exposed_vdi_ports
       tags {
@@ -2056,6 +2065,7 @@ export const GetEnvironmentsDocument = gql`
       id
       name
       competition_id
+      revision
       EnvironmentToBuild {
         id
         revision
@@ -2083,6 +2093,7 @@ export const GetEnvironmentInfoDocument = gql`
       description
       builder
       team_count
+      revision
       admin_cidrs
       exposed_vdi_ports
       tags {
@@ -2234,6 +2245,27 @@ export class LaForgeCreateEnvironmentFromGitGQL extends Apollo.Mutation<
   LaForgeCreateEnvironmentFromGitMutationVariables
 > {
   document = CreateEnvironmentFromGitDocument;
+
+  constructor(apollo: Apollo.Apollo) {
+    super(apollo);
+  }
+}
+export const UpdateEnviromentViaPullDocument = gql`
+  mutation UpdateEnviromentViaPull($envId: String!) {
+    updateEnviromentViaPull(envUUID: $envId) {
+      id
+    }
+  }
+`;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LaForgeUpdateEnviromentViaPullGQL extends Apollo.Mutation<
+  LaForgeUpdateEnviromentViaPullMutation,
+  LaForgeUpdateEnviromentViaPullMutationVariables
+> {
+  document = UpdateEnviromentViaPullDocument;
 
   constructor(apollo: Apollo.Apollo) {
     super(apollo);

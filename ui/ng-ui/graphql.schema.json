@@ -3999,7 +3999,7 @@
                     "ofType": null
                   }
                 },
-                "defaultValue": null,
+                "defaultValue": "\"REMOVE\"",
                 "isDeprecated": false,
                 "deprecationReason": null
               },
@@ -4041,7 +4041,7 @@
             "description": null,
             "args": [
               {
-                "name": "repoUUID",
+                "name": "envUUID",
                 "description": null,
                 "type": {
                   "kind": "NON_NULL",

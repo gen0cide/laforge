@@ -24,6 +24,10 @@
               <mat-header-cell *matHeaderCellDef class="justify-content-center">Competition</mat-header-cell>
               <mat-cell *matCellDef="let env" class="justify-content-center">{{ env.competition_id }}</mat-cell>
             </ng-container>
+            <ng-container matColumnDef="revision">
+              <mat-header-cell *matHeaderCellDef class="justify-content-center">Revision</mat-header-cell>
+              <mat-cell *matCellDef="let env" class="justify-content-center">{{ env.revision }}</mat-cell>
+            </ng-container>
             <ng-container matColumnDef="build_count">
               <mat-header-cell *matHeaderCellDef class="justify-content-center"># Builds</mat-header-cell>
               <mat-cell *matCellDef="let env" class="justify-content-center">{{ env.EnvironmentToBuild?.length }}</mat-cell>
@@ -33,6 +37,14 @@
               <mat-cell *matCellDef="let env" class="justify-content-center">
                 <button mat-flat-button (click)="createBuild(env.id)" color="primary">
                   <i class="fad fa-rocket-launch text-light"></i>
+                </button>
+              </mat-cell>
+            </ng-container>
+            <ng-container matColumnDef="pull-actions">
+            <mat-header-cell *matHeaderCellDef class="justify-content-center">Pull</mat-header-cell>
+              <mat-cell *matCellDef="let env" class="justify-content-center">
+                <button mat-flat-button (click)="updateEnvironmentFromGit(env.id)" color="primary">
+                  <i class="fas fa-cloud-download text-light"></i>
                 </button>
               </mat-cell>
             </ng-container>

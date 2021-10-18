@@ -577,11 +577,11 @@ type Mutation {
   createEnviromentFromRepo(
     repoURL: String!
     branchName: String! = "master"
-    repoName: String!
+    repoName: String! = "REMOVE"
     envFilePath: String!
   ): [Environment]! @hasRole(roles: [ADMIN, USER])
 
-  updateEnviromentViaPull(repoUUID: String!): [Environment]!
+  updateEnviromentViaPull(envUUID: String!): [Environment]!
     @hasRole(roles: [ADMIN, USER])
 
   # User Info

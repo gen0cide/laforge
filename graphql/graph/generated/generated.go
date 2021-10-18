@@ -331,7 +331,7 @@ type ComplexityRoot struct {
 		ModifySelfPassword       func(childComplexity int, currentPassword string, newPassword string) int
 		ModifySelfUserInfo       func(childComplexity int, firstName *string, lastName *string, email *string, phone *string, company *string, occupation *string) int
 		Rebuild                  func(childComplexity int, rootPlans []*string) int
-		UpdateEnviromentViaPull  func(childComplexity int, repoUUID string) int
+		UpdateEnviromentViaPull  func(childComplexity int, envUUID string) int
 	}
 
 	Network struct {
@@ -622,7 +622,7 @@ type MutationResolver interface {
 	ApproveCommit(ctx context.Context, commitUUID string) (bool, error)
 	CancelCommit(ctx context.Context, commitUUID string) (bool, error)
 	CreateEnviromentFromRepo(ctx context.Context, repoURL string, branchName string, repoName string, envFilePath string) ([]*ent.Environment, error)
-	UpdateEnviromentViaPull(ctx context.Context, repoUUID string) ([]*ent.Environment, error)
+	UpdateEnviromentViaPull(ctx context.Context, envUUID string) ([]*ent.Environment, error)
 	ModifySelfPassword(ctx context.Context, currentPassword string, newPassword string) (bool, error)
 	ModifySelfUserInfo(ctx context.Context, firstName *string, lastName *string, email *string, phone *string, company *string, occupation *string) (*ent.AuthUser, error)
 	CreateUser(ctx context.Context, username string, password string, role model.RoleLevel, provider model.ProviderType) (*ent.AuthUser, error)
@@ -2192,7 +2192,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateEnviromentViaPull(childComplexity, args["repoUUID"].(string)), true
+		return e.complexity.Mutation.UpdateEnviromentViaPull(childComplexity, args["envUUID"].(string)), true
 
 	case "Network.cidr":
 		if e.complexity.Network.Cidr == nil {
@@ -3854,11 +3854,11 @@ type Mutation {
   createEnviromentFromRepo(
     repoURL: String!
     branchName: String! = "master"
-    repoName: String!
+    repoName: String! = "REMOVE"
     envFilePath: String!
   ): [Environment]! @hasRole(roles: [ADMIN, USER])
 
-  updateEnviromentViaPull(repoUUID: String!): [Environment]!
+  updateEnviromentViaPull(envUUID: String!): [Environment]!
     @hasRole(roles: [ADMIN, USER])
 
   # User Info
@@ -4381,14 +4381,14 @@ func (ec *executionContext) field_Mutation_updateEnviromentViaPull_args(ctx cont
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["repoUUID"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("repoUUID"))
+	if tmp, ok := rawArgs["envUUID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("envUUID"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["repoUUID"] = arg0
+	args["envUUID"] = arg0
 	return args, nil
 }
 
@@ -11648,7 +11648,7 @@ func (ec *executionContext) _Mutation_updateEnviromentViaPull(ctx context.Contex
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().UpdateEnviromentViaPull(rctx, args["repoUUID"].(string))
+			return ec.resolvers.Mutation().UpdateEnviromentViaPull(rctx, args["envUUID"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			roles, err := ec.unmarshalNRoleLevel2ᚕgithubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐRoleLevelᚄ(ctx, []interface{}{"ADMIN", "USER"})
