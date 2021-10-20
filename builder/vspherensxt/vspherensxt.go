@@ -452,6 +452,9 @@ func (builder VSphereNSXTBuilder) TeardownNetwork(ctx context.Context, provision
 		return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
 	}
 
+	// NSX-T needs to chill out
+	time.Sleep(30 * time.Second)
+
 	// Try to teardown Tier-1
 	nsxtError, err = builder.NsxtClient.DeleteTier1(tier1Name)
 	if err != nil {
