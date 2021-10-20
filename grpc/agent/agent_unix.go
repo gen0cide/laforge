@@ -99,36 +99,57 @@ func SystemDownloadFile(path, url string) error {
 func SystemExecuteCommand(command string, args ...string) (string, error) {
 	var err error
 	_, err = os.Stat(command)
-	output := ""
+	// output := ""
 	if err == nil {
 		// Make sure we have rwx permissions if it's a script
 		err = os.Chmod(command, 0700)
 		if err != nil {
-			return output, err
+			return "", err
 		}
 	}
 	// Execute the command
-	// output, err := exec.Command(command, args...).Output()
-	retryCount := 5
-	for i := 0; i < retryCount; i++ {
-		// Get the data
-		cmd := exec.Command(command, args...)
-		out, err := cmd.CombinedOutput()
-		if err == nil {
-			output = string(out)
-			break
-		}
-		time.Sleep(1 * time.Minute)
-	}
-	if err != nil {
-		return output, err
-	}
+	cmd := exec.Command(command, args...)
+	out, err := cmd.CombinedOutput()
+	return string(out), err
+	// retryCount := 5
+	// for i := 0; i < retryCount; i++ {
+	// 	// Get the data
+	// 	cmd := exec.Command(command, args...)
+	// 	stdout, err := cmd.StdoutPipe()
+	// 	if err != nil {
+	// 		fmt.Printf("error piping stdout: %v", err)
+	// 		continue
+	// 	}
+	// 	stderr, err := cmd.StderrPipe()
+	// 	if err != nil {
+	// 		fmt.Printf("error piping stderr: %v", err)
+	// 		continue
+	// 	}
+	// 	err = cmd.Run()
+	// 	// out, err := cmd.CombinedOutput()
+	// 	if err == nil {
+	// 		// output = string(out)
+	// 		combinedOutput := io.MultiReader(stdout, stderr)
+	// 		var buff []byte
+	// 		_, err = combinedOutput.Read(buff)
+	// 		if err != nil {
+	// 			fmt.Printf("error reading combined output: %v", err)
+	// 			continue
+	// 		}
+	// 		output = string(buff)
+	// 		break
+	// 	}
+	// 	time.Sleep(1 * time.Minute)
+	// }
+	// if err != nil {
+	// 	return output, err
+	// }
 	// _, err = cmd.Output()
 	// if err != nil {
 	// 	return err
 	// }
 	// return string(output)
-	return output, nil
+	// return output, nil
 }
 
 func GetSystemDependencies() []string {
