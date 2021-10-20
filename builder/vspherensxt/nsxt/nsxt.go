@@ -234,6 +234,7 @@ type NSXTNATRule struct {
 	SourceNetwork      *NSXTIPElementList `json:"source_network"`
 	DestinationNetwork *NSXTIPElementList `json:"destination_network"`
 	TranslatedNetwork  NSXTIPElementList  `json:"translated_network"`
+	TranslatedPorts    *string            `json:"translated_ports"`
 }
 
 type NSXTIpAllocationRequest struct {
@@ -691,6 +692,7 @@ func (nsxt *NSXTClient) CreateDNATRule(gatewayIp, vpnIp NSXTIPElementList, port,
 		Action:             NSXT_NAT_DNAT,
 		DestinationNetwork: &gatewayIp,
 		TranslatedNetwork:  vpnIp,
+		TranslatedPorts:    &port,
 	}
 
 	jsonString, err := json.Marshal(payload)
