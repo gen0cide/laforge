@@ -593,26 +593,18 @@ func (nsxt *NSXTClient) GetTier0s() (tier0s []NSXTTier0, nsxtError *NSXTErrorRes
 	return
 }
 
-func (nsxt *NSXTClient) CreateSNATRule(tier1Name string, sourceNetwork NSXTIPElementList) (translatedIp string, nsxtError *NSXTErrorResponse, err error) {
+func (nsxt *NSXTClient) CreateSNATRule(tier1Name, translatedIp string, sourceNetwork NSXTIPElementList) (nsxtError *NSXTErrorResponse, err error) {
 	nsxt.Logger.Log.WithFields(log.Fields{
 		"tier1Name":     tier1Name,
 		"sourceNetwork": sourceNetwork,
 	}).Debug("NSX-T | CreateSNATRule")
-
-	allocatedIpResult, nsxtError, err := nsxt.ManageIpAllocation("", NSXT_IP_POOL_ALLOCATE)
-	if err != nil {
-		return "", nil, err
-	}
-	if nsxtError != nil {
-		return "", nsxtError, nil
-	}
 
 	payload := NSXTNATRule{
 		// Id:                (tier1Name + "-SNAT"),
 		Description:       "SNAT for LaForge",
 		Action:            NSXT_NAT_SNAT,
 		SourceNetwork:     &sourceNetwork,
-		TranslatedNetwork: NSXTIPElementList(*allocatedIpResult.IpAddress),
+		TranslatedNetwork: NSXTIPElementList(translatedIp),
 	}
 
 	jsonString, err := json.Marshal(payload)
@@ -632,7 +624,7 @@ func (nsxt *NSXTClient) CreateSNATRule(tier1Name string, sourceNetwork NSXTIPEle
 	if nsxtError != nil {
 		nsxt.Logger.Log.Errorf("error while creating NAT Rule: %v", nsxtError)
 	}
-	return *allocatedIpResult.IpAddress, nil, nil
+	return
 }
 
 func (nsxt *NSXTClient) DeleteSNATRule(tier1Name string) (nsxtError *NSXTErrorResponse, err error) {
@@ -667,14 +659,6 @@ func (nsxt *NSXTClient) DeleteSNATRule(tier1Name string) (nsxtError *NSXTErrorRe
 	}
 	if nsxtError != nil {
 		nsxt.Logger.Log.Errorf("error while deleting SNAT Rule: %v", nsxtError)
-	}
-
-	_, nsxtError, err = nsxt.ManageIpAllocation(string(natRule.TranslatedNetwork), NSXT_IP_POOL_RELEASE)
-	if err != nil {
-		return nil, err
-	}
-	if nsxtError != nil {
-		return nsxtError, nil
 	}
 
 	return

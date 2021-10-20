@@ -284,30 +284,39 @@ func (builder VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisioned
 		// 	return fmt.Errorf("NAT IP %s is out of the range %s-%s", natTranslatedAddress, startingIp, endingIp)
 		// }
 
-		nattedIp, nsxtError, err := builder.NsxtClient.CreateSNATRule(tier1Name, nsxt.NSXTIPElementList(natSourceAddress))
+		allocatedIpResult, nsxtError, err := builder.NsxtClient.ManageIpAllocation("", nsxt.NSXT_IP_POOL_ALLOCATE)
 		if err != nil {
 			return err
 		}
 		if nsxtError != nil {
 			return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
 		}
-		entTeam.Vars["gateway_public_ip"] = nattedIp
+		entTeam.Vars["gateway_public_ip"] = *allocatedIpResult.IpAddress
 		err = entTeam.Update().SetVars(entTeam.Vars).Exec(ctx)
 		if err != nil {
 			return fmt.Errorf("error adding the gateway_public_ip to team.vars: %v", err)
 		}
-	}
 
-	vpnIp, vpnIpExists := entNetwork.Vars["vpn_ip"]
-	vpnPort, vpnPortExists := entNetwork.Vars["vpn_port"]
-	gatewayIp, gatewayIpExists := entTeam.Vars["gateway_public_ip"]
-	if vpnIpExists && vpnPortExists && gatewayIpExists {
-		nsxtError, err := builder.NsxtClient.CreateDNATRule(nsxt.NSXTIPElementList(gatewayIp), nsxt.NSXTIPElementList(vpnIp), vpnPort, tier1Name)
+		nsxtError, err = builder.NsxtClient.CreateSNATRule(tier1Name, *allocatedIpResult.IpAddress, nsxt.NSXTIPElementList(natSourceAddress))
 		if err != nil {
 			return err
 		}
 		if nsxtError != nil {
 			return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
+		}
+
+		vpnIp, vpnIpExists := entNetwork.Vars["vpn_ip"]
+		vpnPort, vpnPortExists := entNetwork.Vars["vpn_port"]
+		// gatewayIp, gatewayIpExists := entTeam.Vars["gateway_public_ip"]
+		// if vpnIpExists && vpnPortExists && gatewayIpExists {
+		if vpnIpExists && vpnPortExists {
+			nsxtError, err := builder.NsxtClient.CreateDNATRule(nsxt.NSXTIPElementList(*allocatedIpResult.IpAddress), nsxt.NSXTIPElementList(vpnIp), vpnPort, tier1Name)
+			if err != nil {
+				return err
+			}
+			if nsxtError != nil {
+				return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
+			}
 		}
 	}
 
@@ -450,6 +459,21 @@ func (builder VSphereNSXTBuilder) TeardownNetwork(ctx context.Context, provision
 	}
 	if nsxtError != nil {
 		return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
+	}
+	publicIp, exists := entTeam.Vars["gateway_public_ip"]
+	if exists {
+		_, nsxtError, err = builder.NsxtClient.ManageIpAllocation(publicIp, nsxt.NSXT_IP_POOL_RELEASE)
+		if err != nil {
+			return
+		}
+		if nsxtError != nil {
+			return fmt.Errorf("nsx-t error %s (%d): %s", nsxtError.HttpStatus, nsxtError.ErrorCode, nsxtError.Message)
+		}
+	}
+	delete(entTeam.Vars, "gateway_public_ip")
+	err = entTeam.Update().SetVars(entTeam.Vars).Exec(ctx)
+	if err != nil {
+		return fmt.Errorf("error deleteing the gateway_public_ip from team.vars: %v", err)
 	}
 
 	// NSX-T needs to chill out
