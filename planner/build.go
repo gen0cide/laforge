@@ -413,7 +413,6 @@ func buildRoutine(client *ent.Client, logger *logging.Logger, builder *builder.B
 			"type":    entPlan.Type,
 			"builder": (*builder).ID(),
 		}).Errorf("error while executing plan: %v", planErr)
-		return
 	} else {
 		entStatus.Update().SetState(status.StateCOMPLETE).SetCompleted(true).Save(ctx)
 		rdb.Publish(ctx, "updatedStatus", entStatus.ID.String())
