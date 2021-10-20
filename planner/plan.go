@@ -591,7 +591,10 @@ func createProvisionedHosts(ctx context.Context, client *ent.Client, logger *log
 		return nil, err
 	}
 	if RenderFiles {
-		grpc.BuildAgent(logger, fmt.Sprint(entProvisionedHost.ID), serverAddress, binaryName, isWindowsHost)
+		err = grpc.BuildAgent(logger, fmt.Sprint(entProvisionedHost.ID), serverAddress, binaryName, isWindowsHost)
+		if err != nil {
+			return nil, err
+		}
 		entTmpUrl, err := utils.CreateTempURL(ctx, client, binaryName)
 		if err != nil {
 			return nil, err

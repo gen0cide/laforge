@@ -14,7 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func BuildAgent(logger *logging.Logger, agentID string, serverAddress string, binarypath string, isWindows bool) {
+func BuildAgent(logger *logging.Logger, agentID string, serverAddress string, binarypath string, isWindows bool) error {
 	command := ""
 	if isWindows {
 		command = "CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=\"zcc\" go build -ldflags=\" -X 'main.clientID=" + agentID + "' -X 'main.address=" + serverAddress + "'\" -o " + binarypath + " github.com/gen0cide/laforge/grpc/agent"
@@ -25,9 +25,11 @@ func BuildAgent(logger *logging.Logger, agentID string, serverAddress string, bi
 	stdoutStderr, err := cmd.CombinedOutput()
 	cmd.Run()
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.Errorf("Agent for %s failed to create: %v", agentID, err)
+		return err
 	}
 	logger.Log.Debugf("Created %s, Output %s\n", binarypath, stdoutStderr)
+	return nil
 }
 
 func main() {
