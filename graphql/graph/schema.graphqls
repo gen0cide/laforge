@@ -575,6 +575,14 @@ type Mutation {
 
   # createAdhoc(rootPlans: [AdhocPlan]!): Boolean!
 
+  createAgentTasks(
+    hostHCLID: String!
+    command: AgentCommand!
+    buildUUID: String!
+    args: [String!]!
+    teams: [Int!]!
+  ): [AgentTask]! @hasRole(roles: [ADMIN, USER])
+
   createEnviromentFromRepo(
     repoURL: String!
     branchName: String! = "master"

@@ -84,7 +84,7 @@ var (
 	// AgentTasksColumns holds the columns for the "agent_tasks" table.
 	AgentTasksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "command", Type: field.TypeEnum, Enums: []string{"DEFAULT", "DELETE", "REBOOT", "EXTRACT", "DOWNLOAD", "CREATEUSER", "CREATEUSERPASS", "ADDTOGROUP", "EXECUTE", "VALIDATE"}},
+		{Name: "command", Type: field.TypeEnum, Enums: []string{"DEFAULT", "DELETE", "REBOOT", "EXTRACT", "DOWNLOAD", "CREATEUSER", "CREATEUSERPASS", "ADDTOGROUP", "EXECUTE", "VALIDATE", "CHANGEPERMS", "APPENDFILE"}},
 		{Name: "args", Type: field.TypeString},
 		{Name: "number", Type: field.TypeInt},
 		{Name: "output", Type: field.TypeString, Default: ""},

@@ -28,6 +28,8 @@ func (AgentTask) Fields() []ent.Field {
 			"ADDTOGROUP",
 			"EXECUTE",
 			"VALIDATE",
+			"CHANGEPERMS",
+			"APPENDFILE",
 		),
 		field.String("args"),
 		field.Int("number"),

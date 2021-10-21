@@ -18,6 +18,7 @@ import (
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
@@ -25,6 +26,7 @@ import (
 	"github.com/gen0cide/laforge/ent/repository"
 	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
+	"github.com/gen0cide/laforge/ent/team"
 	"github.com/gen0cide/laforge/graphql/auth"
 	"github.com/gen0cide/laforge/graphql/graph/generated"
 	"github.com/gen0cide/laforge/graphql/graph/model"
@@ -634,6 +636,53 @@ func (r *mutationResolver) CancelCommit(ctx context.Context, commitUUID string) 
 	}
 	r.rdb.Publish(ctx, "updatedBuildCommit", commitUUID)
 	return true, nil
+}
+
+func (r *mutationResolver) CreateAgentTasks(ctx context.Context, hostHclid string, command model.AgentCommand, buildUUID string, args []string, teams []int) ([]*ent.AgentTask, error) {
+	uuid, err := uuid.Parse(buildUUID)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
+	}
+
+	entBuild, err := r.client.Build.Get(ctx, uuid)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying build: %v", err)
+	}
+
+	agentTasksReturn := []*ent.AgentTask{}
+
+	for _, team_number := range teams {
+		entTeam, err := entBuild.QueryBuildToTeam().Where(team.TeamNumberEQ(team_number)).Only(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed querying team: %v", err)
+		}
+		entProvisionedHost, err := entTeam.QueryTeamToProvisionedNetwork().QueryProvisionedNetworkToProvisionedHost().Where(provisionedhost.HasProvisionedHostToHostWith(host.HclIDEQ(hostHclid))).All(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed querying provisoned hosts: %v", err)
+		}
+		for _, pHost := range entProvisionedHost {
+			taskCount, err := pHost.QueryProvisionedHostToAgentTask().Count(ctx)
+			if err != nil {
+				return nil, fmt.Errorf("failed querying Number of Tasks: %v", err)
+			}
+			createdAgentTask, err := r.client.AgentTask.Create().
+				SetCommand(agenttask.Command(command.String())).
+				SetArgs(strings.Join(args, "💔")).
+				SetNumber(taskCount).
+				SetState(agenttask.StateAWAITING).
+				SetAgentTaskToProvisionedHost(pHost).
+				Save(ctx)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create agent task: %v", err)
+			}
+			agentTasksReturn = append(agentTasksReturn, createdAgentTask)
+		}
+
+	}
+
+	return agentTasksReturn, nil
 }
 
 func (r *mutationResolver) CreateEnviromentFromRepo(ctx context.Context, repoURL string, branchName string, repoName string, envFilePath string) ([]*ent.Environment, error) {

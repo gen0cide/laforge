@@ -318,6 +318,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		ApproveCommit            func(childComplexity int, commitUUID string) int
 		CancelCommit             func(childComplexity int, commitUUID string) int
+		CreateAgentTasks         func(childComplexity int, hostHclid string, command model.AgentCommand, buildUUID string, args []string, teams []int) int
 		CreateBuild              func(childComplexity int, envUUID string, renderFiles bool) int
 		CreateEnviromentFromRepo func(childComplexity int, repoURL string, branchName string, repoName string, envFilePath string) int
 		CreateTask               func(childComplexity int, proHostUUID string, command model.AgentCommand, args string) int
@@ -622,6 +623,7 @@ type MutationResolver interface {
 	Rebuild(ctx context.Context, rootPlans []*string) (bool, error)
 	ApproveCommit(ctx context.Context, commitUUID string) (bool, error)
 	CancelCommit(ctx context.Context, commitUUID string) (bool, error)
+	CreateAgentTasks(ctx context.Context, hostHclid string, command model.AgentCommand, buildUUID string, args []string, teams []int) ([]*ent.AgentTask, error)
 	CreateEnviromentFromRepo(ctx context.Context, repoURL string, branchName string, repoName string, envFilePath string) ([]*ent.Environment, error)
 	UpdateEnviromentViaPull(ctx context.Context, envUUID string) ([]*ent.Environment, error)
 	ModifySelfPassword(ctx context.Context, currentPassword string, newPassword string) (bool, error)
@@ -2027,6 +2029,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CancelCommit(childComplexity, args["commitUUID"].(string)), true
+
+	case "Mutation.createAgentTasks":
+		if e.complexity.Mutation.CreateAgentTasks == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createAgentTasks_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateAgentTasks(childComplexity, args["hostHCLID"].(string), args["command"].(model.AgentCommand), args["buildUUID"].(string), args["args"].([]string), args["teams"].([]int)), true
 
 	case "Mutation.createBuild":
 		if e.complexity.Mutation.CreateBuild == nil {
@@ -3866,6 +3880,14 @@ type Mutation {
 
   # createAdhoc(rootPlans: [AdhocPlan]!): Boolean!
 
+  createAgentTasks(
+    hostHCLID: String!
+    command: AgentCommand!
+    buildUUID: String!
+    args: [String!]!
+    teams: [Int!]!
+  ): [AgentTask]! @hasRole(roles: [ADMIN, USER])
+
   createEnviromentFromRepo(
     repoURL: String!
     branchName: String! = "master"
@@ -3969,6 +3991,57 @@ func (ec *executionContext) field_Mutation_cancelCommit_args(ctx context.Context
 		}
 	}
 	args["commitUUID"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createAgentTasks_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["hostHCLID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hostHCLID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["hostHCLID"] = arg0
+	var arg1 model.AgentCommand
+	if tmp, ok := rawArgs["command"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("command"))
+		arg1, err = ec.unmarshalNAgentCommand2githubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐAgentCommand(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["command"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["buildUUID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("buildUUID"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["buildUUID"] = arg2
+	var arg3 []string
+	if tmp, ok := rawArgs["args"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("args"))
+		arg3, err = ec.unmarshalNString2ᚕstringᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["args"] = arg3
+	var arg4 []int
+	if tmp, ok := rawArgs["teams"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("teams"))
+		arg4, err = ec.unmarshalNInt2ᚕintᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["teams"] = arg4
 	return args, nil
 }
 
@@ -11584,6 +11657,72 @@ func (ec *executionContext) _Mutation_cancelCommit(ctx context.Context, field gr
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createAgentTasks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createAgentTasks_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CreateAgentTasks(rctx, args["hostHCLID"].(string), args["command"].(model.AgentCommand), args["buildUUID"].(string), args["args"].([]string), args["teams"].([]int))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			roles, err := ec.unmarshalNRoleLevel2ᚕgithubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐRoleLevelᚄ(ctx, []interface{}{"ADMIN", "USER"})
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, roles)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*ent.AgentTask); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*github.com/gen0cide/laforge/ent.AgentTask`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.AgentTask)
+	fc.Result = res
+	return ec.marshalNAgentTask2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAgentTask(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createEnviromentFromRepo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -20622,6 +20761,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createAgentTasks":
+			out.Values[i] = ec._Mutation_createAgentTasks(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createEnviromentFromRepo":
 			out.Values[i] = ec._Mutation_createEnviromentFromRepo(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -22694,6 +22838,43 @@ func (ec *executionContext) marshalNAgentTask2githubᚗcomᚋgen0cideᚋlaforge�
 	return ec._AgentTask(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNAgentTask2ᚕᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAgentTask(ctx context.Context, sel ast.SelectionSet, v []*ent.AgentTask) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOAgentTask2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAgentTask(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
 func (ec *executionContext) marshalNAgentTask2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAgentTask(ctx context.Context, sel ast.SelectionSet, v *ent.AgentTask) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -23373,6 +23554,36 @@ func (ec *executionContext) marshalNInt2int64(ctx context.Context, sel ast.Selec
 	return res
 }
 
+func (ec *executionContext) unmarshalNInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]int, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInt2int(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNInt2ᚕintᚄ(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNInt2int(ctx, sel, v[i])
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalNLaForgePageInfo2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐLaForgePageInfo(ctx context.Context, sel ast.SelectionSet, v *model.LaForgePageInfo) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -23972,6 +24183,36 @@ func (ec *executionContext) marshalNString2ᚕstring(ctx context.Context, sel as
 	ret := make(graphql.Array, len(v))
 	for i := range v {
 		ret[i] = ec.marshalOString2string(ctx, sel, v[i])
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
 	}
 
 	return ret
