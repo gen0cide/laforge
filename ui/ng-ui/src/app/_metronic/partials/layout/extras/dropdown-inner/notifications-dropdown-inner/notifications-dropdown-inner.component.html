@@ -27,7 +27,7 @@
     </a>
     <!--end::Empty-->
     <!--begin::Item-->
-    <a *ngFor="let task of _tasks" href="#" class="navi-item">
+    <div *ngFor="let task of _tasks" href="#" class="navi-item">
       <div class="navi-link">
         <div class="navi-icon mr-2">
           <i class="fad" [ngClass]="getIconClass(task)"></i>
@@ -39,9 +39,12 @@
             {{ task.end_time || task.start_time | dateAgo
             }}<span *ngIf="task.end_time">, took {{ task.end_time | dateBetween: task.start_time }}</span>
           </div>
+          <div class="text-muted">
+            <span *ngIf="task.end_time">Task ID: {{ task.id }}</span>
+          </div>
         </div>
       </div>
-    </a>
+    </div>
     <!--end::Item-->
   </ng-container>
 </div>
