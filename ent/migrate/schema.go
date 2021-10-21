@@ -167,7 +167,7 @@ var (
 				Symbol:     "builds_build_commits_BuildToLatestBuildCommit",
 				Columns:    []*schema.Column{BuildsColumns[6]},
 				RefColumns: []*schema.Column{BuildCommitsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -999,7 +999,7 @@ var (
 				Symbol:     "status_teams_TeamToStatus",
 				Columns:    []*schema.Column{StatusColumns[15]},
 				RefColumns: []*schema.Column{TeamsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}

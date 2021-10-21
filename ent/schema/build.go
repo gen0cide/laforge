@@ -40,7 +40,10 @@ func (Build) Edges() []ent.Edge {
 			Unique().
 			Required(),
 		edge.To("BuildToLatestBuildCommit", BuildCommit.Type).
-			Unique(),
+			Unique().
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		edge.From("BuildToProvisionedNetwork", ProvisionedNetwork.Type).
 			Ref("ProvisionedNetworkToBuild"),
 		edge.From("BuildToTeam", Team.Type).
