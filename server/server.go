@@ -32,6 +32,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
@@ -156,6 +157,32 @@ func contains(s []string, str string) bool {
 		}
 	}
 	return false
+}
+
+// tempServerTaskHandler Ahh
+func tempServerTaskHandler(client *ent.Client) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		server_task_id := ctx.Param("server_task_id")
+		serverTaskUUID, err := uuid.Parse(server_task_id)
+
+		if err != nil {
+			ctx.AbortWithStatus(404)
+			return
+		}
+
+		entServerTask, err := client.ServerTask.Get(ctx, serverTaskUUID)
+
+		if err != nil {
+			ctx.AbortWithStatus(404)
+			return
+		}
+		ctx.File(entServerTask.LogFilePath)
+		if err != nil {
+			ctx.AbortWithStatus(404)
+			return
+		}
+		ctx.Next()
+	}
 }
 
 func main() {
@@ -367,6 +394,7 @@ func main() {
 	api.POST("/query", gqlHandler)
 	api.GET("/query", gqlHandler)
 	api.GET("/download/:url_id", tempURLHandler(client))
+	api.GET("/view_server_logs/:server_task_id", tempServerTaskHandler(client))
 	api.GET("/playground", playgroundHandler())
 	go router.Run(port)
 
