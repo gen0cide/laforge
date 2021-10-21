@@ -553,6 +553,7 @@ type Query {
   ): AgentStatusBatch @hasRole(roles: [ADMIN, USER])
   getAllPlanStatus(buildUUID: String!, count: Int!, offset: Int!): StatusBatch
     @hasRole(roles: [ADMIN, USER])
+  viewServerTaskLogs(taskID: String!): String! @hasRole(roles: [ADMIN, USER])
 }
 
 type Mutation {

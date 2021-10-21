@@ -1251,6 +1251,27 @@ func (r *queryResolver) GetAllPlanStatus(ctx context.Context, buildUUID string, 
 	}, nil
 }
 
+func (r *queryResolver) ViewServerTaskLogs(ctx context.Context, taskID string) (string, error) {
+	uuid, err := uuid.Parse(taskID)
+
+	if err != nil {
+		return "", fmt.Errorf("failed casting UUID to UUID: %v", err)
+	}
+
+	entServerTask, err := r.client.ServerTask.Get(ctx, uuid)
+	if err != nil {
+		return "", err
+	}
+
+	fileBytes, err := ioutil.ReadFile(entServerTask.LogFilePath)
+	if err != nil {
+		return "", err
+	}
+
+	fileString := string(fileBytes)
+	return fileString, nil
+}
+
 func (r *repositoryResolver) ID(ctx context.Context, obj *ent.Repository) (string, error) {
 	return obj.ID.String(), nil
 }
