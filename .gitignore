@@ -24,3 +24,4 @@ repos/
 
 session.cache
 *.env
+*.lfglog
