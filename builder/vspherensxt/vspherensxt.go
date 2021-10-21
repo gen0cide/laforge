@@ -297,6 +297,8 @@ func (builder VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisioned
 			return fmt.Errorf("error adding the gateway_public_ip to team.vars: %v", err)
 		}
 
+		builder.Logger.Log.Infof("%s has allocated the IP of %s", tier1Name, allocatedIpResult.IpAddress)
+
 		nsxtError, err = builder.NsxtClient.CreateSNATRule(tier1Name, *allocatedIpResult.IpAddress, nsxt.NSXTIPElementList(natSourceAddress))
 		if err != nil {
 			return err

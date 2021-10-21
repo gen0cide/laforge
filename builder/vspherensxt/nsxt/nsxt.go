@@ -607,6 +607,8 @@ func (nsxt *NSXTClient) CreateSNATRule(tier1Name, translatedIp string, sourceNet
 		TranslatedNetwork: NSXTIPElementList(translatedIp),
 	}
 
+	nsxt.Logger.Log.Infof("%s SNAT using %s", tier1Name, payload.TranslatedNetwork)
+
 	jsonString, err := json.Marshal(payload)
 	if err != nil {
 		err = fmt.Errorf("error while marshalling CreateSNATRule payload: %v", err)
@@ -678,6 +680,8 @@ func (nsxt *NSXTClient) CreateDNATRule(gatewayIp, vpnIp NSXTIPElementList, port,
 		TranslatedNetwork:  vpnIp,
 		TranslatedPorts:    &port,
 	}
+
+	nsxt.Logger.Log.Infof("%s DNAT using %s", tier1Name, string(*payload.DestinationNetwork))
 
 	jsonString, err := json.Marshal(payload)
 	if err != nil {
