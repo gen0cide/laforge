@@ -1321,6 +1321,16 @@ func (r *queryResolver) ViewServerTaskLogs(ctx context.Context, taskID string) (
 	return fileString, nil
 }
 
+func (r *queryResolver) ViewAgentTask(ctx context.Context, taskID string) (*ent.AgentTask, error) {
+	uuid, err := uuid.Parse(taskID)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed casting UUID to UUID: %v", err)
+	}
+
+	return r.client.AgentTask.Get(ctx, uuid)
+}
+
 func (r *repositoryResolver) ID(ctx context.Context, obj *ent.Repository) (string, error) {
 	return obj.ID.String(), nil
 }

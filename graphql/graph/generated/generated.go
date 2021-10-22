@@ -425,6 +425,7 @@ type ComplexityRoot struct {
 		ProvisionedNetwork  func(childComplexity int, proNetUUID string) int
 		ProvisionedStep     func(childComplexity int, proStepUUID string) int
 		Status              func(childComplexity int, statusUUID string) int
+		ViewAgentTask       func(childComplexity int, taskID string) int
 		ViewServerTaskLogs  func(childComplexity int, taskID string) int
 	}
 
@@ -678,6 +679,7 @@ type QueryResolver interface {
 	GetAllAgentStatus(ctx context.Context, buildUUID string, count int, offset int) (*model.AgentStatusBatch, error)
 	GetAllPlanStatus(ctx context.Context, buildUUID string, count int, offset int) (*model.StatusBatch, error)
 	ViewServerTaskLogs(ctx context.Context, taskID string) (string, error)
+	ViewAgentTask(ctx context.Context, taskID string) (*ent.AgentTask, error)
 }
 type RepositoryResolver interface {
 	ID(ctx context.Context, obj *ent.Repository) (string, error)
@@ -2762,6 +2764,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Status(childComplexity, args["statusUUID"].(string)), true
 
+	case "Query.viewAgentTask":
+		if e.complexity.Query.ViewAgentTask == nil {
+			break
+		}
+
+		args, err := ec.field_Query_viewAgentTask_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ViewAgentTask(childComplexity, args["taskID"].(string)), true
+
 	case "Query.viewServerTaskLogs":
 		if e.complexity.Query.ViewServerTaskLogs == nil {
 			break
@@ -3859,6 +3873,7 @@ type Query {
   getAllPlanStatus(buildUUID: String!, count: Int!, offset: Int!): StatusBatch
     @hasRole(roles: [ADMIN, USER])
   viewServerTaskLogs(taskID: String!): String! @hasRole(roles: [ADMIN, USER])
+  viewAgentTask(taskID: String!): AgentTask! @hasRole(roles: [ADMIN, USER])
 }
 
 type Mutation {
@@ -4693,6 +4708,21 @@ func (ec *executionContext) field_Query_status_args(ctx context.Context, rawArgs
 		}
 	}
 	args["statusUUID"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_viewAgentTask_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["taskID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("taskID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["taskID"] = arg0
 	return args, nil
 }
 
@@ -15115,6 +15145,72 @@ func (ec *executionContext) _Query_viewServerTaskLogs(ctx context.Context, field
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_viewAgentTask(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_viewAgentTask_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().ViewAgentTask(rctx, args["taskID"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			roles, err := ec.unmarshalNRoleLevel2ᚕgithubᚗcomᚋgen0cideᚋlaforgeᚋgraphqlᚋgraphᚋmodelᚐRoleLevelᚄ(ctx, []interface{}{"ADMIN", "USER"})
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, roles)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*ent.AgentTask); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/gen0cide/laforge/ent.AgentTask`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.AgentTask)
+	fc.Result = res
+	return ec.marshalNAgentTask2ᚖgithubᚗcomᚋgen0cideᚋlaforgeᚋentᚐAgentTask(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -21779,6 +21875,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_viewServerTaskLogs(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "viewAgentTask":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_viewAgentTask(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

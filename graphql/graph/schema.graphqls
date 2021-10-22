@@ -554,6 +554,7 @@ type Query {
   getAllPlanStatus(buildUUID: String!, count: Int!, offset: Int!): StatusBatch
     @hasRole(roles: [ADMIN, USER])
   viewServerTaskLogs(taskID: String!): String! @hasRole(roles: [ADMIN, USER])
+  viewAgentTask(taskID: String!): AgentTask! @hasRole(roles: [ADMIN, USER])
 }
 
 type Mutation {
