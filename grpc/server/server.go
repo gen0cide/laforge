@@ -207,5 +207,6 @@ func (s *Server) InformTaskStatus(ctx context.Context, in *pb.TaskStatusRequest)
 		logrus.Errorf("GRPC SERVER ERROR: failed Updating Agent Task %v: %v", uuid, err)
 		return &pb.TaskStatusReply{Status: "ERROR"}, nil
 	}
+	s.RDB.Publish(ctx, "updatedAgentTask", entAgentTask.ID.String())
 	return &pb.TaskStatusReply{Status: in.GetStatus()}, nil
 }

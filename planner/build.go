@@ -382,6 +382,17 @@ func buildRoutine(client *ent.Client, logger *logging.Logger, builder *builder.B
 			logger.Log.Errorf("Failed to Query Provisioning Step. Err: %v", err)
 			return
 		}
+		// TODO: REMOVE ME
+		entProNetwork, err := entTeam.QueryTeamToProvisionedNetwork().First(ctx)
+		if err != nil {
+			logger.Log.Errorf("failed to query provisioned network from entTeam: %v", err)
+			return
+		}
+		err = (*builder).DeployNetwork(ctx, entProNetwork)
+		if err != nil {
+			logger.Log.Error("failed to pre-create Tier-1 network (%s). continuing anyways: %v", err)
+		}
+		// TODO: END REMOVE ME
 		entStatus, err := entTeam.TeamToStatus(ctx)
 		if err != nil {
 			logger.Log.Errorf("Failed to Query Status %v. Err: %v", entPlan, err)
