@@ -15,7 +15,7 @@
       <ng-container *ngIf="!(getEnvironmentsLoading | async)">
         <ng-container *ngIf="environments | async as _environments">
           <!-- <p *ngFor="let env of _environments">{{ env.name }}</p> -->
-          <mat-table [dataSource]="_environments" class="bg-gray-100">
+          <mat-table [dataSource]="_environments | sortBy: 'asc':'name'" class="bg-gray-100">
             <ng-container matColumnDef="name">
               <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
               <mat-cell *matCellDef="let env">{{ env.name }}</mat-cell>
@@ -41,7 +41,7 @@
               </mat-cell>
             </ng-container>
             <ng-container matColumnDef="pull-actions">
-            <mat-header-cell *matHeaderCellDef class="justify-content-center">Pull</mat-header-cell>
+              <mat-header-cell *matHeaderCellDef class="justify-content-center">Pull</mat-header-cell>
               <mat-cell *matCellDef="let env" class="justify-content-center">
                 <button mat-flat-button (click)="updateEnvironmentFromGit(env.id)" color="primary">
                   <i class="fas fa-cloud-download text-light"></i>

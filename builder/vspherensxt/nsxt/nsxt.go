@@ -642,20 +642,22 @@ func (nsxt *NSXTClient) DeleteSNATRule(tier1Name string) (nsxtError *NSXTErrorRe
 		return nil, fmt.Errorf("error while getting SNAT rule for tier-1 %s: %v", tier1Name, err)
 	}
 	if nsxtError != nil {
-		nsxt.Logger.Log.Errorf("error while deleteing SNAT rule: %+v", nsxtError)
+		nsxt.Logger.Log.Errorf("error while getting SNAT rule: %+v", nsxtError)
 		return
 	}
 	var natRule NSXTNATRule
 	err = json.NewDecoder(response.Body).Decode(&natRule)
 	if err != nil {
-		return nil, fmt.Errorf("error while decoding snat rule json: %v", err)
+		// return nil, fmt.Errorf("error while decoding snat rule json: %v", err)
+		// SNAT has already been deleted
+		return nil, nil
 	}
 
 	request, err = nsxt.generateAuthorizedRequest(http.MethodDelete, ("/policy/api/v1/infra/tier-1s/" + tier1Name + "/nat/USER/nat-rules/" + tier1Name + "-SNAT"))
 	if err != nil {
 		return nil, fmt.Errorf("error while making the DELETE request for the SNAT Rule for %s: %v", tier1Name, err)
 	}
-	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK)
+	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK, http.StatusBadRequest)
 	if err != nil {
 		return
 	}
@@ -692,7 +694,7 @@ func (nsxt *NSXTClient) CreateDNATRule(gatewayIp, vpnIp NSXTIPElementList, port,
 	if err != nil {
 		return
 	}
-	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK, http.StatusBadRequest)
+	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK)
 	if err != nil {
 		err = fmt.Errorf("error while creating DNAT Rule: %v", err)
 		return
@@ -712,7 +714,7 @@ func (nsxt *NSXTClient) DeleteDNATRule(tier1Name string) (nsxtError *NSXTErrorRe
 	if err != nil {
 		return nil, fmt.Errorf("error while making the DELETE request for the DNAT Rule for %s: %v", tier1Name, err)
 	}
-	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK)
+	_, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK, http.StatusBadRequest)
 	if err != nil {
 		return
 	}
@@ -825,7 +827,12 @@ func (nsxt *NSXTClient) ManageIpAllocation(ip string, action NSXTIpPoolAction) (
 	if err != nil {
 		return NSXTIpAllocationResult{}, nil, fmt.Errorf("error while making the POST request for ip allocation for ip pool: %v", err)
 	}
-	response, nsxtError, err := nsxt.executeRequestWithRetry(request, http.StatusOK)
+	var response *http.Response
+	if action == NSXT_IP_POOL_RELEASE {
+		response, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK, http.StatusBadRequest)
+	} else {
+		response, nsxtError, err = nsxt.executeRequestWithRetry(request, http.StatusOK)
+	}
 	if err != nil {
 		return
 	}

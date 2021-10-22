@@ -134,6 +134,7 @@ export class EnvironmentService {
     this.api.pullEnvironments().then((envs) => {
       this.environments.next(envs);
       if (localStorage.getItem('selected_env') && localStorage.getItem('selected_build')) {
+        console.log(`currently selected build: ${localStorage.getItem('selected_build')}`);
         this.setCurrentEnv(localStorage.getItem('selected_env'), localStorage.getItem('selected_build'));
       }
     });
@@ -233,6 +234,7 @@ export class EnvironmentService {
     localStorage.setItem('selected_build', `${buildId}`);
     this.pullEnvironmentInfo(envId);
     this.pullBuildTree(buildId);
+    console.log(`currently selected build: ${localStorage.getItem('selected_build')}`);
   }
 
   public pullEnvironmentInfo(envId: string) {

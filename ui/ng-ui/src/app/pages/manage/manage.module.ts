@@ -5,6 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { Routes, RouterModule } from '@angular/router';
+import { LaforgePipesModule } from 'src/app/pipes/pipes.module';
 
 import { ViewComponentsModule } from '../../components/view-components.module';
 
@@ -26,7 +27,8 @@ const routes: Routes = [
     ViewComponentsModule,
     MatTableModule,
     MatButtonModule,
-    MatSelectModule
+    MatSelectModule,
+    LaforgePipesModule
   ]
 })
 export class ManageModule {}

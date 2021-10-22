@@ -8,6 +8,7 @@ import { MatGridListModule } from '@angular/material/grid-list';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
 import { Routes, RouterModule } from '@angular/router';
+import { LaforgePipesModule } from 'src/app/pipes/pipes.module';
 
 import { DashboardComponent } from './dashboard.component';
 
@@ -29,7 +30,8 @@ const routes: Routes = [
     MatInputModule,
     ReactiveFormsModule,
     MatButtonModule,
-    MatTableModule
+    MatTableModule,
+    LaforgePipesModule
   ]
 })
 export class DashboardModule {}
