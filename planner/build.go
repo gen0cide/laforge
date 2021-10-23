@@ -12,7 +12,9 @@ import (
 	"github.com/gen0cide/laforge/ent"
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/buildcommit"
+	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/plan"
+	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/logging"
@@ -383,7 +385,12 @@ func buildRoutine(client *ent.Client, logger *logging.Logger, builder *builder.B
 			return
 		}
 		// TODO: REMOVE ME
-		entProNetwork, err := entTeam.QueryTeamToProvisionedNetwork().First(ctx)
+		entProNetwork, err := entTeam.QueryTeamToProvisionedNetwork().Where(
+			provisionednetwork.HasProvisionedNetworkToNetworkWith(
+				network.NameEQ("vdi"),
+			),
+		).First(ctx)
+
 		if err != nil {
 			logger.Log.Errorf("failed to query provisioned network from entTeam: %v", err)
 			return

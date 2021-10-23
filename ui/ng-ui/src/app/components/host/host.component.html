@@ -30,6 +30,9 @@
       </div>
       <div class="host-preview" (click)="style !== 'compact' && mode !== 'plan' && viewDetails()">
         <span class="host-hostname">{{ provisionedHost ? provisionedHost.ProvisionedHostToHost.hostname : '' }}</span>
+        <span class="host-ip" *ngIf="style !== 'compact'"
+          ><em> | {{ provisionedHost ? provisionedHost.subnet_ip : '' }}</em></span
+        >
       </div>
       <div class="toggle-collapse" *ngIf="style !== 'compact' && shouldCollapse()">
         <i class="fas cursor-pointer" [ngClass]="'fa-' + (expandOverride ? 'chevron-up' : 'chevron-down')" (click)="toggleCollapse()"></i>

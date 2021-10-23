@@ -8,21 +8,19 @@ import (
 	"sync"
 
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/plan"
-	"github.com/gen0cide/laforge/ent/provisionedhost"
-	"github.com/gen0cide/laforge/ent/provisionednetwork"
-	"github.com/gen0cide/laforge/ent/team"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
+type wgconf struct {
+	EnvironmentName string `json:"environment_name"`
+	TeamNumber      int    `json:"team_number"`
+	ConfigOutput    string `json:"output"`
+}
+
 func main() {
-	// s := "blah\nblah💔"
-	// fmt.Printf("%s\n---\n", s)
-	// s = strings.ReplaceAll(s, "\n", "🔥")
-	// fmt.Printf("%s\n---\n", s)
-	// s = strings.ReplaceAll(s, "🔥", "\n")
-	// fmt.Printf("%s\n---\n", s)
 	logrus.SetLevel(logrus.DebugLevel)
 	pgHost, ok := os.LookupEnv("PG_URI")
 	client := &ent.Client{}
@@ -42,26 +40,59 @@ func main() {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
+	uuid, _ := uuid.Parse("53069780-e769-47b5-abfd-d973181a5587")
+
+	net, err := client.Network.Query().Where(network.IDEQ(uuid)).First(ctx)
+	if err != nil {
+		panic("bruh")
+	}
+	fmt.Printf("%+v", net.Vars)
+
 	// hosts, err := client.Host.Query().All(ctx)
 	// if err != nil {
 	// 	log.Fatalf("error querying env: %v", err)
 	// }
 
-	uuid, _ := uuid.Parse("0f8ce3a7-2d7d-4791-a25b-60d5afbdfdf9")
-	build := client.Build.GetX(ctx, uuid)
-	teams := build.QueryBuildToTeam().AllX(ctx)
+	// wg_tasks, err := client.AgentTask.Query().Where(
+	// 	agenttask.And(
+	// 		agenttask.ArgsContains("configure-wireguard-peers.sh"),
+	// 		agenttask.StateEQ(agenttask.StateCOMPLETE),
+	// 		agenttask.CommandEQ(agenttask.CommandEXECUTE),
+	// 	),
+	// ).All(ctx)
+	// if err != nil {
+	// 	log.Fatalf("error querying env: %v", err)
+	// }
+	// var wgconfs []wgconf
+	// for _, wg_task := range wg_tasks {
+	// 	task_team := wg_task.QueryAgentTaskToProvisionedHost().QueryProvisionedHostToProvisionedNetwork().QueryProvisionedNetworkToTeam().OnlyX(ctx)
+	// 	task_build := task_team.QueryTeamToBuild().OnlyX(ctx)
+	// 	task_environment := task_build.QueryBuildToEnvironment().OnlyX(ctx)
+	// 	tmp := wgconf{
+	// 		EnvironmentName: task_environment.Name,
+	// 		TeamNumber:      task_team.TeamNumber,
+	// 		ConfigOutput:    wg_task.Output,
+	// 	}
+	// 	wgconfs = append(wgconfs, tmp)
+	// }
+	// jsonString, _ := json.MarshalIndent(wgconfs, "", "  ")
+	// // fmt.Println(jsonString)
+	// ioutil.WriteFile("wg_conf.json", jsonString, os.ModePerm)
+	// uuid, _ := uuid.Parse("0f8ce3a7-2d7d-4791-a25b-60d5afbdfdf9")
+	// build := client.Build.GetX(ctx, uuid)
+	// teams := build.QueryBuildToTeam().AllX(ctx)
 
-	for _, teamer := range teams {
-		ph, err := client.ProvisionedHost.Query().Where(provisionedhost.And(
-			provisionedhost.HasProvisionedHostToProvisionedNetworkWith(provisionednetwork.HasProvisionedNetworkToTeamWith(team.IDEQ(teamer.ID))),
-			provisionedhost.AddonTypeEQ(provisionedhost.AddonTypeDNS),
-		)).All(ctx)
-		if err != nil {
-			log.Fatalf("failed creating schema resources: %v", err)
-		}
+	// for _, teamer := range teams {
+	// 	ph, err := client.ProvisionedHost.Query().Where(provisionedhost.And(
+	// 		provisionedhost.HasProvisionedHostToProvisionedNetworkWith(provisionednetwork.HasProvisionedNetworkToTeamWith(team.IDEQ(teamer.ID))),
+	// 		provisionedhost.AddonTypeEQ(provisionedhost.AddonTypeDNS),
+	// 	)).All(ctx)
+	// 	if err != nil {
+	// 		log.Fatalf("failed creating schema resources: %v", err)
+	// 	}
 
-		fmt.Println(ph)
-	}
+	// 	fmt.Println(ph)
+	// }
 
 	// build, err := env.QueryEnvironmentToBuild().Order(ent.Desc(build.FieldRevision)).First(ctx)
 	// if err != nil {

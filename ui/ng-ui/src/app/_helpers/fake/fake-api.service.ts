@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { InMemoryDbService } from 'angular-in-memory-web-api';
 import { Observable } from 'rxjs';
-import { UsersTable } from './fake-db/users.table.prod';
+//import { UsersTable } from './fake-db/users.table.prod';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +16,7 @@ export class FakeAPIService implements InMemoryDbService {
     // tslint:disable-next-line:class-name
     const db = {
       // auth module
-      users: UsersTable.users,
+      users: [],
     };
     return db;
   }
