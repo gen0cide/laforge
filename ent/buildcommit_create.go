@@ -99,11 +99,17 @@ func (bcc *BuildCommitCreate) Save(ctx context.Context) (*BuildCommit, error) {
 				return nil, err
 			}
 			bcc.mutation = mutation
-			node, err = bcc.sqlSave(ctx)
+			if node, err = bcc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(bcc.hooks) - 1; i >= 0; i-- {
+			if bcc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = bcc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, bcc.mutation); err != nil {
@@ -122,6 +128,19 @@ func (bcc *BuildCommitCreate) SaveX(ctx context.Context) *BuildCommit {
 	return v
 }
 
+// Exec executes the query.
+func (bcc *BuildCommitCreate) Exec(ctx context.Context) error {
+	_, err := bcc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (bcc *BuildCommitCreate) ExecX(ctx context.Context) {
+	if err := bcc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (bcc *BuildCommitCreate) defaults() {
 	if _, ok := bcc.mutation.ID(); !ok {
@@ -133,22 +152,22 @@ func (bcc *BuildCommitCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (bcc *BuildCommitCreate) check() error {
 	if _, ok := bcc.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New("ent: missing required field \"type\"")}
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "type"`)}
 	}
 	if v, ok := bcc.mutation.GetType(); ok {
 		if err := buildcommit.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "type": %w`, err)}
 		}
 	}
 	if _, ok := bcc.mutation.Revision(); !ok {
-		return &ValidationError{Name: "revision", err: errors.New("ent: missing required field \"revision\"")}
+		return &ValidationError{Name: "revision", err: errors.New(`ent: missing required field "revision"`)}
 	}
 	if _, ok := bcc.mutation.State(); !ok {
-		return &ValidationError{Name: "state", err: errors.New("ent: missing required field \"state\"")}
+		return &ValidationError{Name: "state", err: errors.New(`ent: missing required field "state"`)}
 	}
 	if v, ok := bcc.mutation.State(); ok {
 		if err := buildcommit.StateValidator(v); err != nil {
-			return &ValidationError{Name: "state", err: fmt.Errorf("ent: validator failed for field \"state\": %w", err)}
+			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "state": %w`, err)}
 		}
 	}
 	if _, ok := bcc.mutation.BuildCommitToBuildID(); !ok {
@@ -160,10 +179,13 @@ func (bcc *BuildCommitCreate) check() error {
 func (bcc *BuildCommitCreate) sqlSave(ctx context.Context) (*BuildCommit, error) {
 	_node, _spec := bcc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, bcc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -278,17 +300,19 @@ func (bccb *BuildCommitCreateBulk) Save(ctx context.Context) ([]*BuildCommit, er
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, bccb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, bccb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, bccb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -312,4 +336,17 @@ func (bccb *BuildCommitCreateBulk) SaveX(ctx context.Context) []*BuildCommit {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (bccb *BuildCommitCreateBulk) Exec(ctx context.Context) error {
+	_, err := bccb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (bccb *BuildCommitCreateBulk) ExecX(ctx context.Context) {
+	if err := bccb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

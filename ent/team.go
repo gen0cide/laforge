@@ -120,9 +120,9 @@ func (*Team) scanValues(columns []string) ([]interface{}, error) {
 		case team.FieldID:
 			values[i] = new(uuid.UUID)
 		case team.ForeignKeys[0]: // plan_plan_to_team
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case team.ForeignKeys[1]: // team_team_to_build
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Team", columns[i])
 		}
@@ -151,7 +151,6 @@ func (t *Team) assignValues(columns []string, values []interface{}) error {
 				t.TeamNumber = int(value.Int64)
 			}
 		case team.FieldVars:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field vars", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -160,16 +159,18 @@ func (t *Team) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case team.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field plan_plan_to_team", values[i])
-			} else if value != nil {
-				t.plan_plan_to_team = value
+			} else if value.Valid {
+				t.plan_plan_to_team = new(uuid.UUID)
+				*t.plan_plan_to_team = *value.S.(*uuid.UUID)
 			}
 		case team.ForeignKeys[1]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field team_team_to_build", values[i])
-			} else if value != nil {
-				t.team_team_to_build = value
+			} else if value.Valid {
+				t.team_team_to_build = new(uuid.UUID)
+				*t.team_team_to_build = *value.S.(*uuid.UUID)
 			}
 		}
 	}

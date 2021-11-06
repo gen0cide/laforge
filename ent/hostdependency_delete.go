@@ -20,9 +20,9 @@ type HostDependencyDelete struct {
 	mutation *HostDependencyMutation
 }
 
-// Where adds a new predicate to the HostDependencyDelete builder.
+// Where appends a list predicates to the HostDependencyDelete builder.
 func (hdd *HostDependencyDelete) Where(ps ...predicate.HostDependency) *HostDependencyDelete {
-	hdd.mutation.predicates = append(hdd.mutation.predicates, ps...)
+	hdd.mutation.Where(ps...)
 	return hdd
 }
 
@@ -46,6 +46,9 @@ func (hdd *HostDependencyDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(hdd.hooks) - 1; i >= 0; i-- {
+			if hdd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = hdd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, hdd.mutation); err != nil {

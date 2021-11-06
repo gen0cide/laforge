@@ -28,9 +28,9 @@ type ServerTaskUpdate struct {
 	mutation *ServerTaskMutation
 }
 
-// Where adds a new predicate for the ServerTaskUpdate builder.
+// Where appends a list predicates to the ServerTaskUpdate builder.
 func (stu *ServerTaskUpdate) Where(ps ...predicate.ServerTask) *ServerTaskUpdate {
-	stu.mutation.predicates = append(stu.mutation.predicates, ps...)
+	stu.mutation.Where(ps...)
 	return stu
 }
 
@@ -263,6 +263,9 @@ func (stu *ServerTaskUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(stu.hooks) - 1; i >= 0; i-- {
+			if stu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = stu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, stu.mutation); err != nil {
@@ -584,8 +587,8 @@ func (stu *ServerTaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, stu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{servertask.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -836,6 +839,9 @@ func (stuo *ServerTaskUpdateOne) Save(ctx context.Context) (*ServerTask, error) 
 			return node, err
 		})
 		for i := len(stuo.hooks) - 1; i >= 0; i-- {
+			if stuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = stuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, stuo.mutation); err != nil {
@@ -1177,8 +1183,8 @@ func (stuo *ServerTaskUpdateOne) sqlSave(ctx context.Context) (_node *ServerTask
 	if err = sqlgraph.UpdateNode(ctx, stuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{servertask.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

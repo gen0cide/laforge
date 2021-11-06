@@ -124,13 +124,13 @@ func (*HostDependency) scanValues(columns []string) ([]interface{}, error) {
 		case hostdependency.FieldID:
 			values[i] = new(uuid.UUID)
 		case hostdependency.ForeignKeys[0]: // environment_environment_to_host_dependency
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case hostdependency.ForeignKeys[1]: // host_dependency_host_dependency_to_depend_on_host
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case hostdependency.ForeignKeys[2]: // host_dependency_host_dependency_to_depend_by_host
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case hostdependency.ForeignKeys[3]: // host_dependency_host_dependency_to_network
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type HostDependency", columns[i])
 		}
@@ -165,28 +165,32 @@ func (hd *HostDependency) assignValues(columns []string, values []interface{}) e
 				hd.NetworkID = value.String
 			}
 		case hostdependency.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field environment_environment_to_host_dependency", values[i])
-			} else if value != nil {
-				hd.environment_environment_to_host_dependency = value
+			} else if value.Valid {
+				hd.environment_environment_to_host_dependency = new(uuid.UUID)
+				*hd.environment_environment_to_host_dependency = *value.S.(*uuid.UUID)
 			}
 		case hostdependency.ForeignKeys[1]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field host_dependency_host_dependency_to_depend_on_host", values[i])
-			} else if value != nil {
-				hd.host_dependency_host_dependency_to_depend_on_host = value
+			} else if value.Valid {
+				hd.host_dependency_host_dependency_to_depend_on_host = new(uuid.UUID)
+				*hd.host_dependency_host_dependency_to_depend_on_host = *value.S.(*uuid.UUID)
 			}
 		case hostdependency.ForeignKeys[2]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field host_dependency_host_dependency_to_depend_by_host", values[i])
-			} else if value != nil {
-				hd.host_dependency_host_dependency_to_depend_by_host = value
+			} else if value.Valid {
+				hd.host_dependency_host_dependency_to_depend_by_host = new(uuid.UUID)
+				*hd.host_dependency_host_dependency_to_depend_by_host = *value.S.(*uuid.UUID)
 			}
 		case hostdependency.ForeignKeys[3]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field host_dependency_host_dependency_to_network", values[i])
-			} else if value != nil {
-				hd.host_dependency_host_dependency_to_network = value
+			} else if value.Valid {
+				hd.host_dependency_host_dependency_to_network = new(uuid.UUID)
+				*hd.host_dependency_host_dependency_to_network = *value.S.(*uuid.UUID)
 			}
 		}
 	}

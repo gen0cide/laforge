@@ -103,7 +103,7 @@ func (*Command) scanValues(columns []string) ([]interface{}, error) {
 		case command.FieldID:
 			values[i] = new(uuid.UUID)
 		case command.ForeignKeys[0]: // environment_environment_to_command
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Command", columns[i])
 		}
@@ -150,7 +150,6 @@ func (c *Command) assignValues(columns []string, values []interface{}) error {
 				c.Program = value.String
 			}
 		case command.FieldArgs:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field args", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -183,7 +182,6 @@ func (c *Command) assignValues(columns []string, values []interface{}) error {
 				c.Timeout = int(value.Int64)
 			}
 		case command.FieldVars:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field vars", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -192,7 +190,6 @@ func (c *Command) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case command.FieldTags:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -201,10 +198,11 @@ func (c *Command) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case command.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field environment_environment_to_command", values[i])
-			} else if value != nil {
-				c.environment_environment_to_command = value
+			} else if value.Valid {
+				c.environment_environment_to_command = new(uuid.UUID)
+				*c.environment_environment_to_command = *value.S.(*uuid.UUID)
 			}
 		}
 	}

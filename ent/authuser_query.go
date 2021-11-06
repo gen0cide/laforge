@@ -362,8 +362,8 @@ func (auq *AuthUserQuery) GroupBy(field string, fields ...string) *AuthUserGroup
 //		Select(authuser.FieldUsername).
 //		Scan(ctx, &v)
 //
-func (auq *AuthUserQuery) Select(field string, fields ...string) *AuthUserSelect {
-	auq.fields = append([]string{field}, fields...)
+func (auq *AuthUserQuery) Select(fields ...string) *AuthUserSelect {
+	auq.fields = append(auq.fields, fields...)
 	return &AuthUserSelect{AuthUserQuery: auq}
 }
 
@@ -537,10 +537,14 @@ func (auq *AuthUserQuery) querySpec() *sqlgraph.QuerySpec {
 func (auq *AuthUserQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(auq.driver.Dialect())
 	t1 := builder.Table(authuser.Table)
-	selector := builder.Select(t1.Columns(authuser.Columns...)...).From(t1)
+	columns := auq.fields
+	if len(columns) == 0 {
+		columns = authuser.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if auq.sql != nil {
 		selector = auq.sql
-		selector.Select(selector.Columns(authuser.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range auq.predicates {
 		p(selector)
@@ -808,13 +812,24 @@ func (augb *AuthUserGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 }
 
 func (augb *AuthUserGroupBy) sqlQuery() *sql.Selector {
-	selector := augb.sql
-	columns := make([]string, 0, len(augb.fields)+len(augb.fns))
-	columns = append(columns, augb.fields...)
+	selector := augb.sql.Select()
+	aggregation := make([]string, 0, len(augb.fns))
 	for _, fn := range augb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(augb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(augb.fields)+len(augb.fns))
+		for _, f := range augb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(augb.fields...)...)
 }
 
 // AuthUserSelect is the builder for selecting fields of AuthUser entities.
@@ -1030,16 +1045,10 @@ func (aus *AuthUserSelect) BoolX(ctx context.Context) bool {
 
 func (aus *AuthUserSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := aus.sqlQuery().Query()
+	query, args := aus.sql.Query()
 	if err := aus.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (aus *AuthUserSelect) sqlQuery() sql.Querier {
-	selector := aus.sql
-	selector.Select(selector.Columns(aus.fields...)...)
-	return selector
 }

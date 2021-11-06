@@ -20,9 +20,9 @@ type PlanDiffDelete struct {
 	mutation *PlanDiffMutation
 }
 
-// Where adds a new predicate to the PlanDiffDelete builder.
+// Where appends a list predicates to the PlanDiffDelete builder.
 func (pdd *PlanDiffDelete) Where(ps ...predicate.PlanDiff) *PlanDiffDelete {
-	pdd.mutation.predicates = append(pdd.mutation.predicates, ps...)
+	pdd.mutation.Where(ps...)
 	return pdd
 }
 
@@ -46,6 +46,9 @@ func (pdd *PlanDiffDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(pdd.hooks) - 1; i >= 0; i-- {
+			if pdd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = pdd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, pdd.mutation); err != nil {

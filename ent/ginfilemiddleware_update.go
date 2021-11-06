@@ -23,9 +23,9 @@ type GinFileMiddlewareUpdate struct {
 	mutation *GinFileMiddlewareMutation
 }
 
-// Where adds a new predicate for the GinFileMiddlewareUpdate builder.
+// Where appends a list predicates to the GinFileMiddlewareUpdate builder.
 func (gfmu *GinFileMiddlewareUpdate) Where(ps ...predicate.GinFileMiddleware) *GinFileMiddlewareUpdate {
-	gfmu.mutation.predicates = append(gfmu.mutation.predicates, ps...)
+	gfmu.mutation.Where(ps...)
 	return gfmu
 }
 
@@ -130,6 +130,9 @@ func (gfmu *GinFileMiddlewareUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(gfmu.hooks) - 1; i >= 0; i-- {
+			if gfmu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = gfmu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, gfmu.mutation); err != nil {
@@ -273,8 +276,8 @@ func (gfmu *GinFileMiddlewareUpdate) sqlSave(ctx context.Context) (n int, err er
 	if n, err = sqlgraph.UpdateNodes(ctx, gfmu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{ginfilemiddleware.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -397,6 +400,9 @@ func (gfmuo *GinFileMiddlewareUpdateOne) Save(ctx context.Context) (*GinFileMidd
 			return node, err
 		})
 		for i := len(gfmuo.hooks) - 1; i >= 0; i-- {
+			if gfmuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = gfmuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, gfmuo.mutation); err != nil {
@@ -560,8 +566,8 @@ func (gfmuo *GinFileMiddlewareUpdateOne) sqlSave(ctx context.Context) (_node *Gi
 	if err = sqlgraph.UpdateNode(ctx, gfmuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{ginfilemiddleware.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

@@ -79,11 +79,17 @@ func (dc *DiskCreate) Save(ctx context.Context) (*Disk, error) {
 				return nil, err
 			}
 			dc.mutation = mutation
-			node, err = dc.sqlSave(ctx)
+			if node, err = dc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(dc.hooks) - 1; i >= 0; i-- {
+			if dc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = dc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, dc.mutation); err != nil {
@@ -102,6 +108,19 @@ func (dc *DiskCreate) SaveX(ctx context.Context) *Disk {
 	return v
 }
 
+// Exec executes the query.
+func (dc *DiskCreate) Exec(ctx context.Context) error {
+	_, err := dc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (dc *DiskCreate) ExecX(ctx context.Context) {
+	if err := dc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (dc *DiskCreate) defaults() {
 	if _, ok := dc.mutation.ID(); !ok {
@@ -113,11 +132,11 @@ func (dc *DiskCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (dc *DiskCreate) check() error {
 	if _, ok := dc.mutation.Size(); !ok {
-		return &ValidationError{Name: "size", err: errors.New("ent: missing required field \"size\"")}
+		return &ValidationError{Name: "size", err: errors.New(`ent: missing required field "size"`)}
 	}
 	if v, ok := dc.mutation.Size(); ok {
 		if err := disk.SizeValidator(v); err != nil {
-			return &ValidationError{Name: "size", err: fmt.Errorf("ent: validator failed for field \"size\": %w", err)}
+			return &ValidationError{Name: "size", err: fmt.Errorf(`ent: validator failed for field "size": %w`, err)}
 		}
 	}
 	return nil
@@ -126,10 +145,13 @@ func (dc *DiskCreate) check() error {
 func (dc *DiskCreate) sqlSave(ctx context.Context) (*Disk, error) {
 	_node, _spec := dc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, dc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -209,17 +231,19 @@ func (dcb *DiskCreateBulk) Save(ctx context.Context) ([]*Disk, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, dcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, dcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, dcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -243,4 +267,17 @@ func (dcb *DiskCreateBulk) SaveX(ctx context.Context) []*Disk {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (dcb *DiskCreateBulk) Exec(ctx context.Context) error {
+	_, err := dcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (dcb *DiskCreateBulk) ExecX(ctx context.Context) {
+	if err := dcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

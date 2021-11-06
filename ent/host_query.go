@@ -506,8 +506,8 @@ func (hq *HostQuery) GroupBy(field string, fields ...string) *HostGroupBy {
 //		Select(host.FieldHclID).
 //		Scan(ctx, &v)
 //
-func (hq *HostQuery) Select(field string, fields ...string) *HostSelect {
-	hq.fields = append([]string{field}, fields...)
+func (hq *HostQuery) Select(fields ...string) *HostSelect {
+	hq.fields = append(hq.fields, fields...)
 	return &HostSelect{HostQuery: hq}
 }
 
@@ -675,7 +675,7 @@ func (hq *HostQuery) sqlAll(ctx context.Context) ([]*Host, error) {
 				s.Where(sql.InValues(host.HostToIncludedNetworkPrimaryKey[1], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
+				return [2]interface{}{new(uuid.UUID), new(uuid.UUID)}
 			},
 			Assign: func(out, in interface{}) error {
 				eout, ok := out.(*uuid.UUID)
@@ -843,10 +843,14 @@ func (hq *HostQuery) querySpec() *sqlgraph.QuerySpec {
 func (hq *HostQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(hq.driver.Dialect())
 	t1 := builder.Table(host.Table)
-	selector := builder.Select(t1.Columns(host.Columns...)...).From(t1)
+	columns := hq.fields
+	if len(columns) == 0 {
+		columns = host.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if hq.sql != nil {
 		selector = hq.sql
-		selector.Select(selector.Columns(host.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range hq.predicates {
 		p(selector)
@@ -1114,13 +1118,24 @@ func (hgb *HostGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 }
 
 func (hgb *HostGroupBy) sqlQuery() *sql.Selector {
-	selector := hgb.sql
-	columns := make([]string, 0, len(hgb.fields)+len(hgb.fns))
-	columns = append(columns, hgb.fields...)
+	selector := hgb.sql.Select()
+	aggregation := make([]string, 0, len(hgb.fns))
 	for _, fn := range hgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(hgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(hgb.fields)+len(hgb.fns))
+		for _, f := range hgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(hgb.fields...)...)
 }
 
 // HostSelect is the builder for selecting fields of Host entities.
@@ -1336,16 +1351,10 @@ func (hs *HostSelect) BoolX(ctx context.Context) bool {
 
 func (hs *HostSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := hs.sqlQuery().Query()
+	query, args := hs.sql.Query()
 	if err := hs.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (hs *HostSelect) sqlQuery() sql.Querier {
-	selector := hs.sql
-	selector.Select(selector.Columns(hs.fields...)...)
-	return selector
 }

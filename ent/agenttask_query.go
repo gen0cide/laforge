@@ -399,8 +399,8 @@ func (atq *AgentTaskQuery) GroupBy(field string, fields ...string) *AgentTaskGro
 //		Select(agenttask.FieldCommand).
 //		Scan(ctx, &v)
 //
-func (atq *AgentTaskQuery) Select(field string, fields ...string) *AgentTaskSelect {
-	atq.fields = append([]string{field}, fields...)
+func (atq *AgentTaskQuery) Select(fields ...string) *AgentTaskSelect {
+	atq.fields = append(atq.fields, fields...)
 	return &AgentTaskSelect{AgentTaskQuery: atq}
 }
 
@@ -611,10 +611,14 @@ func (atq *AgentTaskQuery) querySpec() *sqlgraph.QuerySpec {
 func (atq *AgentTaskQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(atq.driver.Dialect())
 	t1 := builder.Table(agenttask.Table)
-	selector := builder.Select(t1.Columns(agenttask.Columns...)...).From(t1)
+	columns := atq.fields
+	if len(columns) == 0 {
+		columns = agenttask.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if atq.sql != nil {
 		selector = atq.sql
-		selector.Select(selector.Columns(agenttask.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range atq.predicates {
 		p(selector)
@@ -882,13 +886,24 @@ func (atgb *AgentTaskGroupBy) sqlScan(ctx context.Context, v interface{}) error 
 }
 
 func (atgb *AgentTaskGroupBy) sqlQuery() *sql.Selector {
-	selector := atgb.sql
-	columns := make([]string, 0, len(atgb.fields)+len(atgb.fns))
-	columns = append(columns, atgb.fields...)
+	selector := atgb.sql.Select()
+	aggregation := make([]string, 0, len(atgb.fns))
 	for _, fn := range atgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(atgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(atgb.fields)+len(atgb.fns))
+		for _, f := range atgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(atgb.fields...)...)
 }
 
 // AgentTaskSelect is the builder for selecting fields of AgentTask entities.
@@ -1104,16 +1119,10 @@ func (ats *AgentTaskSelect) BoolX(ctx context.Context) bool {
 
 func (ats *AgentTaskSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := ats.sqlQuery().Query()
+	query, args := ats.sql.Query()
 	if err := ats.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (ats *AgentTaskSelect) sqlQuery() sql.Querier {
-	selector := ats.sql
-	selector.Select(selector.Columns(ats.fields...)...)
-	return selector
 }

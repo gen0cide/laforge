@@ -281,11 +281,17 @@ func (psc *ProvisioningStepCreate) Save(ctx context.Context) (*ProvisioningStep,
 				return nil, err
 			}
 			psc.mutation = mutation
-			node, err = psc.sqlSave(ctx)
+			if node, err = psc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(psc.hooks) - 1; i >= 0; i-- {
+			if psc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = psc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, psc.mutation); err != nil {
@@ -304,6 +310,19 @@ func (psc *ProvisioningStepCreate) SaveX(ctx context.Context) *ProvisioningStep 
 	return v
 }
 
+// Exec executes the query.
+func (psc *ProvisioningStepCreate) Exec(ctx context.Context) error {
+	_, err := psc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (psc *ProvisioningStepCreate) ExecX(ctx context.Context) {
+	if err := psc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (psc *ProvisioningStepCreate) defaults() {
 	if _, ok := psc.mutation.ID(); !ok {
@@ -315,15 +334,15 @@ func (psc *ProvisioningStepCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (psc *ProvisioningStepCreate) check() error {
 	if _, ok := psc.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New("ent: missing required field \"type\"")}
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "type"`)}
 	}
 	if v, ok := psc.mutation.GetType(); ok {
 		if err := provisioningstep.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "type": %w`, err)}
 		}
 	}
 	if _, ok := psc.mutation.StepNumber(); !ok {
-		return &ValidationError{Name: "step_number", err: errors.New("ent: missing required field \"step_number\"")}
+		return &ValidationError{Name: "step_number", err: errors.New(`ent: missing required field "step_number"`)}
 	}
 	return nil
 }
@@ -331,10 +350,13 @@ func (psc *ProvisioningStepCreate) check() error {
 func (psc *ProvisioningStepCreate) sqlSave(ctx context.Context) (*ProvisioningStep, error) {
 	_node, _spec := psc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, psc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -620,17 +642,19 @@ func (pscb *ProvisioningStepCreateBulk) Save(ctx context.Context) ([]*Provisioni
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, pscb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, pscb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, pscb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -654,4 +678,17 @@ func (pscb *ProvisioningStepCreateBulk) SaveX(ctx context.Context) []*Provisioni
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (pscb *ProvisioningStepCreateBulk) Exec(ctx context.Context) error {
+	_, err := pscb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (pscb *ProvisioningStepCreateBulk) ExecX(ctx context.Context) {
+	if err := pscb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

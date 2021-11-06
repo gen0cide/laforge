@@ -229,11 +229,17 @@ func (pc *PlanCreate) Save(ctx context.Context) (*Plan, error) {
 				return nil, err
 			}
 			pc.mutation = mutation
-			node, err = pc.sqlSave(ctx)
+			if node, err = pc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(pc.hooks) - 1; i >= 0; i-- {
+			if pc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = pc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, pc.mutation); err != nil {
@@ -252,6 +258,19 @@ func (pc *PlanCreate) SaveX(ctx context.Context) *Plan {
 	return v
 }
 
+// Exec executes the query.
+func (pc *PlanCreate) Exec(ctx context.Context) error {
+	_, err := pc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (pc *PlanCreate) ExecX(ctx context.Context) {
+	if err := pc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (pc *PlanCreate) defaults() {
 	if _, ok := pc.mutation.ID(); !ok {
@@ -263,18 +282,18 @@ func (pc *PlanCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (pc *PlanCreate) check() error {
 	if _, ok := pc.mutation.StepNumber(); !ok {
-		return &ValidationError{Name: "step_number", err: errors.New("ent: missing required field \"step_number\"")}
+		return &ValidationError{Name: "step_number", err: errors.New(`ent: missing required field "step_number"`)}
 	}
 	if _, ok := pc.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New("ent: missing required field \"type\"")}
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "type"`)}
 	}
 	if v, ok := pc.mutation.GetType(); ok {
 		if err := plan.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf("ent: validator failed for field \"type\": %w", err)}
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "type": %w`, err)}
 		}
 	}
 	if _, ok := pc.mutation.BuildID(); !ok {
-		return &ValidationError{Name: "build_id", err: errors.New("ent: missing required field \"build_id\"")}
+		return &ValidationError{Name: "build_id", err: errors.New(`ent: missing required field "build_id"`)}
 	}
 	if _, ok := pc.mutation.PlanToStatusID(); !ok {
 		return &ValidationError{Name: "PlanToStatus", err: errors.New("ent: missing required edge \"PlanToStatus\"")}
@@ -285,10 +304,13 @@ func (pc *PlanCreate) check() error {
 func (pc *PlanCreate) sqlSave(ctx context.Context) (*Plan, error) {
 	_node, _spec := pc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, pc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -536,17 +558,19 @@ func (pcb *PlanCreateBulk) Save(ctx context.Context) ([]*Plan, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, pcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, pcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, pcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -570,4 +594,17 @@ func (pcb *PlanCreateBulk) SaveX(ctx context.Context) []*Plan {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (pcb *PlanCreateBulk) Exec(ctx context.Context) error {
+	_, err := pcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (pcb *PlanCreateBulk) ExecX(ctx context.Context) {
+	if err := pcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

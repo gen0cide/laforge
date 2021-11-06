@@ -25,14 +25,14 @@ const (
 	EdgeUserToEnvironment = "UserToEnvironment"
 	// Table holds the table name of the user in the database.
 	Table = "users"
-	// UserToTagTable is the table the holds the UserToTag relation/edge.
+	// UserToTagTable is the table that holds the UserToTag relation/edge.
 	UserToTagTable = "tags"
 	// UserToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
 	UserToTagInverseTable = "tags"
 	// UserToTagColumn is the table column denoting the UserToTag relation/edge.
 	UserToTagColumn = "user_user_to_tag"
-	// UserToEnvironmentTable is the table the holds the UserToEnvironment relation/edge. The primary key declared below.
+	// UserToEnvironmentTable is the table that holds the UserToEnvironment relation/edge. The primary key declared below.
 	UserToEnvironmentTable = "environment_EnvironmentToUser"
 	// UserToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.

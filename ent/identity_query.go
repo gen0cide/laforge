@@ -326,8 +326,8 @@ func (iq *IdentityQuery) GroupBy(field string, fields ...string) *IdentityGroupB
 //		Select(identity.FieldHclID).
 //		Scan(ctx, &v)
 //
-func (iq *IdentityQuery) Select(field string, fields ...string) *IdentitySelect {
-	iq.fields = append([]string{field}, fields...)
+func (iq *IdentityQuery) Select(fields ...string) *IdentitySelect {
+	iq.fields = append(iq.fields, fields...)
 	return &IdentitySelect{IdentityQuery: iq}
 }
 
@@ -478,10 +478,14 @@ func (iq *IdentityQuery) querySpec() *sqlgraph.QuerySpec {
 func (iq *IdentityQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(iq.driver.Dialect())
 	t1 := builder.Table(identity.Table)
-	selector := builder.Select(t1.Columns(identity.Columns...)...).From(t1)
+	columns := iq.fields
+	if len(columns) == 0 {
+		columns = identity.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if iq.sql != nil {
 		selector = iq.sql
-		selector.Select(selector.Columns(identity.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range iq.predicates {
 		p(selector)
@@ -749,13 +753,24 @@ func (igb *IdentityGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 }
 
 func (igb *IdentityGroupBy) sqlQuery() *sql.Selector {
-	selector := igb.sql
-	columns := make([]string, 0, len(igb.fields)+len(igb.fns))
-	columns = append(columns, igb.fields...)
+	selector := igb.sql.Select()
+	aggregation := make([]string, 0, len(igb.fns))
 	for _, fn := range igb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(igb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(igb.fields)+len(igb.fns))
+		for _, f := range igb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(igb.fields...)...)
 }
 
 // IdentitySelect is the builder for selecting fields of Identity entities.
@@ -971,16 +986,10 @@ func (is *IdentitySelect) BoolX(ctx context.Context) bool {
 
 func (is *IdentitySelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := is.sqlQuery().Query()
+	query, args := is.sql.Query()
 	if err := is.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (is *IdentitySelect) sqlQuery() sql.Querier {
-	selector := is.sql
-	selector.Select(selector.Columns(is.fields...)...)
-	return selector
 }

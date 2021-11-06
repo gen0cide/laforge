@@ -91,11 +91,17 @@ func (fdc *FileDeleteCreate) Save(ctx context.Context) (*FileDelete, error) {
 				return nil, err
 			}
 			fdc.mutation = mutation
-			node, err = fdc.sqlSave(ctx)
+			if node, err = fdc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(fdc.hooks) - 1; i >= 0; i-- {
+			if fdc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fdc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fdc.mutation); err != nil {
@@ -114,6 +120,19 @@ func (fdc *FileDeleteCreate) SaveX(ctx context.Context) *FileDelete {
 	return v
 }
 
+// Exec executes the query.
+func (fdc *FileDeleteCreate) Exec(ctx context.Context) error {
+	_, err := fdc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (fdc *FileDeleteCreate) ExecX(ctx context.Context) {
+	if err := fdc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (fdc *FileDeleteCreate) defaults() {
 	if _, ok := fdc.mutation.ID(); !ok {
@@ -125,13 +144,13 @@ func (fdc *FileDeleteCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (fdc *FileDeleteCreate) check() error {
 	if _, ok := fdc.mutation.HclID(); !ok {
-		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+		return &ValidationError{Name: "hcl_id", err: errors.New(`ent: missing required field "hcl_id"`)}
 	}
 	if _, ok := fdc.mutation.Path(); !ok {
-		return &ValidationError{Name: "path", err: errors.New("ent: missing required field \"path\"")}
+		return &ValidationError{Name: "path", err: errors.New(`ent: missing required field "path"`)}
 	}
 	if _, ok := fdc.mutation.Tags(); !ok {
-		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "tags"`)}
 	}
 	return nil
 }
@@ -139,10 +158,13 @@ func (fdc *FileDeleteCreate) check() error {
 func (fdc *FileDeleteCreate) sqlSave(ctx context.Context) (*FileDelete, error) {
 	_node, _spec := fdc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, fdc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -238,17 +260,19 @@ func (fdcb *FileDeleteCreateBulk) Save(ctx context.Context) ([]*FileDelete, erro
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, fdcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, fdcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, fdcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -272,4 +296,17 @@ func (fdcb *FileDeleteCreateBulk) SaveX(ctx context.Context) []*FileDelete {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (fdcb *FileDeleteCreateBulk) Exec(ctx context.Context) error {
+	_, err := fdcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (fdcb *FileDeleteCreateBulk) ExecX(ctx context.Context) {
+	if err := fdcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

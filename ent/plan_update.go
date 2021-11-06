@@ -29,9 +29,9 @@ type PlanUpdate struct {
 	mutation *PlanMutation
 }
 
-// Where adds a new predicate for the PlanUpdate builder.
+// Where appends a list predicates to the PlanUpdate builder.
 func (pu *PlanUpdate) Where(ps ...predicate.Plan) *PlanUpdate {
-	pu.mutation.predicates = append(pu.mutation.predicates, ps...)
+	pu.mutation.Where(ps...)
 	return pu
 }
 
@@ -341,6 +341,9 @@ func (pu *PlanUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(pu.hooks) - 1; i >= 0; i-- {
+			if pu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = pu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, pu.mutation); err != nil {
@@ -806,8 +809,8 @@ func (pu *PlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{plan.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -1135,6 +1138,9 @@ func (puo *PlanUpdateOne) Save(ctx context.Context) (*Plan, error) {
 			return node, err
 		})
 		for i := len(puo.hooks) - 1; i >= 0; i-- {
+			if puo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = puo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, puo.mutation); err != nil {
@@ -1620,8 +1626,8 @@ func (puo *PlanUpdateOne) sqlSave(ctx context.Context) (_node *Plan, err error) 
 	if err = sqlgraph.UpdateNode(ctx, puo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{plan.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

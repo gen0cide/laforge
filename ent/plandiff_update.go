@@ -24,9 +24,9 @@ type PlanDiffUpdate struct {
 	mutation *PlanDiffMutation
 }
 
-// Where adds a new predicate for the PlanDiffUpdate builder.
+// Where appends a list predicates to the PlanDiffUpdate builder.
 func (pdu *PlanDiffUpdate) Where(ps ...predicate.PlanDiff) *PlanDiffUpdate {
-	pdu.mutation.predicates = append(pdu.mutation.predicates, ps...)
+	pdu.mutation.Where(ps...)
 	return pdu
 }
 
@@ -114,6 +114,9 @@ func (pdu *PlanDiffUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(pdu.hooks) - 1; i >= 0; i-- {
+			if pdu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = pdu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, pdu.mutation); err != nil {
@@ -273,8 +276,8 @@ func (pdu *PlanDiffUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, pdu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{plandiff.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -380,6 +383,9 @@ func (pduo *PlanDiffUpdateOne) Save(ctx context.Context) (*PlanDiff, error) {
 			return node, err
 		})
 		for i := len(pduo.hooks) - 1; i >= 0; i-- {
+			if pduo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = pduo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, pduo.mutation); err != nil {
@@ -559,8 +565,8 @@ func (pduo *PlanDiffUpdateOne) sqlSave(ctx context.Context) (_node *PlanDiff, er
 	if err = sqlgraph.UpdateNode(ctx, pduo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{plandiff.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

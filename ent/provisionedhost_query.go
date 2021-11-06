@@ -650,8 +650,8 @@ func (phq *ProvisionedHostQuery) GroupBy(field string, fields ...string) *Provis
 //		Select(provisionedhost.FieldSubnetIP).
 //		Scan(ctx, &v)
 //
-func (phq *ProvisionedHostQuery) Select(field string, fields ...string) *ProvisionedHostSelect {
-	phq.fields = append([]string{field}, fields...)
+func (phq *ProvisionedHostQuery) Select(fields ...string) *ProvisionedHostSelect {
+	phq.fields = append(phq.fields, fields...)
 	return &ProvisionedHostSelect{ProvisionedHostQuery: phq}
 }
 
@@ -1071,10 +1071,14 @@ func (phq *ProvisionedHostQuery) querySpec() *sqlgraph.QuerySpec {
 func (phq *ProvisionedHostQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(phq.driver.Dialect())
 	t1 := builder.Table(provisionedhost.Table)
-	selector := builder.Select(t1.Columns(provisionedhost.Columns...)...).From(t1)
+	columns := phq.fields
+	if len(columns) == 0 {
+		columns = provisionedhost.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if phq.sql != nil {
 		selector = phq.sql
-		selector.Select(selector.Columns(provisionedhost.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range phq.predicates {
 		p(selector)
@@ -1342,13 +1346,24 @@ func (phgb *ProvisionedHostGroupBy) sqlScan(ctx context.Context, v interface{}) 
 }
 
 func (phgb *ProvisionedHostGroupBy) sqlQuery() *sql.Selector {
-	selector := phgb.sql
-	columns := make([]string, 0, len(phgb.fields)+len(phgb.fns))
-	columns = append(columns, phgb.fields...)
+	selector := phgb.sql.Select()
+	aggregation := make([]string, 0, len(phgb.fns))
 	for _, fn := range phgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(phgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(phgb.fields)+len(phgb.fns))
+		for _, f := range phgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(phgb.fields...)...)
 }
 
 // ProvisionedHostSelect is the builder for selecting fields of ProvisionedHost entities.
@@ -1564,16 +1579,10 @@ func (phs *ProvisionedHostSelect) BoolX(ctx context.Context) bool {
 
 func (phs *ProvisionedHostSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := phs.sqlQuery().Query()
+	query, args := phs.sql.Query()
 	if err := phs.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (phs *ProvisionedHostSelect) sqlQuery() sql.Querier {
-	selector := phs.sql
-	selector.Select(selector.Columns(phs.fields...)...)
-	return selector
 }

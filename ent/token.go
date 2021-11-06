@@ -67,7 +67,7 @@ func (*Token) scanValues(columns []string) ([]interface{}, error) {
 		case token.FieldID:
 			values[i] = new(uuid.UUID)
 		case token.ForeignKeys[0]: // auth_user_auth_user_to_token
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Token", columns[i])
 		}
@@ -102,10 +102,11 @@ func (t *Token) assignValues(columns []string, values []interface{}) error {
 				t.ExpireAt = value.Int64
 			}
 		case token.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field auth_user_auth_user_to_token", values[i])
-			} else if value != nil {
-				t.auth_user_auth_user_to_token = value
+			} else if value.Valid {
+				t.auth_user_auth_user_to_token = new(uuid.UUID)
+				*t.auth_user_auth_user_to_token = *value.S.(*uuid.UUID)
 			}
 		}
 	}

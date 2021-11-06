@@ -20,9 +20,9 @@ type ProvisioningStepDelete struct {
 	mutation *ProvisioningStepMutation
 }
 
-// Where adds a new predicate to the ProvisioningStepDelete builder.
+// Where appends a list predicates to the ProvisioningStepDelete builder.
 func (psd *ProvisioningStepDelete) Where(ps ...predicate.ProvisioningStep) *ProvisioningStepDelete {
-	psd.mutation.predicates = append(psd.mutation.predicates, ps...)
+	psd.mutation.Where(ps...)
 	return psd
 }
 
@@ -46,6 +46,9 @@ func (psd *ProvisioningStepDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(psd.hooks) - 1; i >= 0; i-- {
+			if psd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = psd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, psd.mutation); err != nil {

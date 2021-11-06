@@ -363,8 +363,8 @@ func (bcq *BuildCommitQuery) GroupBy(field string, fields ...string) *BuildCommi
 //		Select(buildcommit.FieldType).
 //		Scan(ctx, &v)
 //
-func (bcq *BuildCommitQuery) Select(field string, fields ...string) *BuildCommitSelect {
-	bcq.fields = append([]string{field}, fields...)
+func (bcq *BuildCommitQuery) Select(fields ...string) *BuildCommitSelect {
+	bcq.fields = append(bcq.fields, fields...)
 	return &BuildCommitSelect{BuildCommitQuery: bcq}
 }
 
@@ -545,10 +545,14 @@ func (bcq *BuildCommitQuery) querySpec() *sqlgraph.QuerySpec {
 func (bcq *BuildCommitQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(bcq.driver.Dialect())
 	t1 := builder.Table(buildcommit.Table)
-	selector := builder.Select(t1.Columns(buildcommit.Columns...)...).From(t1)
+	columns := bcq.fields
+	if len(columns) == 0 {
+		columns = buildcommit.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if bcq.sql != nil {
 		selector = bcq.sql
-		selector.Select(selector.Columns(buildcommit.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range bcq.predicates {
 		p(selector)
@@ -816,13 +820,24 @@ func (bcgb *BuildCommitGroupBy) sqlScan(ctx context.Context, v interface{}) erro
 }
 
 func (bcgb *BuildCommitGroupBy) sqlQuery() *sql.Selector {
-	selector := bcgb.sql
-	columns := make([]string, 0, len(bcgb.fields)+len(bcgb.fns))
-	columns = append(columns, bcgb.fields...)
+	selector := bcgb.sql.Select()
+	aggregation := make([]string, 0, len(bcgb.fns))
 	for _, fn := range bcgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(bcgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(bcgb.fields)+len(bcgb.fns))
+		for _, f := range bcgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(bcgb.fields...)...)
 }
 
 // BuildCommitSelect is the builder for selecting fields of BuildCommit entities.
@@ -1038,16 +1053,10 @@ func (bcs *BuildCommitSelect) BoolX(ctx context.Context) bool {
 
 func (bcs *BuildCommitSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := bcs.sqlQuery().Query()
+	query, args := bcs.sql.Query()
 	if err := bcs.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (bcs *BuildCommitSelect) sqlQuery() sql.Querier {
-	selector := bcs.sql
-	selector.Select(selector.Columns(bcs.fields...)...)
-	return selector
 }

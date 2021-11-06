@@ -20,9 +20,9 @@ type ScriptDelete struct {
 	mutation *ScriptMutation
 }
 
-// Where adds a new predicate to the ScriptDelete builder.
+// Where appends a list predicates to the ScriptDelete builder.
 func (sd *ScriptDelete) Where(ps ...predicate.Script) *ScriptDelete {
-	sd.mutation.predicates = append(sd.mutation.predicates, ps...)
+	sd.mutation.Where(ps...)
 	return sd
 }
 
@@ -46,6 +46,9 @@ func (sd *ScriptDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(sd.hooks) - 1; i >= 0; i-- {
+			if sd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = sd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, sd.mutation); err != nil {

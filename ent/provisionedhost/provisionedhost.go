@@ -41,70 +41,70 @@ const (
 	EdgeProvisionedHostToGinFileMiddleware = "ProvisionedHostToGinFileMiddleware"
 	// Table holds the table name of the provisionedhost in the database.
 	Table = "provisioned_hosts"
-	// ProvisionedHostToStatusTable is the table the holds the ProvisionedHostToStatus relation/edge.
+	// ProvisionedHostToStatusTable is the table that holds the ProvisionedHostToStatus relation/edge.
 	ProvisionedHostToStatusTable = "status"
 	// ProvisionedHostToStatusInverseTable is the table name for the Status entity.
 	// It exists in this package in order to avoid circular dependency with the "status" package.
 	ProvisionedHostToStatusInverseTable = "status"
 	// ProvisionedHostToStatusColumn is the table column denoting the ProvisionedHostToStatus relation/edge.
 	ProvisionedHostToStatusColumn = "provisioned_host_provisioned_host_to_status"
-	// ProvisionedHostToProvisionedNetworkTable is the table the holds the ProvisionedHostToProvisionedNetwork relation/edge.
+	// ProvisionedHostToProvisionedNetworkTable is the table that holds the ProvisionedHostToProvisionedNetwork relation/edge.
 	ProvisionedHostToProvisionedNetworkTable = "provisioned_hosts"
 	// ProvisionedHostToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
 	ProvisionedHostToProvisionedNetworkInverseTable = "provisioned_networks"
 	// ProvisionedHostToProvisionedNetworkColumn is the table column denoting the ProvisionedHostToProvisionedNetwork relation/edge.
 	ProvisionedHostToProvisionedNetworkColumn = "provisioned_host_provisioned_host_to_provisioned_network"
-	// ProvisionedHostToHostTable is the table the holds the ProvisionedHostToHost relation/edge.
+	// ProvisionedHostToHostTable is the table that holds the ProvisionedHostToHost relation/edge.
 	ProvisionedHostToHostTable = "provisioned_hosts"
 	// ProvisionedHostToHostInverseTable is the table name for the Host entity.
 	// It exists in this package in order to avoid circular dependency with the "host" package.
 	ProvisionedHostToHostInverseTable = "hosts"
 	// ProvisionedHostToHostColumn is the table column denoting the ProvisionedHostToHost relation/edge.
 	ProvisionedHostToHostColumn = "provisioned_host_provisioned_host_to_host"
-	// ProvisionedHostToEndStepPlanTable is the table the holds the ProvisionedHostToEndStepPlan relation/edge.
+	// ProvisionedHostToEndStepPlanTable is the table that holds the ProvisionedHostToEndStepPlan relation/edge.
 	ProvisionedHostToEndStepPlanTable = "provisioned_hosts"
 	// ProvisionedHostToEndStepPlanInverseTable is the table name for the Plan entity.
 	// It exists in this package in order to avoid circular dependency with the "plan" package.
 	ProvisionedHostToEndStepPlanInverseTable = "plans"
 	// ProvisionedHostToEndStepPlanColumn is the table column denoting the ProvisionedHostToEndStepPlan relation/edge.
 	ProvisionedHostToEndStepPlanColumn = "provisioned_host_provisioned_host_to_end_step_plan"
-	// ProvisionedHostToBuildTable is the table the holds the ProvisionedHostToBuild relation/edge.
+	// ProvisionedHostToBuildTable is the table that holds the ProvisionedHostToBuild relation/edge.
 	ProvisionedHostToBuildTable = "provisioned_hosts"
 	// ProvisionedHostToBuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
 	ProvisionedHostToBuildInverseTable = "builds"
 	// ProvisionedHostToBuildColumn is the table column denoting the ProvisionedHostToBuild relation/edge.
 	ProvisionedHostToBuildColumn = "provisioned_host_provisioned_host_to_build"
-	// ProvisionedHostToProvisioningStepTable is the table the holds the ProvisionedHostToProvisioningStep relation/edge.
+	// ProvisionedHostToProvisioningStepTable is the table that holds the ProvisionedHostToProvisioningStep relation/edge.
 	ProvisionedHostToProvisioningStepTable = "provisioning_steps"
 	// ProvisionedHostToProvisioningStepInverseTable is the table name for the ProvisioningStep entity.
 	// It exists in this package in order to avoid circular dependency with the "provisioningstep" package.
 	ProvisionedHostToProvisioningStepInverseTable = "provisioning_steps"
 	// ProvisionedHostToProvisioningStepColumn is the table column denoting the ProvisionedHostToProvisioningStep relation/edge.
 	ProvisionedHostToProvisioningStepColumn = "provisioning_step_provisioning_step_to_provisioned_host"
-	// ProvisionedHostToAgentStatusTable is the table the holds the ProvisionedHostToAgentStatus relation/edge.
+	// ProvisionedHostToAgentStatusTable is the table that holds the ProvisionedHostToAgentStatus relation/edge.
 	ProvisionedHostToAgentStatusTable = "agent_status"
 	// ProvisionedHostToAgentStatusInverseTable is the table name for the AgentStatus entity.
 	// It exists in this package in order to avoid circular dependency with the "agentstatus" package.
 	ProvisionedHostToAgentStatusInverseTable = "agent_status"
 	// ProvisionedHostToAgentStatusColumn is the table column denoting the ProvisionedHostToAgentStatus relation/edge.
 	ProvisionedHostToAgentStatusColumn = "agent_status_agent_status_to_provisioned_host"
-	// ProvisionedHostToAgentTaskTable is the table the holds the ProvisionedHostToAgentTask relation/edge.
+	// ProvisionedHostToAgentTaskTable is the table that holds the ProvisionedHostToAgentTask relation/edge.
 	ProvisionedHostToAgentTaskTable = "agent_tasks"
 	// ProvisionedHostToAgentTaskInverseTable is the table name for the AgentTask entity.
 	// It exists in this package in order to avoid circular dependency with the "agenttask" package.
 	ProvisionedHostToAgentTaskInverseTable = "agent_tasks"
 	// ProvisionedHostToAgentTaskColumn is the table column denoting the ProvisionedHostToAgentTask relation/edge.
 	ProvisionedHostToAgentTaskColumn = "agent_task_agent_task_to_provisioned_host"
-	// ProvisionedHostToPlanTable is the table the holds the ProvisionedHostToPlan relation/edge.
+	// ProvisionedHostToPlanTable is the table that holds the ProvisionedHostToPlan relation/edge.
 	ProvisionedHostToPlanTable = "provisioned_hosts"
 	// ProvisionedHostToPlanInverseTable is the table name for the Plan entity.
 	// It exists in this package in order to avoid circular dependency with the "plan" package.
 	ProvisionedHostToPlanInverseTable = "plans"
 	// ProvisionedHostToPlanColumn is the table column denoting the ProvisionedHostToPlan relation/edge.
 	ProvisionedHostToPlanColumn = "plan_plan_to_provisioned_host"
-	// ProvisionedHostToGinFileMiddlewareTable is the table the holds the ProvisionedHostToGinFileMiddleware relation/edge.
+	// ProvisionedHostToGinFileMiddlewareTable is the table that holds the ProvisionedHostToGinFileMiddleware relation/edge.
 	ProvisionedHostToGinFileMiddlewareTable = "provisioned_hosts"
 	// ProvisionedHostToGinFileMiddlewareInverseTable is the table name for the GinFileMiddleware entity.
 	// It exists in this package in order to avoid circular dependency with the "ginfilemiddleware" package.

@@ -353,7 +353,6 @@ func (e *Environment) assignValues(columns []string, values []interface{}) error
 				e.Revision = int(value.Int64)
 			}
 		case environment.FieldAdminCidrs:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field admin_cidrs", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -362,7 +361,6 @@ func (e *Environment) assignValues(columns []string, values []interface{}) error
 				}
 			}
 		case environment.FieldExposedVdiPorts:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field exposed_vdi_ports", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -371,7 +369,6 @@ func (e *Environment) assignValues(columns []string, values []interface{}) error
 				}
 			}
 		case environment.FieldConfig:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field config", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -380,7 +377,6 @@ func (e *Environment) assignValues(columns []string, values []interface{}) error
 				}
 			}
 		case environment.FieldTags:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {

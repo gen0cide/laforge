@@ -27,19 +27,19 @@ const (
 	EdgeCompetitionToBuild = "CompetitionToBuild"
 	// Table holds the table name of the competition in the database.
 	Table = "competitions"
-	// CompetitionToDNSTable is the table the holds the CompetitionToDNS relation/edge. The primary key declared below.
+	// CompetitionToDNSTable is the table that holds the CompetitionToDNS relation/edge. The primary key declared below.
 	CompetitionToDNSTable = "competition_CompetitionToDNS"
 	// CompetitionToDNSInverseTable is the table name for the DNS entity.
 	// It exists in this package in order to avoid circular dependency with the "dns" package.
 	CompetitionToDNSInverseTable = "dn_ss"
-	// CompetitionToEnvironmentTable is the table the holds the CompetitionToEnvironment relation/edge.
+	// CompetitionToEnvironmentTable is the table that holds the CompetitionToEnvironment relation/edge.
 	CompetitionToEnvironmentTable = "competitions"
 	// CompetitionToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	CompetitionToEnvironmentInverseTable = "environments"
 	// CompetitionToEnvironmentColumn is the table column denoting the CompetitionToEnvironment relation/edge.
 	CompetitionToEnvironmentColumn = "environment_environment_to_competition"
-	// CompetitionToBuildTable is the table the holds the CompetitionToBuild relation/edge.
+	// CompetitionToBuildTable is the table that holds the CompetitionToBuild relation/edge.
 	CompetitionToBuildTable = "builds"
 	// CompetitionToBuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.

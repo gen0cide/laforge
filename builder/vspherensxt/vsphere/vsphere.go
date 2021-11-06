@@ -1209,7 +1209,7 @@ func (vs *VSphere) GetVMPowerState(ctx context.Context, vmName string) (powerSta
 func (vs *VSphere) PowerOnVM(ctx context.Context, vmName string) (err error) {
 	vs.Logger.Log.WithFields(log.Fields{
 		"vmName": vmName,
-	}).Debug("vSphere | ShutdownVM")
+	}).Debug("vSphere | PowerOnVM")
 
 	vm, err := vs.Finder.VirtualMachine(ctx, vmName)
 	if err != nil {

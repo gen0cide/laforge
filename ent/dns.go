@@ -122,7 +122,6 @@ func (d *DNS) assignValues(columns []string, values []interface{}) error {
 				d.RootDomain = value.String
 			}
 		case dns.FieldDNSServers:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field dns_servers", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -131,7 +130,6 @@ func (d *DNS) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case dns.FieldNtpServers:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field ntp_servers", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -140,7 +138,6 @@ func (d *DNS) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case dns.FieldConfig:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field config", values[i])
 			} else if value != nil && len(*value) > 0 {

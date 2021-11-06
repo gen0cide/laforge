@@ -107,7 +107,7 @@ func (*IncludedNetwork) scanValues(columns []string) ([]interface{}, error) {
 		case includednetwork.FieldID:
 			values[i] = new(uuid.UUID)
 		case includednetwork.ForeignKeys[0]: // included_network_included_network_to_network
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type IncludedNetwork", columns[i])
 		}
@@ -136,7 +136,6 @@ func (in *IncludedNetwork) assignValues(columns []string, values []interface{}) 
 				in.Name = value.String
 			}
 		case includednetwork.FieldHosts:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field hosts", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -145,10 +144,11 @@ func (in *IncludedNetwork) assignValues(columns []string, values []interface{}) 
 				}
 			}
 		case includednetwork.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field included_network_included_network_to_network", values[i])
-			} else if value != nil {
-				in.included_network_included_network_to_network = value
+			} else if value.Valid {
+				in.included_network_included_network_to_network = new(uuid.UUID)
+				*in.included_network_included_network_to_network = *value.S.(*uuid.UUID)
 			}
 		}
 	}

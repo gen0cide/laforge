@@ -31,21 +31,21 @@ const (
 	EdgeNetworkToIncludedNetwork = "NetworkToIncludedNetwork"
 	// Table holds the table name of the network in the database.
 	Table = "networks"
-	// NetworkToEnvironmentTable is the table the holds the NetworkToEnvironment relation/edge.
+	// NetworkToEnvironmentTable is the table that holds the NetworkToEnvironment relation/edge.
 	NetworkToEnvironmentTable = "networks"
 	// NetworkToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	NetworkToEnvironmentInverseTable = "environments"
 	// NetworkToEnvironmentColumn is the table column denoting the NetworkToEnvironment relation/edge.
 	NetworkToEnvironmentColumn = "environment_environment_to_network"
-	// NetworkToHostDependencyTable is the table the holds the NetworkToHostDependency relation/edge.
+	// NetworkToHostDependencyTable is the table that holds the NetworkToHostDependency relation/edge.
 	NetworkToHostDependencyTable = "host_dependencies"
 	// NetworkToHostDependencyInverseTable is the table name for the HostDependency entity.
 	// It exists in this package in order to avoid circular dependency with the "hostdependency" package.
 	NetworkToHostDependencyInverseTable = "host_dependencies"
 	// NetworkToHostDependencyColumn is the table column denoting the NetworkToHostDependency relation/edge.
 	NetworkToHostDependencyColumn = "host_dependency_host_dependency_to_network"
-	// NetworkToIncludedNetworkTable is the table the holds the NetworkToIncludedNetwork relation/edge.
+	// NetworkToIncludedNetworkTable is the table that holds the NetworkToIncludedNetwork relation/edge.
 	NetworkToIncludedNetworkTable = "included_networks"
 	// NetworkToIncludedNetworkInverseTable is the table name for the IncludedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "includednetwork" package.

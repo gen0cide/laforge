@@ -39,14 +39,14 @@ const (
 	EdgeCommandToEnvironment = "CommandToEnvironment"
 	// Table holds the table name of the command in the database.
 	Table = "commands"
-	// CommandToUserTable is the table the holds the CommandToUser relation/edge.
+	// CommandToUserTable is the table that holds the CommandToUser relation/edge.
 	CommandToUserTable = "users"
 	// CommandToUserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	CommandToUserInverseTable = "users"
 	// CommandToUserColumn is the table column denoting the CommandToUser relation/edge.
 	CommandToUserColumn = "command_command_to_user"
-	// CommandToEnvironmentTable is the table the holds the CommandToEnvironment relation/edge.
+	// CommandToEnvironmentTable is the table that holds the CommandToEnvironment relation/edge.
 	CommandToEnvironmentTable = "commands"
 	// CommandToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.

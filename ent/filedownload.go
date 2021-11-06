@@ -86,7 +86,7 @@ func (*FileDownload) scanValues(columns []string) ([]interface{}, error) {
 		case filedownload.FieldID:
 			values[i] = new(uuid.UUID)
 		case filedownload.ForeignKeys[0]: // environment_environment_to_file_download
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type FileDownload", columns[i])
 		}
@@ -163,7 +163,6 @@ func (fd *FileDownload) assignValues(columns []string, values []interface{}) err
 				fd.AbsPath = value.String
 			}
 		case filedownload.FieldTags:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -172,10 +171,11 @@ func (fd *FileDownload) assignValues(columns []string, values []interface{}) err
 				}
 			}
 		case filedownload.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field environment_environment_to_file_download", values[i])
-			} else if value != nil {
-				fd.environment_environment_to_file_download = value
+			} else if value.Valid {
+				fd.environment_environment_to_file_download = new(uuid.UUID)
+				*fd.environment_environment_to_file_download = *value.S.(*uuid.UUID)
 			}
 		}
 	}

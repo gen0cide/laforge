@@ -25,14 +25,14 @@ const (
 	EdgePlanDiffToPlan = "PlanDiffToPlan"
 	// Table holds the table name of the plandiff in the database.
 	Table = "plan_diffs"
-	// PlanDiffToBuildCommitTable is the table the holds the PlanDiffToBuildCommit relation/edge.
+	// PlanDiffToBuildCommitTable is the table that holds the PlanDiffToBuildCommit relation/edge.
 	PlanDiffToBuildCommitTable = "plan_diffs"
 	// PlanDiffToBuildCommitInverseTable is the table name for the BuildCommit entity.
 	// It exists in this package in order to avoid circular dependency with the "buildcommit" package.
 	PlanDiffToBuildCommitInverseTable = "build_commits"
 	// PlanDiffToBuildCommitColumn is the table column denoting the PlanDiffToBuildCommit relation/edge.
 	PlanDiffToBuildCommitColumn = "plan_diff_plan_diff_to_build_commit"
-	// PlanDiffToPlanTable is the table the holds the PlanDiffToPlan relation/edge.
+	// PlanDiffToPlanTable is the table that holds the PlanDiffToPlan relation/edge.
 	PlanDiffToPlanTable = "plan_diffs"
 	// PlanDiffToPlanInverseTable is the table name for the Plan entity.
 	// It exists in this package in order to avoid circular dependency with the "plan" package.

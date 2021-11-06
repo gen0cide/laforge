@@ -20,9 +20,9 @@ type AuthUserDelete struct {
 	mutation *AuthUserMutation
 }
 
-// Where adds a new predicate to the AuthUserDelete builder.
+// Where appends a list predicates to the AuthUserDelete builder.
 func (aud *AuthUserDelete) Where(ps ...predicate.AuthUser) *AuthUserDelete {
-	aud.mutation.predicates = append(aud.mutation.predicates, ps...)
+	aud.mutation.Where(ps...)
 	return aud
 }
 
@@ -46,6 +46,9 @@ func (aud *AuthUserDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(aud.hooks) - 1; i >= 0; i-- {
+			if aud.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = aud.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, aud.mutation); err != nil {

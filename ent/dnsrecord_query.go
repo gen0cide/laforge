@@ -326,8 +326,8 @@ func (drq *DNSRecordQuery) GroupBy(field string, fields ...string) *DNSRecordGro
 //		Select(dnsrecord.FieldHclID).
 //		Scan(ctx, &v)
 //
-func (drq *DNSRecordQuery) Select(field string, fields ...string) *DNSRecordSelect {
-	drq.fields = append([]string{field}, fields...)
+func (drq *DNSRecordQuery) Select(fields ...string) *DNSRecordSelect {
+	drq.fields = append(drq.fields, fields...)
 	return &DNSRecordSelect{DNSRecordQuery: drq}
 }
 
@@ -478,10 +478,14 @@ func (drq *DNSRecordQuery) querySpec() *sqlgraph.QuerySpec {
 func (drq *DNSRecordQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(drq.driver.Dialect())
 	t1 := builder.Table(dnsrecord.Table)
-	selector := builder.Select(t1.Columns(dnsrecord.Columns...)...).From(t1)
+	columns := drq.fields
+	if len(columns) == 0 {
+		columns = dnsrecord.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if drq.sql != nil {
 		selector = drq.sql
-		selector.Select(selector.Columns(dnsrecord.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range drq.predicates {
 		p(selector)
@@ -749,13 +753,24 @@ func (drgb *DNSRecordGroupBy) sqlScan(ctx context.Context, v interface{}) error 
 }
 
 func (drgb *DNSRecordGroupBy) sqlQuery() *sql.Selector {
-	selector := drgb.sql
-	columns := make([]string, 0, len(drgb.fields)+len(drgb.fns))
-	columns = append(columns, drgb.fields...)
+	selector := drgb.sql.Select()
+	aggregation := make([]string, 0, len(drgb.fns))
 	for _, fn := range drgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(drgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(drgb.fields)+len(drgb.fns))
+		for _, f := range drgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(drgb.fields...)...)
 }
 
 // DNSRecordSelect is the builder for selecting fields of DNSRecord entities.
@@ -971,16 +986,10 @@ func (drs *DNSRecordSelect) BoolX(ctx context.Context) bool {
 
 func (drs *DNSRecordSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := drs.sqlQuery().Query()
+	query, args := drs.sql.Query()
 	if err := drs.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (drs *DNSRecordSelect) sqlQuery() sql.Querier {
-	selector := drs.sql
-	selector.Select(selector.Columns(drs.fields...)...)
-	return selector
 }

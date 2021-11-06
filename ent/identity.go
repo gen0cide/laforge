@@ -82,7 +82,7 @@ func (*Identity) scanValues(columns []string) ([]interface{}, error) {
 		case identity.FieldID:
 			values[i] = new(uuid.UUID)
 		case identity.ForeignKeys[0]: // environment_environment_to_identity
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Identity", columns[i])
 		}
@@ -147,7 +147,6 @@ func (i *Identity) assignValues(columns []string, values []interface{}) error {
 				i.AvatarFile = value.String
 			}
 		case identity.FieldVars:
-
 			if value, ok := values[j].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field vars", values[j])
 			} else if value != nil && len(*value) > 0 {
@@ -156,7 +155,6 @@ func (i *Identity) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case identity.FieldTags:
-
 			if value, ok := values[j].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[j])
 			} else if value != nil && len(*value) > 0 {
@@ -165,10 +163,11 @@ func (i *Identity) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case identity.ForeignKeys[0]:
-			if value, ok := values[j].(*uuid.UUID); !ok {
+			if value, ok := values[j].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field environment_environment_to_identity", values[j])
-			} else if value != nil {
-				i.environment_environment_to_identity = value
+			} else if value.Valid {
+				i.environment_environment_to_identity = new(uuid.UUID)
+				*i.environment_environment_to_identity = *value.S.(*uuid.UUID)
 			}
 		}
 	}

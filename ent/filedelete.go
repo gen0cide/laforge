@@ -70,7 +70,7 @@ func (*FileDelete) scanValues(columns []string) ([]interface{}, error) {
 		case filedelete.FieldID:
 			values[i] = new(uuid.UUID)
 		case filedelete.ForeignKeys[0]: // environment_environment_to_file_delete
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type FileDelete", columns[i])
 		}
@@ -105,7 +105,6 @@ func (fd *FileDelete) assignValues(columns []string, values []interface{}) error
 				fd.Path = value.String
 			}
 		case filedelete.FieldTags:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -114,10 +113,11 @@ func (fd *FileDelete) assignValues(columns []string, values []interface{}) error
 				}
 			}
 		case filedelete.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field environment_environment_to_file_delete", values[i])
-			} else if value != nil {
-				fd.environment_environment_to_file_delete = value
+			} else if value.Valid {
+				fd.environment_environment_to_file_delete = new(uuid.UUID)
+				*fd.environment_environment_to_file_delete = *value.S.(*uuid.UUID)
 			}
 		}
 	}

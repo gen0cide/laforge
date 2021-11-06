@@ -25,26 +25,26 @@ const (
 	EdgeIncludedNetworkToEnvironment = "IncludedNetworkToEnvironment"
 	// Table holds the table name of the includednetwork in the database.
 	Table = "included_networks"
-	// IncludedNetworkToTagTable is the table the holds the IncludedNetworkToTag relation/edge.
+	// IncludedNetworkToTagTable is the table that holds the IncludedNetworkToTag relation/edge.
 	IncludedNetworkToTagTable = "tags"
 	// IncludedNetworkToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
 	IncludedNetworkToTagInverseTable = "tags"
 	// IncludedNetworkToTagColumn is the table column denoting the IncludedNetworkToTag relation/edge.
 	IncludedNetworkToTagColumn = "included_network_included_network_to_tag"
-	// IncludedNetworkToHostTable is the table the holds the IncludedNetworkToHost relation/edge. The primary key declared below.
+	// IncludedNetworkToHostTable is the table that holds the IncludedNetworkToHost relation/edge. The primary key declared below.
 	IncludedNetworkToHostTable = "included_network_IncludedNetworkToHost"
 	// IncludedNetworkToHostInverseTable is the table name for the Host entity.
 	// It exists in this package in order to avoid circular dependency with the "host" package.
 	IncludedNetworkToHostInverseTable = "hosts"
-	// IncludedNetworkToNetworkTable is the table the holds the IncludedNetworkToNetwork relation/edge.
+	// IncludedNetworkToNetworkTable is the table that holds the IncludedNetworkToNetwork relation/edge.
 	IncludedNetworkToNetworkTable = "included_networks"
 	// IncludedNetworkToNetworkInverseTable is the table name for the Network entity.
 	// It exists in this package in order to avoid circular dependency with the "network" package.
 	IncludedNetworkToNetworkInverseTable = "networks"
 	// IncludedNetworkToNetworkColumn is the table column denoting the IncludedNetworkToNetwork relation/edge.
 	IncludedNetworkToNetworkColumn = "included_network_included_network_to_network"
-	// IncludedNetworkToEnvironmentTable is the table the holds the IncludedNetworkToEnvironment relation/edge. The primary key declared below.
+	// IncludedNetworkToEnvironmentTable is the table that holds the IncludedNetworkToEnvironment relation/edge. The primary key declared below.
 	IncludedNetworkToEnvironmentTable = "environment_EnvironmentToIncludedNetwork"
 	// IncludedNetworkToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.

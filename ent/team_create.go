@@ -133,11 +133,17 @@ func (tc *TeamCreate) Save(ctx context.Context) (*Team, error) {
 				return nil, err
 			}
 			tc.mutation = mutation
-			node, err = tc.sqlSave(ctx)
+			if node, err = tc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(tc.hooks) - 1; i >= 0; i-- {
+			if tc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = tc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, tc.mutation); err != nil {
@@ -156,6 +162,19 @@ func (tc *TeamCreate) SaveX(ctx context.Context) *Team {
 	return v
 }
 
+// Exec executes the query.
+func (tc *TeamCreate) Exec(ctx context.Context) error {
+	_, err := tc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (tc *TeamCreate) ExecX(ctx context.Context) {
+	if err := tc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (tc *TeamCreate) defaults() {
 	if _, ok := tc.mutation.ID(); !ok {
@@ -167,10 +186,10 @@ func (tc *TeamCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (tc *TeamCreate) check() error {
 	if _, ok := tc.mutation.TeamNumber(); !ok {
-		return &ValidationError{Name: "team_number", err: errors.New("ent: missing required field \"team_number\"")}
+		return &ValidationError{Name: "team_number", err: errors.New(`ent: missing required field "team_number"`)}
 	}
 	if _, ok := tc.mutation.Vars(); !ok {
-		return &ValidationError{Name: "vars", err: errors.New("ent: missing required field \"vars\"")}
+		return &ValidationError{Name: "vars", err: errors.New(`ent: missing required field "vars"`)}
 	}
 	if _, ok := tc.mutation.TeamToBuildID(); !ok {
 		return &ValidationError{Name: "TeamToBuild", err: errors.New("ent: missing required edge \"TeamToBuild\"")}
@@ -181,10 +200,13 @@ func (tc *TeamCreate) check() error {
 func (tc *TeamCreate) sqlSave(ctx context.Context) (*Team, error) {
 	_node, _spec := tc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, tc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -330,17 +352,19 @@ func (tcb *TeamCreateBulk) Save(ctx context.Context) ([]*Team, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, tcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, tcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, tcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -364,4 +388,17 @@ func (tcb *TeamCreateBulk) SaveX(ctx context.Context) []*Team {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (tcb *TeamCreateBulk) Exec(ctx context.Context) error {
+	_, err := tcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (tcb *TeamCreateBulk) ExecX(ctx context.Context) {
+	if err := tcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

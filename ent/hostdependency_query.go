@@ -433,8 +433,8 @@ func (hdq *HostDependencyQuery) GroupBy(field string, fields ...string) *HostDep
 //		Select(hostdependency.FieldHostID).
 //		Scan(ctx, &v)
 //
-func (hdq *HostDependencyQuery) Select(field string, fields ...string) *HostDependencySelect {
-	hdq.fields = append([]string{field}, fields...)
+func (hdq *HostDependencyQuery) Select(fields ...string) *HostDependencySelect {
+	hdq.fields = append(hdq.fields, fields...)
 	return &HostDependencySelect{HostDependencyQuery: hdq}
 }
 
@@ -675,10 +675,14 @@ func (hdq *HostDependencyQuery) querySpec() *sqlgraph.QuerySpec {
 func (hdq *HostDependencyQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(hdq.driver.Dialect())
 	t1 := builder.Table(hostdependency.Table)
-	selector := builder.Select(t1.Columns(hostdependency.Columns...)...).From(t1)
+	columns := hdq.fields
+	if len(columns) == 0 {
+		columns = hostdependency.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if hdq.sql != nil {
 		selector = hdq.sql
-		selector.Select(selector.Columns(hostdependency.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range hdq.predicates {
 		p(selector)
@@ -946,13 +950,24 @@ func (hdgb *HostDependencyGroupBy) sqlScan(ctx context.Context, v interface{}) e
 }
 
 func (hdgb *HostDependencyGroupBy) sqlQuery() *sql.Selector {
-	selector := hdgb.sql
-	columns := make([]string, 0, len(hdgb.fields)+len(hdgb.fns))
-	columns = append(columns, hdgb.fields...)
+	selector := hdgb.sql.Select()
+	aggregation := make([]string, 0, len(hdgb.fns))
 	for _, fn := range hdgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(hdgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(hdgb.fields)+len(hdgb.fns))
+		for _, f := range hdgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(hdgb.fields...)...)
 }
 
 // HostDependencySelect is the builder for selecting fields of HostDependency entities.
@@ -1168,16 +1183,10 @@ func (hds *HostDependencySelect) BoolX(ctx context.Context) bool {
 
 func (hds *HostDependencySelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := hds.sqlQuery().Query()
+	query, args := hds.sql.Query()
 	if err := hds.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (hds *HostDependencySelect) sqlQuery() sql.Querier {
-	selector := hds.sql
-	selector.Select(selector.Columns(hds.fields...)...)
-	return selector
 }

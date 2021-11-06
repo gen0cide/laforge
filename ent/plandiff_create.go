@@ -89,11 +89,17 @@ func (pdc *PlanDiffCreate) Save(ctx context.Context) (*PlanDiff, error) {
 				return nil, err
 			}
 			pdc.mutation = mutation
-			node, err = pdc.sqlSave(ctx)
+			if node, err = pdc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(pdc.hooks) - 1; i >= 0; i-- {
+			if pdc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = pdc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, pdc.mutation); err != nil {
@@ -112,6 +118,19 @@ func (pdc *PlanDiffCreate) SaveX(ctx context.Context) *PlanDiff {
 	return v
 }
 
+// Exec executes the query.
+func (pdc *PlanDiffCreate) Exec(ctx context.Context) error {
+	_, err := pdc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (pdc *PlanDiffCreate) ExecX(ctx context.Context) {
+	if err := pdc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (pdc *PlanDiffCreate) defaults() {
 	if _, ok := pdc.mutation.ID(); !ok {
@@ -123,14 +142,14 @@ func (pdc *PlanDiffCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (pdc *PlanDiffCreate) check() error {
 	if _, ok := pdc.mutation.Revision(); !ok {
-		return &ValidationError{Name: "revision", err: errors.New("ent: missing required field \"revision\"")}
+		return &ValidationError{Name: "revision", err: errors.New(`ent: missing required field "revision"`)}
 	}
 	if _, ok := pdc.mutation.NewState(); !ok {
-		return &ValidationError{Name: "new_state", err: errors.New("ent: missing required field \"new_state\"")}
+		return &ValidationError{Name: "new_state", err: errors.New(`ent: missing required field "new_state"`)}
 	}
 	if v, ok := pdc.mutation.NewState(); ok {
 		if err := plandiff.NewStateValidator(v); err != nil {
-			return &ValidationError{Name: "new_state", err: fmt.Errorf("ent: validator failed for field \"new_state\": %w", err)}
+			return &ValidationError{Name: "new_state", err: fmt.Errorf(`ent: validator failed for field "new_state": %w`, err)}
 		}
 	}
 	if _, ok := pdc.mutation.PlanDiffToBuildCommitID(); !ok {
@@ -145,10 +164,13 @@ func (pdc *PlanDiffCreate) check() error {
 func (pdc *PlanDiffCreate) sqlSave(ctx context.Context) (*PlanDiff, error) {
 	_node, _spec := pdc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, pdc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -256,17 +278,19 @@ func (pdcb *PlanDiffCreateBulk) Save(ctx context.Context) ([]*PlanDiff, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, pdcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, pdcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, pdcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -290,4 +314,17 @@ func (pdcb *PlanDiffCreateBulk) SaveX(ctx context.Context) []*PlanDiff {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (pdcb *PlanDiffCreateBulk) Exec(ctx context.Context) error {
+	_, err := pdcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (pdcb *PlanDiffCreateBulk) ExecX(ctx context.Context) {
+	if err := pdcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

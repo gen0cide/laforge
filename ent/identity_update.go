@@ -22,9 +22,9 @@ type IdentityUpdate struct {
 	mutation *IdentityMutation
 }
 
-// Where adds a new predicate for the IdentityUpdate builder.
+// Where appends a list predicates to the IdentityUpdate builder.
 func (iu *IdentityUpdate) Where(ps ...predicate.Identity) *IdentityUpdate {
-	iu.mutation.predicates = append(iu.mutation.predicates, ps...)
+	iu.mutation.Where(ps...)
 	return iu
 }
 
@@ -132,6 +132,9 @@ func (iu *IdentityUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(iu.hooks) - 1; i >= 0; i-- {
+			if iu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = iu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, iu.mutation); err != nil {
@@ -282,8 +285,8 @@ func (iu *IdentityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, iu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{identity.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -409,6 +412,9 @@ func (iuo *IdentityUpdateOne) Save(ctx context.Context) (*Identity, error) {
 			return node, err
 		})
 		for i := len(iuo.hooks) - 1; i >= 0; i-- {
+			if iuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = iuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, iuo.mutation); err != nil {
@@ -579,8 +585,8 @@ func (iuo *IdentityUpdateOne) sqlSave(ctx context.Context) (_node *Identity, err
 	if err = sqlgraph.UpdateNode(ctx, iuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{identity.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

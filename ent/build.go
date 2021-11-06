@@ -193,11 +193,11 @@ func (*Build) scanValues(columns []string) ([]interface{}, error) {
 		case build.FieldID:
 			values[i] = new(uuid.UUID)
 		case build.ForeignKeys[0]: // build_build_to_environment
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case build.ForeignKeys[1]: // build_build_to_competition
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case build.ForeignKeys[2]: // build_build_to_latest_build_commit
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Build", columns[i])
 		}
@@ -238,22 +238,25 @@ func (b *Build) assignValues(columns []string, values []interface{}) error {
 				b.CompletedPlan = value.Bool
 			}
 		case build.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field build_build_to_environment", values[i])
-			} else if value != nil {
-				b.build_build_to_environment = value
+			} else if value.Valid {
+				b.build_build_to_environment = new(uuid.UUID)
+				*b.build_build_to_environment = *value.S.(*uuid.UUID)
 			}
 		case build.ForeignKeys[1]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field build_build_to_competition", values[i])
-			} else if value != nil {
-				b.build_build_to_competition = value
+			} else if value.Valid {
+				b.build_build_to_competition = new(uuid.UUID)
+				*b.build_build_to_competition = *value.S.(*uuid.UUID)
 			}
 		case build.ForeignKeys[2]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field build_build_to_latest_build_commit", values[i])
-			} else if value != nil {
-				b.build_build_to_latest_build_commit = value
+			} else if value.Valid {
+				b.build_build_to_latest_build_commit = new(uuid.UUID)
+				*b.build_build_to_latest_build_commit = *value.S.(*uuid.UUID)
 			}
 		}
 	}

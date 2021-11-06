@@ -119,11 +119,17 @@ func (gfmc *GinFileMiddlewareCreate) Save(ctx context.Context) (*GinFileMiddlewa
 				return nil, err
 			}
 			gfmc.mutation = mutation
-			node, err = gfmc.sqlSave(ctx)
+			if node, err = gfmc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(gfmc.hooks) - 1; i >= 0; i-- {
+			if gfmc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = gfmc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, gfmc.mutation); err != nil {
@@ -142,6 +148,19 @@ func (gfmc *GinFileMiddlewareCreate) SaveX(ctx context.Context) *GinFileMiddlewa
 	return v
 }
 
+// Exec executes the query.
+func (gfmc *GinFileMiddlewareCreate) Exec(ctx context.Context) error {
+	_, err := gfmc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (gfmc *GinFileMiddlewareCreate) ExecX(ctx context.Context) {
+	if err := gfmc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (gfmc *GinFileMiddlewareCreate) defaults() {
 	if _, ok := gfmc.mutation.Accessed(); !ok {
@@ -157,13 +176,13 @@ func (gfmc *GinFileMiddlewareCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (gfmc *GinFileMiddlewareCreate) check() error {
 	if _, ok := gfmc.mutation.URLID(); !ok {
-		return &ValidationError{Name: "url_id", err: errors.New("ent: missing required field \"url_id\"")}
+		return &ValidationError{Name: "url_id", err: errors.New(`ent: missing required field "url_id"`)}
 	}
 	if _, ok := gfmc.mutation.FilePath(); !ok {
-		return &ValidationError{Name: "file_path", err: errors.New("ent: missing required field \"file_path\"")}
+		return &ValidationError{Name: "file_path", err: errors.New(`ent: missing required field "file_path"`)}
 	}
 	if _, ok := gfmc.mutation.Accessed(); !ok {
-		return &ValidationError{Name: "accessed", err: errors.New("ent: missing required field \"accessed\"")}
+		return &ValidationError{Name: "accessed", err: errors.New(`ent: missing required field "accessed"`)}
 	}
 	return nil
 }
@@ -171,10 +190,13 @@ func (gfmc *GinFileMiddlewareCreate) check() error {
 func (gfmc *GinFileMiddlewareCreate) sqlSave(ctx context.Context) (*GinFileMiddleware, error) {
 	_node, _spec := gfmc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, gfmc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -288,17 +310,19 @@ func (gfmcb *GinFileMiddlewareCreateBulk) Save(ctx context.Context) ([]*GinFileM
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, gfmcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, gfmcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, gfmcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -322,4 +346,17 @@ func (gfmcb *GinFileMiddlewareCreateBulk) SaveX(ctx context.Context) []*GinFileM
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (gfmcb *GinFileMiddlewareCreateBulk) Exec(ctx context.Context) error {
+	_, err := gfmcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (gfmcb *GinFileMiddlewareCreateBulk) ExecX(ctx context.Context) {
+	if err := gfmcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

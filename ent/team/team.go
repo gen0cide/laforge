@@ -25,28 +25,28 @@ const (
 	EdgeTeamToPlan = "TeamToPlan"
 	// Table holds the table name of the team in the database.
 	Table = "teams"
-	// TeamToBuildTable is the table the holds the TeamToBuild relation/edge.
+	// TeamToBuildTable is the table that holds the TeamToBuild relation/edge.
 	TeamToBuildTable = "teams"
 	// TeamToBuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
 	TeamToBuildInverseTable = "builds"
 	// TeamToBuildColumn is the table column denoting the TeamToBuild relation/edge.
 	TeamToBuildColumn = "team_team_to_build"
-	// TeamToStatusTable is the table the holds the TeamToStatus relation/edge.
+	// TeamToStatusTable is the table that holds the TeamToStatus relation/edge.
 	TeamToStatusTable = "status"
 	// TeamToStatusInverseTable is the table name for the Status entity.
 	// It exists in this package in order to avoid circular dependency with the "status" package.
 	TeamToStatusInverseTable = "status"
 	// TeamToStatusColumn is the table column denoting the TeamToStatus relation/edge.
 	TeamToStatusColumn = "team_team_to_status"
-	// TeamToProvisionedNetworkTable is the table the holds the TeamToProvisionedNetwork relation/edge.
+	// TeamToProvisionedNetworkTable is the table that holds the TeamToProvisionedNetwork relation/edge.
 	TeamToProvisionedNetworkTable = "provisioned_networks"
 	// TeamToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
 	TeamToProvisionedNetworkInverseTable = "provisioned_networks"
 	// TeamToProvisionedNetworkColumn is the table column denoting the TeamToProvisionedNetwork relation/edge.
 	TeamToProvisionedNetworkColumn = "provisioned_network_provisioned_network_to_team"
-	// TeamToPlanTable is the table the holds the TeamToPlan relation/edge.
+	// TeamToPlanTable is the table that holds the TeamToPlan relation/edge.
 	TeamToPlanTable = "teams"
 	// TeamToPlanInverseTable is the table name for the Plan entity.
 	// It exists in this package in order to avoid circular dependency with the "plan" package.

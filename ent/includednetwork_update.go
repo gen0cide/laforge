@@ -25,9 +25,9 @@ type IncludedNetworkUpdate struct {
 	mutation *IncludedNetworkMutation
 }
 
-// Where adds a new predicate for the IncludedNetworkUpdate builder.
+// Where appends a list predicates to the IncludedNetworkUpdate builder.
 func (inu *IncludedNetworkUpdate) Where(ps ...predicate.IncludedNetwork) *IncludedNetworkUpdate {
-	inu.mutation.predicates = append(inu.mutation.predicates, ps...)
+	inu.mutation.Where(ps...)
 	return inu
 }
 
@@ -201,6 +201,9 @@ func (inu *IncludedNetworkUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(inu.hooks) - 1; i >= 0; i-- {
+			if inu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = inu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, inu.mutation); err != nil {
@@ -464,8 +467,8 @@ func (inu *IncludedNetworkUpdate) sqlSave(ctx context.Context) (n int, err error
 	if n, err = sqlgraph.UpdateNodes(ctx, inu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{includednetwork.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -657,6 +660,9 @@ func (inuo *IncludedNetworkUpdateOne) Save(ctx context.Context) (*IncludedNetwor
 			return node, err
 		})
 		for i := len(inuo.hooks) - 1; i >= 0; i-- {
+			if inuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = inuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, inuo.mutation); err != nil {
@@ -940,8 +946,8 @@ func (inuo *IncludedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Inclu
 	if err = sqlgraph.UpdateNode(ctx, inuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{includednetwork.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

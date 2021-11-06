@@ -74,7 +74,7 @@ func (*FileExtract) scanValues(columns []string) ([]interface{}, error) {
 		case fileextract.FieldID:
 			values[i] = new(uuid.UUID)
 		case fileextract.ForeignKeys[0]: // environment_environment_to_file_extract
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type FileExtract", columns[i])
 		}
@@ -121,7 +121,6 @@ func (fe *FileExtract) assignValues(columns []string, values []interface{}) erro
 				fe.Type = value.String
 			}
 		case fileextract.FieldTags:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -130,10 +129,11 @@ func (fe *FileExtract) assignValues(columns []string, values []interface{}) erro
 				}
 			}
 		case fileextract.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field environment_environment_to_file_extract", values[i])
-			} else if value != nil {
-				fe.environment_environment_to_file_extract = value
+			} else if value.Valid {
+				fe.environment_environment_to_file_extract = new(uuid.UUID)
+				*fe.environment_environment_to_file_extract = *value.S.(*uuid.UUID)
 			}
 		}
 	}

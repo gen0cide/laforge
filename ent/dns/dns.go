@@ -29,12 +29,12 @@ const (
 	EdgeDNSToCompetition = "DNSToCompetition"
 	// Table holds the table name of the dns in the database.
 	Table = "dn_ss"
-	// DNSToEnvironmentTable is the table the holds the DNSToEnvironment relation/edge. The primary key declared below.
+	// DNSToEnvironmentTable is the table that holds the DNSToEnvironment relation/edge. The primary key declared below.
 	DNSToEnvironmentTable = "environment_EnvironmentToDNS"
 	// DNSToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	DNSToEnvironmentInverseTable = "environments"
-	// DNSToCompetitionTable is the table the holds the DNSToCompetition relation/edge. The primary key declared below.
+	// DNSToCompetitionTable is the table that holds the DNSToCompetition relation/edge. The primary key declared below.
 	DNSToCompetitionTable = "competition_CompetitionToDNS"
 	// DNSToCompetitionInverseTable is the table name for the Competition entity.
 	// It exists in this package in order to avoid circular dependency with the "competition" package.

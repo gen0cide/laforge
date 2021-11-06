@@ -29,42 +29,42 @@ const (
 	EdgeProvisionedNetworkToPlan = "ProvisionedNetworkToPlan"
 	// Table holds the table name of the provisionednetwork in the database.
 	Table = "provisioned_networks"
-	// ProvisionedNetworkToStatusTable is the table the holds the ProvisionedNetworkToStatus relation/edge.
+	// ProvisionedNetworkToStatusTable is the table that holds the ProvisionedNetworkToStatus relation/edge.
 	ProvisionedNetworkToStatusTable = "status"
 	// ProvisionedNetworkToStatusInverseTable is the table name for the Status entity.
 	// It exists in this package in order to avoid circular dependency with the "status" package.
 	ProvisionedNetworkToStatusInverseTable = "status"
 	// ProvisionedNetworkToStatusColumn is the table column denoting the ProvisionedNetworkToStatus relation/edge.
 	ProvisionedNetworkToStatusColumn = "provisioned_network_provisioned_network_to_status"
-	// ProvisionedNetworkToNetworkTable is the table the holds the ProvisionedNetworkToNetwork relation/edge.
+	// ProvisionedNetworkToNetworkTable is the table that holds the ProvisionedNetworkToNetwork relation/edge.
 	ProvisionedNetworkToNetworkTable = "provisioned_networks"
 	// ProvisionedNetworkToNetworkInverseTable is the table name for the Network entity.
 	// It exists in this package in order to avoid circular dependency with the "network" package.
 	ProvisionedNetworkToNetworkInverseTable = "networks"
 	// ProvisionedNetworkToNetworkColumn is the table column denoting the ProvisionedNetworkToNetwork relation/edge.
 	ProvisionedNetworkToNetworkColumn = "provisioned_network_provisioned_network_to_network"
-	// ProvisionedNetworkToBuildTable is the table the holds the ProvisionedNetworkToBuild relation/edge.
+	// ProvisionedNetworkToBuildTable is the table that holds the ProvisionedNetworkToBuild relation/edge.
 	ProvisionedNetworkToBuildTable = "provisioned_networks"
 	// ProvisionedNetworkToBuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
 	ProvisionedNetworkToBuildInverseTable = "builds"
 	// ProvisionedNetworkToBuildColumn is the table column denoting the ProvisionedNetworkToBuild relation/edge.
 	ProvisionedNetworkToBuildColumn = "provisioned_network_provisioned_network_to_build"
-	// ProvisionedNetworkToTeamTable is the table the holds the ProvisionedNetworkToTeam relation/edge.
+	// ProvisionedNetworkToTeamTable is the table that holds the ProvisionedNetworkToTeam relation/edge.
 	ProvisionedNetworkToTeamTable = "provisioned_networks"
 	// ProvisionedNetworkToTeamInverseTable is the table name for the Team entity.
 	// It exists in this package in order to avoid circular dependency with the "team" package.
 	ProvisionedNetworkToTeamInverseTable = "teams"
 	// ProvisionedNetworkToTeamColumn is the table column denoting the ProvisionedNetworkToTeam relation/edge.
 	ProvisionedNetworkToTeamColumn = "provisioned_network_provisioned_network_to_team"
-	// ProvisionedNetworkToProvisionedHostTable is the table the holds the ProvisionedNetworkToProvisionedHost relation/edge.
+	// ProvisionedNetworkToProvisionedHostTable is the table that holds the ProvisionedNetworkToProvisionedHost relation/edge.
 	ProvisionedNetworkToProvisionedHostTable = "provisioned_hosts"
 	// ProvisionedNetworkToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	ProvisionedNetworkToProvisionedHostInverseTable = "provisioned_hosts"
 	// ProvisionedNetworkToProvisionedHostColumn is the table column denoting the ProvisionedNetworkToProvisionedHost relation/edge.
 	ProvisionedNetworkToProvisionedHostColumn = "provisioned_host_provisioned_host_to_provisioned_network"
-	// ProvisionedNetworkToPlanTable is the table the holds the ProvisionedNetworkToPlan relation/edge.
+	// ProvisionedNetworkToPlanTable is the table that holds the ProvisionedNetworkToPlan relation/edge.
 	ProvisionedNetworkToPlanTable = "provisioned_networks"
 	// ProvisionedNetworkToPlanInverseTable is the table name for the Plan entity.
 	// It exists in this package in order to avoid circular dependency with the "plan" package.

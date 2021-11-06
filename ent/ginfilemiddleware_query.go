@@ -363,8 +363,8 @@ func (gfmq *GinFileMiddlewareQuery) GroupBy(field string, fields ...string) *Gin
 //		Select(ginfilemiddleware.FieldURLID).
 //		Scan(ctx, &v)
 //
-func (gfmq *GinFileMiddlewareQuery) Select(field string, fields ...string) *GinFileMiddlewareSelect {
-	gfmq.fields = append([]string{field}, fields...)
+func (gfmq *GinFileMiddlewareQuery) Select(fields ...string) *GinFileMiddlewareSelect {
+	gfmq.fields = append(gfmq.fields, fields...)
 	return &GinFileMiddlewareSelect{GinFileMiddlewareQuery: gfmq}
 }
 
@@ -540,10 +540,14 @@ func (gfmq *GinFileMiddlewareQuery) querySpec() *sqlgraph.QuerySpec {
 func (gfmq *GinFileMiddlewareQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(gfmq.driver.Dialect())
 	t1 := builder.Table(ginfilemiddleware.Table)
-	selector := builder.Select(t1.Columns(ginfilemiddleware.Columns...)...).From(t1)
+	columns := gfmq.fields
+	if len(columns) == 0 {
+		columns = ginfilemiddleware.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if gfmq.sql != nil {
 		selector = gfmq.sql
-		selector.Select(selector.Columns(ginfilemiddleware.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range gfmq.predicates {
 		p(selector)
@@ -811,13 +815,24 @@ func (gfmgb *GinFileMiddlewareGroupBy) sqlScan(ctx context.Context, v interface{
 }
 
 func (gfmgb *GinFileMiddlewareGroupBy) sqlQuery() *sql.Selector {
-	selector := gfmgb.sql
-	columns := make([]string, 0, len(gfmgb.fields)+len(gfmgb.fns))
-	columns = append(columns, gfmgb.fields...)
+	selector := gfmgb.sql.Select()
+	aggregation := make([]string, 0, len(gfmgb.fns))
 	for _, fn := range gfmgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(gfmgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(gfmgb.fields)+len(gfmgb.fns))
+		for _, f := range gfmgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(gfmgb.fields...)...)
 }
 
 // GinFileMiddlewareSelect is the builder for selecting fields of GinFileMiddleware entities.
@@ -1033,16 +1048,10 @@ func (gfms *GinFileMiddlewareSelect) BoolX(ctx context.Context) bool {
 
 func (gfms *GinFileMiddlewareSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := gfms.sqlQuery().Query()
+	query, args := gfms.sql.Query()
 	if err := gfms.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (gfms *GinFileMiddlewareSelect) sqlQuery() sql.Querier {
-	selector := gfms.sql
-	selector.Select(selector.Columns(gfms.fields...)...)
-	return selector
 }

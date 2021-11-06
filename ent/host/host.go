@@ -53,40 +53,40 @@ const (
 	EdgeDependByHostToHostDependency = "DependByHostToHostDependency"
 	// Table holds the table name of the host in the database.
 	Table = "hosts"
-	// HostToDiskTable is the table the holds the HostToDisk relation/edge.
+	// HostToDiskTable is the table that holds the HostToDisk relation/edge.
 	HostToDiskTable = "disks"
 	// HostToDiskInverseTable is the table name for the Disk entity.
 	// It exists in this package in order to avoid circular dependency with the "disk" package.
 	HostToDiskInverseTable = "disks"
 	// HostToDiskColumn is the table column denoting the HostToDisk relation/edge.
 	HostToDiskColumn = "host_host_to_disk"
-	// HostToUserTable is the table the holds the HostToUser relation/edge.
+	// HostToUserTable is the table that holds the HostToUser relation/edge.
 	HostToUserTable = "users"
 	// HostToUserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	HostToUserInverseTable = "users"
 	// HostToUserColumn is the table column denoting the HostToUser relation/edge.
 	HostToUserColumn = "host_host_to_user"
-	// HostToEnvironmentTable is the table the holds the HostToEnvironment relation/edge.
+	// HostToEnvironmentTable is the table that holds the HostToEnvironment relation/edge.
 	HostToEnvironmentTable = "hosts"
 	// HostToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	HostToEnvironmentInverseTable = "environments"
 	// HostToEnvironmentColumn is the table column denoting the HostToEnvironment relation/edge.
 	HostToEnvironmentColumn = "environment_environment_to_host"
-	// HostToIncludedNetworkTable is the table the holds the HostToIncludedNetwork relation/edge. The primary key declared below.
+	// HostToIncludedNetworkTable is the table that holds the HostToIncludedNetwork relation/edge. The primary key declared below.
 	HostToIncludedNetworkTable = "included_network_IncludedNetworkToHost"
 	// HostToIncludedNetworkInverseTable is the table name for the IncludedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "includednetwork" package.
 	HostToIncludedNetworkInverseTable = "included_networks"
-	// DependOnHostToHostDependencyTable is the table the holds the DependOnHostToHostDependency relation/edge.
+	// DependOnHostToHostDependencyTable is the table that holds the DependOnHostToHostDependency relation/edge.
 	DependOnHostToHostDependencyTable = "host_dependencies"
 	// DependOnHostToHostDependencyInverseTable is the table name for the HostDependency entity.
 	// It exists in this package in order to avoid circular dependency with the "hostdependency" package.
 	DependOnHostToHostDependencyInverseTable = "host_dependencies"
 	// DependOnHostToHostDependencyColumn is the table column denoting the DependOnHostToHostDependency relation/edge.
 	DependOnHostToHostDependencyColumn = "host_dependency_host_dependency_to_depend_on_host"
-	// DependByHostToHostDependencyTable is the table the holds the DependByHostToHostDependency relation/edge.
+	// DependByHostToHostDependencyTable is the table that holds the DependByHostToHostDependency relation/edge.
 	DependByHostToHostDependencyTable = "host_dependencies"
 	// DependByHostToHostDependencyInverseTable is the table name for the HostDependency entity.
 	// It exists in this package in order to avoid circular dependency with the "hostdependency" package.

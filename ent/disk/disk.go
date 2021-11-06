@@ -17,7 +17,7 @@ const (
 	EdgeDiskToHost = "DiskToHost"
 	// Table holds the table name of the disk in the database.
 	Table = "disks"
-	// DiskToHostTable is the table the holds the DiskToHost relation/edge.
+	// DiskToHostTable is the table that holds the DiskToHost relation/edge.
 	DiskToHostTable = "disks"
 	// DiskToHostInverseTable is the table name for the Host entity.
 	// It exists in this package in order to avoid circular dependency with the "host" package.

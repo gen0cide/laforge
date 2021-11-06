@@ -228,11 +228,17 @@ func (phc *ProvisionedHostCreate) Save(ctx context.Context) (*ProvisionedHost, e
 				return nil, err
 			}
 			phc.mutation = mutation
-			node, err = phc.sqlSave(ctx)
+			if node, err = phc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(phc.hooks) - 1; i >= 0; i-- {
+			if phc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = phc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, phc.mutation); err != nil {
@@ -251,6 +257,19 @@ func (phc *ProvisionedHostCreate) SaveX(ctx context.Context) *ProvisionedHost {
 	return v
 }
 
+// Exec executes the query.
+func (phc *ProvisionedHostCreate) Exec(ctx context.Context) error {
+	_, err := phc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (phc *ProvisionedHostCreate) ExecX(ctx context.Context) {
+	if err := phc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (phc *ProvisionedHostCreate) defaults() {
 	if _, ok := phc.mutation.ID(); !ok {
@@ -262,11 +281,11 @@ func (phc *ProvisionedHostCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (phc *ProvisionedHostCreate) check() error {
 	if _, ok := phc.mutation.SubnetIP(); !ok {
-		return &ValidationError{Name: "subnet_ip", err: errors.New("ent: missing required field \"subnet_ip\"")}
+		return &ValidationError{Name: "subnet_ip", err: errors.New(`ent: missing required field "subnet_ip"`)}
 	}
 	if v, ok := phc.mutation.AddonType(); ok {
 		if err := provisionedhost.AddonTypeValidator(v); err != nil {
-			return &ValidationError{Name: "addon_type", err: fmt.Errorf("ent: validator failed for field \"addon_type\": %w", err)}
+			return &ValidationError{Name: "addon_type", err: fmt.Errorf(`ent: validator failed for field "addon_type": %w`, err)}
 		}
 	}
 	if _, ok := phc.mutation.ProvisionedHostToStatusID(); !ok {
@@ -287,10 +306,13 @@ func (phc *ProvisionedHostCreate) check() error {
 func (phc *ProvisionedHostCreate) sqlSave(ctx context.Context) (*ProvisionedHost, error) {
 	_node, _spec := phc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, phc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -554,17 +576,19 @@ func (phcb *ProvisionedHostCreateBulk) Save(ctx context.Context) ([]*Provisioned
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, phcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, phcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, phcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -588,4 +612,17 @@ func (phcb *ProvisionedHostCreateBulk) SaveX(ctx context.Context) []*Provisioned
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (phcb *ProvisionedHostCreateBulk) Exec(ctx context.Context) error {
+	_, err := phcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (phcb *ProvisionedHostCreateBulk) ExecX(ctx context.Context) {
+	if err := phcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

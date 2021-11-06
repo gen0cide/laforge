@@ -121,11 +121,17 @@ func (drc *DNSRecordCreate) Save(ctx context.Context) (*DNSRecord, error) {
 				return nil, err
 			}
 			drc.mutation = mutation
-			node, err = drc.sqlSave(ctx)
+			if node, err = drc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(drc.hooks) - 1; i >= 0; i-- {
+			if drc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = drc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, drc.mutation); err != nil {
@@ -144,6 +150,19 @@ func (drc *DNSRecordCreate) SaveX(ctx context.Context) *DNSRecord {
 	return v
 }
 
+// Exec executes the query.
+func (drc *DNSRecordCreate) Exec(ctx context.Context) error {
+	_, err := drc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (drc *DNSRecordCreate) ExecX(ctx context.Context) {
+	if err := drc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (drc *DNSRecordCreate) defaults() {
 	if _, ok := drc.mutation.ID(); !ok {
@@ -155,28 +174,28 @@ func (drc *DNSRecordCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (drc *DNSRecordCreate) check() error {
 	if _, ok := drc.mutation.HclID(); !ok {
-		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+		return &ValidationError{Name: "hcl_id", err: errors.New(`ent: missing required field "hcl_id"`)}
 	}
 	if _, ok := drc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
 	}
 	if _, ok := drc.mutation.Values(); !ok {
-		return &ValidationError{Name: "values", err: errors.New("ent: missing required field \"values\"")}
+		return &ValidationError{Name: "values", err: errors.New(`ent: missing required field "values"`)}
 	}
 	if _, ok := drc.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New("ent: missing required field \"type\"")}
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "type"`)}
 	}
 	if _, ok := drc.mutation.Zone(); !ok {
-		return &ValidationError{Name: "zone", err: errors.New("ent: missing required field \"zone\"")}
+		return &ValidationError{Name: "zone", err: errors.New(`ent: missing required field "zone"`)}
 	}
 	if _, ok := drc.mutation.Vars(); !ok {
-		return &ValidationError{Name: "vars", err: errors.New("ent: missing required field \"vars\"")}
+		return &ValidationError{Name: "vars", err: errors.New(`ent: missing required field "vars"`)}
 	}
 	if _, ok := drc.mutation.Disabled(); !ok {
-		return &ValidationError{Name: "disabled", err: errors.New("ent: missing required field \"disabled\"")}
+		return &ValidationError{Name: "disabled", err: errors.New(`ent: missing required field "disabled"`)}
 	}
 	if _, ok := drc.mutation.Tags(); !ok {
-		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "tags"`)}
 	}
 	return nil
 }
@@ -184,10 +203,13 @@ func (drc *DNSRecordCreate) check() error {
 func (drc *DNSRecordCreate) sqlSave(ctx context.Context) (*DNSRecord, error) {
 	_node, _spec := drc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, drc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -323,17 +345,19 @@ func (drcb *DNSRecordCreateBulk) Save(ctx context.Context) ([]*DNSRecord, error)
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, drcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, drcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, drcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -357,4 +381,17 @@ func (drcb *DNSRecordCreateBulk) SaveX(ctx context.Context) []*DNSRecord {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (drcb *DNSRecordCreateBulk) Exec(ctx context.Context) error {
+	_, err := drcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (drcb *DNSRecordCreateBulk) ExecX(ctx context.Context) {
+	if err := drcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

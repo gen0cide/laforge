@@ -902,8 +902,8 @@ func (eq *EnvironmentQuery) GroupBy(field string, fields ...string) *Environment
 //		Select(environment.FieldHclID).
 //		Scan(ctx, &v)
 //
-func (eq *EnvironmentQuery) Select(field string, fields ...string) *EnvironmentSelect {
-	eq.fields = append([]string{field}, fields...)
+func (eq *EnvironmentQuery) Select(fields ...string) *EnvironmentSelect {
+	eq.fields = append(eq.fields, fields...)
 	return &EnvironmentSelect{EnvironmentQuery: eq}
 }
 
@@ -989,7 +989,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 				s.Where(sql.InValues(environment.EnvironmentToUserPrimaryKey[0], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
+				return [2]interface{}{new(uuid.UUID), new(uuid.UUID)}
 			},
 			Assign: func(out, in interface{}) error {
 				eout, ok := out.(*uuid.UUID)
@@ -1286,7 +1286,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 				s.Where(sql.InValues(environment.EnvironmentToIncludedNetworkPrimaryKey[0], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
+				return [2]interface{}{new(uuid.UUID), new(uuid.UUID)}
 			},
 			Assign: func(out, in interface{}) error {
 				eout, ok := out.(*uuid.UUID)
@@ -1409,7 +1409,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 				s.Where(sql.InValues(environment.EnvironmentToDNSPrimaryKey[0], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
+				return [2]interface{}{new(uuid.UUID), new(uuid.UUID)}
 			},
 			Assign: func(out, in interface{}) error {
 				eout, ok := out.(*uuid.UUID)
@@ -1561,7 +1561,7 @@ func (eq *EnvironmentQuery) sqlAll(ctx context.Context) ([]*Environment, error) 
 				s.Where(sql.InValues(environment.EnvironmentToRepositoryPrimaryKey[1], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
+				return [2]interface{}{new(uuid.UUID), new(uuid.UUID)}
 			},
 			Assign: func(out, in interface{}) error {
 				eout, ok := out.(*uuid.UUID)
@@ -1671,10 +1671,14 @@ func (eq *EnvironmentQuery) querySpec() *sqlgraph.QuerySpec {
 func (eq *EnvironmentQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(eq.driver.Dialect())
 	t1 := builder.Table(environment.Table)
-	selector := builder.Select(t1.Columns(environment.Columns...)...).From(t1)
+	columns := eq.fields
+	if len(columns) == 0 {
+		columns = environment.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if eq.sql != nil {
 		selector = eq.sql
-		selector.Select(selector.Columns(environment.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range eq.predicates {
 		p(selector)
@@ -1942,13 +1946,24 @@ func (egb *EnvironmentGroupBy) sqlScan(ctx context.Context, v interface{}) error
 }
 
 func (egb *EnvironmentGroupBy) sqlQuery() *sql.Selector {
-	selector := egb.sql
-	columns := make([]string, 0, len(egb.fields)+len(egb.fns))
-	columns = append(columns, egb.fields...)
+	selector := egb.sql.Select()
+	aggregation := make([]string, 0, len(egb.fns))
 	for _, fn := range egb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(egb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(egb.fields)+len(egb.fns))
+		for _, f := range egb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(egb.fields...)...)
 }
 
 // EnvironmentSelect is the builder for selecting fields of Environment entities.
@@ -2164,16 +2179,10 @@ func (es *EnvironmentSelect) BoolX(ctx context.Context) bool {
 
 func (es *EnvironmentSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := es.sqlQuery().Query()
+	query, args := es.sql.Query()
 	if err := es.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (es *EnvironmentSelect) sqlQuery() sql.Querier {
-	selector := es.sql
-	selector.Select(selector.Columns(es.fields...)...)
-	return selector
 }

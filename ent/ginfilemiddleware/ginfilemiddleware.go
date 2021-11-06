@@ -23,14 +23,14 @@ const (
 	EdgeGinFileMiddlewareToProvisioningStep = "GinFileMiddlewareToProvisioningStep"
 	// Table holds the table name of the ginfilemiddleware in the database.
 	Table = "gin_file_middlewares"
-	// GinFileMiddlewareToProvisionedHostTable is the table the holds the GinFileMiddlewareToProvisionedHost relation/edge.
+	// GinFileMiddlewareToProvisionedHostTable is the table that holds the GinFileMiddlewareToProvisionedHost relation/edge.
 	GinFileMiddlewareToProvisionedHostTable = "provisioned_hosts"
 	// GinFileMiddlewareToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	GinFileMiddlewareToProvisionedHostInverseTable = "provisioned_hosts"
 	// GinFileMiddlewareToProvisionedHostColumn is the table column denoting the GinFileMiddlewareToProvisionedHost relation/edge.
 	GinFileMiddlewareToProvisionedHostColumn = "gin_file_middleware_gin_file_middleware_to_provisioned_host"
-	// GinFileMiddlewareToProvisioningStepTable is the table the holds the GinFileMiddlewareToProvisioningStep relation/edge.
+	// GinFileMiddlewareToProvisioningStepTable is the table that holds the GinFileMiddlewareToProvisioningStep relation/edge.
 	GinFileMiddlewareToProvisioningStepTable = "provisioning_steps"
 	// GinFileMiddlewareToProvisioningStepInverseTable is the table name for the ProvisioningStep entity.
 	// It exists in this package in order to avoid circular dependency with the "provisioningstep" package.

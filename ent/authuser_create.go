@@ -207,11 +207,17 @@ func (auc *AuthUserCreate) Save(ctx context.Context) (*AuthUser, error) {
 				return nil, err
 			}
 			auc.mutation = mutation
-			node, err = auc.sqlSave(ctx)
+			if node, err = auc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(auc.hooks) - 1; i >= 0; i-- {
+			if auc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = auc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, auc.mutation); err != nil {
@@ -228,6 +234,19 @@ func (auc *AuthUserCreate) SaveX(ctx context.Context) *AuthUser {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (auc *AuthUserCreate) Exec(ctx context.Context) error {
+	_, err := auc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (auc *AuthUserCreate) ExecX(ctx context.Context) {
+	if err := auc.Exec(ctx); err != nil {
+		panic(err)
+	}
 }
 
 // defaults sets the default values of the builder before save.
@@ -269,46 +288,46 @@ func (auc *AuthUserCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (auc *AuthUserCreate) check() error {
 	if _, ok := auc.mutation.Username(); !ok {
-		return &ValidationError{Name: "username", err: errors.New("ent: missing required field \"username\"")}
+		return &ValidationError{Name: "username", err: errors.New(`ent: missing required field "username"`)}
 	}
 	if _, ok := auc.mutation.Password(); !ok {
-		return &ValidationError{Name: "password", err: errors.New("ent: missing required field \"password\"")}
+		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "password"`)}
 	}
 	if _, ok := auc.mutation.FirstName(); !ok {
-		return &ValidationError{Name: "first_name", err: errors.New("ent: missing required field \"first_name\"")}
+		return &ValidationError{Name: "first_name", err: errors.New(`ent: missing required field "first_name"`)}
 	}
 	if _, ok := auc.mutation.LastName(); !ok {
-		return &ValidationError{Name: "last_name", err: errors.New("ent: missing required field \"last_name\"")}
+		return &ValidationError{Name: "last_name", err: errors.New(`ent: missing required field "last_name"`)}
 	}
 	if _, ok := auc.mutation.Email(); !ok {
-		return &ValidationError{Name: "email", err: errors.New("ent: missing required field \"email\"")}
+		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "email"`)}
 	}
 	if _, ok := auc.mutation.Phone(); !ok {
-		return &ValidationError{Name: "phone", err: errors.New("ent: missing required field \"phone\"")}
+		return &ValidationError{Name: "phone", err: errors.New(`ent: missing required field "phone"`)}
 	}
 	if _, ok := auc.mutation.Company(); !ok {
-		return &ValidationError{Name: "company", err: errors.New("ent: missing required field \"company\"")}
+		return &ValidationError{Name: "company", err: errors.New(`ent: missing required field "company"`)}
 	}
 	if _, ok := auc.mutation.Occupation(); !ok {
-		return &ValidationError{Name: "occupation", err: errors.New("ent: missing required field \"occupation\"")}
+		return &ValidationError{Name: "occupation", err: errors.New(`ent: missing required field "occupation"`)}
 	}
 	if _, ok := auc.mutation.PrivateKeyPath(); !ok {
-		return &ValidationError{Name: "private_key_path", err: errors.New("ent: missing required field \"private_key_path\"")}
+		return &ValidationError{Name: "private_key_path", err: errors.New(`ent: missing required field "private_key_path"`)}
 	}
 	if _, ok := auc.mutation.Role(); !ok {
-		return &ValidationError{Name: "role", err: errors.New("ent: missing required field \"role\"")}
+		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "role"`)}
 	}
 	if v, ok := auc.mutation.Role(); ok {
 		if err := authuser.RoleValidator(v); err != nil {
-			return &ValidationError{Name: "role", err: fmt.Errorf("ent: validator failed for field \"role\": %w", err)}
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "role": %w`, err)}
 		}
 	}
 	if _, ok := auc.mutation.Provider(); !ok {
-		return &ValidationError{Name: "provider", err: errors.New("ent: missing required field \"provider\"")}
+		return &ValidationError{Name: "provider", err: errors.New(`ent: missing required field "provider"`)}
 	}
 	if v, ok := auc.mutation.Provider(); ok {
 		if err := authuser.ProviderValidator(v); err != nil {
-			return &ValidationError{Name: "provider", err: fmt.Errorf("ent: validator failed for field \"provider\": %w", err)}
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "provider": %w`, err)}
 		}
 	}
 	return nil
@@ -317,10 +336,13 @@ func (auc *AuthUserCreate) check() error {
 func (auc *AuthUserCreate) sqlSave(ctx context.Context) (*AuthUser, error) {
 	_node, _spec := auc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, auc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -498,17 +520,19 @@ func (aucb *AuthUserCreateBulk) Save(ctx context.Context) ([]*AuthUser, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, aucb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, aucb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, aucb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -532,4 +556,17 @@ func (aucb *AuthUserCreateBulk) SaveX(ctx context.Context) []*AuthUser {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (aucb *AuthUserCreateBulk) Exec(ctx context.Context) error {
+	_, err := aucb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (aucb *AuthUserCreateBulk) ExecX(ctx context.Context) {
+	if err := aucb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

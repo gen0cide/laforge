@@ -259,23 +259,23 @@ func (*ProvisioningStep) scanValues(columns []string) ([]interface{}, error) {
 		case provisioningstep.FieldID:
 			values[i] = new(uuid.UUID)
 		case provisioningstep.ForeignKeys[0]: // gin_file_middleware_gin_file_middleware_to_provisioning_step
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisioningstep.ForeignKeys[1]: // plan_plan_to_provisioning_step
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisioningstep.ForeignKeys[2]: // provisioning_step_provisioning_step_to_provisioned_host
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisioningstep.ForeignKeys[3]: // provisioning_step_provisioning_step_to_script
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisioningstep.ForeignKeys[4]: // provisioning_step_provisioning_step_to_command
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisioningstep.ForeignKeys[5]: // provisioning_step_provisioning_step_to_dns_record
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisioningstep.ForeignKeys[6]: // provisioning_step_provisioning_step_to_file_delete
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisioningstep.ForeignKeys[7]: // provisioning_step_provisioning_step_to_file_download
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisioningstep.ForeignKeys[8]: // provisioning_step_provisioning_step_to_file_extract
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ProvisioningStep", columns[i])
 		}
@@ -310,58 +310,67 @@ func (ps *ProvisioningStep) assignValues(columns []string, values []interface{})
 				ps.StepNumber = int(value.Int64)
 			}
 		case provisioningstep.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field gin_file_middleware_gin_file_middleware_to_provisioning_step", values[i])
-			} else if value != nil {
-				ps.gin_file_middleware_gin_file_middleware_to_provisioning_step = value
+			} else if value.Valid {
+				ps.gin_file_middleware_gin_file_middleware_to_provisioning_step = new(uuid.UUID)
+				*ps.gin_file_middleware_gin_file_middleware_to_provisioning_step = *value.S.(*uuid.UUID)
 			}
 		case provisioningstep.ForeignKeys[1]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field plan_plan_to_provisioning_step", values[i])
-			} else if value != nil {
-				ps.plan_plan_to_provisioning_step = value
+			} else if value.Valid {
+				ps.plan_plan_to_provisioning_step = new(uuid.UUID)
+				*ps.plan_plan_to_provisioning_step = *value.S.(*uuid.UUID)
 			}
 		case provisioningstep.ForeignKeys[2]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioning_step_provisioning_step_to_provisioned_host", values[i])
-			} else if value != nil {
-				ps.provisioning_step_provisioning_step_to_provisioned_host = value
+			} else if value.Valid {
+				ps.provisioning_step_provisioning_step_to_provisioned_host = new(uuid.UUID)
+				*ps.provisioning_step_provisioning_step_to_provisioned_host = *value.S.(*uuid.UUID)
 			}
 		case provisioningstep.ForeignKeys[3]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioning_step_provisioning_step_to_script", values[i])
-			} else if value != nil {
-				ps.provisioning_step_provisioning_step_to_script = value
+			} else if value.Valid {
+				ps.provisioning_step_provisioning_step_to_script = new(uuid.UUID)
+				*ps.provisioning_step_provisioning_step_to_script = *value.S.(*uuid.UUID)
 			}
 		case provisioningstep.ForeignKeys[4]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioning_step_provisioning_step_to_command", values[i])
-			} else if value != nil {
-				ps.provisioning_step_provisioning_step_to_command = value
+			} else if value.Valid {
+				ps.provisioning_step_provisioning_step_to_command = new(uuid.UUID)
+				*ps.provisioning_step_provisioning_step_to_command = *value.S.(*uuid.UUID)
 			}
 		case provisioningstep.ForeignKeys[5]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioning_step_provisioning_step_to_dns_record", values[i])
-			} else if value != nil {
-				ps.provisioning_step_provisioning_step_to_dns_record = value
+			} else if value.Valid {
+				ps.provisioning_step_provisioning_step_to_dns_record = new(uuid.UUID)
+				*ps.provisioning_step_provisioning_step_to_dns_record = *value.S.(*uuid.UUID)
 			}
 		case provisioningstep.ForeignKeys[6]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioning_step_provisioning_step_to_file_delete", values[i])
-			} else if value != nil {
-				ps.provisioning_step_provisioning_step_to_file_delete = value
+			} else if value.Valid {
+				ps.provisioning_step_provisioning_step_to_file_delete = new(uuid.UUID)
+				*ps.provisioning_step_provisioning_step_to_file_delete = *value.S.(*uuid.UUID)
 			}
 		case provisioningstep.ForeignKeys[7]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioning_step_provisioning_step_to_file_download", values[i])
-			} else if value != nil {
-				ps.provisioning_step_provisioning_step_to_file_download = value
+			} else if value.Valid {
+				ps.provisioning_step_provisioning_step_to_file_download = new(uuid.UUID)
+				*ps.provisioning_step_provisioning_step_to_file_download = *value.S.(*uuid.UUID)
 			}
 		case provisioningstep.ForeignKeys[8]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioning_step_provisioning_step_to_file_extract", values[i])
-			} else if value != nil {
-				ps.provisioning_step_provisioning_step_to_file_extract = value
+			} else if value.Valid {
+				ps.provisioning_step_provisioning_step_to_file_extract = new(uuid.UUID)
+				*ps.provisioning_step_provisioning_step_to_file_extract = *value.S.(*uuid.UUID)
 			}
 		}
 	}

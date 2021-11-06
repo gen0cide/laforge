@@ -130,10 +130,9 @@ var (
 	}
 	// AuthUsersTable holds the schema information for the "auth_users" table.
 	AuthUsersTable = &schema.Table{
-		Name:        "auth_users",
-		Columns:     AuthUsersColumns,
-		PrimaryKey:  []*schema.Column{AuthUsersColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "auth_users",
+		Columns:    AuthUsersColumns,
+		PrimaryKey: []*schema.Column{AuthUsersColumns[0]},
 	}
 	// BuildsColumns holds the columns for the "builds" table.
 	BuildsColumns = []*schema.Column{
@@ -258,10 +257,9 @@ var (
 	}
 	// DnSsTable holds the schema information for the "dn_ss" table.
 	DnSsTable = &schema.Table{
-		Name:        "dn_ss",
-		Columns:     DnSsColumns,
-		PrimaryKey:  []*schema.Column{DnSsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "dn_ss",
+		Columns:    DnSsColumns,
+		PrimaryKey: []*schema.Column{DnSsColumns[0]},
 	}
 	// DNSRecordsColumns holds the columns for the "dns_records" table.
 	DNSRecordsColumns = []*schema.Column{
@@ -327,10 +325,9 @@ var (
 	}
 	// EnvironmentsTable holds the schema information for the "environments" table.
 	EnvironmentsTable = &schema.Table{
-		Name:        "environments",
-		Columns:     EnvironmentsColumns,
-		PrimaryKey:  []*schema.Column{EnvironmentsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "environments",
+		Columns:    EnvironmentsColumns,
+		PrimaryKey: []*schema.Column{EnvironmentsColumns[0]},
 	}
 	// FileDeletesColumns holds the columns for the "file_deletes" table.
 	FileDeletesColumns = []*schema.Column{
@@ -852,10 +849,9 @@ var (
 	}
 	// RepositoriesTable holds the schema information for the "repositories" table.
 	RepositoriesTable = &schema.Table{
-		Name:        "repositories",
-		Columns:     RepositoriesColumns,
-		PrimaryKey:  []*schema.Column{RepositoriesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{},
+		Name:       "repositories",
+		Columns:    RepositoriesColumns,
+		PrimaryKey: []*schema.Column{RepositoriesColumns[0]},
 	}
 	// ScriptsColumns holds the columns for the "scripts" table.
 	ScriptsColumns = []*schema.Column{

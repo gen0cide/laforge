@@ -33,7 +33,7 @@ const (
 	EdgeIdentityToEnvironment = "IdentityToEnvironment"
 	// Table holds the table name of the identity in the database.
 	Table = "identities"
-	// IdentityToEnvironmentTable is the table the holds the IdentityToEnvironment relation/edge.
+	// IdentityToEnvironmentTable is the table that holds the IdentityToEnvironment relation/edge.
 	IdentityToEnvironmentTable = "identities"
 	// IdentityToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.

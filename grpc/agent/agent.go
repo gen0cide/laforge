@@ -40,6 +40,7 @@ var (
 	certFile         = "service.pem"
 	heartbeatSeconds = 10
 	clientID         = "1"
+	previousTask     = ""
 )
 
 // Program structures.
@@ -176,6 +177,9 @@ func RequestTask(c pb.LaforgeClient) {
 	if r.GetCommand() == pb.TaskReply_DEFAULT {
 		logger.Error("Recived empty task")
 		return
+	} else if r.Id == previousTask {
+		logger.Error("Recived duplicate Task")
+		return
 	}
 
 	taskRequest := &pb.TaskStatusRequest{
@@ -260,6 +264,8 @@ func RequestTask(c pb.LaforgeClient) {
 			logger.Infof("Response Message: %v", r)
 			RequestTaskStatusRequest("", nil, r.Id, c)
 		}
+
+		previousTask = r.Id
 	}
 }
 

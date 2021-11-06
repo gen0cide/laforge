@@ -119,11 +119,17 @@ func (apc *AdhocPlanCreate) Save(ctx context.Context) (*AdhocPlan, error) {
 				return nil, err
 			}
 			apc.mutation = mutation
-			node, err = apc.sqlSave(ctx)
+			if node, err = apc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(apc.hooks) - 1; i >= 0; i-- {
+			if apc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = apc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, apc.mutation); err != nil {
@@ -140,6 +146,19 @@ func (apc *AdhocPlanCreate) SaveX(ctx context.Context) *AdhocPlan {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (apc *AdhocPlanCreate) Exec(ctx context.Context) error {
+	_, err := apc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (apc *AdhocPlanCreate) ExecX(ctx context.Context) {
+	if err := apc.Exec(ctx); err != nil {
+		panic(err)
+	}
 }
 
 // defaults sets the default values of the builder before save.
@@ -167,10 +186,13 @@ func (apc *AdhocPlanCreate) check() error {
 func (apc *AdhocPlanCreate) sqlSave(ctx context.Context) (*AdhocPlan, error) {
 	_node, _spec := apc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, apc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -319,17 +341,19 @@ func (apcb *AdhocPlanCreateBulk) Save(ctx context.Context) ([]*AdhocPlan, error)
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, apcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, apcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, apcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -353,4 +377,17 @@ func (apcb *AdhocPlanCreateBulk) SaveX(ctx context.Context) []*AdhocPlan {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (apcb *AdhocPlanCreateBulk) Exec(ctx context.Context) error {
+	_, err := apcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (apcb *AdhocPlanCreateBulk) ExecX(ctx context.Context) {
+	if err := apcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

@@ -222,17 +222,17 @@ func (*ProvisionedHost) scanValues(columns []string) ([]interface{}, error) {
 		case provisionedhost.FieldID:
 			values[i] = new(uuid.UUID)
 		case provisionedhost.ForeignKeys[0]: // gin_file_middleware_gin_file_middleware_to_provisioned_host
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisionedhost.ForeignKeys[1]: // plan_plan_to_provisioned_host
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisionedhost.ForeignKeys[2]: // provisioned_host_provisioned_host_to_provisioned_network
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisionedhost.ForeignKeys[3]: // provisioned_host_provisioned_host_to_host
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisionedhost.ForeignKeys[4]: // provisioned_host_provisioned_host_to_end_step_plan
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisionedhost.ForeignKeys[5]: // provisioned_host_provisioned_host_to_build
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ProvisionedHost", columns[i])
 		}
@@ -268,40 +268,46 @@ func (ph *ProvisionedHost) assignValues(columns []string, values []interface{}) 
 				*ph.AddonType = provisionedhost.AddonType(value.String)
 			}
 		case provisionedhost.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field gin_file_middleware_gin_file_middleware_to_provisioned_host", values[i])
-			} else if value != nil {
-				ph.gin_file_middleware_gin_file_middleware_to_provisioned_host = value
+			} else if value.Valid {
+				ph.gin_file_middleware_gin_file_middleware_to_provisioned_host = new(uuid.UUID)
+				*ph.gin_file_middleware_gin_file_middleware_to_provisioned_host = *value.S.(*uuid.UUID)
 			}
 		case provisionedhost.ForeignKeys[1]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field plan_plan_to_provisioned_host", values[i])
-			} else if value != nil {
-				ph.plan_plan_to_provisioned_host = value
+			} else if value.Valid {
+				ph.plan_plan_to_provisioned_host = new(uuid.UUID)
+				*ph.plan_plan_to_provisioned_host = *value.S.(*uuid.UUID)
 			}
 		case provisionedhost.ForeignKeys[2]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioned_host_provisioned_host_to_provisioned_network", values[i])
-			} else if value != nil {
-				ph.provisioned_host_provisioned_host_to_provisioned_network = value
+			} else if value.Valid {
+				ph.provisioned_host_provisioned_host_to_provisioned_network = new(uuid.UUID)
+				*ph.provisioned_host_provisioned_host_to_provisioned_network = *value.S.(*uuid.UUID)
 			}
 		case provisionedhost.ForeignKeys[3]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioned_host_provisioned_host_to_host", values[i])
-			} else if value != nil {
-				ph.provisioned_host_provisioned_host_to_host = value
+			} else if value.Valid {
+				ph.provisioned_host_provisioned_host_to_host = new(uuid.UUID)
+				*ph.provisioned_host_provisioned_host_to_host = *value.S.(*uuid.UUID)
 			}
 		case provisionedhost.ForeignKeys[4]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioned_host_provisioned_host_to_end_step_plan", values[i])
-			} else if value != nil {
-				ph.provisioned_host_provisioned_host_to_end_step_plan = value
+			} else if value.Valid {
+				ph.provisioned_host_provisioned_host_to_end_step_plan = new(uuid.UUID)
+				*ph.provisioned_host_provisioned_host_to_end_step_plan = *value.S.(*uuid.UUID)
 			}
 		case provisionedhost.ForeignKeys[5]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioned_host_provisioned_host_to_build", values[i])
-			} else if value != nil {
-				ph.provisioned_host_provisioned_host_to_build = value
+			} else if value.Valid {
+				ph.provisioned_host_provisioned_host_to_build = new(uuid.UUID)
+				*ph.provisioned_host_provisioned_host_to_build = *value.S.(*uuid.UUID)
 			}
 		}
 	}

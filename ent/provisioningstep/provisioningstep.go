@@ -43,77 +43,77 @@ const (
 	EdgeProvisioningStepToGinFileMiddleware = "ProvisioningStepToGinFileMiddleware"
 	// Table holds the table name of the provisioningstep in the database.
 	Table = "provisioning_steps"
-	// ProvisioningStepToStatusTable is the table the holds the ProvisioningStepToStatus relation/edge.
+	// ProvisioningStepToStatusTable is the table that holds the ProvisioningStepToStatus relation/edge.
 	ProvisioningStepToStatusTable = "status"
 	// ProvisioningStepToStatusInverseTable is the table name for the Status entity.
 	// It exists in this package in order to avoid circular dependency with the "status" package.
 	ProvisioningStepToStatusInverseTable = "status"
 	// ProvisioningStepToStatusColumn is the table column denoting the ProvisioningStepToStatus relation/edge.
 	ProvisioningStepToStatusColumn = "provisioning_step_provisioning_step_to_status"
-	// ProvisioningStepToProvisionedHostTable is the table the holds the ProvisioningStepToProvisionedHost relation/edge.
+	// ProvisioningStepToProvisionedHostTable is the table that holds the ProvisioningStepToProvisionedHost relation/edge.
 	ProvisioningStepToProvisionedHostTable = "provisioning_steps"
 	// ProvisioningStepToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	ProvisioningStepToProvisionedHostInverseTable = "provisioned_hosts"
 	// ProvisioningStepToProvisionedHostColumn is the table column denoting the ProvisioningStepToProvisionedHost relation/edge.
 	ProvisioningStepToProvisionedHostColumn = "provisioning_step_provisioning_step_to_provisioned_host"
-	// ProvisioningStepToScriptTable is the table the holds the ProvisioningStepToScript relation/edge.
+	// ProvisioningStepToScriptTable is the table that holds the ProvisioningStepToScript relation/edge.
 	ProvisioningStepToScriptTable = "provisioning_steps"
 	// ProvisioningStepToScriptInverseTable is the table name for the Script entity.
 	// It exists in this package in order to avoid circular dependency with the "script" package.
 	ProvisioningStepToScriptInverseTable = "scripts"
 	// ProvisioningStepToScriptColumn is the table column denoting the ProvisioningStepToScript relation/edge.
 	ProvisioningStepToScriptColumn = "provisioning_step_provisioning_step_to_script"
-	// ProvisioningStepToCommandTable is the table the holds the ProvisioningStepToCommand relation/edge.
+	// ProvisioningStepToCommandTable is the table that holds the ProvisioningStepToCommand relation/edge.
 	ProvisioningStepToCommandTable = "provisioning_steps"
 	// ProvisioningStepToCommandInverseTable is the table name for the Command entity.
 	// It exists in this package in order to avoid circular dependency with the "command" package.
 	ProvisioningStepToCommandInverseTable = "commands"
 	// ProvisioningStepToCommandColumn is the table column denoting the ProvisioningStepToCommand relation/edge.
 	ProvisioningStepToCommandColumn = "provisioning_step_provisioning_step_to_command"
-	// ProvisioningStepToDNSRecordTable is the table the holds the ProvisioningStepToDNSRecord relation/edge.
+	// ProvisioningStepToDNSRecordTable is the table that holds the ProvisioningStepToDNSRecord relation/edge.
 	ProvisioningStepToDNSRecordTable = "provisioning_steps"
 	// ProvisioningStepToDNSRecordInverseTable is the table name for the DNSRecord entity.
 	// It exists in this package in order to avoid circular dependency with the "dnsrecord" package.
 	ProvisioningStepToDNSRecordInverseTable = "dns_records"
 	// ProvisioningStepToDNSRecordColumn is the table column denoting the ProvisioningStepToDNSRecord relation/edge.
 	ProvisioningStepToDNSRecordColumn = "provisioning_step_provisioning_step_to_dns_record"
-	// ProvisioningStepToFileDeleteTable is the table the holds the ProvisioningStepToFileDelete relation/edge.
+	// ProvisioningStepToFileDeleteTable is the table that holds the ProvisioningStepToFileDelete relation/edge.
 	ProvisioningStepToFileDeleteTable = "provisioning_steps"
 	// ProvisioningStepToFileDeleteInverseTable is the table name for the FileDelete entity.
 	// It exists in this package in order to avoid circular dependency with the "filedelete" package.
 	ProvisioningStepToFileDeleteInverseTable = "file_deletes"
 	// ProvisioningStepToFileDeleteColumn is the table column denoting the ProvisioningStepToFileDelete relation/edge.
 	ProvisioningStepToFileDeleteColumn = "provisioning_step_provisioning_step_to_file_delete"
-	// ProvisioningStepToFileDownloadTable is the table the holds the ProvisioningStepToFileDownload relation/edge.
+	// ProvisioningStepToFileDownloadTable is the table that holds the ProvisioningStepToFileDownload relation/edge.
 	ProvisioningStepToFileDownloadTable = "provisioning_steps"
 	// ProvisioningStepToFileDownloadInverseTable is the table name for the FileDownload entity.
 	// It exists in this package in order to avoid circular dependency with the "filedownload" package.
 	ProvisioningStepToFileDownloadInverseTable = "file_downloads"
 	// ProvisioningStepToFileDownloadColumn is the table column denoting the ProvisioningStepToFileDownload relation/edge.
 	ProvisioningStepToFileDownloadColumn = "provisioning_step_provisioning_step_to_file_download"
-	// ProvisioningStepToFileExtractTable is the table the holds the ProvisioningStepToFileExtract relation/edge.
+	// ProvisioningStepToFileExtractTable is the table that holds the ProvisioningStepToFileExtract relation/edge.
 	ProvisioningStepToFileExtractTable = "provisioning_steps"
 	// ProvisioningStepToFileExtractInverseTable is the table name for the FileExtract entity.
 	// It exists in this package in order to avoid circular dependency with the "fileextract" package.
 	ProvisioningStepToFileExtractInverseTable = "file_extracts"
 	// ProvisioningStepToFileExtractColumn is the table column denoting the ProvisioningStepToFileExtract relation/edge.
 	ProvisioningStepToFileExtractColumn = "provisioning_step_provisioning_step_to_file_extract"
-	// ProvisioningStepToPlanTable is the table the holds the ProvisioningStepToPlan relation/edge.
+	// ProvisioningStepToPlanTable is the table that holds the ProvisioningStepToPlan relation/edge.
 	ProvisioningStepToPlanTable = "provisioning_steps"
 	// ProvisioningStepToPlanInverseTable is the table name for the Plan entity.
 	// It exists in this package in order to avoid circular dependency with the "plan" package.
 	ProvisioningStepToPlanInverseTable = "plans"
 	// ProvisioningStepToPlanColumn is the table column denoting the ProvisioningStepToPlan relation/edge.
 	ProvisioningStepToPlanColumn = "plan_plan_to_provisioning_step"
-	// ProvisioningStepToAgentTaskTable is the table the holds the ProvisioningStepToAgentTask relation/edge.
+	// ProvisioningStepToAgentTaskTable is the table that holds the ProvisioningStepToAgentTask relation/edge.
 	ProvisioningStepToAgentTaskTable = "agent_tasks"
 	// ProvisioningStepToAgentTaskInverseTable is the table name for the AgentTask entity.
 	// It exists in this package in order to avoid circular dependency with the "agenttask" package.
 	ProvisioningStepToAgentTaskInverseTable = "agent_tasks"
 	// ProvisioningStepToAgentTaskColumn is the table column denoting the ProvisioningStepToAgentTask relation/edge.
 	ProvisioningStepToAgentTaskColumn = "agent_task_agent_task_to_provisioning_step"
-	// ProvisioningStepToGinFileMiddlewareTable is the table the holds the ProvisioningStepToGinFileMiddleware relation/edge.
+	// ProvisioningStepToGinFileMiddlewareTable is the table that holds the ProvisioningStepToGinFileMiddleware relation/edge.
 	ProvisioningStepToGinFileMiddlewareTable = "provisioning_steps"
 	// ProvisioningStepToGinFileMiddlewareInverseTable is the table name for the GinFileMiddleware entity.
 	// It exists in this package in order to avoid circular dependency with the "ginfilemiddleware" package.

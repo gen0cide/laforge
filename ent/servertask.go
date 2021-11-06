@@ -149,11 +149,11 @@ func (*ServerTask) scanValues(columns []string) ([]interface{}, error) {
 		case servertask.FieldID:
 			values[i] = new(uuid.UUID)
 		case servertask.ForeignKeys[0]: // server_task_server_task_to_auth_user
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case servertask.ForeignKeys[1]: // server_task_server_task_to_environment
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case servertask.ForeignKeys[2]: // server_task_server_task_to_build
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ServerTask", columns[i])
 		}
@@ -194,7 +194,6 @@ func (st *ServerTask) assignValues(columns []string, values []interface{}) error
 				st.EndTime = value.Time
 			}
 		case servertask.FieldErrors:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field errors", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -209,22 +208,25 @@ func (st *ServerTask) assignValues(columns []string, values []interface{}) error
 				st.LogFilePath = value.String
 			}
 		case servertask.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field server_task_server_task_to_auth_user", values[i])
-			} else if value != nil {
-				st.server_task_server_task_to_auth_user = value
+			} else if value.Valid {
+				st.server_task_server_task_to_auth_user = new(uuid.UUID)
+				*st.server_task_server_task_to_auth_user = *value.S.(*uuid.UUID)
 			}
 		case servertask.ForeignKeys[1]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field server_task_server_task_to_environment", values[i])
-			} else if value != nil {
-				st.server_task_server_task_to_environment = value
+			} else if value.Valid {
+				st.server_task_server_task_to_environment = new(uuid.UUID)
+				*st.server_task_server_task_to_environment = *value.S.(*uuid.UUID)
 			}
 		case servertask.ForeignKeys[2]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field server_task_server_task_to_build", values[i])
-			} else if value != nil {
-				st.server_task_server_task_to_build = value
+			} else if value.Valid {
+				st.server_task_server_task_to_build = new(uuid.UUID)
+				*st.server_task_server_task_to_build = *value.S.(*uuid.UUID)
 			}
 		}
 	}

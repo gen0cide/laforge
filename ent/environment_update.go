@@ -38,9 +38,9 @@ type EnvironmentUpdate struct {
 	mutation *EnvironmentMutation
 }
 
-// Where adds a new predicate for the EnvironmentUpdate builder.
+// Where appends a list predicates to the EnvironmentUpdate builder.
 func (eu *EnvironmentUpdate) Where(ps ...predicate.Environment) *EnvironmentUpdate {
-	eu.mutation.predicates = append(eu.mutation.predicates, ps...)
+	eu.mutation.Where(ps...)
 	return eu
 }
 
@@ -761,6 +761,9 @@ func (eu *EnvironmentUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(eu.hooks) - 1; i >= 0; i-- {
+			if eu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = eu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, eu.mutation); err != nil {
@@ -1822,8 +1825,8 @@ func (eu *EnvironmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, eu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{environment.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -2562,6 +2565,9 @@ func (euo *EnvironmentUpdateOne) Save(ctx context.Context) (*Environment, error)
 			return node, err
 		})
 		for i := len(euo.hooks) - 1; i >= 0; i-- {
+			if euo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = euo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, euo.mutation); err != nil {
@@ -3643,8 +3649,8 @@ func (euo *EnvironmentUpdateOne) sqlSave(ctx context.Context) (_node *Environmen
 	if err = sqlgraph.UpdateNode(ctx, euo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{environment.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

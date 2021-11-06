@@ -108,9 +108,9 @@ func (*AgentTask) scanValues(columns []string) ([]interface{}, error) {
 		case agenttask.FieldID:
 			values[i] = new(uuid.UUID)
 		case agenttask.ForeignKeys[0]: // agent_task_agent_task_to_provisioning_step
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case agenttask.ForeignKeys[1]: // agent_task_agent_task_to_provisioned_host
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type AgentTask", columns[i])
 		}
@@ -169,16 +169,18 @@ func (at *AgentTask) assignValues(columns []string, values []interface{}) error 
 				at.ErrorMessage = value.String
 			}
 		case agenttask.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field agent_task_agent_task_to_provisioning_step", values[i])
-			} else if value != nil {
-				at.agent_task_agent_task_to_provisioning_step = value
+			} else if value.Valid {
+				at.agent_task_agent_task_to_provisioning_step = new(uuid.UUID)
+				*at.agent_task_agent_task_to_provisioning_step = *value.S.(*uuid.UUID)
 			}
 		case agenttask.ForeignKeys[1]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field agent_task_agent_task_to_provisioned_host", values[i])
-			} else if value != nil {
-				at.agent_task_agent_task_to_provisioned_host = value
+			} else if value.Valid {
+				at.agent_task_agent_task_to_provisioned_host = new(uuid.UUID)
+				*at.agent_task_agent_task_to_provisioned_host = *value.S.(*uuid.UUID)
 			}
 		}
 	}

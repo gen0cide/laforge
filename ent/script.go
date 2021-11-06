@@ -122,7 +122,7 @@ func (*Script) scanValues(columns []string) ([]interface{}, error) {
 		case script.FieldID:
 			values[i] = new(uuid.UUID)
 		case script.ForeignKeys[0]: // environment_environment_to_script
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Script", columns[i])
 		}
@@ -199,7 +199,6 @@ func (s *Script) assignValues(columns []string, values []interface{}) error {
 				s.IgnoreErrors = value.Bool
 			}
 		case script.FieldArgs:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field args", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -214,7 +213,6 @@ func (s *Script) assignValues(columns []string, values []interface{}) error {
 				s.Disabled = value.Bool
 			}
 		case script.FieldVars:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field vars", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -229,7 +227,6 @@ func (s *Script) assignValues(columns []string, values []interface{}) error {
 				s.AbsPath = value.String
 			}
 		case script.FieldTags:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -238,10 +235,11 @@ func (s *Script) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case script.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field environment_environment_to_script", values[i])
-			} else if value != nil {
-				s.environment_environment_to_script = value
+			} else if value.Valid {
+				s.environment_environment_to_script = new(uuid.UUID)
+				*s.environment_environment_to_script = *value.S.(*uuid.UUID)
 			}
 		}
 	}

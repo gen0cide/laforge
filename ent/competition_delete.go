@@ -20,9 +20,9 @@ type CompetitionDelete struct {
 	mutation *CompetitionMutation
 }
 
-// Where adds a new predicate to the CompetitionDelete builder.
+// Where appends a list predicates to the CompetitionDelete builder.
 func (cd *CompetitionDelete) Where(ps ...predicate.Competition) *CompetitionDelete {
-	cd.mutation.predicates = append(cd.mutation.predicates, ps...)
+	cd.mutation.Where(ps...)
 	return cd
 }
 
@@ -46,6 +46,9 @@ func (cd *CompetitionDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(cd.hooks) - 1; i >= 0; i-- {
+			if cd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = cd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, cd.mutation); err != nil {

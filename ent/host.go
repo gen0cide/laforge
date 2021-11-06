@@ -167,7 +167,7 @@ func (*Host) scanValues(columns []string) ([]interface{}, error) {
 		case host.FieldID:
 			values[i] = new(uuid.UUID)
 		case host.ForeignKeys[0]: // environment_environment_to_host
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Host", columns[i])
 		}
@@ -232,7 +232,6 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 				h.AllowMACChanges = value.Bool
 			}
 		case host.FieldExposedTCPPorts:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field exposed_tcp_ports", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -241,7 +240,6 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case host.FieldExposedUDPPorts:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field exposed_udp_ports", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -256,7 +254,6 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 				h.OverridePassword = value.String
 			}
 		case host.FieldVars:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field vars", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -265,7 +262,6 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case host.FieldUserGroups:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field user_groups", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -274,7 +270,6 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case host.FieldProvisionSteps:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field provision_steps", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -283,7 +278,6 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case host.FieldTags:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -292,10 +286,11 @@ func (h *Host) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case host.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field environment_environment_to_host", values[i])
-			} else if value != nil {
-				h.environment_environment_to_host = value
+			} else if value.Valid {
+				h.environment_environment_to_host = new(uuid.UUID)
+				*h.environment_environment_to_host = *value.S.(*uuid.UUID)
 			}
 		}
 	}

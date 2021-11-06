@@ -26,9 +26,9 @@ type TeamUpdate struct {
 	mutation *TeamMutation
 }
 
-// Where adds a new predicate for the TeamUpdate builder.
+// Where appends a list predicates to the TeamUpdate builder.
 func (tu *TeamUpdate) Where(ps ...predicate.Team) *TeamUpdate {
-	tu.mutation.predicates = append(tu.mutation.predicates, ps...)
+	tu.mutation.Where(ps...)
 	return tu
 }
 
@@ -185,6 +185,9 @@ func (tu *TeamUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(tu.hooks) - 1; i >= 0; i-- {
+			if tu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = tu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, tu.mutation); err != nil {
@@ -425,8 +428,8 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{team.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -601,6 +604,9 @@ func (tuo *TeamUpdateOne) Save(ctx context.Context) (*Team, error) {
 			return node, err
 		})
 		for i := len(tuo.hooks) - 1; i >= 0; i-- {
+			if tuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = tuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, tuo.mutation); err != nil {
@@ -861,8 +867,8 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 	if err = sqlgraph.UpdateNode(ctx, tuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{team.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

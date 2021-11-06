@@ -35,28 +35,28 @@ const (
 	EdgeFindingToEnvironment = "FindingToEnvironment"
 	// Table holds the table name of the finding in the database.
 	Table = "findings"
-	// FindingToUserTable is the table the holds the FindingToUser relation/edge.
+	// FindingToUserTable is the table that holds the FindingToUser relation/edge.
 	FindingToUserTable = "users"
 	// FindingToUserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	FindingToUserInverseTable = "users"
 	// FindingToUserColumn is the table column denoting the FindingToUser relation/edge.
 	FindingToUserColumn = "finding_finding_to_user"
-	// FindingToHostTable is the table the holds the FindingToHost relation/edge.
+	// FindingToHostTable is the table that holds the FindingToHost relation/edge.
 	FindingToHostTable = "findings"
 	// FindingToHostInverseTable is the table name for the Host entity.
 	// It exists in this package in order to avoid circular dependency with the "host" package.
 	FindingToHostInverseTable = "hosts"
 	// FindingToHostColumn is the table column denoting the FindingToHost relation/edge.
 	FindingToHostColumn = "finding_finding_to_host"
-	// FindingToScriptTable is the table the holds the FindingToScript relation/edge.
+	// FindingToScriptTable is the table that holds the FindingToScript relation/edge.
 	FindingToScriptTable = "findings"
 	// FindingToScriptInverseTable is the table name for the Script entity.
 	// It exists in this package in order to avoid circular dependency with the "script" package.
 	FindingToScriptInverseTable = "scripts"
 	// FindingToScriptColumn is the table column denoting the FindingToScript relation/edge.
 	FindingToScriptColumn = "script_script_to_finding"
-	// FindingToEnvironmentTable is the table the holds the FindingToEnvironment relation/edge.
+	// FindingToEnvironmentTable is the table that holds the FindingToEnvironment relation/edge.
 	FindingToEnvironmentTable = "findings"
 	// FindingToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.

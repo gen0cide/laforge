@@ -157,13 +157,13 @@ func (*ProvisionedNetwork) scanValues(columns []string) ([]interface{}, error) {
 		case provisionednetwork.FieldID:
 			values[i] = new(uuid.UUID)
 		case provisionednetwork.ForeignKeys[0]: // plan_plan_to_provisioned_network
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisionednetwork.ForeignKeys[1]: // provisioned_network_provisioned_network_to_network
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisionednetwork.ForeignKeys[2]: // provisioned_network_provisioned_network_to_build
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case provisionednetwork.ForeignKeys[3]: // provisioned_network_provisioned_network_to_team
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ProvisionedNetwork", columns[i])
 		}
@@ -198,28 +198,32 @@ func (pn *ProvisionedNetwork) assignValues(columns []string, values []interface{
 				pn.Cidr = value.String
 			}
 		case provisionednetwork.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field plan_plan_to_provisioned_network", values[i])
-			} else if value != nil {
-				pn.plan_plan_to_provisioned_network = value
+			} else if value.Valid {
+				pn.plan_plan_to_provisioned_network = new(uuid.UUID)
+				*pn.plan_plan_to_provisioned_network = *value.S.(*uuid.UUID)
 			}
 		case provisionednetwork.ForeignKeys[1]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioned_network_provisioned_network_to_network", values[i])
-			} else if value != nil {
-				pn.provisioned_network_provisioned_network_to_network = value
+			} else if value.Valid {
+				pn.provisioned_network_provisioned_network_to_network = new(uuid.UUID)
+				*pn.provisioned_network_provisioned_network_to_network = *value.S.(*uuid.UUID)
 			}
 		case provisionednetwork.ForeignKeys[2]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioned_network_provisioned_network_to_build", values[i])
-			} else if value != nil {
-				pn.provisioned_network_provisioned_network_to_build = value
+			} else if value.Valid {
+				pn.provisioned_network_provisioned_network_to_build = new(uuid.UUID)
+				*pn.provisioned_network_provisioned_network_to_build = *value.S.(*uuid.UUID)
 			}
 		case provisionednetwork.ForeignKeys[3]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioned_network_provisioned_network_to_team", values[i])
-			} else if value != nil {
-				pn.provisioned_network_provisioned_network_to_team = value
+			} else if value.Valid {
+				pn.provisioned_network_provisioned_network_to_team = new(uuid.UUID)
+				*pn.provisioned_network_provisioned_network_to_team = *value.S.(*uuid.UUID)
 			}
 		}
 	}

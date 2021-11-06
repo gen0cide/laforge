@@ -63,7 +63,7 @@ func (*Disk) scanValues(columns []string) ([]interface{}, error) {
 		case disk.FieldID:
 			values[i] = new(uuid.UUID)
 		case disk.ForeignKeys[0]: // host_host_to_disk
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Disk", columns[i])
 		}
@@ -92,10 +92,11 @@ func (d *Disk) assignValues(columns []string, values []interface{}) error {
 				d.Size = int(value.Int64)
 			}
 		case disk.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field host_host_to_disk", values[i])
-			} else if value != nil {
-				d.host_host_to_disk = value
+			} else if value.Valid {
+				d.host_host_to_disk = new(uuid.UUID)
+				*d.host_host_to_disk = *value.S.(*uuid.UUID)
 			}
 		}
 	}

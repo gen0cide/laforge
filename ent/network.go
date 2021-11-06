@@ -104,7 +104,7 @@ func (*Network) scanValues(columns []string) ([]interface{}, error) {
 		case network.FieldID:
 			values[i] = new(uuid.UUID)
 		case network.ForeignKeys[0]: // environment_environment_to_network
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Network", columns[i])
 		}
@@ -151,7 +151,6 @@ func (n *Network) assignValues(columns []string, values []interface{}) error {
 				n.VdiVisible = value.Bool
 			}
 		case network.FieldVars:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field vars", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -160,7 +159,6 @@ func (n *Network) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case network.FieldTags:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -169,10 +167,11 @@ func (n *Network) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case network.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field environment_environment_to_network", values[i])
-			} else if value != nil {
-				n.environment_environment_to_network = value
+			} else if value.Valid {
+				n.environment_environment_to_network = new(uuid.UUID)
+				*n.environment_environment_to_network = *value.S.(*uuid.UUID)
 			}
 		}
 	}

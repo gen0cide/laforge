@@ -143,7 +143,7 @@ export class EnvironmentService {
   public initPlanStatuses(): Promise<boolean> {
     return new Promise(async (resolve, reject) => {
       if (!this.buildTree.getValue()) return reject(new Error("Can't load Plan Statuses as Build Tree hasn't been loaded."));
-      const count = 50;
+      const count = 100;
       let offset = 0;
       let total = 1;
       while (offset < total) {

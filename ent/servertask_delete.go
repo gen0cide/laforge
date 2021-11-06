@@ -20,9 +20,9 @@ type ServerTaskDelete struct {
 	mutation *ServerTaskMutation
 }
 
-// Where adds a new predicate to the ServerTaskDelete builder.
+// Where appends a list predicates to the ServerTaskDelete builder.
 func (std *ServerTaskDelete) Where(ps ...predicate.ServerTask) *ServerTaskDelete {
-	std.mutation.predicates = append(std.mutation.predicates, ps...)
+	std.mutation.Where(ps...)
 	return std
 }
 
@@ -46,6 +46,9 @@ func (std *ServerTaskDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(std.hooks) - 1; i >= 0; i-- {
+			if std.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = std.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, std.mutation); err != nil {

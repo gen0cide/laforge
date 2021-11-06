@@ -20,9 +20,9 @@ type ProvisionedHostDelete struct {
 	mutation *ProvisionedHostMutation
 }
 
-// Where adds a new predicate to the ProvisionedHostDelete builder.
+// Where appends a list predicates to the ProvisionedHostDelete builder.
 func (phd *ProvisionedHostDelete) Where(ps ...predicate.ProvisionedHost) *ProvisionedHostDelete {
-	phd.mutation.predicates = append(phd.mutation.predicates, ps...)
+	phd.mutation.Where(ps...)
 	return phd
 }
 
@@ -46,6 +46,9 @@ func (phd *ProvisionedHostDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(phd.hooks) - 1; i >= 0; i-- {
+			if phd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = phd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, phd.mutation); err != nil {

@@ -399,8 +399,8 @@ func (cq *CompetitionQuery) GroupBy(field string, fields ...string) *Competition
 //		Select(competition.FieldHclID).
 //		Scan(ctx, &v)
 //
-func (cq *CompetitionQuery) Select(field string, fields ...string) *CompetitionSelect {
-	cq.fields = append([]string{field}, fields...)
+func (cq *CompetitionQuery) Select(fields ...string) *CompetitionSelect {
+	cq.fields = append(cq.fields, fields...)
 	return &CompetitionSelect{CompetitionQuery: cq}
 }
 
@@ -479,7 +479,7 @@ func (cq *CompetitionQuery) sqlAll(ctx context.Context) ([]*Competition, error) 
 				s.Where(sql.InValues(competition.CompetitionToDNSPrimaryKey[0], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
+				return [2]interface{}{new(uuid.UUID), new(uuid.UUID)}
 			},
 			Assign: func(out, in interface{}) error {
 				eout, ok := out.(*uuid.UUID)
@@ -647,10 +647,14 @@ func (cq *CompetitionQuery) querySpec() *sqlgraph.QuerySpec {
 func (cq *CompetitionQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(cq.driver.Dialect())
 	t1 := builder.Table(competition.Table)
-	selector := builder.Select(t1.Columns(competition.Columns...)...).From(t1)
+	columns := cq.fields
+	if len(columns) == 0 {
+		columns = competition.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if cq.sql != nil {
 		selector = cq.sql
-		selector.Select(selector.Columns(competition.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range cq.predicates {
 		p(selector)
@@ -918,13 +922,24 @@ func (cgb *CompetitionGroupBy) sqlScan(ctx context.Context, v interface{}) error
 }
 
 func (cgb *CompetitionGroupBy) sqlQuery() *sql.Selector {
-	selector := cgb.sql
-	columns := make([]string, 0, len(cgb.fields)+len(cgb.fns))
-	columns = append(columns, cgb.fields...)
+	selector := cgb.sql.Select()
+	aggregation := make([]string, 0, len(cgb.fns))
 	for _, fn := range cgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(cgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(cgb.fields)+len(cgb.fns))
+		for _, f := range cgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(cgb.fields...)...)
 }
 
 // CompetitionSelect is the builder for selecting fields of Competition entities.
@@ -1140,16 +1155,10 @@ func (cs *CompetitionSelect) BoolX(ctx context.Context) bool {
 
 func (cs *CompetitionSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := cs.sqlQuery().Query()
+	query, args := cs.sql.Query()
 	if err := cs.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (cs *CompetitionSelect) sqlQuery() sql.Querier {
-	selector := cs.sql
-	selector.Select(selector.Columns(cs.fields...)...)
-	return selector
 }

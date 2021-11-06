@@ -445,8 +445,8 @@ func (apq *AdhocPlanQuery) GroupBy(field string, fields ...string) *AdhocPlanGro
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
-func (apq *AdhocPlanQuery) Select(field string, fields ...string) *AdhocPlanSelect {
-	apq.fields = append([]string{field}, fields...)
+func (apq *AdhocPlanQuery) Select(fields ...string) *AdhocPlanSelect {
+	apq.fields = append(apq.fields, fields...)
 	return &AdhocPlanSelect{AdhocPlanQuery: apq}
 }
 
@@ -527,7 +527,7 @@ func (apq *AdhocPlanQuery) sqlAll(ctx context.Context) ([]*AdhocPlan, error) {
 				s.Where(sql.InValues(adhocplan.PrevAdhocPlanPrimaryKey[1], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
+				return [2]interface{}{new(uuid.UUID), new(uuid.UUID)}
 			},
 			Assign: func(out, in interface{}) error {
 				eout, ok := out.(*uuid.UUID)
@@ -592,7 +592,7 @@ func (apq *AdhocPlanQuery) sqlAll(ctx context.Context) ([]*AdhocPlan, error) {
 				s.Where(sql.InValues(adhocplan.NextAdhocPlanPrimaryKey[0], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
+				return [2]interface{}{new(uuid.UUID), new(uuid.UUID)}
 			},
 			Assign: func(out, in interface{}) error {
 				eout, ok := out.(*uuid.UUID)
@@ -788,10 +788,14 @@ func (apq *AdhocPlanQuery) querySpec() *sqlgraph.QuerySpec {
 func (apq *AdhocPlanQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(apq.driver.Dialect())
 	t1 := builder.Table(adhocplan.Table)
-	selector := builder.Select(t1.Columns(adhocplan.Columns...)...).From(t1)
+	columns := apq.fields
+	if len(columns) == 0 {
+		columns = adhocplan.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if apq.sql != nil {
 		selector = apq.sql
-		selector.Select(selector.Columns(adhocplan.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range apq.predicates {
 		p(selector)
@@ -1059,13 +1063,24 @@ func (apgb *AdhocPlanGroupBy) sqlScan(ctx context.Context, v interface{}) error 
 }
 
 func (apgb *AdhocPlanGroupBy) sqlQuery() *sql.Selector {
-	selector := apgb.sql
-	columns := make([]string, 0, len(apgb.fields)+len(apgb.fns))
-	columns = append(columns, apgb.fields...)
+	selector := apgb.sql.Select()
+	aggregation := make([]string, 0, len(apgb.fns))
 	for _, fn := range apgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(apgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(apgb.fields)+len(apgb.fns))
+		for _, f := range apgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(apgb.fields...)...)
 }
 
 // AdhocPlanSelect is the builder for selecting fields of AdhocPlan entities.
@@ -1281,16 +1296,10 @@ func (aps *AdhocPlanSelect) BoolX(ctx context.Context) bool {
 
 func (aps *AdhocPlanSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := aps.sqlQuery().Query()
+	query, args := aps.sql.Query()
 	if err := aps.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (aps *AdhocPlanSelect) sqlQuery() sql.Querier {
-	selector := aps.sql
-	selector.Select(selector.Columns(aps.fields...)...)
-	return selector
 }

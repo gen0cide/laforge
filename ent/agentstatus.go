@@ -133,11 +133,11 @@ func (*AgentStatus) scanValues(columns []string) ([]interface{}, error) {
 		case agentstatus.FieldID:
 			values[i] = new(uuid.UUID)
 		case agentstatus.ForeignKeys[0]: // agent_status_agent_status_to_provisioned_host
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case agentstatus.ForeignKeys[1]: // agent_status_agent_status_to_provisioned_network
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case agentstatus.ForeignKeys[2]: // agent_status_agent_status_to_build
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type AgentStatus", columns[i])
 		}
@@ -244,22 +244,25 @@ func (as *AgentStatus) assignValues(columns []string, values []interface{}) erro
 				as.Timestamp = value.Int64
 			}
 		case agentstatus.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field agent_status_agent_status_to_provisioned_host", values[i])
-			} else if value != nil {
-				as.agent_status_agent_status_to_provisioned_host = value
+			} else if value.Valid {
+				as.agent_status_agent_status_to_provisioned_host = new(uuid.UUID)
+				*as.agent_status_agent_status_to_provisioned_host = *value.S.(*uuid.UUID)
 			}
 		case agentstatus.ForeignKeys[1]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field agent_status_agent_status_to_provisioned_network", values[i])
-			} else if value != nil {
-				as.agent_status_agent_status_to_provisioned_network = value
+			} else if value.Valid {
+				as.agent_status_agent_status_to_provisioned_network = new(uuid.UUID)
+				*as.agent_status_agent_status_to_provisioned_network = *value.S.(*uuid.UUID)
 			}
 		case agentstatus.ForeignKeys[2]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field agent_status_agent_status_to_build", values[i])
-			} else if value != nil {
-				as.agent_status_agent_status_to_build = value
+			} else if value.Valid {
+				as.agent_status_agent_status_to_build = new(uuid.UUID)
+				*as.agent_status_agent_status_to_build = *value.S.(*uuid.UUID)
 			}
 		}
 	}

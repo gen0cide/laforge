@@ -20,9 +20,9 @@ type NetworkDelete struct {
 	mutation *NetworkMutation
 }
 
-// Where adds a new predicate to the NetworkDelete builder.
+// Where appends a list predicates to the NetworkDelete builder.
 func (nd *NetworkDelete) Where(ps ...predicate.Network) *NetworkDelete {
-	nd.mutation.predicates = append(nd.mutation.predicates, ps...)
+	nd.mutation.Where(ps...)
 	return nd
 }
 
@@ -46,6 +46,9 @@ func (nd *NetworkDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(nd.hooks) - 1; i >= 0; i-- {
+			if nd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = nd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, nd.mutation); err != nil {

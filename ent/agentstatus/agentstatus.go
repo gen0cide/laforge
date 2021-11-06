@@ -47,21 +47,21 @@ const (
 	EdgeAgentStatusToBuild = "AgentStatusToBuild"
 	// Table holds the table name of the agentstatus in the database.
 	Table = "agent_status"
-	// AgentStatusToProvisionedHostTable is the table the holds the AgentStatusToProvisionedHost relation/edge.
+	// AgentStatusToProvisionedHostTable is the table that holds the AgentStatusToProvisionedHost relation/edge.
 	AgentStatusToProvisionedHostTable = "agent_status"
 	// AgentStatusToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	AgentStatusToProvisionedHostInverseTable = "provisioned_hosts"
 	// AgentStatusToProvisionedHostColumn is the table column denoting the AgentStatusToProvisionedHost relation/edge.
 	AgentStatusToProvisionedHostColumn = "agent_status_agent_status_to_provisioned_host"
-	// AgentStatusToProvisionedNetworkTable is the table the holds the AgentStatusToProvisionedNetwork relation/edge.
+	// AgentStatusToProvisionedNetworkTable is the table that holds the AgentStatusToProvisionedNetwork relation/edge.
 	AgentStatusToProvisionedNetworkTable = "agent_status"
 	// AgentStatusToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
 	AgentStatusToProvisionedNetworkInverseTable = "provisioned_networks"
 	// AgentStatusToProvisionedNetworkColumn is the table column denoting the AgentStatusToProvisionedNetwork relation/edge.
 	AgentStatusToProvisionedNetworkColumn = "agent_status_agent_status_to_provisioned_network"
-	// AgentStatusToBuildTable is the table the holds the AgentStatusToBuild relation/edge.
+	// AgentStatusToBuildTable is the table that holds the AgentStatusToBuild relation/edge.
 	AgentStatusToBuildTable = "agent_status"
 	// AgentStatusToBuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.

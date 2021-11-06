@@ -1,0 +1,195 @@
+<html lang="en">
+
+<head>
+  <title>ent schema network</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/tonsky/FiraCode@5.2/distr/fira_code.css">
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <style type="text/css">
+    html * {
+      font-family: 'Fira Code', monospace !important;
+      font-size: 14px;
+    }
+
+    #schema {
+      width: 100%;
+      height: 100%;
+      border: 1px solid lightgray;
+      background-color: #1e1e1e;
+    }
+
+    .var-type {
+      color: #4EC9B0;
+    }
+
+    table {
+      padding: 2px 3px;
+    }
+
+    .vis-tooltip,
+    .table-container {
+      background-color: #1e1e1e !important;
+      color: white;
+    }
+
+    tr {
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="schema"></div>
+  <br />
+  <script type="text/javascript">
+    window.colorsTable = [
+      "#63b598", "#ce7d78", "#ea9e70", "#a48a9e", "#c6e1e8", "#648177", "#0d5ac1",
+      "#f205e6", "#1c0365", "#14a9ad", "#4ca2f9", "#a4e43f", "#d298e2", "#6119d0",
+      "#d2737d", "#c0a43c", "#f2510e", "#651be6", "#79806e", "#61da5e", "#cd2f00",
+      "#9348af", "#01ac53", "#c5a4fb", "#996635", "#b11573", "#4bb473", "#75d89e",
+      "#2f3f94", "#2f7b99", "#da967d", "#34891f", "#b0d87b", "#ca4751", "#7e50a8",
+      "#c4d647", "#e0eeb8", "#11dec1", "#289812", "#566ca0", "#ffdbe1", "#2f1179",
+      "#935b6d", "#916988", "#513d98", "#aead3a", "#9e6d71", "#4b5bdc", "#0cd36d",
+      "#250662", "#cb5bea", "#228916", "#ac3e1b", "#df514a", "#539397", "#880977",
+      "#f697c1", "#ba96ce", "#679c9d", "#c6c42c", "#5d2c52", "#48b41b", "#e1cf3b",
+      "#5be4f0", "#57c4d8", "#a4d17a", "#225b8", "#be608b", "#96b00c", "#088baf",
+      "#f158bf", "#e145ba", "#ee91e3", "#05d371", "#5426e0", "#4834d0", "#802234",
+      "#6749e8", "#0971f0", "#8fb413", "#b2b4f0", "#c3c89d", "#c9a941", "#41d158",
+      "#fb21a3", "#51aed9", "#5bb32d", "#807fb", "#21538e", "#89d534", "#d36647",
+      "#7fb411", "#0023b8", "#3b8c2a", "#986b53", "#f50422", "#983f7a", "#ea24a3",
+      "#79352c", "#521250", "#c79ed2", "#d6dd92", "#e33e52", "#b2be57", "#fa06ec",
+      "#1bb699", "#6b2e5f", "#64820f", "#1c271", "#21538e", "#89d534", "#d36647",
+      "#7fb411", "#0023b8", "#3b8c2a", "#986b53", "#f50422", "#983f7a", "#ea24a3",
+      "#79352c", "#521250", "#c79ed2", "#d6dd92", "#e33e52", "#b2be57", "#fa06ec",
+      "#1bb699", "#6b2e5f", "#64820f", "#1c271", "#9cb64a", "#996c48", "#9ab9b7",
+      "#06e052", "#e3a481", "#0eb621", "#fc458e", "#b2db15", "#aa226d", "#792ed8",
+      "#73872a", "#520d3a", "#cefcb8", "#a5b3d9", "#7d1d85", "#c4fd57", "#f1ae16",
+      "#8fe22a", "#ef6e3c", "#243eeb", "#1dc18", "#dd93fd", "#3f8473", "#e7dbce",
+      "#421f79", "#7a3d93", "#635f6d", "#93f2d7", "#9b5c2a", "#15b9ee", "#0f5997",
+      "#409188", "#911e20", "#1350ce", "#10e5b1", "#fff4d7", "#cb2582", "#ce00be",
+      "#32d5d6", "#17232", "#608572", "#c79bc2", "#00f87c", "#77772a", "#6995ba",
+      "#fc6b57", "#f07815", "#8fd883", "#060e27", "#96e591", "#21d52e", "#d00043",
+      "#b47162", "#1ec227", "#4f0f6f", "#1d1d58", "#947002", "#bde052", "#e08c56",
+      "#28fcfd", "#bb09b", "#36486a", "#d02e29", "#1ae6db", "#3e464c", "#a84a8f",
+      "#911e7e", "#3f16d9", "#0f525f", "#ac7c0a", "#b4c086", "#c9d730", "#30cc49",
+      "#3d6751", "#fb4c03", "#640fc1", "#62c03e", "#d3493a", "#88aa0b", "#406df9",
+      "#615af0", "#4be47", "#2a3434", "#4a543f", "#79bca0", "#a8b8d4", "#00efd4",
+      "#7ad236", "#7260d8", "#1deaa7", "#06f43a", "#823c59", "#e3d94c", "#dc1c06",
+      "#f53b2a", "#b46238", "#2dfff6", "#a82b89", "#1a8011", "#436a9f", "#1a806a",
+      "#4cf09d", "#c188a2", "#67eb4b", "#b308d3", "#fc7e41", "#af3101", "#ff065",
+      "#71b1f4", "#a2f8a5", "#e23dd0", "#d3486d", "#00f7f9", "#474893", "#3cec35",
+      "#1c65cb", "#5d1d0c", "#2d7d2a", "#ff3420", "#5cdd87", "#a259a4", "#e4ac44",
+      "#1bede6", "#8798a4", "#d7790f", "#b2c24f", "#de73c2", "#d70a9c", "#25b67",
+      "#88e9b8", "#c2b0e2", "#86e98f", "#ae90e2", "#1a806b", "#436a9e", "#0ec0ff",
+      "#f812b3", "#b17fc9", "#8d6c2f", "#d3277a", "#2ca1ae", "#9685eb", "#8a96c6",
+      "#dba2e6", "#76fc1b", "#608fa4", "#20f6ba", "#07d7f6", "#dce77a", "#77ecca"]
+  </script>
+  <script type="text/javascript">
+    
+    const nameToColor = name => {
+      const asciiSum = name.split("").reduce((acc, val) => {
+        return acc + val.charCodeAt(0);
+      }, 0);
+      return window.colorsTable[asciiSum % window.colorsTable.length];
+    }
+    
+    const fieldsToTable = fields => {
+      const container = document.createElement("div");
+      container.setAttribute("class", "table-container")
+      if (!fields) {
+        container.innerText = "no fields";
+        return container;
+      }
+      const tbl = document.createElement("table");
+      const tblBody = document.createElement("tbody");
+      for (const field of fields) {
+        const row = document.createElement("tr");
+        for (const key of ["name", "type"]) {
+          const cell = document.createElement("td");
+          const cellText = document.createTextNode(field[key]);
+          if (key === "type") {
+            cell.setAttribute("class", "var-type")
+          }
+          cell.appendChild(cellText);
+          row.appendChild(cell);
+        }
+        tblBody.appendChild(row);
+      }
+      tbl.appendChild(tblBody);
+      container.appendChild(tbl);
+      return container;
+    }
+
+    
+    const entGraph = JSON.parse("{\"nodes\":[{\"id\":\"AdhocPlan\",\"fields\":null},{\"id\":\"AgentStatus\",\"fields\":[{\"name\":\"ClientID\",\"type\":\"string\"},{\"name\":\"Hostname\",\"type\":\"string\"},{\"name\":\"UpTime\",\"type\":\"int64\"},{\"name\":\"BootTime\",\"type\":\"int64\"},{\"name\":\"NumProcs\",\"type\":\"int64\"},{\"name\":\"Os\",\"type\":\"string\"},{\"name\":\"HostID\",\"type\":\"string\"},{\"name\":\"Load1\",\"type\":\"float64\"},{\"name\":\"Load5\",\"type\":\"float64\"},{\"name\":\"Load15\",\"type\":\"float64\"},{\"name\":\"TotalMem\",\"type\":\"int64\"},{\"name\":\"FreeMem\",\"type\":\"int64\"},{\"name\":\"UsedMem\",\"type\":\"int64\"},{\"name\":\"Timestamp\",\"type\":\"int64\"}]},{\"id\":\"AgentTask\",\"fields\":[{\"name\":\"command\",\"type\":\"agenttask.Command\"},{\"name\":\"args\",\"type\":\"string\"},{\"name\":\"number\",\"type\":\"int\"},{\"name\":\"output\",\"type\":\"string\"},{\"name\":\"state\",\"type\":\"agenttask.State\"},{\"name\":\"error_message\",\"type\":\"string\"}]},{\"id\":\"AuthUser\",\"fields\":[{\"name\":\"username\",\"type\":\"string\"},{\"name\":\"password\",\"type\":\"string\"},{\"name\":\"first_name\",\"type\":\"string\"},{\"name\":\"last_name\",\"type\":\"string\"},{\"name\":\"email\",\"type\":\"string\"},{\"name\":\"phone\",\"type\":\"string\"},{\"name\":\"company\",\"type\":\"string\"},{\"name\":\"occupation\",\"type\":\"string\"},{\"name\":\"private_key_path\",\"type\":\"string\"},{\"name\":\"role\",\"type\":\"authuser.Role\"},{\"name\":\"provider\",\"type\":\"authuser.Provider\"}]},{\"id\":\"Build\",\"fields\":[{\"name\":\"revision\",\"type\":\"int\"},{\"name\":\"environment_revision\",\"type\":\"int\"},{\"name\":\"completed_plan\",\"type\":\"bool\"}]},{\"id\":\"BuildCommit\",\"fields\":[{\"name\":\"type\",\"type\":\"buildcommit.Type\"},{\"name\":\"revision\",\"type\":\"int\"},{\"name\":\"state\",\"type\":\"buildcommit.State\"}]},{\"id\":\"Command\",\"fields\":[{\"name\":\"hcl_id\",\"type\":\"string\"},{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"description\",\"type\":\"string\"},{\"name\":\"program\",\"type\":\"string\"},{\"name\":\"args\",\"type\":\"[]string\"},{\"name\":\"ignore_errors\",\"type\":\"bool\"},{\"name\":\"disabled\",\"type\":\"bool\"},{\"name\":\"cooldown\",\"type\":\"int\"},{\"name\":\"timeout\",\"type\":\"int\"},{\"name\":\"vars\",\"type\":\"map[string]string\"},{\"name\":\"tags\",\"type\":\"map[string]string\"}]},{\"id\":\"Competition\",\"fields\":[{\"name\":\"hcl_id\",\"type\":\"string\"},{\"name\":\"root_password\",\"type\":\"string\"},{\"name\":\"config\",\"type\":\"map[string]string\"},{\"name\":\"tags\",\"type\":\"map[string]string\"}]},{\"id\":\"DNS\",\"fields\":[{\"name\":\"hcl_id\",\"type\":\"string\"},{\"name\":\"type\",\"type\":\"string\"},{\"name\":\"root_domain\",\"type\":\"string\"},{\"name\":\"dns_servers\",\"type\":\"[]string\"},{\"name\":\"ntp_servers\",\"type\":\"[]string\"},{\"name\":\"config\",\"type\":\"map[string]string\"}]},{\"id\":\"DNSRecord\",\"fields\":[{\"name\":\"hcl_id\",\"type\":\"string\"},{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"values\",\"type\":\"[]string\"},{\"name\":\"type\",\"type\":\"string\"},{\"name\":\"zone\",\"type\":\"string\"},{\"name\":\"vars\",\"type\":\"map[string]string\"},{\"name\":\"disabled\",\"type\":\"bool\"},{\"name\":\"tags\",\"type\":\"map[string]string\"}]},{\"id\":\"Disk\",\"fields\":[{\"name\":\"size\",\"type\":\"int\"}]},{\"id\":\"Environment\",\"fields\":[{\"name\":\"hcl_id\",\"type\":\"string\"},{\"name\":\"competition_id\",\"type\":\"string\"},{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"description\",\"type\":\"string\"},{\"name\":\"builder\",\"type\":\"string\"},{\"name\":\"team_count\",\"type\":\"int\"},{\"name\":\"revision\",\"type\":\"int\"},{\"name\":\"admin_cidrs\",\"type\":\"[]string\"},{\"name\":\"exposed_vdi_ports\",\"type\":\"[]string\"},{\"name\":\"config\",\"type\":\"map[string]string\"},{\"name\":\"tags\",\"type\":\"map[string]string\"}]},{\"id\":\"FileDelete\",\"fields\":[{\"name\":\"hcl_id\",\"type\":\"string\"},{\"name\":\"path\",\"type\":\"string\"},{\"name\":\"tags\",\"type\":\"map[string]string\"}]},{\"id\":\"FileDownload\",\"fields\":[{\"name\":\"hcl_id\",\"type\":\"string\"},{\"name\":\"source_type\",\"type\":\"string\"},{\"name\":\"source\",\"type\":\"string\"},{\"name\":\"destination\",\"type\":\"string\"},{\"name\":\"template\",\"type\":\"bool\"},{\"name\":\"perms\",\"type\":\"string\"},{\"name\":\"disabled\",\"type\":\"bool\"},{\"name\":\"md5\",\"type\":\"string\"},{\"name\":\"abs_path\",\"type\":\"string\"},{\"name\":\"tags\",\"type\":\"map[string]string\"}]},{\"id\":\"FileExtract\",\"fields\":[{\"name\":\"hcl_id\",\"type\":\"string\"},{\"name\":\"source\",\"type\":\"string\"},{\"name\":\"destination\",\"type\":\"string\"},{\"name\":\"type\",\"type\":\"string\"},{\"name\":\"tags\",\"type\":\"map[string]string\"}]},{\"id\":\"Finding\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"description\",\"type\":\"string\"},{\"name\":\"severity\",\"type\":\"finding.Severity\"},{\"name\":\"difficulty\",\"type\":\"finding.Difficulty\"},{\"name\":\"tags\",\"type\":\"map[string]string\"}]},{\"id\":\"GinFileMiddleware\",\"fields\":[{\"name\":\"url_id\",\"type\":\"string\"},{\"name\":\"file_path\",\"type\":\"string\"},{\"name\":\"accessed\",\"type\":\"bool\"}]},{\"id\":\"Host\",\"fields\":[{\"name\":\"hcl_id\",\"type\":\"string\"},{\"name\":\"hostname\",\"type\":\"string\"},{\"name\":\"description\",\"type\":\"string\"},{\"name\":\"OS\",\"type\":\"string\"},{\"name\":\"last_octet\",\"type\":\"int\"},{\"name\":\"instance_size\",\"type\":\"string\"},{\"name\":\"allow_mac_changes\",\"type\":\"bool\"},{\"name\":\"exposed_tcp_ports\",\"type\":\"[]string\"},{\"name\":\"exposed_udp_ports\",\"type\":\"[]string\"},{\"name\":\"override_password\",\"type\":\"string\"},{\"name\":\"vars\",\"type\":\"map[string]string\"},{\"name\":\"user_groups\",\"type\":\"[]string\"},{\"name\":\"provision_steps\",\"type\":\"[]string\"},{\"name\":\"tags\",\"type\":\"map[string]string\"}]},{\"id\":\"HostDependency\",\"fields\":[{\"name\":\"host_id\",\"type\":\"string\"},{\"name\":\"network_id\",\"type\":\"string\"}]},{\"id\":\"Identity\",\"fields\":[{\"name\":\"hcl_id\",\"type\":\"string\"},{\"name\":\"first_name\",\"type\":\"string\"},{\"name\":\"last_name\",\"type\":\"string\"},{\"name\":\"email\",\"type\":\"string\"},{\"name\":\"password\",\"type\":\"string\"},{\"name\":\"description\",\"type\":\"string\"},{\"name\":\"avatar_file\",\"type\":\"string\"},{\"name\":\"vars\",\"type\":\"map[string]string\"},{\"name\":\"tags\",\"type\":\"map[string]string\"}]},{\"id\":\"IncludedNetwork\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"hosts\",\"type\":\"[]string\"}]},{\"id\":\"Network\",\"fields\":[{\"name\":\"hcl_id\",\"type\":\"string\"},{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"cidr\",\"type\":\"string\"},{\"name\":\"vdi_visible\",\"type\":\"bool\"},{\"name\":\"vars\",\"type\":\"map[string]string\"},{\"name\":\"tags\",\"type\":\"map[string]string\"}]},{\"id\":\"Plan\",\"fields\":[{\"name\":\"step_number\",\"type\":\"int\"},{\"name\":\"type\",\"type\":\"plan.Type\"},{\"name\":\"build_id\",\"type\":\"string\"}]},{\"id\":\"PlanDiff\",\"fields\":[{\"name\":\"revision\",\"type\":\"int\"},{\"name\":\"new_state\",\"type\":\"plandiff.NewState\"}]},{\"id\":\"ProvisionedHost\",\"fields\":[{\"name\":\"subnet_ip\",\"type\":\"string\"},{\"name\":\"addon_type\",\"type\":\"provisionedhost.AddonType\"}]},{\"id\":\"ProvisionedNetwork\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"cidr\",\"type\":\"string\"}]},{\"id\":\"ProvisioningStep\",\"fields\":[{\"name\":\"type\",\"type\":\"provisioningstep.Type\"},{\"name\":\"step_number\",\"type\":\"int\"}]},{\"id\":\"Repository\",\"fields\":[{\"name\":\"repo_url\",\"type\":\"string\"},{\"name\":\"branch_name\",\"type\":\"string\"},{\"name\":\"enviroment_filepath\",\"type\":\"string\"},{\"name\":\"folder_path\",\"type\":\"string\"},{\"name\":\"commit_info\",\"type\":\"string\"}]},{\"id\":\"Script\",\"fields\":[{\"name\":\"hcl_id\",\"type\":\"string\"},{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"language\",\"type\":\"string\"},{\"name\":\"description\",\"type\":\"string\"},{\"name\":\"source\",\"type\":\"string\"},{\"name\":\"source_type\",\"type\":\"string\"},{\"name\":\"cooldown\",\"type\":\"int\"},{\"name\":\"timeout\",\"type\":\"int\"},{\"name\":\"ignore_errors\",\"type\":\"bool\"},{\"name\":\"args\",\"type\":\"[]string\"},{\"name\":\"disabled\",\"type\":\"bool\"},{\"name\":\"vars\",\"type\":\"map[string]string\"},{\"name\":\"abs_path\",\"type\":\"string\"},{\"name\":\"tags\",\"type\":\"map[string]string\"}]},{\"id\":\"ServerTask\",\"fields\":[{\"name\":\"type\",\"type\":\"servertask.Type\"},{\"name\":\"start_time\",\"type\":\"time.Time\"},{\"name\":\"end_time\",\"type\":\"time.Time\"},{\"name\":\"errors\",\"type\":\"[]string\"},{\"name\":\"log_file_path\",\"type\":\"string\"}]},{\"id\":\"Status\",\"fields\":[{\"name\":\"state\",\"type\":\"status.State\"},{\"name\":\"status_for\",\"type\":\"status.StatusFor\"},{\"name\":\"started_at\",\"type\":\"time.Time\"},{\"name\":\"ended_at\",\"type\":\"time.Time\"},{\"name\":\"failed\",\"type\":\"bool\"},{\"name\":\"completed\",\"type\":\"bool\"},{\"name\":\"error\",\"type\":\"string\"}]},{\"id\":\"Tag\",\"fields\":[{\"name\":\"uuid\",\"type\":\"uuid.UUID\"},{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"description\",\"type\":\"map[string]string\"}]},{\"id\":\"Team\",\"fields\":[{\"name\":\"team_number\",\"type\":\"int\"},{\"name\":\"vars\",\"type\":\"map[string]string\"}]},{\"id\":\"Token\",\"fields\":[{\"name\":\"token\",\"type\":\"string\"},{\"name\":\"expire_at\",\"type\":\"int64\"}]},{\"id\":\"User\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"uuid\",\"type\":\"string\"},{\"name\":\"email\",\"type\":\"string\"},{\"name\":\"hcl_id\",\"type\":\"string\"}]}],\"edges\":[{\"from\":\"AdhocPlan\",\"to\":\"AdhocPlan\",\"label\":\"NextAdhocPlan\"},{\"from\":\"AdhocPlan\",\"to\":\"Build\",\"label\":\"AdhocPlanToBuild\"},{\"from\":\"AdhocPlan\",\"to\":\"Status\",\"label\":\"AdhocPlanToStatus\"},{\"from\":\"AdhocPlan\",\"to\":\"AgentTask\",\"label\":\"AdhocPlanToAgentTask\"},{\"from\":\"AgentStatus\",\"to\":\"ProvisionedHost\",\"label\":\"AgentStatusToProvisionedHost\"},{\"from\":\"AgentStatus\",\"to\":\"ProvisionedNetwork\",\"label\":\"AgentStatusToProvisionedNetwork\"},{\"from\":\"AgentStatus\",\"to\":\"Build\",\"label\":\"AgentStatusToBuild\"},{\"from\":\"AgentTask\",\"to\":\"ProvisioningStep\",\"label\":\"AgentTaskToProvisioningStep\"},{\"from\":\"AgentTask\",\"to\":\"ProvisionedHost\",\"label\":\"AgentTaskToProvisionedHost\"},{\"from\":\"AuthUser\",\"to\":\"Token\",\"label\":\"AuthUserToToken\"},{\"from\":\"Build\",\"to\":\"Status\",\"label\":\"BuildToStatus\"},{\"from\":\"Build\",\"to\":\"Environment\",\"label\":\"BuildToEnvironment\"},{\"from\":\"Build\",\"to\":\"Competition\",\"label\":\"BuildToCompetition\"},{\"from\":\"Build\",\"to\":\"BuildCommit\",\"label\":\"BuildToLatestBuildCommit\"},{\"from\":\"BuildCommit\",\"to\":\"Build\",\"label\":\"BuildCommitToBuild\"},{\"from\":\"Command\",\"to\":\"User\",\"label\":\"CommandToUser\"},{\"from\":\"Competition\",\"to\":\"DNS\",\"label\":\"CompetitionToDNS\"},{\"from\":\"Environment\",\"to\":\"User\",\"label\":\"EnvironmentToUser\"},{\"from\":\"Environment\",\"to\":\"Host\",\"label\":\"EnvironmentToHost\"},{\"from\":\"Environment\",\"to\":\"Competition\",\"label\":\"EnvironmentToCompetition\"},{\"from\":\"Environment\",\"to\":\"Identity\",\"label\":\"EnvironmentToIdentity\"},{\"from\":\"Environment\",\"to\":\"Command\",\"label\":\"EnvironmentToCommand\"},{\"from\":\"Environment\",\"to\":\"Script\",\"label\":\"EnvironmentToScript\"},{\"from\":\"Environment\",\"to\":\"FileDownload\",\"label\":\"EnvironmentToFileDownload\"},{\"from\":\"Environment\",\"to\":\"FileDelete\",\"label\":\"EnvironmentToFileDelete\"},{\"from\":\"Environment\",\"to\":\"FileExtract\",\"label\":\"EnvironmentToFileExtract\"},{\"from\":\"Environment\",\"to\":\"IncludedNetwork\",\"label\":\"EnvironmentToIncludedNetwork\"},{\"from\":\"Environment\",\"to\":\"Finding\",\"label\":\"EnvironmentToFinding\"},{\"from\":\"Environment\",\"to\":\"DNSRecord\",\"label\":\"EnvironmentToDNSRecord\"},{\"from\":\"Environment\",\"to\":\"DNS\",\"label\":\"EnvironmentToDNS\"},{\"from\":\"Environment\",\"to\":\"Network\",\"label\":\"EnvironmentToNetwork\"},{\"from\":\"Environment\",\"to\":\"HostDependency\",\"label\":\"EnvironmentToHostDependency\"},{\"from\":\"Finding\",\"to\":\"User\",\"label\":\"FindingToUser\"},{\"from\":\"Finding\",\"to\":\"Host\",\"label\":\"FindingToHost\"},{\"from\":\"GinFileMiddleware\",\"to\":\"ProvisionedHost\",\"label\":\"GinFileMiddlewareToProvisionedHost\"},{\"from\":\"GinFileMiddleware\",\"to\":\"ProvisioningStep\",\"label\":\"GinFileMiddlewareToProvisioningStep\"},{\"from\":\"Host\",\"to\":\"Disk\",\"label\":\"HostToDisk\"},{\"from\":\"Host\",\"to\":\"User\",\"label\":\"HostToUser\"},{\"from\":\"HostDependency\",\"to\":\"Host\",\"label\":\"HostDependencyToDependOnHost\"},{\"from\":\"HostDependency\",\"to\":\"Host\",\"label\":\"HostDependencyToDependByHost\"},{\"from\":\"HostDependency\",\"to\":\"Network\",\"label\":\"HostDependencyToNetwork\"},{\"from\":\"IncludedNetwork\",\"to\":\"Tag\",\"label\":\"IncludedNetworkToTag\"},{\"from\":\"IncludedNetwork\",\"to\":\"Host\",\"label\":\"IncludedNetworkToHost\"},{\"from\":\"IncludedNetwork\",\"to\":\"Network\",\"label\":\"IncludedNetworkToNetwork\"},{\"from\":\"Plan\",\"to\":\"Plan\",\"label\":\"NextPlan\"},{\"from\":\"Plan\",\"to\":\"Build\",\"label\":\"PlanToBuild\"},{\"from\":\"Plan\",\"to\":\"Team\",\"label\":\"PlanToTeam\"},{\"from\":\"Plan\",\"to\":\"ProvisionedNetwork\",\"label\":\"PlanToProvisionedNetwork\"},{\"from\":\"Plan\",\"to\":\"ProvisionedHost\",\"label\":\"PlanToProvisionedHost\"},{\"from\":\"Plan\",\"to\":\"ProvisioningStep\",\"label\":\"PlanToProvisioningStep\"},{\"from\":\"Plan\",\"to\":\"Status\",\"label\":\"PlanToStatus\"},{\"from\":\"PlanDiff\",\"to\":\"BuildCommit\",\"label\":\"PlanDiffToBuildCommit\"},{\"from\":\"PlanDiff\",\"to\":\"Plan\",\"label\":\"PlanDiffToPlan\"},{\"from\":\"ProvisionedHost\",\"to\":\"Status\",\"label\":\"ProvisionedHostToStatus\"},{\"from\":\"ProvisionedHost\",\"to\":\"ProvisionedNetwork\",\"label\":\"ProvisionedHostToProvisionedNetwork\"},{\"from\":\"ProvisionedHost\",\"to\":\"Host\",\"label\":\"ProvisionedHostToHost\"},{\"from\":\"ProvisionedHost\",\"to\":\"Plan\",\"label\":\"ProvisionedHostToEndStepPlan\"},{\"from\":\"ProvisionedHost\",\"to\":\"Build\",\"label\":\"ProvisionedHostToBuild\"},{\"from\":\"ProvisionedNetwork\",\"to\":\"Status\",\"label\":\"ProvisionedNetworkToStatus\"},{\"from\":\"ProvisionedNetwork\",\"to\":\"Network\",\"label\":\"ProvisionedNetworkToNetwork\"},{\"from\":\"ProvisionedNetwork\",\"to\":\"Build\",\"label\":\"ProvisionedNetworkToBuild\"},{\"from\":\"ProvisionedNetwork\",\"to\":\"Team\",\"label\":\"ProvisionedNetworkToTeam\"},{\"from\":\"ProvisioningStep\",\"to\":\"Status\",\"label\":\"ProvisioningStepToStatus\"},{\"from\":\"ProvisioningStep\",\"to\":\"ProvisionedHost\",\"label\":\"ProvisioningStepToProvisionedHost\"},{\"from\":\"ProvisioningStep\",\"to\":\"Script\",\"label\":\"ProvisioningStepToScript\"},{\"from\":\"ProvisioningStep\",\"to\":\"Command\",\"label\":\"ProvisioningStepToCommand\"},{\"from\":\"ProvisioningStep\",\"to\":\"DNSRecord\",\"label\":\"ProvisioningStepToDNSRecord\"},{\"from\":\"ProvisioningStep\",\"to\":\"FileDelete\",\"label\":\"ProvisioningStepToFileDelete\"},{\"from\":\"ProvisioningStep\",\"to\":\"FileDownload\",\"label\":\"ProvisioningStepToFileDownload\"},{\"from\":\"ProvisioningStep\",\"to\":\"FileExtract\",\"label\":\"ProvisioningStepToFileExtract\"},{\"from\":\"Repository\",\"to\":\"Environment\",\"label\":\"RepositoryToEnvironment\"},{\"from\":\"Script\",\"to\":\"User\",\"label\":\"ScriptToUser\"},{\"from\":\"Script\",\"to\":\"Finding\",\"label\":\"ScriptToFinding\"},{\"from\":\"ServerTask\",\"to\":\"AuthUser\",\"label\":\"ServerTaskToAuthUser\"},{\"from\":\"ServerTask\",\"to\":\"Status\",\"label\":\"ServerTaskToStatus\"},{\"from\":\"ServerTask\",\"to\":\"Environment\",\"label\":\"ServerTaskToEnvironment\"},{\"from\":\"ServerTask\",\"to\":\"Build\",\"label\":\"ServerTaskToBuild\"},{\"from\":\"ServerTask\",\"to\":\"GinFileMiddleware\",\"label\":\"ServerTaskToGinFileMiddleware\"},{\"from\":\"Team\",\"to\":\"Build\",\"label\":\"TeamToBuild\"},{\"from\":\"Team\",\"to\":\"Status\",\"label\":\"TeamToStatus\"},{\"from\":\"User\",\"to\":\"Tag\",\"label\":\"UserToTag\"}]}");
+    const nodes = new vis.DataSet((entGraph.nodes || []).map(n =>
+    ({
+      id: n.id,
+      label: n.id,
+      color: nameToColor(n.id),
+      title: fieldsToTable(n.fields),
+    })
+    ));
+    edgesCounter = {};
+    
+    
+    const edgeKey = e => `${e.to}::${e.from}`
+    const edges = new vis.DataSet((entGraph.edges || []).map(e => {
+      const counter = (edgesCounter[edgeKey(e)] || 0) + 1;
+      edgesCounter[edgeKey(e)] = counter;
+      if (e.from === e.to) {
+        return {
+          ...e,
+          physics: false,
+          arrows: "to",
+          type: 'curvedCW',
+          selfReference: {
+            size: (counter + 1) * 10,
+            angle: (counter * 0.8) * Math.PI / 4,
+            renderBehindTheNode: false
+          }
+        }
+      }
+      return { ...e, type: 'curvedCW', physics: false, arrows: "to", smooth: { type: 'curvedCW', roundness: Math.pow(-1, counter) * 0.2 * counter } }
+    }));
+    const options = {
+      manipulation: false,
+      edges: {
+        physics: false,
+        smooth: { type: 'curvedCW', roundness: 0.2 },
+        arrows: "to",
+      },
+      nodes: {
+        widthConstraint: 60,
+        heightConstraint: 60,
+        shape: "box",
+        font: { align: "center" },
+      },
+      layout: {
+        improvedLayout: true,
+        hierarchical: {
+          enabled: true,
+          levelSeparation: 250,
+        },
+      },
+      physics: {
+        enabled: true,
+        barnesHut: {
+          springConstant: 0,
+          avoidOverlap: 1,
+          springConstant: 0
+        },
+        solver: "barnesHut",
+        repulsion: {
+          nodeDistance: 150,
+          springConstant: 0,
+          damping: 0,
+          springLength: 0
+        }
+      }
+    };
+    const container = document.getElementById("schema");
+    const gph = new vis.Network(container, { nodes, edges }, options);
+  </script>
+</body>
+
+</html>

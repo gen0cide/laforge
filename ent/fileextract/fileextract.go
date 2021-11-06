@@ -25,7 +25,7 @@ const (
 	EdgeFileExtractToEnvironment = "FileExtractToEnvironment"
 	// Table holds the table name of the fileextract in the database.
 	Table = "file_extracts"
-	// FileExtractToEnvironmentTable is the table the holds the FileExtractToEnvironment relation/edge.
+	// FileExtractToEnvironmentTable is the table that holds the FileExtractToEnvironment relation/edge.
 	FileExtractToEnvironmentTable = "file_extracts"
 	// FileExtractToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.

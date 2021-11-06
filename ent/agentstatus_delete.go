@@ -20,9 +20,9 @@ type AgentStatusDelete struct {
 	mutation *AgentStatusMutation
 }
 
-// Where adds a new predicate to the AgentStatusDelete builder.
+// Where appends a list predicates to the AgentStatusDelete builder.
 func (asd *AgentStatusDelete) Where(ps ...predicate.AgentStatus) *AgentStatusDelete {
-	asd.mutation.predicates = append(asd.mutation.predicates, ps...)
+	asd.mutation.Where(ps...)
 	return asd
 }
 
@@ -46,6 +46,9 @@ func (asd *AgentStatusDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(asd.hooks) - 1; i >= 0; i-- {
+			if asd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = asd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, asd.mutation); err != nil {

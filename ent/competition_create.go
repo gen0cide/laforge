@@ -129,11 +129,17 @@ func (cc *CompetitionCreate) Save(ctx context.Context) (*Competition, error) {
 				return nil, err
 			}
 			cc.mutation = mutation
-			node, err = cc.sqlSave(ctx)
+			if node, err = cc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(cc.hooks) - 1; i >= 0; i-- {
+			if cc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = cc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, cc.mutation); err != nil {
@@ -152,6 +158,19 @@ func (cc *CompetitionCreate) SaveX(ctx context.Context) *Competition {
 	return v
 }
 
+// Exec executes the query.
+func (cc *CompetitionCreate) Exec(ctx context.Context) error {
+	_, err := cc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (cc *CompetitionCreate) ExecX(ctx context.Context) {
+	if err := cc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (cc *CompetitionCreate) defaults() {
 	if _, ok := cc.mutation.ID(); !ok {
@@ -163,16 +182,16 @@ func (cc *CompetitionCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (cc *CompetitionCreate) check() error {
 	if _, ok := cc.mutation.HclID(); !ok {
-		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+		return &ValidationError{Name: "hcl_id", err: errors.New(`ent: missing required field "hcl_id"`)}
 	}
 	if _, ok := cc.mutation.RootPassword(); !ok {
-		return &ValidationError{Name: "root_password", err: errors.New("ent: missing required field \"root_password\"")}
+		return &ValidationError{Name: "root_password", err: errors.New(`ent: missing required field "root_password"`)}
 	}
 	if _, ok := cc.mutation.Config(); !ok {
-		return &ValidationError{Name: "config", err: errors.New("ent: missing required field \"config\"")}
+		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "config"`)}
 	}
 	if _, ok := cc.mutation.Tags(); !ok {
-		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "tags"`)}
 	}
 	return nil
 }
@@ -180,10 +199,13 @@ func (cc *CompetitionCreate) check() error {
 func (cc *CompetitionCreate) sqlSave(ctx context.Context) (*Competition, error) {
 	_node, _spec := cc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, cc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -325,17 +347,19 @@ func (ccb *CompetitionCreateBulk) Save(ctx context.Context) ([]*Competition, err
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, ccb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, ccb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, ccb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -359,4 +383,17 @@ func (ccb *CompetitionCreateBulk) SaveX(ctx context.Context) []*Competition {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (ccb *CompetitionCreateBulk) Exec(ctx context.Context) error {
+	_, err := ccb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (ccb *CompetitionCreateBulk) ExecX(ctx context.Context) {
+	if err := ccb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

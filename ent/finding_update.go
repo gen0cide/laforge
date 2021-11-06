@@ -25,9 +25,9 @@ type FindingUpdate struct {
 	mutation *FindingMutation
 }
 
-// Where adds a new predicate for the FindingUpdate builder.
+// Where appends a list predicates to the FindingUpdate builder.
 func (fu *FindingUpdate) Where(ps ...predicate.Finding) *FindingUpdate {
-	fu.mutation.predicates = append(fu.mutation.predicates, ps...)
+	fu.mutation.Where(ps...)
 	return fu
 }
 
@@ -203,6 +203,9 @@ func (fu *FindingUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(fu.hooks) - 1; i >= 0; i-- {
+			if fu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fu.mutation); err != nil {
@@ -464,8 +467,8 @@ func (fu *FindingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, fu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{finding.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -659,6 +662,9 @@ func (fuo *FindingUpdateOne) Save(ctx context.Context) (*Finding, error) {
 			return node, err
 		})
 		for i := len(fuo.hooks) - 1; i >= 0; i-- {
+			if fuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fuo.mutation); err != nil {
@@ -940,8 +946,8 @@ func (fuo *FindingUpdateOne) sqlSave(ctx context.Context) (_node *Finding, err e
 	if err = sqlgraph.UpdateNode(ctx, fuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{finding.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

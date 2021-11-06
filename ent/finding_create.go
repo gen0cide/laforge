@@ -159,11 +159,17 @@ func (fc *FindingCreate) Save(ctx context.Context) (*Finding, error) {
 				return nil, err
 			}
 			fc.mutation = mutation
-			node, err = fc.sqlSave(ctx)
+			if node, err = fc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(fc.hooks) - 1; i >= 0; i-- {
+			if fc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fc.mutation); err != nil {
@@ -182,6 +188,19 @@ func (fc *FindingCreate) SaveX(ctx context.Context) *Finding {
 	return v
 }
 
+// Exec executes the query.
+func (fc *FindingCreate) Exec(ctx context.Context) error {
+	_, err := fc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (fc *FindingCreate) ExecX(ctx context.Context) {
+	if err := fc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (fc *FindingCreate) defaults() {
 	if _, ok := fc.mutation.ID(); !ok {
@@ -193,29 +212,29 @@ func (fc *FindingCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (fc *FindingCreate) check() error {
 	if _, ok := fc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
 	}
 	if _, ok := fc.mutation.Description(); !ok {
-		return &ValidationError{Name: "description", err: errors.New("ent: missing required field \"description\"")}
+		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "description"`)}
 	}
 	if _, ok := fc.mutation.Severity(); !ok {
-		return &ValidationError{Name: "severity", err: errors.New("ent: missing required field \"severity\"")}
+		return &ValidationError{Name: "severity", err: errors.New(`ent: missing required field "severity"`)}
 	}
 	if v, ok := fc.mutation.Severity(); ok {
 		if err := finding.SeverityValidator(v); err != nil {
-			return &ValidationError{Name: "severity", err: fmt.Errorf("ent: validator failed for field \"severity\": %w", err)}
+			return &ValidationError{Name: "severity", err: fmt.Errorf(`ent: validator failed for field "severity": %w`, err)}
 		}
 	}
 	if _, ok := fc.mutation.Difficulty(); !ok {
-		return &ValidationError{Name: "difficulty", err: errors.New("ent: missing required field \"difficulty\"")}
+		return &ValidationError{Name: "difficulty", err: errors.New(`ent: missing required field "difficulty"`)}
 	}
 	if v, ok := fc.mutation.Difficulty(); ok {
 		if err := finding.DifficultyValidator(v); err != nil {
-			return &ValidationError{Name: "difficulty", err: fmt.Errorf("ent: validator failed for field \"difficulty\": %w", err)}
+			return &ValidationError{Name: "difficulty", err: fmt.Errorf(`ent: validator failed for field "difficulty": %w`, err)}
 		}
 	}
 	if _, ok := fc.mutation.Tags(); !ok {
-		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "tags"`)}
 	}
 	return nil
 }
@@ -223,10 +242,13 @@ func (fc *FindingCreate) check() error {
 func (fc *FindingCreate) sqlSave(ctx context.Context) (*Finding, error) {
 	_node, _spec := fc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, fc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -397,17 +419,19 @@ func (fcb *FindingCreateBulk) Save(ctx context.Context) ([]*Finding, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, fcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, fcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, fcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -431,4 +455,17 @@ func (fcb *FindingCreateBulk) SaveX(ctx context.Context) []*Finding {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (fcb *FindingCreateBulk) Exec(ctx context.Context) error {
+	_, err := fcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (fcb *FindingCreateBulk) ExecX(ctx context.Context) {
+	if err := fcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

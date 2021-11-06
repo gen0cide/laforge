@@ -435,8 +435,8 @@ func (inq *IncludedNetworkQuery) GroupBy(field string, fields ...string) *Includ
 //		Select(includednetwork.FieldName).
 //		Scan(ctx, &v)
 //
-func (inq *IncludedNetworkQuery) Select(field string, fields ...string) *IncludedNetworkSelect {
-	inq.fields = append([]string{field}, fields...)
+func (inq *IncludedNetworkQuery) Select(fields ...string) *IncludedNetworkSelect {
+	inq.fields = append(inq.fields, fields...)
 	return &IncludedNetworkSelect{IncludedNetworkQuery: inq}
 }
 
@@ -545,7 +545,7 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 				s.Where(sql.InValues(includednetwork.IncludedNetworkToHostPrimaryKey[0], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
+				return [2]interface{}{new(uuid.UUID), new(uuid.UUID)}
 			},
 			Assign: func(out, in interface{}) error {
 				eout, ok := out.(*uuid.UUID)
@@ -639,7 +639,7 @@ func (inq *IncludedNetworkQuery) sqlAll(ctx context.Context) ([]*IncludedNetwork
 				s.Where(sql.InValues(includednetwork.IncludedNetworkToEnvironmentPrimaryKey[1], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
+				return [2]interface{}{new(uuid.UUID), new(uuid.UUID)}
 			},
 			Assign: func(out, in interface{}) error {
 				eout, ok := out.(*uuid.UUID)
@@ -749,10 +749,14 @@ func (inq *IncludedNetworkQuery) querySpec() *sqlgraph.QuerySpec {
 func (inq *IncludedNetworkQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(inq.driver.Dialect())
 	t1 := builder.Table(includednetwork.Table)
-	selector := builder.Select(t1.Columns(includednetwork.Columns...)...).From(t1)
+	columns := inq.fields
+	if len(columns) == 0 {
+		columns = includednetwork.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if inq.sql != nil {
 		selector = inq.sql
-		selector.Select(selector.Columns(includednetwork.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range inq.predicates {
 		p(selector)
@@ -1020,13 +1024,24 @@ func (ingb *IncludedNetworkGroupBy) sqlScan(ctx context.Context, v interface{}) 
 }
 
 func (ingb *IncludedNetworkGroupBy) sqlQuery() *sql.Selector {
-	selector := ingb.sql
-	columns := make([]string, 0, len(ingb.fields)+len(ingb.fns))
-	columns = append(columns, ingb.fields...)
+	selector := ingb.sql.Select()
+	aggregation := make([]string, 0, len(ingb.fns))
 	for _, fn := range ingb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(ingb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(ingb.fields)+len(ingb.fns))
+		for _, f := range ingb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(ingb.fields...)...)
 }
 
 // IncludedNetworkSelect is the builder for selecting fields of IncludedNetwork entities.
@@ -1242,16 +1257,10 @@ func (ins *IncludedNetworkSelect) BoolX(ctx context.Context) bool {
 
 func (ins *IncludedNetworkSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := ins.sqlQuery().Query()
+	query, args := ins.sql.Query()
 	if err := ins.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (ins *IncludedNetworkSelect) sqlQuery() sql.Querier {
-	selector := ins.sql
-	selector.Select(selector.Columns(ins.fields...)...)
-	return selector
 }

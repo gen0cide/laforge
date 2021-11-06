@@ -326,8 +326,8 @@ func (feq *FileExtractQuery) GroupBy(field string, fields ...string) *FileExtrac
 //		Select(fileextract.FieldHclID).
 //		Scan(ctx, &v)
 //
-func (feq *FileExtractQuery) Select(field string, fields ...string) *FileExtractSelect {
-	feq.fields = append([]string{field}, fields...)
+func (feq *FileExtractQuery) Select(fields ...string) *FileExtractSelect {
+	feq.fields = append(feq.fields, fields...)
 	return &FileExtractSelect{FileExtractQuery: feq}
 }
 
@@ -478,10 +478,14 @@ func (feq *FileExtractQuery) querySpec() *sqlgraph.QuerySpec {
 func (feq *FileExtractQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(feq.driver.Dialect())
 	t1 := builder.Table(fileextract.Table)
-	selector := builder.Select(t1.Columns(fileextract.Columns...)...).From(t1)
+	columns := feq.fields
+	if len(columns) == 0 {
+		columns = fileextract.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if feq.sql != nil {
 		selector = feq.sql
-		selector.Select(selector.Columns(fileextract.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range feq.predicates {
 		p(selector)
@@ -749,13 +753,24 @@ func (fegb *FileExtractGroupBy) sqlScan(ctx context.Context, v interface{}) erro
 }
 
 func (fegb *FileExtractGroupBy) sqlQuery() *sql.Selector {
-	selector := fegb.sql
-	columns := make([]string, 0, len(fegb.fields)+len(fegb.fns))
-	columns = append(columns, fegb.fields...)
+	selector := fegb.sql.Select()
+	aggregation := make([]string, 0, len(fegb.fns))
 	for _, fn := range fegb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(fegb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(fegb.fields)+len(fegb.fns))
+		for _, f := range fegb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(fegb.fields...)...)
 }
 
 // FileExtractSelect is the builder for selecting fields of FileExtract entities.
@@ -971,16 +986,10 @@ func (fes *FileExtractSelect) BoolX(ctx context.Context) bool {
 
 func (fes *FileExtractSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := fes.sqlQuery().Query()
+	query, args := fes.sql.Query()
 	if err := fes.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (fes *FileExtractSelect) sqlQuery() sql.Querier {
-	selector := fes.sql
-	selector.Select(selector.Columns(fes.fields...)...)
-	return selector
 }

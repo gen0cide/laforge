@@ -203,7 +203,7 @@ func (*Plan) scanValues(columns []string) ([]interface{}, error) {
 		case plan.FieldID:
 			values[i] = new(uuid.UUID)
 		case plan.ForeignKeys[0]: // plan_plan_to_build
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Plan", columns[i])
 		}
@@ -244,10 +244,11 @@ func (pl *Plan) assignValues(columns []string, values []interface{}) error {
 				pl.BuildID = value.String
 			}
 		case plan.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field plan_plan_to_build", values[i])
-			} else if value != nil {
-				pl.plan_plan_to_build = value
+			} else if value.Valid {
+				pl.plan_plan_to_build = new(uuid.UUID)
+				*pl.plan_plan_to_build = *value.S.(*uuid.UUID)
 			}
 		}
 	}

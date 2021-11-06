@@ -23,9 +23,9 @@ type AuthUserUpdate struct {
 	mutation *AuthUserMutation
 }
 
-// Where adds a new predicate for the AuthUserUpdate builder.
+// Where appends a list predicates to the AuthUserUpdate builder.
 func (auu *AuthUserUpdate) Where(ps ...predicate.AuthUser) *AuthUserUpdate {
-	auu.mutation.predicates = append(auu.mutation.predicates, ps...)
+	auu.mutation.Where(ps...)
 	return auu
 }
 
@@ -254,6 +254,9 @@ func (auu *AuthUserUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(auu.hooks) - 1; i >= 0; i-- {
+			if auu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = auu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, auu.mutation); err != nil {
@@ -506,8 +509,8 @@ func (auu *AuthUserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, auu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{authuser.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -754,6 +757,9 @@ func (auuo *AuthUserUpdateOne) Save(ctx context.Context) (*AuthUser, error) {
 			return node, err
 		})
 		for i := len(auuo.hooks) - 1; i >= 0; i-- {
+			if auuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = auuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, auuo.mutation); err != nil {
@@ -1026,8 +1032,8 @@ func (auuo *AuthUserUpdateOne) sqlSave(ctx context.Context) (_node *AuthUser, er
 	if err = sqlgraph.UpdateNode(ctx, auuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{authuser.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

@@ -20,9 +20,9 @@ type FileExtractDelete struct {
 	mutation *FileExtractMutation
 }
 
-// Where adds a new predicate to the FileExtractDelete builder.
+// Where appends a list predicates to the FileExtractDelete builder.
 func (fed *FileExtractDelete) Where(ps ...predicate.FileExtract) *FileExtractDelete {
-	fed.mutation.predicates = append(fed.mutation.predicates, ps...)
+	fed.mutation.Where(ps...)
 	return fed
 }
 
@@ -46,6 +46,9 @@ func (fed *FileExtractDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(fed.hooks) - 1; i >= 0; i-- {
+			if fed.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fed.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fed.mutation); err != nil {

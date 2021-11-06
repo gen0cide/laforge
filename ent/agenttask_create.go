@@ -153,11 +153,17 @@ func (atc *AgentTaskCreate) Save(ctx context.Context) (*AgentTask, error) {
 				return nil, err
 			}
 			atc.mutation = mutation
-			node, err = atc.sqlSave(ctx)
+			if node, err = atc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(atc.hooks) - 1; i >= 0; i-- {
+			if atc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = atc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, atc.mutation); err != nil {
@@ -174,6 +180,19 @@ func (atc *AgentTaskCreate) SaveX(ctx context.Context) *AgentTask {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (atc *AgentTaskCreate) Exec(ctx context.Context) error {
+	_, err := atc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (atc *AgentTaskCreate) ExecX(ctx context.Context) {
+	if err := atc.Exec(ctx); err != nil {
+		panic(err)
+	}
 }
 
 // defaults sets the default values of the builder before save.
@@ -195,32 +214,32 @@ func (atc *AgentTaskCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (atc *AgentTaskCreate) check() error {
 	if _, ok := atc.mutation.Command(); !ok {
-		return &ValidationError{Name: "command", err: errors.New("ent: missing required field \"command\"")}
+		return &ValidationError{Name: "command", err: errors.New(`ent: missing required field "command"`)}
 	}
 	if v, ok := atc.mutation.Command(); ok {
 		if err := agenttask.CommandValidator(v); err != nil {
-			return &ValidationError{Name: "command", err: fmt.Errorf("ent: validator failed for field \"command\": %w", err)}
+			return &ValidationError{Name: "command", err: fmt.Errorf(`ent: validator failed for field "command": %w`, err)}
 		}
 	}
 	if _, ok := atc.mutation.Args(); !ok {
-		return &ValidationError{Name: "args", err: errors.New("ent: missing required field \"args\"")}
+		return &ValidationError{Name: "args", err: errors.New(`ent: missing required field "args"`)}
 	}
 	if _, ok := atc.mutation.Number(); !ok {
-		return &ValidationError{Name: "number", err: errors.New("ent: missing required field \"number\"")}
+		return &ValidationError{Name: "number", err: errors.New(`ent: missing required field "number"`)}
 	}
 	if _, ok := atc.mutation.Output(); !ok {
-		return &ValidationError{Name: "output", err: errors.New("ent: missing required field \"output\"")}
+		return &ValidationError{Name: "output", err: errors.New(`ent: missing required field "output"`)}
 	}
 	if _, ok := atc.mutation.State(); !ok {
-		return &ValidationError{Name: "state", err: errors.New("ent: missing required field \"state\"")}
+		return &ValidationError{Name: "state", err: errors.New(`ent: missing required field "state"`)}
 	}
 	if v, ok := atc.mutation.State(); ok {
 		if err := agenttask.StateValidator(v); err != nil {
-			return &ValidationError{Name: "state", err: fmt.Errorf("ent: validator failed for field \"state\": %w", err)}
+			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "state": %w`, err)}
 		}
 	}
 	if _, ok := atc.mutation.ErrorMessage(); !ok {
-		return &ValidationError{Name: "error_message", err: errors.New("ent: missing required field \"error_message\"")}
+		return &ValidationError{Name: "error_message", err: errors.New(`ent: missing required field "error_message"`)}
 	}
 	if _, ok := atc.mutation.AgentTaskToProvisionedHostID(); !ok {
 		return &ValidationError{Name: "AgentTaskToProvisionedHost", err: errors.New("ent: missing required edge \"AgentTaskToProvisionedHost\"")}
@@ -231,10 +250,13 @@ func (atc *AgentTaskCreate) check() error {
 func (atc *AgentTaskCreate) sqlSave(ctx context.Context) (*AgentTask, error) {
 	_node, _spec := atc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, atc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -393,17 +415,19 @@ func (atcb *AgentTaskCreateBulk) Save(ctx context.Context) ([]*AgentTask, error)
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, atcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, atcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, atcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -427,4 +451,17 @@ func (atcb *AgentTaskCreateBulk) SaveX(ctx context.Context) []*AgentTask {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (atcb *AgentTaskCreateBulk) Exec(ctx context.Context) error {
+	_, err := atcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (atcb *AgentTaskCreateBulk) ExecX(ctx context.Context) {
+	if err := atcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

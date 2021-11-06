@@ -35,21 +35,21 @@ const (
 	EdgeAgentTaskToAdhocPlan = "AgentTaskToAdhocPlan"
 	// Table holds the table name of the agenttask in the database.
 	Table = "agent_tasks"
-	// AgentTaskToProvisioningStepTable is the table the holds the AgentTaskToProvisioningStep relation/edge.
+	// AgentTaskToProvisioningStepTable is the table that holds the AgentTaskToProvisioningStep relation/edge.
 	AgentTaskToProvisioningStepTable = "agent_tasks"
 	// AgentTaskToProvisioningStepInverseTable is the table name for the ProvisioningStep entity.
 	// It exists in this package in order to avoid circular dependency with the "provisioningstep" package.
 	AgentTaskToProvisioningStepInverseTable = "provisioning_steps"
 	// AgentTaskToProvisioningStepColumn is the table column denoting the AgentTaskToProvisioningStep relation/edge.
 	AgentTaskToProvisioningStepColumn = "agent_task_agent_task_to_provisioning_step"
-	// AgentTaskToProvisionedHostTable is the table the holds the AgentTaskToProvisionedHost relation/edge.
+	// AgentTaskToProvisionedHostTable is the table that holds the AgentTaskToProvisionedHost relation/edge.
 	AgentTaskToProvisionedHostTable = "agent_tasks"
 	// AgentTaskToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	AgentTaskToProvisionedHostInverseTable = "provisioned_hosts"
 	// AgentTaskToProvisionedHostColumn is the table column denoting the AgentTaskToProvisionedHost relation/edge.
 	AgentTaskToProvisionedHostColumn = "agent_task_agent_task_to_provisioned_host"
-	// AgentTaskToAdhocPlanTable is the table the holds the AgentTaskToAdhocPlan relation/edge.
+	// AgentTaskToAdhocPlanTable is the table that holds the AgentTaskToAdhocPlan relation/edge.
 	AgentTaskToAdhocPlanTable = "adhoc_plans"
 	// AgentTaskToAdhocPlanInverseTable is the table name for the AdhocPlan entity.
 	// It exists in this package in order to avoid circular dependency with the "adhocplan" package.

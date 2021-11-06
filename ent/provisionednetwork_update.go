@@ -27,9 +27,9 @@ type ProvisionedNetworkUpdate struct {
 	mutation *ProvisionedNetworkMutation
 }
 
-// Where adds a new predicate for the ProvisionedNetworkUpdate builder.
+// Where appends a list predicates to the ProvisionedNetworkUpdate builder.
 func (pnu *ProvisionedNetworkUpdate) Where(ps ...predicate.ProvisionedNetwork) *ProvisionedNetworkUpdate {
-	pnu.mutation.predicates = append(pnu.mutation.predicates, ps...)
+	pnu.mutation.Where(ps...)
 	return pnu
 }
 
@@ -231,6 +231,9 @@ func (pnu *ProvisionedNetworkUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(pnu.hooks) - 1; i >= 0; i-- {
+			if pnu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = pnu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, pnu.mutation); err != nil {
@@ -526,8 +529,8 @@ func (pnu *ProvisionedNetworkUpdate) sqlSave(ctx context.Context) (n int, err er
 	if n, err = sqlgraph.UpdateNodes(ctx, pnu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{provisionednetwork.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -747,6 +750,9 @@ func (pnuo *ProvisionedNetworkUpdateOne) Save(ctx context.Context) (*Provisioned
 			return node, err
 		})
 		for i := len(pnuo.hooks) - 1; i >= 0; i-- {
+			if pnuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = pnuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, pnuo.mutation); err != nil {
@@ -1062,8 +1068,8 @@ func (pnuo *ProvisionedNetworkUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 	if err = sqlgraph.UpdateNode(ctx, pnuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{provisionednetwork.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

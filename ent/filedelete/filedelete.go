@@ -21,7 +21,7 @@ const (
 	EdgeFileDeleteToEnvironment = "FileDeleteToEnvironment"
 	// Table holds the table name of the filedelete in the database.
 	Table = "file_deletes"
-	// FileDeleteToEnvironmentTable is the table the holds the FileDeleteToEnvironment relation/edge.
+	// FileDeleteToEnvironmentTable is the table that holds the FileDeleteToEnvironment relation/edge.
 	FileDeleteToEnvironmentTable = "file_deletes"
 	// FileDeleteToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.

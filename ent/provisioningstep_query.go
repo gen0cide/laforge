@@ -687,8 +687,8 @@ func (psq *ProvisioningStepQuery) GroupBy(field string, fields ...string) *Provi
 //		Select(provisioningstep.FieldType).
 //		Scan(ctx, &v)
 //
-func (psq *ProvisioningStepQuery) Select(field string, fields ...string) *ProvisioningStepSelect {
-	psq.fields = append([]string{field}, fields...)
+func (psq *ProvisioningStepQuery) Select(fields ...string) *ProvisioningStepSelect {
+	psq.fields = append(psq.fields, fields...)
 	return &ProvisioningStepSelect{ProvisioningStepQuery: psq}
 }
 
@@ -1138,10 +1138,14 @@ func (psq *ProvisioningStepQuery) querySpec() *sqlgraph.QuerySpec {
 func (psq *ProvisioningStepQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(psq.driver.Dialect())
 	t1 := builder.Table(provisioningstep.Table)
-	selector := builder.Select(t1.Columns(provisioningstep.Columns...)...).From(t1)
+	columns := psq.fields
+	if len(columns) == 0 {
+		columns = provisioningstep.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if psq.sql != nil {
 		selector = psq.sql
-		selector.Select(selector.Columns(provisioningstep.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range psq.predicates {
 		p(selector)
@@ -1409,13 +1413,24 @@ func (psgb *ProvisioningStepGroupBy) sqlScan(ctx context.Context, v interface{})
 }
 
 func (psgb *ProvisioningStepGroupBy) sqlQuery() *sql.Selector {
-	selector := psgb.sql
-	columns := make([]string, 0, len(psgb.fields)+len(psgb.fns))
-	columns = append(columns, psgb.fields...)
+	selector := psgb.sql.Select()
+	aggregation := make([]string, 0, len(psgb.fns))
 	for _, fn := range psgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(psgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(psgb.fields)+len(psgb.fns))
+		for _, f := range psgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(psgb.fields...)...)
 }
 
 // ProvisioningStepSelect is the builder for selecting fields of ProvisioningStep entities.
@@ -1631,16 +1646,10 @@ func (pss *ProvisioningStepSelect) BoolX(ctx context.Context) bool {
 
 func (pss *ProvisioningStepSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := pss.sqlQuery().Query()
+	query, args := pss.sql.Query()
 	if err := pss.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (pss *ProvisioningStepSelect) sqlQuery() sql.Querier {
-	selector := pss.sql
-	selector.Select(selector.Columns(pss.fields...)...)
-	return selector
 }

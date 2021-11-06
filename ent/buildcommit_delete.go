@@ -20,9 +20,9 @@ type BuildCommitDelete struct {
 	mutation *BuildCommitMutation
 }
 
-// Where adds a new predicate to the BuildCommitDelete builder.
+// Where appends a list predicates to the BuildCommitDelete builder.
 func (bcd *BuildCommitDelete) Where(ps ...predicate.BuildCommit) *BuildCommitDelete {
-	bcd.mutation.predicates = append(bcd.mutation.predicates, ps...)
+	bcd.mutation.Where(ps...)
 	return bcd
 }
 
@@ -46,6 +46,9 @@ func (bcd *BuildCommitDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(bcd.hooks) - 1; i >= 0; i-- {
+			if bcd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = bcd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, bcd.mutation); err != nil {

@@ -614,8 +614,8 @@ func (bq *BuildQuery) GroupBy(field string, fields ...string) *BuildGroupBy {
 //		Select(build.FieldRevision).
 //		Scan(ctx, &v)
 //
-func (bq *BuildQuery) Select(field string, fields ...string) *BuildSelect {
-	bq.fields = append([]string{field}, fields...)
+func (bq *BuildQuery) Select(fields ...string) *BuildSelect {
+	bq.fields = append(bq.fields, fields...)
 	return &BuildSelect{BuildQuery: bq}
 }
 
@@ -1005,10 +1005,14 @@ func (bq *BuildQuery) querySpec() *sqlgraph.QuerySpec {
 func (bq *BuildQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(bq.driver.Dialect())
 	t1 := builder.Table(build.Table)
-	selector := builder.Select(t1.Columns(build.Columns...)...).From(t1)
+	columns := bq.fields
+	if len(columns) == 0 {
+		columns = build.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if bq.sql != nil {
 		selector = bq.sql
-		selector.Select(selector.Columns(build.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range bq.predicates {
 		p(selector)
@@ -1276,13 +1280,24 @@ func (bgb *BuildGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 }
 
 func (bgb *BuildGroupBy) sqlQuery() *sql.Selector {
-	selector := bgb.sql
-	columns := make([]string, 0, len(bgb.fields)+len(bgb.fns))
-	columns = append(columns, bgb.fields...)
+	selector := bgb.sql.Select()
+	aggregation := make([]string, 0, len(bgb.fns))
 	for _, fn := range bgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(bgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(bgb.fields)+len(bgb.fns))
+		for _, f := range bgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(bgb.fields...)...)
 }
 
 // BuildSelect is the builder for selecting fields of Build entities.
@@ -1498,16 +1513,10 @@ func (bs *BuildSelect) BoolX(ctx context.Context) bool {
 
 func (bs *BuildSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := bs.sqlQuery().Query()
+	query, args := bs.sql.Query()
 	if err := bs.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (bs *BuildSelect) sqlQuery() sql.Querier {
-	selector := bs.sql
-	selector.Select(selector.Columns(bs.fields...)...)
-	return selector
 }

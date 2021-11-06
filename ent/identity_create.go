@@ -127,11 +127,17 @@ func (ic *IdentityCreate) Save(ctx context.Context) (*Identity, error) {
 				return nil, err
 			}
 			ic.mutation = mutation
-			node, err = ic.sqlSave(ctx)
+			if node, err = ic.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(ic.hooks) - 1; i >= 0; i-- {
+			if ic.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = ic.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, ic.mutation); err != nil {
@@ -150,6 +156,19 @@ func (ic *IdentityCreate) SaveX(ctx context.Context) *Identity {
 	return v
 }
 
+// Exec executes the query.
+func (ic *IdentityCreate) Exec(ctx context.Context) error {
+	_, err := ic.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (ic *IdentityCreate) ExecX(ctx context.Context) {
+	if err := ic.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (ic *IdentityCreate) defaults() {
 	if _, ok := ic.mutation.ID(); !ok {
@@ -161,31 +180,31 @@ func (ic *IdentityCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (ic *IdentityCreate) check() error {
 	if _, ok := ic.mutation.HclID(); !ok {
-		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+		return &ValidationError{Name: "hcl_id", err: errors.New(`ent: missing required field "hcl_id"`)}
 	}
 	if _, ok := ic.mutation.FirstName(); !ok {
-		return &ValidationError{Name: "first_name", err: errors.New("ent: missing required field \"first_name\"")}
+		return &ValidationError{Name: "first_name", err: errors.New(`ent: missing required field "first_name"`)}
 	}
 	if _, ok := ic.mutation.LastName(); !ok {
-		return &ValidationError{Name: "last_name", err: errors.New("ent: missing required field \"last_name\"")}
+		return &ValidationError{Name: "last_name", err: errors.New(`ent: missing required field "last_name"`)}
 	}
 	if _, ok := ic.mutation.Email(); !ok {
-		return &ValidationError{Name: "email", err: errors.New("ent: missing required field \"email\"")}
+		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "email"`)}
 	}
 	if _, ok := ic.mutation.Password(); !ok {
-		return &ValidationError{Name: "password", err: errors.New("ent: missing required field \"password\"")}
+		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "password"`)}
 	}
 	if _, ok := ic.mutation.Description(); !ok {
-		return &ValidationError{Name: "description", err: errors.New("ent: missing required field \"description\"")}
+		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "description"`)}
 	}
 	if _, ok := ic.mutation.AvatarFile(); !ok {
-		return &ValidationError{Name: "avatar_file", err: errors.New("ent: missing required field \"avatar_file\"")}
+		return &ValidationError{Name: "avatar_file", err: errors.New(`ent: missing required field "avatar_file"`)}
 	}
 	if _, ok := ic.mutation.Vars(); !ok {
-		return &ValidationError{Name: "vars", err: errors.New("ent: missing required field \"vars\"")}
+		return &ValidationError{Name: "vars", err: errors.New(`ent: missing required field "vars"`)}
 	}
 	if _, ok := ic.mutation.Tags(); !ok {
-		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "tags"`)}
 	}
 	return nil
 }
@@ -193,10 +212,13 @@ func (ic *IdentityCreate) check() error {
 func (ic *IdentityCreate) sqlSave(ctx context.Context) (*Identity, error) {
 	_node, _spec := ic.createSpec()
 	if err := sqlgraph.CreateNode(ctx, ic.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -340,17 +362,19 @@ func (icb *IdentityCreateBulk) Save(ctx context.Context) ([]*Identity, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, icb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, icb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, icb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -374,4 +398,17 @@ func (icb *IdentityCreateBulk) SaveX(ctx context.Context) []*Identity {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (icb *IdentityCreateBulk) Exec(ctx context.Context) error {
+	_, err := icb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (icb *IdentityCreateBulk) ExecX(ctx context.Context) {
+	if err := icb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

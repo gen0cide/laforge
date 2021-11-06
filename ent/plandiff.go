@@ -87,9 +87,9 @@ func (*PlanDiff) scanValues(columns []string) ([]interface{}, error) {
 		case plandiff.FieldID:
 			values[i] = new(uuid.UUID)
 		case plandiff.ForeignKeys[0]: // plan_diff_plan_diff_to_build_commit
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case plandiff.ForeignKeys[1]: // plan_diff_plan_diff_to_plan
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type PlanDiff", columns[i])
 		}
@@ -124,16 +124,18 @@ func (pd *PlanDiff) assignValues(columns []string, values []interface{}) error {
 				pd.NewState = plandiff.NewState(value.String)
 			}
 		case plandiff.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field plan_diff_plan_diff_to_build_commit", values[i])
-			} else if value != nil {
-				pd.plan_diff_plan_diff_to_build_commit = value
+			} else if value.Valid {
+				pd.plan_diff_plan_diff_to_build_commit = new(uuid.UUID)
+				*pd.plan_diff_plan_diff_to_build_commit = *value.S.(*uuid.UUID)
 			}
 		case plandiff.ForeignKeys[1]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field plan_diff_plan_diff_to_plan", values[i])
-			} else if value != nil {
-				pd.plan_diff_plan_diff_to_plan = value
+			} else if value.Valid {
+				pd.plan_diff_plan_diff_to_plan = new(uuid.UUID)
+				*pd.plan_diff_plan_diff_to_plan = *value.S.(*uuid.UUID)
 			}
 		}
 	}

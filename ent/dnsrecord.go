@@ -82,7 +82,7 @@ func (*DNSRecord) scanValues(columns []string) ([]interface{}, error) {
 		case dnsrecord.FieldID:
 			values[i] = new(uuid.UUID)
 		case dnsrecord.ForeignKeys[0]: // environment_environment_to_dns_record
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type DNSRecord", columns[i])
 		}
@@ -117,7 +117,6 @@ func (dr *DNSRecord) assignValues(columns []string, values []interface{}) error 
 				dr.Name = value.String
 			}
 		case dnsrecord.FieldValues:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field values", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -138,7 +137,6 @@ func (dr *DNSRecord) assignValues(columns []string, values []interface{}) error 
 				dr.Zone = value.String
 			}
 		case dnsrecord.FieldVars:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field vars", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -153,7 +151,6 @@ func (dr *DNSRecord) assignValues(columns []string, values []interface{}) error 
 				dr.Disabled = value.Bool
 			}
 		case dnsrecord.FieldTags:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -162,10 +159,11 @@ func (dr *DNSRecord) assignValues(columns []string, values []interface{}) error 
 				}
 			}
 		case dnsrecord.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field environment_environment_to_dns_record", values[i])
-			} else if value != nil {
-				dr.environment_environment_to_dns_record = value
+			} else if value.Valid {
+				dr.environment_environment_to_dns_record = new(uuid.UUID)
+				*dr.environment_environment_to_dns_record = *value.S.(*uuid.UUID)
 			}
 		}
 	}

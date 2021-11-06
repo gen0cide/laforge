@@ -47,56 +47,56 @@ const (
 	EdgeStatusToAdhocPlan = "StatusToAdhocPlan"
 	// Table holds the table name of the status in the database.
 	Table = "status"
-	// StatusToBuildTable is the table the holds the StatusToBuild relation/edge.
+	// StatusToBuildTable is the table that holds the StatusToBuild relation/edge.
 	StatusToBuildTable = "status"
 	// StatusToBuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
 	StatusToBuildInverseTable = "builds"
 	// StatusToBuildColumn is the table column denoting the StatusToBuild relation/edge.
 	StatusToBuildColumn = "build_build_to_status"
-	// StatusToProvisionedNetworkTable is the table the holds the StatusToProvisionedNetwork relation/edge.
+	// StatusToProvisionedNetworkTable is the table that holds the StatusToProvisionedNetwork relation/edge.
 	StatusToProvisionedNetworkTable = "status"
 	// StatusToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
 	StatusToProvisionedNetworkInverseTable = "provisioned_networks"
 	// StatusToProvisionedNetworkColumn is the table column denoting the StatusToProvisionedNetwork relation/edge.
 	StatusToProvisionedNetworkColumn = "provisioned_network_provisioned_network_to_status"
-	// StatusToProvisionedHostTable is the table the holds the StatusToProvisionedHost relation/edge.
+	// StatusToProvisionedHostTable is the table that holds the StatusToProvisionedHost relation/edge.
 	StatusToProvisionedHostTable = "status"
 	// StatusToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	StatusToProvisionedHostInverseTable = "provisioned_hosts"
 	// StatusToProvisionedHostColumn is the table column denoting the StatusToProvisionedHost relation/edge.
 	StatusToProvisionedHostColumn = "provisioned_host_provisioned_host_to_status"
-	// StatusToProvisioningStepTable is the table the holds the StatusToProvisioningStep relation/edge.
+	// StatusToProvisioningStepTable is the table that holds the StatusToProvisioningStep relation/edge.
 	StatusToProvisioningStepTable = "status"
 	// StatusToProvisioningStepInverseTable is the table name for the ProvisioningStep entity.
 	// It exists in this package in order to avoid circular dependency with the "provisioningstep" package.
 	StatusToProvisioningStepInverseTable = "provisioning_steps"
 	// StatusToProvisioningStepColumn is the table column denoting the StatusToProvisioningStep relation/edge.
 	StatusToProvisioningStepColumn = "provisioning_step_provisioning_step_to_status"
-	// StatusToTeamTable is the table the holds the StatusToTeam relation/edge.
+	// StatusToTeamTable is the table that holds the StatusToTeam relation/edge.
 	StatusToTeamTable = "status"
 	// StatusToTeamInverseTable is the table name for the Team entity.
 	// It exists in this package in order to avoid circular dependency with the "team" package.
 	StatusToTeamInverseTable = "teams"
 	// StatusToTeamColumn is the table column denoting the StatusToTeam relation/edge.
 	StatusToTeamColumn = "team_team_to_status"
-	// StatusToPlanTable is the table the holds the StatusToPlan relation/edge.
+	// StatusToPlanTable is the table that holds the StatusToPlan relation/edge.
 	StatusToPlanTable = "status"
 	// StatusToPlanInverseTable is the table name for the Plan entity.
 	// It exists in this package in order to avoid circular dependency with the "plan" package.
 	StatusToPlanInverseTable = "plans"
 	// StatusToPlanColumn is the table column denoting the StatusToPlan relation/edge.
 	StatusToPlanColumn = "plan_plan_to_status"
-	// StatusToServerTaskTable is the table the holds the StatusToServerTask relation/edge.
+	// StatusToServerTaskTable is the table that holds the StatusToServerTask relation/edge.
 	StatusToServerTaskTable = "status"
 	// StatusToServerTaskInverseTable is the table name for the ServerTask entity.
 	// It exists in this package in order to avoid circular dependency with the "servertask" package.
 	StatusToServerTaskInverseTable = "server_tasks"
 	// StatusToServerTaskColumn is the table column denoting the StatusToServerTask relation/edge.
 	StatusToServerTaskColumn = "server_task_server_task_to_status"
-	// StatusToAdhocPlanTable is the table the holds the StatusToAdhocPlan relation/edge.
+	// StatusToAdhocPlanTable is the table that holds the StatusToAdhocPlan relation/edge.
 	StatusToAdhocPlanTable = "status"
 	// StatusToAdhocPlanInverseTable is the table name for the AdhocPlan entity.
 	// It exists in this package in order to avoid circular dependency with the "adhocplan" package.

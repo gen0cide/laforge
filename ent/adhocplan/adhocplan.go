@@ -23,25 +23,25 @@ const (
 	EdgeAdhocPlanToAgentTask = "AdhocPlanToAgentTask"
 	// Table holds the table name of the adhocplan in the database.
 	Table = "adhoc_plans"
-	// PrevAdhocPlanTable is the table the holds the PrevAdhocPlan relation/edge. The primary key declared below.
+	// PrevAdhocPlanTable is the table that holds the PrevAdhocPlan relation/edge. The primary key declared below.
 	PrevAdhocPlanTable = "adhoc_plan_NextAdhocPlan"
-	// NextAdhocPlanTable is the table the holds the NextAdhocPlan relation/edge. The primary key declared below.
+	// NextAdhocPlanTable is the table that holds the NextAdhocPlan relation/edge. The primary key declared below.
 	NextAdhocPlanTable = "adhoc_plan_NextAdhocPlan"
-	// AdhocPlanToBuildTable is the table the holds the AdhocPlanToBuild relation/edge.
+	// AdhocPlanToBuildTable is the table that holds the AdhocPlanToBuild relation/edge.
 	AdhocPlanToBuildTable = "adhoc_plans"
 	// AdhocPlanToBuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
 	AdhocPlanToBuildInverseTable = "builds"
 	// AdhocPlanToBuildColumn is the table column denoting the AdhocPlanToBuild relation/edge.
 	AdhocPlanToBuildColumn = "adhoc_plan_adhoc_plan_to_build"
-	// AdhocPlanToStatusTable is the table the holds the AdhocPlanToStatus relation/edge.
+	// AdhocPlanToStatusTable is the table that holds the AdhocPlanToStatus relation/edge.
 	AdhocPlanToStatusTable = "status"
 	// AdhocPlanToStatusInverseTable is the table name for the Status entity.
 	// It exists in this package in order to avoid circular dependency with the "status" package.
 	AdhocPlanToStatusInverseTable = "status"
 	// AdhocPlanToStatusColumn is the table column denoting the AdhocPlanToStatus relation/edge.
 	AdhocPlanToStatusColumn = "adhoc_plan_adhoc_plan_to_status"
-	// AdhocPlanToAgentTaskTable is the table the holds the AdhocPlanToAgentTask relation/edge.
+	// AdhocPlanToAgentTaskTable is the table that holds the AdhocPlanToAgentTask relation/edge.
 	AdhocPlanToAgentTaskTable = "adhoc_plans"
 	// AdhocPlanToAgentTaskInverseTable is the table name for the AgentTask entity.
 	// It exists in this package in order to avoid circular dependency with the "agenttask" package.

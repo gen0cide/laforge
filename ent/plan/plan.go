@@ -41,53 +41,53 @@ const (
 	EdgePlanToPlanDiffs = "PlanToPlanDiffs"
 	// Table holds the table name of the plan in the database.
 	Table = "plans"
-	// PrevPlanTable is the table the holds the PrevPlan relation/edge. The primary key declared below.
+	// PrevPlanTable is the table that holds the PrevPlan relation/edge. The primary key declared below.
 	PrevPlanTable = "plan_NextPlan"
-	// NextPlanTable is the table the holds the NextPlan relation/edge. The primary key declared below.
+	// NextPlanTable is the table that holds the NextPlan relation/edge. The primary key declared below.
 	NextPlanTable = "plan_NextPlan"
-	// PlanToBuildTable is the table the holds the PlanToBuild relation/edge.
+	// PlanToBuildTable is the table that holds the PlanToBuild relation/edge.
 	PlanToBuildTable = "plans"
 	// PlanToBuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
 	PlanToBuildInverseTable = "builds"
 	// PlanToBuildColumn is the table column denoting the PlanToBuild relation/edge.
 	PlanToBuildColumn = "plan_plan_to_build"
-	// PlanToTeamTable is the table the holds the PlanToTeam relation/edge.
+	// PlanToTeamTable is the table that holds the PlanToTeam relation/edge.
 	PlanToTeamTable = "teams"
 	// PlanToTeamInverseTable is the table name for the Team entity.
 	// It exists in this package in order to avoid circular dependency with the "team" package.
 	PlanToTeamInverseTable = "teams"
 	// PlanToTeamColumn is the table column denoting the PlanToTeam relation/edge.
 	PlanToTeamColumn = "plan_plan_to_team"
-	// PlanToProvisionedNetworkTable is the table the holds the PlanToProvisionedNetwork relation/edge.
+	// PlanToProvisionedNetworkTable is the table that holds the PlanToProvisionedNetwork relation/edge.
 	PlanToProvisionedNetworkTable = "provisioned_networks"
 	// PlanToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
 	PlanToProvisionedNetworkInverseTable = "provisioned_networks"
 	// PlanToProvisionedNetworkColumn is the table column denoting the PlanToProvisionedNetwork relation/edge.
 	PlanToProvisionedNetworkColumn = "plan_plan_to_provisioned_network"
-	// PlanToProvisionedHostTable is the table the holds the PlanToProvisionedHost relation/edge.
+	// PlanToProvisionedHostTable is the table that holds the PlanToProvisionedHost relation/edge.
 	PlanToProvisionedHostTable = "provisioned_hosts"
 	// PlanToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
 	PlanToProvisionedHostInverseTable = "provisioned_hosts"
 	// PlanToProvisionedHostColumn is the table column denoting the PlanToProvisionedHost relation/edge.
 	PlanToProvisionedHostColumn = "plan_plan_to_provisioned_host"
-	// PlanToProvisioningStepTable is the table the holds the PlanToProvisioningStep relation/edge.
+	// PlanToProvisioningStepTable is the table that holds the PlanToProvisioningStep relation/edge.
 	PlanToProvisioningStepTable = "provisioning_steps"
 	// PlanToProvisioningStepInverseTable is the table name for the ProvisioningStep entity.
 	// It exists in this package in order to avoid circular dependency with the "provisioningstep" package.
 	PlanToProvisioningStepInverseTable = "provisioning_steps"
 	// PlanToProvisioningStepColumn is the table column denoting the PlanToProvisioningStep relation/edge.
 	PlanToProvisioningStepColumn = "plan_plan_to_provisioning_step"
-	// PlanToStatusTable is the table the holds the PlanToStatus relation/edge.
+	// PlanToStatusTable is the table that holds the PlanToStatus relation/edge.
 	PlanToStatusTable = "status"
 	// PlanToStatusInverseTable is the table name for the Status entity.
 	// It exists in this package in order to avoid circular dependency with the "status" package.
 	PlanToStatusInverseTable = "status"
 	// PlanToStatusColumn is the table column denoting the PlanToStatus relation/edge.
 	PlanToStatusColumn = "plan_plan_to_status"
-	// PlanToPlanDiffsTable is the table the holds the PlanToPlanDiffs relation/edge.
+	// PlanToPlanDiffsTable is the table that holds the PlanToPlanDiffs relation/edge.
 	PlanToPlanDiffsTable = "plan_diffs"
 	// PlanToPlanDiffsInverseTable is the table name for the PlanDiff entity.
 	// It exists in this package in order to avoid circular dependency with the "plandiff" package.

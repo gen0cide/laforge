@@ -127,11 +127,11 @@ func (*Finding) scanValues(columns []string) ([]interface{}, error) {
 		case finding.FieldID:
 			values[i] = new(uuid.UUID)
 		case finding.ForeignKeys[0]: // environment_environment_to_finding
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case finding.ForeignKeys[1]: // finding_finding_to_host
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case finding.ForeignKeys[2]: // script_script_to_finding
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Finding", columns[i])
 		}
@@ -178,7 +178,6 @@ func (f *Finding) assignValues(columns []string, values []interface{}) error {
 				f.Difficulty = finding.Difficulty(value.String)
 			}
 		case finding.FieldTags:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -187,22 +186,25 @@ func (f *Finding) assignValues(columns []string, values []interface{}) error {
 				}
 			}
 		case finding.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field environment_environment_to_finding", values[i])
-			} else if value != nil {
-				f.environment_environment_to_finding = value
+			} else if value.Valid {
+				f.environment_environment_to_finding = new(uuid.UUID)
+				*f.environment_environment_to_finding = *value.S.(*uuid.UUID)
 			}
 		case finding.ForeignKeys[1]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field finding_finding_to_host", values[i])
-			} else if value != nil {
-				f.finding_finding_to_host = value
+			} else if value.Valid {
+				f.finding_finding_to_host = new(uuid.UUID)
+				*f.finding_finding_to_host = *value.S.(*uuid.UUID)
 			}
 		case finding.ForeignKeys[2]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field script_script_to_finding", values[i])
-			} else if value != nil {
-				f.script_script_to_finding = value
+			} else if value.Valid {
+				f.script_script_to_finding = new(uuid.UUID)
+				*f.script_script_to_finding = *value.S.(*uuid.UUID)
 			}
 		}
 	}

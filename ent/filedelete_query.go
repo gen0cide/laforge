@@ -326,8 +326,8 @@ func (fdq *FileDeleteQuery) GroupBy(field string, fields ...string) *FileDeleteG
 //		Select(filedelete.FieldHclID).
 //		Scan(ctx, &v)
 //
-func (fdq *FileDeleteQuery) Select(field string, fields ...string) *FileDeleteSelect {
-	fdq.fields = append([]string{field}, fields...)
+func (fdq *FileDeleteQuery) Select(fields ...string) *FileDeleteSelect {
+	fdq.fields = append(fdq.fields, fields...)
 	return &FileDeleteSelect{FileDeleteQuery: fdq}
 }
 
@@ -478,10 +478,14 @@ func (fdq *FileDeleteQuery) querySpec() *sqlgraph.QuerySpec {
 func (fdq *FileDeleteQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(fdq.driver.Dialect())
 	t1 := builder.Table(filedelete.Table)
-	selector := builder.Select(t1.Columns(filedelete.Columns...)...).From(t1)
+	columns := fdq.fields
+	if len(columns) == 0 {
+		columns = filedelete.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if fdq.sql != nil {
 		selector = fdq.sql
-		selector.Select(selector.Columns(filedelete.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range fdq.predicates {
 		p(selector)
@@ -749,13 +753,24 @@ func (fdgb *FileDeleteGroupBy) sqlScan(ctx context.Context, v interface{}) error
 }
 
 func (fdgb *FileDeleteGroupBy) sqlQuery() *sql.Selector {
-	selector := fdgb.sql
-	columns := make([]string, 0, len(fdgb.fields)+len(fdgb.fns))
-	columns = append(columns, fdgb.fields...)
+	selector := fdgb.sql.Select()
+	aggregation := make([]string, 0, len(fdgb.fns))
 	for _, fn := range fdgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(fdgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(fdgb.fields)+len(fdgb.fns))
+		for _, f := range fdgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(fdgb.fields...)...)
 }
 
 // FileDeleteSelect is the builder for selecting fields of FileDelete entities.
@@ -971,16 +986,10 @@ func (fds *FileDeleteSelect) BoolX(ctx context.Context) bool {
 
 func (fds *FileDeleteSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := fds.sqlQuery().Query()
+	query, args := fds.sql.Query()
 	if err := fds.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (fds *FileDeleteSelect) sqlQuery() sql.Querier {
-	selector := fds.sql
-	selector.Select(selector.Columns(fds.fields...)...)
-	return selector
 }

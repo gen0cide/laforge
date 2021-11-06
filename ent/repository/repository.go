@@ -25,7 +25,7 @@ const (
 	EdgeRepositoryToEnvironment = "RepositoryToEnvironment"
 	// Table holds the table name of the repository in the database.
 	Table = "repositories"
-	// RepositoryToEnvironmentTable is the table the holds the RepositoryToEnvironment relation/edge. The primary key declared below.
+	// RepositoryToEnvironmentTable is the table that holds the RepositoryToEnvironment relation/edge. The primary key declared below.
 	RepositoryToEnvironmentTable = "repository_RepositoryToEnvironment"
 	// RepositoryToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.

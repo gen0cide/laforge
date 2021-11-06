@@ -35,7 +35,7 @@ const (
 	EdgeFileDownloadToEnvironment = "FileDownloadToEnvironment"
 	// Table holds the table name of the filedownload in the database.
 	Table = "file_downloads"
-	// FileDownloadToEnvironmentTable is the table the holds the FileDownloadToEnvironment relation/edge.
+	// FileDownloadToEnvironmentTable is the table that holds the FileDownloadToEnvironment relation/edge.
 	FileDownloadToEnvironmentTable = "file_downloads"
 	// FileDownloadToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.

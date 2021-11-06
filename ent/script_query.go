@@ -399,8 +399,8 @@ func (sq *ScriptQuery) GroupBy(field string, fields ...string) *ScriptGroupBy {
 //		Select(script.FieldHclID).
 //		Scan(ctx, &v)
 //
-func (sq *ScriptQuery) Select(field string, fields ...string) *ScriptSelect {
-	sq.fields = append([]string{field}, fields...)
+func (sq *ScriptQuery) Select(fields ...string) *ScriptSelect {
+	sq.fields = append(sq.fields, fields...)
 	return &ScriptSelect{ScriptQuery: sq}
 }
 
@@ -611,10 +611,14 @@ func (sq *ScriptQuery) querySpec() *sqlgraph.QuerySpec {
 func (sq *ScriptQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(sq.driver.Dialect())
 	t1 := builder.Table(script.Table)
-	selector := builder.Select(t1.Columns(script.Columns...)...).From(t1)
+	columns := sq.fields
+	if len(columns) == 0 {
+		columns = script.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if sq.sql != nil {
 		selector = sq.sql
-		selector.Select(selector.Columns(script.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range sq.predicates {
 		p(selector)
@@ -882,13 +886,24 @@ func (sgb *ScriptGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 }
 
 func (sgb *ScriptGroupBy) sqlQuery() *sql.Selector {
-	selector := sgb.sql
-	columns := make([]string, 0, len(sgb.fields)+len(sgb.fns))
-	columns = append(columns, sgb.fields...)
+	selector := sgb.sql.Select()
+	aggregation := make([]string, 0, len(sgb.fns))
 	for _, fn := range sgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(sgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(sgb.fields)+len(sgb.fns))
+		for _, f := range sgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(sgb.fields...)...)
 }
 
 // ScriptSelect is the builder for selecting fields of Script entities.
@@ -1104,16 +1119,10 @@ func (ss *ScriptSelect) BoolX(ctx context.Context) bool {
 
 func (ss *ScriptSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := ss.sqlQuery().Query()
+	query, args := ss.sql.Query()
 	if err := ss.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (ss *ScriptSelect) sqlQuery() sql.Querier {
-	selector := ss.sql
-	selector.Select(selector.Columns(ss.fields...)...)
-	return selector
 }

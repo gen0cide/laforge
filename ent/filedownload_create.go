@@ -133,11 +133,17 @@ func (fdc *FileDownloadCreate) Save(ctx context.Context) (*FileDownload, error) 
 				return nil, err
 			}
 			fdc.mutation = mutation
-			node, err = fdc.sqlSave(ctx)
+			if node, err = fdc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(fdc.hooks) - 1; i >= 0; i-- {
+			if fdc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fdc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fdc.mutation); err != nil {
@@ -156,6 +162,19 @@ func (fdc *FileDownloadCreate) SaveX(ctx context.Context) *FileDownload {
 	return v
 }
 
+// Exec executes the query.
+func (fdc *FileDownloadCreate) Exec(ctx context.Context) error {
+	_, err := fdc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (fdc *FileDownloadCreate) ExecX(ctx context.Context) {
+	if err := fdc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (fdc *FileDownloadCreate) defaults() {
 	if _, ok := fdc.mutation.ID(); !ok {
@@ -167,34 +186,34 @@ func (fdc *FileDownloadCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (fdc *FileDownloadCreate) check() error {
 	if _, ok := fdc.mutation.HclID(); !ok {
-		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+		return &ValidationError{Name: "hcl_id", err: errors.New(`ent: missing required field "hcl_id"`)}
 	}
 	if _, ok := fdc.mutation.SourceType(); !ok {
-		return &ValidationError{Name: "source_type", err: errors.New("ent: missing required field \"source_type\"")}
+		return &ValidationError{Name: "source_type", err: errors.New(`ent: missing required field "source_type"`)}
 	}
 	if _, ok := fdc.mutation.Source(); !ok {
-		return &ValidationError{Name: "source", err: errors.New("ent: missing required field \"source\"")}
+		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "source"`)}
 	}
 	if _, ok := fdc.mutation.Destination(); !ok {
-		return &ValidationError{Name: "destination", err: errors.New("ent: missing required field \"destination\"")}
+		return &ValidationError{Name: "destination", err: errors.New(`ent: missing required field "destination"`)}
 	}
 	if _, ok := fdc.mutation.Template(); !ok {
-		return &ValidationError{Name: "template", err: errors.New("ent: missing required field \"template\"")}
+		return &ValidationError{Name: "template", err: errors.New(`ent: missing required field "template"`)}
 	}
 	if _, ok := fdc.mutation.Perms(); !ok {
-		return &ValidationError{Name: "perms", err: errors.New("ent: missing required field \"perms\"")}
+		return &ValidationError{Name: "perms", err: errors.New(`ent: missing required field "perms"`)}
 	}
 	if _, ok := fdc.mutation.Disabled(); !ok {
-		return &ValidationError{Name: "disabled", err: errors.New("ent: missing required field \"disabled\"")}
+		return &ValidationError{Name: "disabled", err: errors.New(`ent: missing required field "disabled"`)}
 	}
 	if _, ok := fdc.mutation.Md5(); !ok {
-		return &ValidationError{Name: "md5", err: errors.New("ent: missing required field \"md5\"")}
+		return &ValidationError{Name: "md5", err: errors.New(`ent: missing required field "md5"`)}
 	}
 	if _, ok := fdc.mutation.AbsPath(); !ok {
-		return &ValidationError{Name: "abs_path", err: errors.New("ent: missing required field \"abs_path\"")}
+		return &ValidationError{Name: "abs_path", err: errors.New(`ent: missing required field "abs_path"`)}
 	}
 	if _, ok := fdc.mutation.Tags(); !ok {
-		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "tags"`)}
 	}
 	return nil
 }
@@ -202,10 +221,13 @@ func (fdc *FileDownloadCreate) check() error {
 func (fdc *FileDownloadCreate) sqlSave(ctx context.Context) (*FileDownload, error) {
 	_node, _spec := fdc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, fdc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -357,17 +379,19 @@ func (fdcb *FileDownloadCreateBulk) Save(ctx context.Context) ([]*FileDownload, 
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, fdcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, fdcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, fdcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -391,4 +415,17 @@ func (fdcb *FileDownloadCreateBulk) SaveX(ctx context.Context) []*FileDownload {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (fdcb *FileDownloadCreateBulk) Exec(ctx context.Context) error {
+	_, err := fdcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (fdcb *FileDownloadCreateBulk) ExecX(ctx context.Context) {
+	if err := fdcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

@@ -47,21 +47,21 @@ const (
 	EdgeScriptToEnvironment = "ScriptToEnvironment"
 	// Table holds the table name of the script in the database.
 	Table = "scripts"
-	// ScriptToUserTable is the table the holds the ScriptToUser relation/edge.
+	// ScriptToUserTable is the table that holds the ScriptToUser relation/edge.
 	ScriptToUserTable = "users"
 	// ScriptToUserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	ScriptToUserInverseTable = "users"
 	// ScriptToUserColumn is the table column denoting the ScriptToUser relation/edge.
 	ScriptToUserColumn = "script_script_to_user"
-	// ScriptToFindingTable is the table the holds the ScriptToFinding relation/edge.
+	// ScriptToFindingTable is the table that holds the ScriptToFinding relation/edge.
 	ScriptToFindingTable = "findings"
 	// ScriptToFindingInverseTable is the table name for the Finding entity.
 	// It exists in this package in order to avoid circular dependency with the "finding" package.
 	ScriptToFindingInverseTable = "findings"
 	// ScriptToFindingColumn is the table column denoting the ScriptToFinding relation/edge.
 	ScriptToFindingColumn = "script_script_to_finding"
-	// ScriptToEnvironmentTable is the table the holds the ScriptToEnvironment relation/edge.
+	// ScriptToEnvironmentTable is the table that holds the ScriptToEnvironment relation/edge.
 	ScriptToEnvironmentTable = "scripts"
 	// ScriptToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.

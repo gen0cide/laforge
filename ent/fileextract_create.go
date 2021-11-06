@@ -103,11 +103,17 @@ func (fec *FileExtractCreate) Save(ctx context.Context) (*FileExtract, error) {
 				return nil, err
 			}
 			fec.mutation = mutation
-			node, err = fec.sqlSave(ctx)
+			if node, err = fec.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(fec.hooks) - 1; i >= 0; i-- {
+			if fec.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fec.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fec.mutation); err != nil {
@@ -126,6 +132,19 @@ func (fec *FileExtractCreate) SaveX(ctx context.Context) *FileExtract {
 	return v
 }
 
+// Exec executes the query.
+func (fec *FileExtractCreate) Exec(ctx context.Context) error {
+	_, err := fec.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (fec *FileExtractCreate) ExecX(ctx context.Context) {
+	if err := fec.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (fec *FileExtractCreate) defaults() {
 	if _, ok := fec.mutation.ID(); !ok {
@@ -137,19 +156,19 @@ func (fec *FileExtractCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (fec *FileExtractCreate) check() error {
 	if _, ok := fec.mutation.HclID(); !ok {
-		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+		return &ValidationError{Name: "hcl_id", err: errors.New(`ent: missing required field "hcl_id"`)}
 	}
 	if _, ok := fec.mutation.Source(); !ok {
-		return &ValidationError{Name: "source", err: errors.New("ent: missing required field \"source\"")}
+		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "source"`)}
 	}
 	if _, ok := fec.mutation.Destination(); !ok {
-		return &ValidationError{Name: "destination", err: errors.New("ent: missing required field \"destination\"")}
+		return &ValidationError{Name: "destination", err: errors.New(`ent: missing required field "destination"`)}
 	}
 	if _, ok := fec.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New("ent: missing required field \"type\"")}
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "type"`)}
 	}
 	if _, ok := fec.mutation.Tags(); !ok {
-		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "tags"`)}
 	}
 	return nil
 }
@@ -157,10 +176,13 @@ func (fec *FileExtractCreate) check() error {
 func (fec *FileExtractCreate) sqlSave(ctx context.Context) (*FileExtract, error) {
 	_node, _spec := fec.createSpec()
 	if err := sqlgraph.CreateNode(ctx, fec.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -272,17 +294,19 @@ func (fecb *FileExtractCreateBulk) Save(ctx context.Context) ([]*FileExtract, er
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, fecb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, fecb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, fecb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -306,4 +330,17 @@ func (fecb *FileExtractCreateBulk) SaveX(ctx context.Context) []*FileExtract {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (fecb *FileExtractCreateBulk) Exec(ctx context.Context) error {
+	_, err := fecb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (fecb *FileExtractCreateBulk) ExecX(ctx context.Context) {
+	if err := fecb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

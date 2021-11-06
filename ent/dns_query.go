@@ -362,8 +362,8 @@ func (dq *DNSQuery) GroupBy(field string, fields ...string) *DNSGroupBy {
 //		Select(dns.FieldHclID).
 //		Scan(ctx, &v)
 //
-func (dq *DNSQuery) Select(field string, fields ...string) *DNSSelect {
-	dq.fields = append([]string{field}, fields...)
+func (dq *DNSQuery) Select(fields ...string) *DNSSelect {
+	dq.fields = append(dq.fields, fields...)
 	return &DNSSelect{DNSQuery: dq}
 }
 
@@ -434,7 +434,7 @@ func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 				s.Where(sql.InValues(dns.DNSToEnvironmentPrimaryKey[1], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
+				return [2]interface{}{new(uuid.UUID), new(uuid.UUID)}
 			},
 			Assign: func(out, in interface{}) error {
 				eout, ok := out.(*uuid.UUID)
@@ -499,7 +499,7 @@ func (dq *DNSQuery) sqlAll(ctx context.Context) ([]*DNS, error) {
 				s.Where(sql.InValues(dns.DNSToCompetitionPrimaryKey[1], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
+				return [2]interface{}{new(uuid.UUID), new(uuid.UUID)}
 			},
 			Assign: func(out, in interface{}) error {
 				eout, ok := out.(*uuid.UUID)
@@ -609,10 +609,14 @@ func (dq *DNSQuery) querySpec() *sqlgraph.QuerySpec {
 func (dq *DNSQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(dq.driver.Dialect())
 	t1 := builder.Table(dns.Table)
-	selector := builder.Select(t1.Columns(dns.Columns...)...).From(t1)
+	columns := dq.fields
+	if len(columns) == 0 {
+		columns = dns.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if dq.sql != nil {
 		selector = dq.sql
-		selector.Select(selector.Columns(dns.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range dq.predicates {
 		p(selector)
@@ -880,13 +884,24 @@ func (dgb *DNSGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 }
 
 func (dgb *DNSGroupBy) sqlQuery() *sql.Selector {
-	selector := dgb.sql
-	columns := make([]string, 0, len(dgb.fields)+len(dgb.fns))
-	columns = append(columns, dgb.fields...)
+	selector := dgb.sql.Select()
+	aggregation := make([]string, 0, len(dgb.fns))
 	for _, fn := range dgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(dgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(dgb.fields)+len(dgb.fns))
+		for _, f := range dgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(dgb.fields...)...)
 }
 
 // DNSSelect is the builder for selecting fields of DNS entities.
@@ -1102,16 +1117,10 @@ func (ds *DNSSelect) BoolX(ctx context.Context) bool {
 
 func (ds *DNSSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := ds.sqlQuery().Query()
+	query, args := ds.sql.Query()
 	if err := ds.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (ds *DNSSelect) sqlQuery() sql.Querier {
-	selector := ds.sql
-	selector.Select(selector.Columns(ds.fields...)...)
-	return selector
 }

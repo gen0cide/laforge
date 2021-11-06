@@ -144,11 +144,17 @@ func (hdc *HostDependencyCreate) Save(ctx context.Context) (*HostDependency, err
 				return nil, err
 			}
 			hdc.mutation = mutation
-			node, err = hdc.sqlSave(ctx)
+			if node, err = hdc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(hdc.hooks) - 1; i >= 0; i-- {
+			if hdc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = hdc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, hdc.mutation); err != nil {
@@ -167,6 +173,19 @@ func (hdc *HostDependencyCreate) SaveX(ctx context.Context) *HostDependency {
 	return v
 }
 
+// Exec executes the query.
+func (hdc *HostDependencyCreate) Exec(ctx context.Context) error {
+	_, err := hdc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (hdc *HostDependencyCreate) ExecX(ctx context.Context) {
+	if err := hdc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (hdc *HostDependencyCreate) defaults() {
 	if _, ok := hdc.mutation.ID(); !ok {
@@ -178,10 +197,10 @@ func (hdc *HostDependencyCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (hdc *HostDependencyCreate) check() error {
 	if _, ok := hdc.mutation.HostID(); !ok {
-		return &ValidationError{Name: "host_id", err: errors.New("ent: missing required field \"host_id\"")}
+		return &ValidationError{Name: "host_id", err: errors.New(`ent: missing required field "host_id"`)}
 	}
 	if _, ok := hdc.mutation.NetworkID(); !ok {
-		return &ValidationError{Name: "network_id", err: errors.New("ent: missing required field \"network_id\"")}
+		return &ValidationError{Name: "network_id", err: errors.New(`ent: missing required field "network_id"`)}
 	}
 	return nil
 }
@@ -189,10 +208,13 @@ func (hdc *HostDependencyCreate) check() error {
 func (hdc *HostDependencyCreate) sqlSave(ctx context.Context) (*HostDependency, error) {
 	_node, _spec := hdc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, hdc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -340,17 +362,19 @@ func (hdcb *HostDependencyCreateBulk) Save(ctx context.Context) ([]*HostDependen
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, hdcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, hdcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, hdcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -374,4 +398,17 @@ func (hdcb *HostDependencyCreateBulk) SaveX(ctx context.Context) []*HostDependen
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (hdcb *HostDependencyCreateBulk) Exec(ctx context.Context) error {
+	_, err := hdcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (hdcb *HostDependencyCreateBulk) ExecX(ctx context.Context) {
+	if err := hdcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

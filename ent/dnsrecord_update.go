@@ -22,9 +22,9 @@ type DNSRecordUpdate struct {
 	mutation *DNSRecordMutation
 }
 
-// Where adds a new predicate for the DNSRecordUpdate builder.
+// Where appends a list predicates to the DNSRecordUpdate builder.
 func (dru *DNSRecordUpdate) Where(ps ...predicate.DNSRecord) *DNSRecordUpdate {
-	dru.mutation.predicates = append(dru.mutation.predicates, ps...)
+	dru.mutation.Where(ps...)
 	return dru
 }
 
@@ -126,6 +126,9 @@ func (dru *DNSRecordUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(dru.hooks) - 1; i >= 0; i-- {
+			if dru.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = dru.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, dru.mutation); err != nil {
@@ -269,8 +272,8 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, dru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{dnsrecord.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -390,6 +393,9 @@ func (druo *DNSRecordUpdateOne) Save(ctx context.Context) (*DNSRecord, error) {
 			return node, err
 		})
 		for i := len(druo.hooks) - 1; i >= 0; i-- {
+			if druo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = druo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, druo.mutation); err != nil {
@@ -553,8 +559,8 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 	if err = sqlgraph.UpdateNode(ctx, druo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{dnsrecord.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

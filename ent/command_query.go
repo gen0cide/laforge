@@ -363,8 +363,8 @@ func (cq *CommandQuery) GroupBy(field string, fields ...string) *CommandGroupBy 
 //		Select(command.FieldHclID).
 //		Scan(ctx, &v)
 //
-func (cq *CommandQuery) Select(field string, fields ...string) *CommandSelect {
-	cq.fields = append([]string{field}, fields...)
+func (cq *CommandQuery) Select(fields ...string) *CommandSelect {
+	cq.fields = append(cq.fields, fields...)
 	return &CommandSelect{CommandQuery: cq}
 }
 
@@ -545,10 +545,14 @@ func (cq *CommandQuery) querySpec() *sqlgraph.QuerySpec {
 func (cq *CommandQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(cq.driver.Dialect())
 	t1 := builder.Table(command.Table)
-	selector := builder.Select(t1.Columns(command.Columns...)...).From(t1)
+	columns := cq.fields
+	if len(columns) == 0 {
+		columns = command.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if cq.sql != nil {
 		selector = cq.sql
-		selector.Select(selector.Columns(command.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range cq.predicates {
 		p(selector)
@@ -816,13 +820,24 @@ func (cgb *CommandGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 }
 
 func (cgb *CommandGroupBy) sqlQuery() *sql.Selector {
-	selector := cgb.sql
-	columns := make([]string, 0, len(cgb.fields)+len(cgb.fns))
-	columns = append(columns, cgb.fields...)
+	selector := cgb.sql.Select()
+	aggregation := make([]string, 0, len(cgb.fns))
 	for _, fn := range cgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(cgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(cgb.fields)+len(cgb.fns))
+		for _, f := range cgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(cgb.fields...)...)
 }
 
 // CommandSelect is the builder for selecting fields of Command entities.
@@ -1038,16 +1053,10 @@ func (cs *CommandSelect) BoolX(ctx context.Context) bool {
 
 func (cs *CommandSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := cs.sqlQuery().Query()
+	query, args := cs.sql.Query()
 	if err := cs.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (cs *CommandSelect) sqlQuery() sql.Querier {
-	selector := cs.sql
-	selector.Select(selector.Columns(cs.fields...)...)
-	return selector
 }

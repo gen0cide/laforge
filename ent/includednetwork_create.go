@@ -133,11 +133,17 @@ func (inc *IncludedNetworkCreate) Save(ctx context.Context) (*IncludedNetwork, e
 				return nil, err
 			}
 			inc.mutation = mutation
-			node, err = inc.sqlSave(ctx)
+			if node, err = inc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(inc.hooks) - 1; i >= 0; i-- {
+			if inc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = inc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, inc.mutation); err != nil {
@@ -156,6 +162,19 @@ func (inc *IncludedNetworkCreate) SaveX(ctx context.Context) *IncludedNetwork {
 	return v
 }
 
+// Exec executes the query.
+func (inc *IncludedNetworkCreate) Exec(ctx context.Context) error {
+	_, err := inc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (inc *IncludedNetworkCreate) ExecX(ctx context.Context) {
+	if err := inc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (inc *IncludedNetworkCreate) defaults() {
 	if _, ok := inc.mutation.ID(); !ok {
@@ -167,10 +186,10 @@ func (inc *IncludedNetworkCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (inc *IncludedNetworkCreate) check() error {
 	if _, ok := inc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
 	}
 	if _, ok := inc.mutation.Hosts(); !ok {
-		return &ValidationError{Name: "hosts", err: errors.New("ent: missing required field \"hosts\"")}
+		return &ValidationError{Name: "hosts", err: errors.New(`ent: missing required field "hosts"`)}
 	}
 	return nil
 }
@@ -178,10 +197,13 @@ func (inc *IncludedNetworkCreate) check() error {
 func (inc *IncludedNetworkCreate) sqlSave(ctx context.Context) (*IncludedNetwork, error) {
 	_node, _spec := inc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, inc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -326,17 +348,19 @@ func (incb *IncludedNetworkCreateBulk) Save(ctx context.Context) ([]*IncludedNet
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, incb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, incb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, incb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -360,4 +384,17 @@ func (incb *IncludedNetworkCreateBulk) SaveX(ctx context.Context) []*IncludedNet
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (incb *IncludedNetworkCreateBulk) Exec(ctx context.Context) error {
+	_, err := incb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (incb *IncludedNetworkCreateBulk) ExecX(ctx context.Context) {
+	if err := incb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

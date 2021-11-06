@@ -471,8 +471,8 @@ func (stq *ServerTaskQuery) GroupBy(field string, fields ...string) *ServerTaskG
 //		Select(servertask.FieldType).
 //		Scan(ctx, &v)
 //
-func (stq *ServerTaskQuery) Select(field string, fields ...string) *ServerTaskSelect {
-	stq.fields = append([]string{field}, fields...)
+func (stq *ServerTaskQuery) Select(fields ...string) *ServerTaskSelect {
+	stq.fields = append(stq.fields, fields...)
 	return &ServerTaskSelect{ServerTaskQuery: stq}
 }
 
@@ -742,10 +742,14 @@ func (stq *ServerTaskQuery) querySpec() *sqlgraph.QuerySpec {
 func (stq *ServerTaskQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(stq.driver.Dialect())
 	t1 := builder.Table(servertask.Table)
-	selector := builder.Select(t1.Columns(servertask.Columns...)...).From(t1)
+	columns := stq.fields
+	if len(columns) == 0 {
+		columns = servertask.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if stq.sql != nil {
 		selector = stq.sql
-		selector.Select(selector.Columns(servertask.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range stq.predicates {
 		p(selector)
@@ -1013,13 +1017,24 @@ func (stgb *ServerTaskGroupBy) sqlScan(ctx context.Context, v interface{}) error
 }
 
 func (stgb *ServerTaskGroupBy) sqlQuery() *sql.Selector {
-	selector := stgb.sql
-	columns := make([]string, 0, len(stgb.fields)+len(stgb.fns))
-	columns = append(columns, stgb.fields...)
+	selector := stgb.sql.Select()
+	aggregation := make([]string, 0, len(stgb.fns))
 	for _, fn := range stgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(stgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(stgb.fields)+len(stgb.fns))
+		for _, f := range stgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(stgb.fields...)...)
 }
 
 // ServerTaskSelect is the builder for selecting fields of ServerTask entities.
@@ -1235,16 +1250,10 @@ func (sts *ServerTaskSelect) BoolX(ctx context.Context) bool {
 
 func (sts *ServerTaskSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := sts.sqlQuery().Query()
+	query, args := sts.sql.Query()
 	if err := sts.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (sts *ServerTaskSelect) sqlQuery() sql.Querier {
-	selector := sts.sql
-	selector.Select(selector.Columns(sts.fields...)...)
-	return selector
 }

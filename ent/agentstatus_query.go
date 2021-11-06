@@ -398,8 +398,8 @@ func (asq *AgentStatusQuery) GroupBy(field string, fields ...string) *AgentStatu
 //		Select(agentstatus.FieldClientID).
 //		Scan(ctx, &v)
 //
-func (asq *AgentStatusQuery) Select(field string, fields ...string) *AgentStatusSelect {
-	asq.fields = append([]string{field}, fields...)
+func (asq *AgentStatusQuery) Select(fields ...string) *AgentStatusSelect {
+	asq.fields = append(asq.fields, fields...)
 	return &AgentStatusSelect{AgentStatusQuery: asq}
 }
 
@@ -610,10 +610,14 @@ func (asq *AgentStatusQuery) querySpec() *sqlgraph.QuerySpec {
 func (asq *AgentStatusQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(asq.driver.Dialect())
 	t1 := builder.Table(agentstatus.Table)
-	selector := builder.Select(t1.Columns(agentstatus.Columns...)...).From(t1)
+	columns := asq.fields
+	if len(columns) == 0 {
+		columns = agentstatus.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if asq.sql != nil {
 		selector = asq.sql
-		selector.Select(selector.Columns(agentstatus.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range asq.predicates {
 		p(selector)
@@ -881,13 +885,24 @@ func (asgb *AgentStatusGroupBy) sqlScan(ctx context.Context, v interface{}) erro
 }
 
 func (asgb *AgentStatusGroupBy) sqlQuery() *sql.Selector {
-	selector := asgb.sql
-	columns := make([]string, 0, len(asgb.fields)+len(asgb.fns))
-	columns = append(columns, asgb.fields...)
+	selector := asgb.sql.Select()
+	aggregation := make([]string, 0, len(asgb.fns))
 	for _, fn := range asgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(asgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(asgb.fields)+len(asgb.fns))
+		for _, f := range asgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(asgb.fields...)...)
 }
 
 // AgentStatusSelect is the builder for selecting fields of AgentStatus entities.
@@ -1103,16 +1118,10 @@ func (ass *AgentStatusSelect) BoolX(ctx context.Context) bool {
 
 func (ass *AgentStatusSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := ass.sqlQuery().Query()
+	query, args := ass.sql.Query()
 	if err := ass.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (ass *AgentStatusSelect) sqlQuery() sql.Querier {
-	selector := ass.sql
-	selector.Select(selector.Columns(ass.fields...)...)
-	return selector
 }

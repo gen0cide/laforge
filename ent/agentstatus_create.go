@@ -197,11 +197,17 @@ func (asc *AgentStatusCreate) Save(ctx context.Context) (*AgentStatus, error) {
 				return nil, err
 			}
 			asc.mutation = mutation
-			node, err = asc.sqlSave(ctx)
+			if node, err = asc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(asc.hooks) - 1; i >= 0; i-- {
+			if asc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = asc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, asc.mutation); err != nil {
@@ -220,6 +226,19 @@ func (asc *AgentStatusCreate) SaveX(ctx context.Context) *AgentStatus {
 	return v
 }
 
+// Exec executes the query.
+func (asc *AgentStatusCreate) Exec(ctx context.Context) error {
+	_, err := asc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (asc *AgentStatusCreate) ExecX(ctx context.Context) {
+	if err := asc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (asc *AgentStatusCreate) defaults() {
 	if _, ok := asc.mutation.ID(); !ok {
@@ -231,46 +250,46 @@ func (asc *AgentStatusCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (asc *AgentStatusCreate) check() error {
 	if _, ok := asc.mutation.ClientID(); !ok {
-		return &ValidationError{Name: "ClientID", err: errors.New("ent: missing required field \"ClientID\"")}
+		return &ValidationError{Name: "ClientID", err: errors.New(`ent: missing required field "ClientID"`)}
 	}
 	if _, ok := asc.mutation.Hostname(); !ok {
-		return &ValidationError{Name: "Hostname", err: errors.New("ent: missing required field \"Hostname\"")}
+		return &ValidationError{Name: "Hostname", err: errors.New(`ent: missing required field "Hostname"`)}
 	}
 	if _, ok := asc.mutation.UpTime(); !ok {
-		return &ValidationError{Name: "UpTime", err: errors.New("ent: missing required field \"UpTime\"")}
+		return &ValidationError{Name: "UpTime", err: errors.New(`ent: missing required field "UpTime"`)}
 	}
 	if _, ok := asc.mutation.BootTime(); !ok {
-		return &ValidationError{Name: "BootTime", err: errors.New("ent: missing required field \"BootTime\"")}
+		return &ValidationError{Name: "BootTime", err: errors.New(`ent: missing required field "BootTime"`)}
 	}
 	if _, ok := asc.mutation.NumProcs(); !ok {
-		return &ValidationError{Name: "NumProcs", err: errors.New("ent: missing required field \"NumProcs\"")}
+		return &ValidationError{Name: "NumProcs", err: errors.New(`ent: missing required field "NumProcs"`)}
 	}
 	if _, ok := asc.mutation.Os(); !ok {
-		return &ValidationError{Name: "Os", err: errors.New("ent: missing required field \"Os\"")}
+		return &ValidationError{Name: "Os", err: errors.New(`ent: missing required field "Os"`)}
 	}
 	if _, ok := asc.mutation.HostID(); !ok {
-		return &ValidationError{Name: "HostID", err: errors.New("ent: missing required field \"HostID\"")}
+		return &ValidationError{Name: "HostID", err: errors.New(`ent: missing required field "HostID"`)}
 	}
 	if _, ok := asc.mutation.Load1(); !ok {
-		return &ValidationError{Name: "Load1", err: errors.New("ent: missing required field \"Load1\"")}
+		return &ValidationError{Name: "Load1", err: errors.New(`ent: missing required field "Load1"`)}
 	}
 	if _, ok := asc.mutation.Load5(); !ok {
-		return &ValidationError{Name: "Load5", err: errors.New("ent: missing required field \"Load5\"")}
+		return &ValidationError{Name: "Load5", err: errors.New(`ent: missing required field "Load5"`)}
 	}
 	if _, ok := asc.mutation.Load15(); !ok {
-		return &ValidationError{Name: "Load15", err: errors.New("ent: missing required field \"Load15\"")}
+		return &ValidationError{Name: "Load15", err: errors.New(`ent: missing required field "Load15"`)}
 	}
 	if _, ok := asc.mutation.TotalMem(); !ok {
-		return &ValidationError{Name: "TotalMem", err: errors.New("ent: missing required field \"TotalMem\"")}
+		return &ValidationError{Name: "TotalMem", err: errors.New(`ent: missing required field "TotalMem"`)}
 	}
 	if _, ok := asc.mutation.FreeMem(); !ok {
-		return &ValidationError{Name: "FreeMem", err: errors.New("ent: missing required field \"FreeMem\"")}
+		return &ValidationError{Name: "FreeMem", err: errors.New(`ent: missing required field "FreeMem"`)}
 	}
 	if _, ok := asc.mutation.UsedMem(); !ok {
-		return &ValidationError{Name: "UsedMem", err: errors.New("ent: missing required field \"UsedMem\"")}
+		return &ValidationError{Name: "UsedMem", err: errors.New(`ent: missing required field "UsedMem"`)}
 	}
 	if _, ok := asc.mutation.Timestamp(); !ok {
-		return &ValidationError{Name: "Timestamp", err: errors.New("ent: missing required field \"Timestamp\"")}
+		return &ValidationError{Name: "Timestamp", err: errors.New(`ent: missing required field "Timestamp"`)}
 	}
 	return nil
 }
@@ -278,10 +297,13 @@ func (asc *AgentStatusCreate) check() error {
 func (asc *AgentStatusCreate) sqlSave(ctx context.Context) (*AgentStatus, error) {
 	_node, _spec := asc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, asc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -505,17 +527,19 @@ func (ascb *AgentStatusCreateBulk) Save(ctx context.Context) ([]*AgentStatus, er
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, ascb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, ascb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, ascb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -539,4 +563,17 @@ func (ascb *AgentStatusCreateBulk) SaveX(ctx context.Context) []*AgentStatus {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (ascb *AgentStatusCreateBulk) Exec(ctx context.Context) error {
+	_, err := ascb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (ascb *AgentStatusCreateBulk) ExecX(ctx context.Context) {
+	if err := ascb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

@@ -26,9 +26,9 @@ type HostUpdate struct {
 	mutation *HostMutation
 }
 
-// Where adds a new predicate for the HostUpdate builder.
+// Where appends a list predicates to the HostUpdate builder.
 func (hu *HostUpdate) Where(ps ...predicate.Host) *HostUpdate {
-	hu.mutation.predicates = append(hu.mutation.predicates, ps...)
+	hu.mutation.Where(ps...)
 	return hu
 }
 
@@ -348,6 +348,9 @@ func (hu *HostUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(hu.hooks) - 1; i >= 0; i-- {
+			if hu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = hu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, hu.mutation); err != nil {
@@ -797,8 +800,8 @@ func (hu *HostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, hu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{host.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -1136,6 +1139,9 @@ func (huo *HostUpdateOne) Save(ctx context.Context) (*Host, error) {
 			return node, err
 		})
 		for i := len(huo.hooks) - 1; i >= 0; i-- {
+			if huo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = huo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, huo.mutation); err != nil {
@@ -1605,8 +1611,8 @@ func (huo *HostUpdateOne) sqlSave(ctx context.Context) (_node *Host, err error) 
 	if err = sqlgraph.UpdateNode(ctx, huo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{host.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

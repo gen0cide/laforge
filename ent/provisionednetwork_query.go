@@ -507,8 +507,8 @@ func (pnq *ProvisionedNetworkQuery) GroupBy(field string, fields ...string) *Pro
 //		Select(provisionednetwork.FieldName).
 //		Scan(ctx, &v)
 //
-func (pnq *ProvisionedNetworkQuery) Select(field string, fields ...string) *ProvisionedNetworkSelect {
-	pnq.fields = append([]string{field}, fields...)
+func (pnq *ProvisionedNetworkQuery) Select(fields ...string) *ProvisionedNetworkSelect {
+	pnq.fields = append(pnq.fields, fields...)
 	return &ProvisionedNetworkSelect{ProvisionedNetworkQuery: pnq}
 }
 
@@ -808,10 +808,14 @@ func (pnq *ProvisionedNetworkQuery) querySpec() *sqlgraph.QuerySpec {
 func (pnq *ProvisionedNetworkQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(pnq.driver.Dialect())
 	t1 := builder.Table(provisionednetwork.Table)
-	selector := builder.Select(t1.Columns(provisionednetwork.Columns...)...).From(t1)
+	columns := pnq.fields
+	if len(columns) == 0 {
+		columns = provisionednetwork.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if pnq.sql != nil {
 		selector = pnq.sql
-		selector.Select(selector.Columns(provisionednetwork.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range pnq.predicates {
 		p(selector)
@@ -1079,13 +1083,24 @@ func (pngb *ProvisionedNetworkGroupBy) sqlScan(ctx context.Context, v interface{
 }
 
 func (pngb *ProvisionedNetworkGroupBy) sqlQuery() *sql.Selector {
-	selector := pngb.sql
-	columns := make([]string, 0, len(pngb.fields)+len(pngb.fns))
-	columns = append(columns, pngb.fields...)
+	selector := pngb.sql.Select()
+	aggregation := make([]string, 0, len(pngb.fns))
 	for _, fn := range pngb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(pngb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(pngb.fields)+len(pngb.fns))
+		for _, f := range pngb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(pngb.fields...)...)
 }
 
 // ProvisionedNetworkSelect is the builder for selecting fields of ProvisionedNetwork entities.
@@ -1301,16 +1316,10 @@ func (pns *ProvisionedNetworkSelect) BoolX(ctx context.Context) bool {
 
 func (pns *ProvisionedNetworkSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := pns.sqlQuery().Query()
+	query, args := pns.sql.Query()
 	if err := pns.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (pns *ProvisionedNetworkSelect) sqlQuery() sql.Querier {
-	selector := pns.sql
-	selector.Select(selector.Columns(pns.fields...)...)
-	return selector
 }

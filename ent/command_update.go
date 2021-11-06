@@ -23,9 +23,9 @@ type CommandUpdate struct {
 	mutation *CommandMutation
 }
 
-// Where adds a new predicate for the CommandUpdate builder.
+// Where appends a list predicates to the CommandUpdate builder.
 func (cu *CommandUpdate) Where(ps ...predicate.Command) *CommandUpdate {
-	cu.mutation.predicates = append(cu.mutation.predicates, ps...)
+	cu.mutation.Where(ps...)
 	return cu
 }
 
@@ -201,6 +201,9 @@ func (cu *CommandUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(cu.hooks) - 1; i >= 0; i-- {
+			if cu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = cu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, cu.mutation); err != nil {
@@ -448,8 +451,8 @@ func (cu *CommandUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{command.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -643,6 +646,9 @@ func (cuo *CommandUpdateOne) Save(ctx context.Context) (*Command, error) {
 			return node, err
 		})
 		for i := len(cuo.hooks) - 1; i >= 0; i-- {
+			if cuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = cuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, cuo.mutation); err != nil {
@@ -910,8 +916,8 @@ func (cuo *CommandUpdateOne) sqlSave(ctx context.Context) (_node *Command, err e
 	if err = sqlgraph.UpdateNode(ctx, cuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{command.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

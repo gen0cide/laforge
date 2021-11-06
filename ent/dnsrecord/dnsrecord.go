@@ -31,7 +31,7 @@ const (
 	EdgeDNSRecordToEnvironment = "DNSRecordToEnvironment"
 	// Table holds the table name of the dnsrecord in the database.
 	Table = "dns_records"
-	// DNSRecordToEnvironmentTable is the table the holds the DNSRecordToEnvironment relation/edge.
+	// DNSRecordToEnvironmentTable is the table that holds the DNSRecordToEnvironment relation/edge.
 	DNSRecordToEnvironmentTable = "dns_records"
 	// DNSRecordToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.

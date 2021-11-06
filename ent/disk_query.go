@@ -326,8 +326,8 @@ func (dq *DiskQuery) GroupBy(field string, fields ...string) *DiskGroupBy {
 //		Select(disk.FieldSize).
 //		Scan(ctx, &v)
 //
-func (dq *DiskQuery) Select(field string, fields ...string) *DiskSelect {
-	dq.fields = append([]string{field}, fields...)
+func (dq *DiskQuery) Select(fields ...string) *DiskSelect {
+	dq.fields = append(dq.fields, fields...)
 	return &DiskSelect{DiskQuery: dq}
 }
 
@@ -478,10 +478,14 @@ func (dq *DiskQuery) querySpec() *sqlgraph.QuerySpec {
 func (dq *DiskQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(dq.driver.Dialect())
 	t1 := builder.Table(disk.Table)
-	selector := builder.Select(t1.Columns(disk.Columns...)...).From(t1)
+	columns := dq.fields
+	if len(columns) == 0 {
+		columns = disk.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if dq.sql != nil {
 		selector = dq.sql
-		selector.Select(selector.Columns(disk.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range dq.predicates {
 		p(selector)
@@ -749,13 +753,24 @@ func (dgb *DiskGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 }
 
 func (dgb *DiskGroupBy) sqlQuery() *sql.Selector {
-	selector := dgb.sql
-	columns := make([]string, 0, len(dgb.fields)+len(dgb.fns))
-	columns = append(columns, dgb.fields...)
+	selector := dgb.sql.Select()
+	aggregation := make([]string, 0, len(dgb.fns))
 	for _, fn := range dgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(dgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(dgb.fields)+len(dgb.fns))
+		for _, f := range dgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(dgb.fields...)...)
 }
 
 // DiskSelect is the builder for selecting fields of Disk entities.
@@ -971,16 +986,10 @@ func (ds *DiskSelect) BoolX(ctx context.Context) bool {
 
 func (ds *DiskSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := ds.sqlQuery().Query()
+	query, args := ds.sql.Query()
 	if err := ds.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (ds *DiskSelect) sqlQuery() sql.Querier {
-	selector := ds.sql
-	selector.Select(selector.Columns(ds.fields...)...)
-	return selector
 }

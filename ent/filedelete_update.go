@@ -22,9 +22,9 @@ type FileDeleteUpdate struct {
 	mutation *FileDeleteMutation
 }
 
-// Where adds a new predicate for the FileDeleteUpdate builder.
+// Where appends a list predicates to the FileDeleteUpdate builder.
 func (fdu *FileDeleteUpdate) Where(ps ...predicate.FileDelete) *FileDeleteUpdate {
-	fdu.mutation.predicates = append(fdu.mutation.predicates, ps...)
+	fdu.mutation.Where(ps...)
 	return fdu
 }
 
@@ -96,6 +96,9 @@ func (fdu *FileDeleteUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(fdu.hooks) - 1; i >= 0; i-- {
+			if fdu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fdu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fdu.mutation); err != nil {
@@ -204,8 +207,8 @@ func (fdu *FileDeleteUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, fdu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{filedelete.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -295,6 +298,9 @@ func (fduo *FileDeleteUpdateOne) Save(ctx context.Context) (*FileDelete, error) 
 			return node, err
 		})
 		for i := len(fduo.hooks) - 1; i >= 0; i-- {
+			if fduo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fduo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fduo.mutation); err != nil {
@@ -423,8 +429,8 @@ func (fduo *FileDeleteUpdateOne) sqlSave(ctx context.Context) (_node *FileDelete
 	if err = sqlgraph.UpdateNode(ctx, fduo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{filedelete.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

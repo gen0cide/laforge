@@ -37,35 +37,35 @@ const (
 	EdgeServerTaskToGinFileMiddleware = "ServerTaskToGinFileMiddleware"
 	// Table holds the table name of the servertask in the database.
 	Table = "server_tasks"
-	// ServerTaskToAuthUserTable is the table the holds the ServerTaskToAuthUser relation/edge.
+	// ServerTaskToAuthUserTable is the table that holds the ServerTaskToAuthUser relation/edge.
 	ServerTaskToAuthUserTable = "server_tasks"
 	// ServerTaskToAuthUserInverseTable is the table name for the AuthUser entity.
 	// It exists in this package in order to avoid circular dependency with the "authuser" package.
 	ServerTaskToAuthUserInverseTable = "auth_users"
 	// ServerTaskToAuthUserColumn is the table column denoting the ServerTaskToAuthUser relation/edge.
 	ServerTaskToAuthUserColumn = "server_task_server_task_to_auth_user"
-	// ServerTaskToStatusTable is the table the holds the ServerTaskToStatus relation/edge.
+	// ServerTaskToStatusTable is the table that holds the ServerTaskToStatus relation/edge.
 	ServerTaskToStatusTable = "status"
 	// ServerTaskToStatusInverseTable is the table name for the Status entity.
 	// It exists in this package in order to avoid circular dependency with the "status" package.
 	ServerTaskToStatusInverseTable = "status"
 	// ServerTaskToStatusColumn is the table column denoting the ServerTaskToStatus relation/edge.
 	ServerTaskToStatusColumn = "server_task_server_task_to_status"
-	// ServerTaskToEnvironmentTable is the table the holds the ServerTaskToEnvironment relation/edge.
+	// ServerTaskToEnvironmentTable is the table that holds the ServerTaskToEnvironment relation/edge.
 	ServerTaskToEnvironmentTable = "server_tasks"
 	// ServerTaskToEnvironmentInverseTable is the table name for the Environment entity.
 	// It exists in this package in order to avoid circular dependency with the "environment" package.
 	ServerTaskToEnvironmentInverseTable = "environments"
 	// ServerTaskToEnvironmentColumn is the table column denoting the ServerTaskToEnvironment relation/edge.
 	ServerTaskToEnvironmentColumn = "server_task_server_task_to_environment"
-	// ServerTaskToBuildTable is the table the holds the ServerTaskToBuild relation/edge.
+	// ServerTaskToBuildTable is the table that holds the ServerTaskToBuild relation/edge.
 	ServerTaskToBuildTable = "server_tasks"
 	// ServerTaskToBuildInverseTable is the table name for the Build entity.
 	// It exists in this package in order to avoid circular dependency with the "build" package.
 	ServerTaskToBuildInverseTable = "builds"
 	// ServerTaskToBuildColumn is the table column denoting the ServerTaskToBuild relation/edge.
 	ServerTaskToBuildColumn = "server_task_server_task_to_build"
-	// ServerTaskToGinFileMiddlewareTable is the table the holds the ServerTaskToGinFileMiddleware relation/edge.
+	// ServerTaskToGinFileMiddlewareTable is the table that holds the ServerTaskToGinFileMiddleware relation/edge.
 	ServerTaskToGinFileMiddlewareTable = "gin_file_middlewares"
 	// ServerTaskToGinFileMiddlewareInverseTable is the table name for the GinFileMiddleware entity.
 	// It exists in this package in order to avoid circular dependency with the "ginfilemiddleware" package.

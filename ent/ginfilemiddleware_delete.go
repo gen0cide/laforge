@@ -20,9 +20,9 @@ type GinFileMiddlewareDelete struct {
 	mutation *GinFileMiddlewareMutation
 }
 
-// Where adds a new predicate to the GinFileMiddlewareDelete builder.
+// Where appends a list predicates to the GinFileMiddlewareDelete builder.
 func (gfmd *GinFileMiddlewareDelete) Where(ps ...predicate.GinFileMiddleware) *GinFileMiddlewareDelete {
-	gfmd.mutation.predicates = append(gfmd.mutation.predicates, ps...)
+	gfmd.mutation.Where(ps...)
 	return gfmd
 }
 
@@ -46,6 +46,9 @@ func (gfmd *GinFileMiddlewareDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(gfmd.hooks) - 1; i >= 0; i-- {
+			if gfmd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = gfmd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, gfmd.mutation); err != nil {

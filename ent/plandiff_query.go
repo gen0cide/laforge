@@ -362,8 +362,8 @@ func (pdq *PlanDiffQuery) GroupBy(field string, fields ...string) *PlanDiffGroup
 //		Select(plandiff.FieldRevision).
 //		Scan(ctx, &v)
 //
-func (pdq *PlanDiffQuery) Select(field string, fields ...string) *PlanDiffSelect {
-	pdq.fields = append([]string{field}, fields...)
+func (pdq *PlanDiffQuery) Select(fields ...string) *PlanDiffSelect {
+	pdq.fields = append(pdq.fields, fields...)
 	return &PlanDiffSelect{PlanDiffQuery: pdq}
 }
 
@@ -544,10 +544,14 @@ func (pdq *PlanDiffQuery) querySpec() *sqlgraph.QuerySpec {
 func (pdq *PlanDiffQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(pdq.driver.Dialect())
 	t1 := builder.Table(plandiff.Table)
-	selector := builder.Select(t1.Columns(plandiff.Columns...)...).From(t1)
+	columns := pdq.fields
+	if len(columns) == 0 {
+		columns = plandiff.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if pdq.sql != nil {
 		selector = pdq.sql
-		selector.Select(selector.Columns(plandiff.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range pdq.predicates {
 		p(selector)
@@ -815,13 +819,24 @@ func (pdgb *PlanDiffGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 }
 
 func (pdgb *PlanDiffGroupBy) sqlQuery() *sql.Selector {
-	selector := pdgb.sql
-	columns := make([]string, 0, len(pdgb.fields)+len(pdgb.fns))
-	columns = append(columns, pdgb.fields...)
+	selector := pdgb.sql.Select()
+	aggregation := make([]string, 0, len(pdgb.fns))
 	for _, fn := range pdgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(pdgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(pdgb.fields)+len(pdgb.fns))
+		for _, f := range pdgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(pdgb.fields...)...)
 }
 
 // PlanDiffSelect is the builder for selecting fields of PlanDiff entities.
@@ -1037,16 +1052,10 @@ func (pds *PlanDiffSelect) BoolX(ctx context.Context) bool {
 
 func (pds *PlanDiffSelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := pds.sqlQuery().Query()
+	query, args := pds.sql.Query()
 	if err := pds.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (pds *PlanDiffSelect) sqlQuery() sql.Querier {
-	selector := pds.sql
-	selector.Select(selector.Columns(pds.fields...)...)
-	return selector
 }

@@ -82,7 +82,7 @@ func (*BuildCommit) scanValues(columns []string) ([]interface{}, error) {
 		case buildcommit.FieldID:
 			values[i] = new(uuid.UUID)
 		case buildcommit.ForeignKeys[0]: // build_commit_build_commit_to_build
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type BuildCommit", columns[i])
 		}
@@ -123,10 +123,11 @@ func (bc *BuildCommit) assignValues(columns []string, values []interface{}) erro
 				bc.State = buildcommit.State(value.String)
 			}
 		case buildcommit.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field build_commit_build_commit_to_build", values[i])
-			} else if value != nil {
-				bc.build_commit_build_commit_to_build = value
+			} else if value.Valid {
+				bc.build_commit_build_commit_to_build = new(uuid.UUID)
+				*bc.build_commit_build_commit_to_build = *value.S.(*uuid.UUID)
 			}
 		}
 	}

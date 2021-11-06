@@ -220,21 +220,21 @@ func (*Status) scanValues(columns []string) ([]interface{}, error) {
 		case status.FieldID:
 			values[i] = new(uuid.UUID)
 		case status.ForeignKeys[0]: // adhoc_plan_adhoc_plan_to_status
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case status.ForeignKeys[1]: // build_build_to_status
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case status.ForeignKeys[2]: // plan_plan_to_status
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case status.ForeignKeys[3]: // provisioned_host_provisioned_host_to_status
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case status.ForeignKeys[4]: // provisioned_network_provisioned_network_to_status
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case status.ForeignKeys[5]: // provisioning_step_provisioning_step_to_status
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case status.ForeignKeys[6]: // server_task_server_task_to_status
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case status.ForeignKeys[7]: // team_team_to_status
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Status", columns[i])
 		}
@@ -299,52 +299,60 @@ func (s *Status) assignValues(columns []string, values []interface{}) error {
 				s.Error = value.String
 			}
 		case status.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field adhoc_plan_adhoc_plan_to_status", values[i])
-			} else if value != nil {
-				s.adhoc_plan_adhoc_plan_to_status = value
+			} else if value.Valid {
+				s.adhoc_plan_adhoc_plan_to_status = new(uuid.UUID)
+				*s.adhoc_plan_adhoc_plan_to_status = *value.S.(*uuid.UUID)
 			}
 		case status.ForeignKeys[1]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field build_build_to_status", values[i])
-			} else if value != nil {
-				s.build_build_to_status = value
+			} else if value.Valid {
+				s.build_build_to_status = new(uuid.UUID)
+				*s.build_build_to_status = *value.S.(*uuid.UUID)
 			}
 		case status.ForeignKeys[2]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field plan_plan_to_status", values[i])
-			} else if value != nil {
-				s.plan_plan_to_status = value
+			} else if value.Valid {
+				s.plan_plan_to_status = new(uuid.UUID)
+				*s.plan_plan_to_status = *value.S.(*uuid.UUID)
 			}
 		case status.ForeignKeys[3]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioned_host_provisioned_host_to_status", values[i])
-			} else if value != nil {
-				s.provisioned_host_provisioned_host_to_status = value
+			} else if value.Valid {
+				s.provisioned_host_provisioned_host_to_status = new(uuid.UUID)
+				*s.provisioned_host_provisioned_host_to_status = *value.S.(*uuid.UUID)
 			}
 		case status.ForeignKeys[4]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioned_network_provisioned_network_to_status", values[i])
-			} else if value != nil {
-				s.provisioned_network_provisioned_network_to_status = value
+			} else if value.Valid {
+				s.provisioned_network_provisioned_network_to_status = new(uuid.UUID)
+				*s.provisioned_network_provisioned_network_to_status = *value.S.(*uuid.UUID)
 			}
 		case status.ForeignKeys[5]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field provisioning_step_provisioning_step_to_status", values[i])
-			} else if value != nil {
-				s.provisioning_step_provisioning_step_to_status = value
+			} else if value.Valid {
+				s.provisioning_step_provisioning_step_to_status = new(uuid.UUID)
+				*s.provisioning_step_provisioning_step_to_status = *value.S.(*uuid.UUID)
 			}
 		case status.ForeignKeys[6]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field server_task_server_task_to_status", values[i])
-			} else if value != nil {
-				s.server_task_server_task_to_status = value
+			} else if value.Valid {
+				s.server_task_server_task_to_status = new(uuid.UUID)
+				*s.server_task_server_task_to_status = *value.S.(*uuid.UUID)
 			}
 		case status.ForeignKeys[7]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field team_team_to_status", values[i])
-			} else if value != nil {
-				s.team_team_to_status = value
+			} else if value.Valid {
+				s.team_team_to_status = new(uuid.UUID)
+				*s.team_team_to_status = *value.S.(*uuid.UUID)
 			}
 		}
 	}

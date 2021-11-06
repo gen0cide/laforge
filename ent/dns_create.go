@@ -121,11 +121,17 @@ func (dc *DNSCreate) Save(ctx context.Context) (*DNS, error) {
 				return nil, err
 			}
 			dc.mutation = mutation
-			node, err = dc.sqlSave(ctx)
+			if node, err = dc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(dc.hooks) - 1; i >= 0; i-- {
+			if dc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = dc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, dc.mutation); err != nil {
@@ -144,6 +150,19 @@ func (dc *DNSCreate) SaveX(ctx context.Context) *DNS {
 	return v
 }
 
+// Exec executes the query.
+func (dc *DNSCreate) Exec(ctx context.Context) error {
+	_, err := dc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (dc *DNSCreate) ExecX(ctx context.Context) {
+	if err := dc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (dc *DNSCreate) defaults() {
 	if _, ok := dc.mutation.ID(); !ok {
@@ -155,22 +174,22 @@ func (dc *DNSCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (dc *DNSCreate) check() error {
 	if _, ok := dc.mutation.HclID(); !ok {
-		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+		return &ValidationError{Name: "hcl_id", err: errors.New(`ent: missing required field "hcl_id"`)}
 	}
 	if _, ok := dc.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New("ent: missing required field \"type\"")}
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "type"`)}
 	}
 	if _, ok := dc.mutation.RootDomain(); !ok {
-		return &ValidationError{Name: "root_domain", err: errors.New("ent: missing required field \"root_domain\"")}
+		return &ValidationError{Name: "root_domain", err: errors.New(`ent: missing required field "root_domain"`)}
 	}
 	if _, ok := dc.mutation.DNSServers(); !ok {
-		return &ValidationError{Name: "dns_servers", err: errors.New("ent: missing required field \"dns_servers\"")}
+		return &ValidationError{Name: "dns_servers", err: errors.New(`ent: missing required field "dns_servers"`)}
 	}
 	if _, ok := dc.mutation.NtpServers(); !ok {
-		return &ValidationError{Name: "ntp_servers", err: errors.New("ent: missing required field \"ntp_servers\"")}
+		return &ValidationError{Name: "ntp_servers", err: errors.New(`ent: missing required field "ntp_servers"`)}
 	}
 	if _, ok := dc.mutation.Config(); !ok {
-		return &ValidationError{Name: "config", err: errors.New("ent: missing required field \"config\"")}
+		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "config"`)}
 	}
 	return nil
 }
@@ -178,10 +197,13 @@ func (dc *DNSCreate) check() error {
 func (dc *DNSCreate) sqlSave(ctx context.Context) (*DNS, error) {
 	_node, _spec := dc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, dc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -319,17 +341,19 @@ func (dcb *DNSCreateBulk) Save(ctx context.Context) ([]*DNS, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, dcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, dcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, dcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -353,4 +377,17 @@ func (dcb *DNSCreateBulk) SaveX(ctx context.Context) []*DNS {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (dcb *DNSCreateBulk) Exec(ctx context.Context) error {
+	_, err := dcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (dcb *DNSCreateBulk) ExecX(ctx context.Context) {
+	if err := dcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

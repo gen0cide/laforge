@@ -20,9 +20,9 @@ type FileDownloadDelete struct {
 	mutation *FileDownloadMutation
 }
 
-// Where adds a new predicate to the FileDownloadDelete builder.
+// Where appends a list predicates to the FileDownloadDelete builder.
 func (fdd *FileDownloadDelete) Where(ps ...predicate.FileDownload) *FileDownloadDelete {
-	fdd.mutation.predicates = append(fdd.mutation.predicates, ps...)
+	fdd.mutation.Where(ps...)
 	return fdd
 }
 
@@ -46,6 +46,9 @@ func (fdd *FileDownloadDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(fdd.hooks) - 1; i >= 0; i-- {
+			if fdd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fdd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fdd.mutation); err != nil {

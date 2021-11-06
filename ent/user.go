@@ -79,13 +79,13 @@ func (*User) scanValues(columns []string) ([]interface{}, error) {
 		case user.FieldID:
 			values[i] = new(uuid.UUID)
 		case user.ForeignKeys[0]: // command_command_to_user
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case user.ForeignKeys[1]: // finding_finding_to_user
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case user.ForeignKeys[2]: // host_host_to_user
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case user.ForeignKeys[3]: // script_script_to_user
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type User", columns[i])
 		}
@@ -132,28 +132,32 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 				u.HclID = value.String
 			}
 		case user.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field command_command_to_user", values[i])
-			} else if value != nil {
-				u.command_command_to_user = value
+			} else if value.Valid {
+				u.command_command_to_user = new(uuid.UUID)
+				*u.command_command_to_user = *value.S.(*uuid.UUID)
 			}
 		case user.ForeignKeys[1]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field finding_finding_to_user", values[i])
-			} else if value != nil {
-				u.finding_finding_to_user = value
+			} else if value.Valid {
+				u.finding_finding_to_user = new(uuid.UUID)
+				*u.finding_finding_to_user = *value.S.(*uuid.UUID)
 			}
 		case user.ForeignKeys[2]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field host_host_to_user", values[i])
-			} else if value != nil {
-				u.host_host_to_user = value
+			} else if value.Valid {
+				u.host_host_to_user = new(uuid.UUID)
+				*u.host_host_to_user = *value.S.(*uuid.UUID)
 			}
 		case user.ForeignKeys[3]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field script_script_to_user", values[i])
-			} else if value != nil {
-				u.script_script_to_user = value
+			} else if value.Valid {
+				u.script_script_to_user = new(uuid.UUID)
+				*u.script_script_to_user = *value.S.(*uuid.UUID)
 			}
 		}
 	}

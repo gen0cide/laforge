@@ -123,11 +123,17 @@ func (rc *RepositoryCreate) Save(ctx context.Context) (*Repository, error) {
 				return nil, err
 			}
 			rc.mutation = mutation
-			node, err = rc.sqlSave(ctx)
+			if node, err = rc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(rc.hooks) - 1; i >= 0; i-- {
+			if rc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = rc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, rc.mutation); err != nil {
@@ -144,6 +150,19 @@ func (rc *RepositoryCreate) SaveX(ctx context.Context) *Repository {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (rc *RepositoryCreate) Exec(ctx context.Context) error {
+	_, err := rc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (rc *RepositoryCreate) ExecX(ctx context.Context) {
+	if err := rc.Exec(ctx); err != nil {
+		panic(err)
+	}
 }
 
 // defaults sets the default values of the builder before save.
@@ -169,19 +188,19 @@ func (rc *RepositoryCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (rc *RepositoryCreate) check() error {
 	if _, ok := rc.mutation.RepoURL(); !ok {
-		return &ValidationError{Name: "repo_url", err: errors.New("ent: missing required field \"repo_url\"")}
+		return &ValidationError{Name: "repo_url", err: errors.New(`ent: missing required field "repo_url"`)}
 	}
 	if _, ok := rc.mutation.BranchName(); !ok {
-		return &ValidationError{Name: "branch_name", err: errors.New("ent: missing required field \"branch_name\"")}
+		return &ValidationError{Name: "branch_name", err: errors.New(`ent: missing required field "branch_name"`)}
 	}
 	if _, ok := rc.mutation.EnviromentFilepath(); !ok {
-		return &ValidationError{Name: "enviroment_filepath", err: errors.New("ent: missing required field \"enviroment_filepath\"")}
+		return &ValidationError{Name: "enviroment_filepath", err: errors.New(`ent: missing required field "enviroment_filepath"`)}
 	}
 	if _, ok := rc.mutation.FolderPath(); !ok {
-		return &ValidationError{Name: "folder_path", err: errors.New("ent: missing required field \"folder_path\"")}
+		return &ValidationError{Name: "folder_path", err: errors.New(`ent: missing required field "folder_path"`)}
 	}
 	if _, ok := rc.mutation.CommitInfo(); !ok {
-		return &ValidationError{Name: "commit_info", err: errors.New("ent: missing required field \"commit_info\"")}
+		return &ValidationError{Name: "commit_info", err: errors.New(`ent: missing required field "commit_info"`)}
 	}
 	return nil
 }
@@ -189,10 +208,13 @@ func (rc *RepositoryCreate) check() error {
 func (rc *RepositoryCreate) sqlSave(ctx context.Context) (*Repository, error) {
 	_node, _spec := rc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, rc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -303,17 +325,19 @@ func (rcb *RepositoryCreateBulk) Save(ctx context.Context) ([]*Repository, error
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, rcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, rcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, rcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -337,4 +361,17 @@ func (rcb *RepositoryCreateBulk) SaveX(ctx context.Context) []*Repository {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (rcb *RepositoryCreateBulk) Exec(ctx context.Context) error {
+	_, err := rcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (rcb *RepositoryCreateBulk) ExecX(ctx context.Context) {
+	if err := rcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

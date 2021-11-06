@@ -98,7 +98,7 @@ func (*Competition) scanValues(columns []string) ([]interface{}, error) {
 		case competition.FieldID:
 			values[i] = new(uuid.UUID)
 		case competition.ForeignKeys[0]: // environment_environment_to_competition
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Competition", columns[i])
 		}
@@ -133,7 +133,6 @@ func (c *Competition) assignValues(columns []string, values []interface{}) error
 				c.RootPassword = value.String
 			}
 		case competition.FieldConfig:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field config", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -142,7 +141,6 @@ func (c *Competition) assignValues(columns []string, values []interface{}) error
 				}
 			}
 		case competition.FieldTags:
-
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -151,10 +149,11 @@ func (c *Competition) assignValues(columns []string, values []interface{}) error
 				}
 			}
 		case competition.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field environment_environment_to_competition", values[i])
-			} else if value != nil {
-				c.environment_environment_to_competition = value
+			} else if value.Valid {
+				c.environment_environment_to_competition = new(uuid.UUID)
+				*c.environment_environment_to_competition = *value.S.(*uuid.UUID)
 			}
 		}
 	}

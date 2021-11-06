@@ -25,9 +25,9 @@ type AdhocPlanUpdate struct {
 	mutation *AdhocPlanMutation
 }
 
-// Where adds a new predicate for the AdhocPlanUpdate builder.
+// Where appends a list predicates to the AdhocPlanUpdate builder.
 func (apu *AdhocPlanUpdate) Where(ps ...predicate.AdhocPlan) *AdhocPlanUpdate {
-	apu.mutation.predicates = append(apu.mutation.predicates, ps...)
+	apu.mutation.Where(ps...)
 	return apu
 }
 
@@ -185,6 +185,9 @@ func (apu *AdhocPlanUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(apu.hooks) - 1; i >= 0; i-- {
+			if apu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = apu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, apu.mutation); err != nil {
@@ -464,8 +467,8 @@ func (apu *AdhocPlanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, apu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{adhocplan.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -641,6 +644,9 @@ func (apuo *AdhocPlanUpdateOne) Save(ctx context.Context) (*AdhocPlan, error) {
 			return node, err
 		})
 		for i := len(apuo.hooks) - 1; i >= 0; i-- {
+			if apuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = apuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, apuo.mutation); err != nil {
@@ -940,8 +946,8 @@ func (apuo *AdhocPlanUpdateOne) sqlSave(ctx context.Context) (_node *AdhocPlan, 
 	if err = sqlgraph.UpdateNode(ctx, apuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{adhocplan.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

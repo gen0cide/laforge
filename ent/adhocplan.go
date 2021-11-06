@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/adhocplan"
 	"github.com/gen0cide/laforge/ent/agenttask"
 	"github.com/gen0cide/laforge/ent/build"
@@ -123,9 +124,9 @@ func (*AdhocPlan) scanValues(columns []string) ([]interface{}, error) {
 		case adhocplan.FieldID:
 			values[i] = new(uuid.UUID)
 		case adhocplan.ForeignKeys[0]: // adhoc_plan_adhoc_plan_to_build
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case adhocplan.ForeignKeys[1]: // adhoc_plan_adhoc_plan_to_agent_task
-			values[i] = new(uuid.UUID)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type AdhocPlan", columns[i])
 		}
@@ -148,16 +149,18 @@ func (ap *AdhocPlan) assignValues(columns []string, values []interface{}) error 
 				ap.ID = *value
 			}
 		case adhocplan.ForeignKeys[0]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field adhoc_plan_adhoc_plan_to_build", values[i])
-			} else if value != nil {
-				ap.adhoc_plan_adhoc_plan_to_build = value
+			} else if value.Valid {
+				ap.adhoc_plan_adhoc_plan_to_build = new(uuid.UUID)
+				*ap.adhoc_plan_adhoc_plan_to_build = *value.S.(*uuid.UUID)
 			}
 		case adhocplan.ForeignKeys[1]:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field adhoc_plan_adhoc_plan_to_agent_task", values[i])
-			} else if value != nil {
-				ap.adhoc_plan_adhoc_plan_to_agent_task = value
+			} else if value.Valid {
+				ap.adhoc_plan_adhoc_plan_to_agent_task = new(uuid.UUID)
+				*ap.adhoc_plan_adhoc_plan_to_agent_task = *value.S.(*uuid.UUID)
 			}
 		}
 	}

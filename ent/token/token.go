@@ -19,7 +19,7 @@ const (
 	EdgeTokenToAuthUser = "TokenToAuthUser"
 	// Table holds the table name of the token in the database.
 	Table = "tokens"
-	// TokenToAuthUserTable is the table the holds the TokenToAuthUser relation/edge.
+	// TokenToAuthUserTable is the table that holds the TokenToAuthUser relation/edge.
 	TokenToAuthUserTable = "tokens"
 	// TokenToAuthUserInverseTable is the table name for the AuthUser entity.
 	// It exists in this package in order to avoid circular dependency with the "authuser" package.

@@ -4,9 +4,10 @@ go 1.16
 
 require (
 	entgo.io/contrib v0.0.0-20210510070807-19d2feb90dc4
-	entgo.io/ent v0.8.0
+	entgo.io/ent v0.9.1
 	github.com/99designs/gqlgen v0.13.0
 	github.com/StackExchange/wmi v0.0.0-20210224194228-fe8f1750fd46 // indirect
+	github.com/UnnoTed/fileb0x v1.1.4 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/bradfitz/iter v0.0.0-20191230175014-e8f45d346db8
 	github.com/briandowns/formatifier v0.0.0-20150226010542-6d068a6ce63a
@@ -24,11 +25,12 @@ require (
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/golang/protobuf v1.5.2
 	github.com/golang/snappy v0.0.3 // indirect
-	github.com/google/uuid v1.2.0
+	github.com/google/uuid v1.3.0
 	github.com/gorilla/sessions v1.2.1
 	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/hcl/v2 v2.10.0
+	github.com/hedwigz/entviz v0.0.0-20211018071308-cbfafe399286 // indirect
 	github.com/iamacarpet/go-win64api v0.0.0-20210311141720-fe38760bed28
 	github.com/iancoleman/strcase v0.1.3
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
@@ -38,7 +40,7 @@ require (
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/markbates/goth v1.67.1
-	github.com/mattn/go-sqlite3 v1.14.7
+	github.com/mattn/go-sqlite3 v1.14.8
 	github.com/mattn/go-zglob v0.0.3
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
@@ -58,7 +60,6 @@ require (
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20210511113859-b0526f3d8744 // indirect
-	golang.org/x/tools v0.1.1 // indirect
 	google.golang.org/genproto v0.0.0-20210510173355-fb37daa5cd7a // indirect
 	google.golang.org/grpc v1.37.1
 	google.golang.org/protobuf v1.26.0

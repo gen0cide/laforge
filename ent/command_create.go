@@ -155,11 +155,17 @@ func (cc *CommandCreate) Save(ctx context.Context) (*Command, error) {
 				return nil, err
 			}
 			cc.mutation = mutation
-			node, err = cc.sqlSave(ctx)
+			if node, err = cc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(cc.hooks) - 1; i >= 0; i-- {
+			if cc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = cc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, cc.mutation); err != nil {
@@ -178,6 +184,19 @@ func (cc *CommandCreate) SaveX(ctx context.Context) *Command {
 	return v
 }
 
+// Exec executes the query.
+func (cc *CommandCreate) Exec(ctx context.Context) error {
+	_, err := cc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (cc *CommandCreate) ExecX(ctx context.Context) {
+	if err := cc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
 // defaults sets the default values of the builder before save.
 func (cc *CommandCreate) defaults() {
 	if _, ok := cc.mutation.ID(); !ok {
@@ -189,47 +208,47 @@ func (cc *CommandCreate) defaults() {
 // check runs all checks and user-defined validators on the builder.
 func (cc *CommandCreate) check() error {
 	if _, ok := cc.mutation.HclID(); !ok {
-		return &ValidationError{Name: "hcl_id", err: errors.New("ent: missing required field \"hcl_id\"")}
+		return &ValidationError{Name: "hcl_id", err: errors.New(`ent: missing required field "hcl_id"`)}
 	}
 	if _, ok := cc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
 	}
 	if _, ok := cc.mutation.Description(); !ok {
-		return &ValidationError{Name: "description", err: errors.New("ent: missing required field \"description\"")}
+		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "description"`)}
 	}
 	if _, ok := cc.mutation.Program(); !ok {
-		return &ValidationError{Name: "program", err: errors.New("ent: missing required field \"program\"")}
+		return &ValidationError{Name: "program", err: errors.New(`ent: missing required field "program"`)}
 	}
 	if _, ok := cc.mutation.Args(); !ok {
-		return &ValidationError{Name: "args", err: errors.New("ent: missing required field \"args\"")}
+		return &ValidationError{Name: "args", err: errors.New(`ent: missing required field "args"`)}
 	}
 	if _, ok := cc.mutation.IgnoreErrors(); !ok {
-		return &ValidationError{Name: "ignore_errors", err: errors.New("ent: missing required field \"ignore_errors\"")}
+		return &ValidationError{Name: "ignore_errors", err: errors.New(`ent: missing required field "ignore_errors"`)}
 	}
 	if _, ok := cc.mutation.Disabled(); !ok {
-		return &ValidationError{Name: "disabled", err: errors.New("ent: missing required field \"disabled\"")}
+		return &ValidationError{Name: "disabled", err: errors.New(`ent: missing required field "disabled"`)}
 	}
 	if _, ok := cc.mutation.Cooldown(); !ok {
-		return &ValidationError{Name: "cooldown", err: errors.New("ent: missing required field \"cooldown\"")}
+		return &ValidationError{Name: "cooldown", err: errors.New(`ent: missing required field "cooldown"`)}
 	}
 	if v, ok := cc.mutation.Cooldown(); ok {
 		if err := command.CooldownValidator(v); err != nil {
-			return &ValidationError{Name: "cooldown", err: fmt.Errorf("ent: validator failed for field \"cooldown\": %w", err)}
+			return &ValidationError{Name: "cooldown", err: fmt.Errorf(`ent: validator failed for field "cooldown": %w`, err)}
 		}
 	}
 	if _, ok := cc.mutation.Timeout(); !ok {
-		return &ValidationError{Name: "timeout", err: errors.New("ent: missing required field \"timeout\"")}
+		return &ValidationError{Name: "timeout", err: errors.New(`ent: missing required field "timeout"`)}
 	}
 	if v, ok := cc.mutation.Timeout(); ok {
 		if err := command.TimeoutValidator(v); err != nil {
-			return &ValidationError{Name: "timeout", err: fmt.Errorf("ent: validator failed for field \"timeout\": %w", err)}
+			return &ValidationError{Name: "timeout", err: fmt.Errorf(`ent: validator failed for field "timeout": %w`, err)}
 		}
 	}
 	if _, ok := cc.mutation.Vars(); !ok {
-		return &ValidationError{Name: "vars", err: errors.New("ent: missing required field \"vars\"")}
+		return &ValidationError{Name: "vars", err: errors.New(`ent: missing required field "vars"`)}
 	}
 	if _, ok := cc.mutation.Tags(); !ok {
-		return &ValidationError{Name: "tags", err: errors.New("ent: missing required field \"tags\"")}
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "tags"`)}
 	}
 	return nil
 }
@@ -237,10 +256,13 @@ func (cc *CommandCreate) check() error {
 func (cc *CommandCreate) sqlSave(ctx context.Context) (*Command, error) {
 	_node, _spec := cc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, cc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
+	}
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
 	}
 	return _node, nil
 }
@@ -419,17 +441,19 @@ func (ccb *CommandCreateBulk) Save(ctx context.Context) ([]*Command, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, ccb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, ccb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, ccb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -453,4 +477,17 @@ func (ccb *CommandCreateBulk) SaveX(ctx context.Context) []*Command {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (ccb *CommandCreateBulk) Exec(ctx context.Context) error {
+	_, err := ccb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (ccb *CommandCreateBulk) ExecX(ctx context.Context) {
+	if err := ccb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

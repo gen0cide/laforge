@@ -43,14 +43,14 @@ const (
 	EdgeAuthUserToServerTasks = "AuthUserToServerTasks"
 	// Table holds the table name of the authuser in the database.
 	Table = "auth_users"
-	// AuthUserToTokenTable is the table the holds the AuthUserToToken relation/edge.
+	// AuthUserToTokenTable is the table that holds the AuthUserToToken relation/edge.
 	AuthUserToTokenTable = "tokens"
 	// AuthUserToTokenInverseTable is the table name for the Token entity.
 	// It exists in this package in order to avoid circular dependency with the "token" package.
 	AuthUserToTokenInverseTable = "tokens"
 	// AuthUserToTokenColumn is the table column denoting the AuthUserToToken relation/edge.
 	AuthUserToTokenColumn = "auth_user_auth_user_to_token"
-	// AuthUserToServerTasksTable is the table the holds the AuthUserToServerTasks relation/edge.
+	// AuthUserToServerTasksTable is the table that holds the AuthUserToServerTasks relation/edge.
 	AuthUserToServerTasksTable = "server_tasks"
 	// AuthUserToServerTasksInverseTable is the table name for the ServerTask entity.
 	// It exists in this package in order to avoid circular dependency with the "servertask" package.

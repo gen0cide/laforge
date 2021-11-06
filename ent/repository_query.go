@@ -326,8 +326,8 @@ func (rq *RepositoryQuery) GroupBy(field string, fields ...string) *RepositoryGr
 //		Select(repository.FieldRepoURL).
 //		Scan(ctx, &v)
 //
-func (rq *RepositoryQuery) Select(field string, fields ...string) *RepositorySelect {
-	rq.fields = append([]string{field}, fields...)
+func (rq *RepositoryQuery) Select(fields ...string) *RepositorySelect {
+	rq.fields = append(rq.fields, fields...)
 	return &RepositorySelect{RepositoryQuery: rq}
 }
 
@@ -397,7 +397,7 @@ func (rq *RepositoryQuery) sqlAll(ctx context.Context) ([]*Repository, error) {
 				s.Where(sql.InValues(repository.RepositoryToEnvironmentPrimaryKey[0], fks...))
 			},
 			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&uuid.UUID{}, &uuid.UUID{}}
+				return [2]interface{}{new(uuid.UUID), new(uuid.UUID)}
 			},
 			Assign: func(out, in interface{}) error {
 				eout, ok := out.(*uuid.UUID)
@@ -507,10 +507,14 @@ func (rq *RepositoryQuery) querySpec() *sqlgraph.QuerySpec {
 func (rq *RepositoryQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(rq.driver.Dialect())
 	t1 := builder.Table(repository.Table)
-	selector := builder.Select(t1.Columns(repository.Columns...)...).From(t1)
+	columns := rq.fields
+	if len(columns) == 0 {
+		columns = repository.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if rq.sql != nil {
 		selector = rq.sql
-		selector.Select(selector.Columns(repository.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range rq.predicates {
 		p(selector)
@@ -778,13 +782,24 @@ func (rgb *RepositoryGroupBy) sqlScan(ctx context.Context, v interface{}) error 
 }
 
 func (rgb *RepositoryGroupBy) sqlQuery() *sql.Selector {
-	selector := rgb.sql
-	columns := make([]string, 0, len(rgb.fields)+len(rgb.fns))
-	columns = append(columns, rgb.fields...)
+	selector := rgb.sql.Select()
+	aggregation := make([]string, 0, len(rgb.fns))
 	for _, fn := range rgb.fns {
-		columns = append(columns, fn(selector))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(rgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(rgb.fields)+len(rgb.fns))
+		for _, f := range rgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(rgb.fields...)...)
 }
 
 // RepositorySelect is the builder for selecting fields of Repository entities.
@@ -1000,16 +1015,10 @@ func (rs *RepositorySelect) BoolX(ctx context.Context) bool {
 
 func (rs *RepositorySelect) sqlScan(ctx context.Context, v interface{}) error {
 	rows := &sql.Rows{}
-	query, args := rs.sqlQuery().Query()
+	query, args := rs.sql.Query()
 	if err := rs.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (rs *RepositorySelect) sqlQuery() sql.Querier {
-	selector := rs.sql
-	selector.Select(selector.Columns(rs.fields...)...)
-	return selector
 }
