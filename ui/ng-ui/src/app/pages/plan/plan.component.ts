@@ -74,11 +74,11 @@ export class PlanComponent implements OnInit, OnDestroy {
       this.cdRef.detectChanges();
     });
     this.unsubscribe.push(sub3);
-    const sub4 = this.envService.buildCommitUpdate.subscribe(() => {
-      this.checkLatestCommit();
-      this.cdRef.detectChanges();
-    });
-    this.unsubscribe.push(sub4);
+    // const sub4 = this.envService.buildCommitUpdate.subscribe(() => {
+    //   this.checkLatestCommit();
+    //   this.cdRef.detectChanges();
+    // });
+    // this.unsubscribe.push(sub4);
   }
 
   ngOnDestroy(): void {

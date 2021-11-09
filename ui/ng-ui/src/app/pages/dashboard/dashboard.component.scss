@@ -8,3 +8,7 @@
 ::ng-deep .mat-form-field .mat-form-field-wrapper div.mat-form-field-subscript-wrapper {
   margin-top: 0.25rem !important;
 }
+
+::ng-deep mat-card.laforge-card {
+  min-width: 51%;
+}

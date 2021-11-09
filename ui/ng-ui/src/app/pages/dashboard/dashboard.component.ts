@@ -19,7 +19,7 @@ export class DashboardComponent implements OnInit {
   repoName = new FormControl('', Validators.required);
   branchName = new FormControl('', Validators.required);
   envFilePath = new FormControl('', Validators.required);
-  environmentsCols: string[] = ['name', 'competition_id', 'build_count','revision','pull-actions', 'actions'];
+  environmentsCols: string[] = ['name', 'competition_id', 'build_count', 'revision', 'pull-actions', 'actions'];
   environments: Observable<LaForgeGetEnvironmentsQuery['environments']>;
   gitIsLoading: BehaviorSubject<boolean>;
 
@@ -77,6 +77,10 @@ export class DashboardComponent implements OnInit {
   }
 
   createBuild(envId: string) {
+    this.snackbar.open('Build is being created.', 'Okay', {
+      duration: 3000,
+      panelClass: ['bg-info', 'text-white']
+    });
     this.api.createBuild(envId).then(
       (build) => {
         if (build.id) {
@@ -131,25 +135,21 @@ export class DashboardComponent implements OnInit {
   }
 
   updateEnvironmentFromGit(envId: string) {
-    this.api
-      .updateEnvFromGit(envId)
-      .then(
-        (env) => {
-          if (env.length > 0) {
-            this.snackbar.open('Environment successfully loaded. Refreshing page...', null, {
-              panelClass: ['bg-success', 'text-white']
-            });
-            window.location.reload();
-          }
-        },
-        (err) => {
-          console.error(err);
-          this.snackbar.open('Error while pulling repo from git. See console/logs for details.', 'Okay', {
-            panelClass: ['bg-danger', 'text-white']
+    this.api.updateEnvFromGit(envId).then(
+      (env) => {
+        if (env.length > 0) {
+          this.snackbar.open('Environment successfully loaded. Refreshing page...', null, {
+            panelClass: ['bg-success', 'text-white']
           });
+          window.location.reload();
         }
-      );
+      },
+      (err) => {
+        console.error(err);
+        this.snackbar.open('Error while pulling repo from git. See console/logs for details.', 'Okay', {
+          panelClass: ['bg-danger', 'text-white']
+        });
+      }
+    );
   }
 }
-
-

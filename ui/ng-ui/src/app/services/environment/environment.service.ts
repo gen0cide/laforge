@@ -177,12 +177,16 @@ export class EnvironmentService {
         console.log(`Getting agent status | count: ${count}, offset: ${offset}`);
         await this.api.pullAllAgentStatuses(this.buildTree.getValue().id, count, offset).then(
           (data) => {
+            let updatedAgentStatuses = 0;
             for (const agentStatus of data.agentStatuses) {
-              this.agentStatusMap[agentStatus.clientId] = {
-                ...agentStatus
-              };
+              if (!this.agentStatusMap[agentStatus.clientId]) {
+                this.agentStatusMap[agentStatus.clientId] = {
+                  ...agentStatus
+                };
+                updatedAgentStatuses++;
+              }
             }
-            this.agentStatusUpdate.next(!this.agentStatusUpdate.getValue());
+            if (updatedAgentStatuses) this.agentStatusUpdate.next(!this.agentStatusUpdate.getValue());
             total = data.pageInfo.total;
             offset = data.pageInfo.nextOffset;
           },
