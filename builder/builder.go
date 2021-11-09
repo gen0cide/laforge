@@ -121,13 +121,21 @@ func NewVSphereNSXTBuilder(env *ent.Environment, logger *logging.Logger) (builde
 		err = errors.New("vsphere_template_prefix doesn't exist in the environment configuration")
 		return
 	}
-	maxWorkersString, exists := env.Config["vsphere_max_workers"]
+	maxBuildWorkersString, exists := env.Config["vsphere_max_build_workers"]
 	if !exists {
-		maxWorkersString = "8"
+		maxBuildWorkersString = "8"
 	}
-	maxWorkers, err := strconv.Atoi(maxWorkersString)
+	maxBuildThreads, err := strconv.Atoi(maxBuildWorkersString)
 	if err != nil {
-		maxWorkers = 8
+		maxBuildThreads = 8
+	}
+	maxTeardownWorkersString, exists := env.Config["vsphere_max_teardown_workers"]
+	if !exists {
+		maxTeardownWorkersString = "16"
+	}
+	maxTeardownThreads, err := strconv.Atoi(maxTeardownWorkersString)
+	if err != nil {
+		maxTeardownThreads = 16
 	}
 
 	httpClient := http.Client{
@@ -186,18 +194,8 @@ func NewVSphereNSXTBuilder(env *ent.Environment, logger *logging.Logger) (builde
 		return
 	}
 
-	// resourcePool, err := vsphereClient.GetResourcePoolByName(resourcePoolName)
-	// if err != nil {
-	// 	return
-	// }
-
-	// folder, err := vsphereClient.GetFolderByName(folderName)
-	// if err != nil {
-	// 	return
-	// }
-
-	workerPool := semaphore.NewWeighted(int64(maxWorkers))
-	fmt.Printf("%+v", workerPool)
+	deployWorkerPool := semaphore.NewWeighted(int64(maxBuildThreads))
+	teardownWorkerPool := semaphore.NewWeighted(int64(maxTeardownThreads))
 
 	builder = vspherensxt.VSphereNSXTBuilder{
 		HttpClient:                httpClient,
@@ -211,8 +209,9 @@ func NewVSphereNSXTBuilder(env *ent.Environment, logger *logging.Logger) (builde
 		VSphereResourcePool:       resourcePool,
 		VSphereFolder:             folder,
 		Logger:                    logger,
-		MaxWorkers:                maxWorkers,
-		WorkerPool:                workerPool,
+		MaxWorkers:                maxBuildThreads,
+		DeployWorkerPool:          deployWorkerPool,
+		TeardownWorkerPool:        teardownWorkerPool,
 	}
 	return
 }

@@ -39,7 +39,8 @@ type VSphereNSXTBuilder struct {
 	VSphereFolder             *object.Folder
 	Logger                    *logging.Logger
 	MaxWorkers                int
-	WorkerPool                *semaphore.Weighted
+	DeployWorkerPool          *semaphore.Weighted
+	TeardownWorkerPool        *semaphore.Weighted
 }
 
 func (builder VSphereNSXTBuilder) ID() string {
@@ -135,11 +136,11 @@ func (builder VSphereNSXTBuilder) DeployHost(ctx context.Context, provisionedHos
 	networkName := builder.generateNetworkName(competition, team, network, build)
 
 	// Only allow a certain amount of threads to touch VSphere at the same time
-	err = builder.WorkerPool.Acquire(ctx, int64(1))
+	err = builder.DeployWorkerPool.Acquire(ctx, int64(1))
 	if err != nil {
 		return
 	}
-	defer builder.WorkerPool.Release(int64(1))
+	defer builder.DeployWorkerPool.Release(int64(1))
 
 	templateName := (builder.TemplatePrefix + host.OS)
 	vmName := builder.generateVmName(competition, team, host, build)
@@ -189,13 +190,13 @@ func (builder VSphereNSXTBuilder) DeployNetwork(ctx context.Context, provisioned
 	tier1Name := builder.generateRouterName(entCompetition[0], entTeam, entBuild)
 
 	// Only allow a certain amount of threads to touch VSphere at the same time
-	fmt.Printf("%v\n", builder.WorkerPool)
+	fmt.Printf("%v\n", builder.DeployWorkerPool)
 	fmt.Printf("%v\n", ctx)
-	err = builder.WorkerPool.Acquire(ctx, int64(1))
+	err = builder.DeployWorkerPool.Acquire(ctx, int64(1))
 	if err != nil {
 		return
 	}
-	defer builder.WorkerPool.Release(int64(1))
+	defer builder.DeployWorkerPool.Release(int64(1))
 
 	tier1Exists, nsxtError, err := builder.NsxtClient.CheckExistsTier1(tier1Name)
 	if err != nil {
@@ -369,11 +370,11 @@ func (builder VSphereNSXTBuilder) TeardownHost(ctx context.Context, provisionedH
 	guestCustomizationName := (vmName + "-Customization-Spec")
 
 	// Only allow a certain amount of threads to touch VSphere at the same time
-	err = builder.WorkerPool.Acquire(ctx, int64(1))
+	err = builder.TeardownWorkerPool.Acquire(ctx, int64(1))
 	if err != nil {
 		return
 	}
-	defer builder.WorkerPool.Release(int64(1))
+	defer builder.TeardownWorkerPool.Release(int64(1))
 
 	specExists, err := builder.VSphereClient.GuestCustomizationExists(ctx, guestCustomizationName)
 	if err != nil {
@@ -427,11 +428,11 @@ func (builder VSphereNSXTBuilder) TeardownNetwork(ctx context.Context, provision
 	networkName := builder.generateNetworkName(entCompetition[0], entTeam, entNetwork, entBuild)
 
 	// Only allow a certain amount of threads to touch VSphere at the same time
-	err = builder.WorkerPool.Acquire(ctx, int64(1))
+	err = builder.TeardownWorkerPool.Acquire(ctx, int64(1))
 	if err != nil {
 		return
 	}
-	defer builder.WorkerPool.Release(int64(1))
+	defer builder.TeardownWorkerPool.Release(int64(1))
 
 	nsxtError, err := builder.NsxtClient.DeleteSegment(networkName)
 	if err != nil {
