@@ -1,0 +1,126 @@
+.team {
+  // width: 20rem;
+  width: 100% !important;
+  // flex: 1 1 100%;
+  margin: 0;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  .team-container {
+    width: 100%;
+  }
+
+  .team-info {
+    // width: 20rem;
+    width: 100%;
+    height: 2.5rem;
+    background-color: #f5f5f5;
+    border-radius: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    .team-status-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 1rem;
+
+      i {
+        color: white;
+      }
+    }
+
+    .team-status-icon.success {
+      background-color: #00c851;
+    }
+
+    .team-status-icon.failed {
+      background-color: #ff4444;
+    }
+
+    .team-status-icon.in-progress {
+      // background-color: #ffbb33;
+      background-color: #33b5e5;
+    }
+
+    .team-details {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      margin-right: auto;
+    }
+
+    .toggle-collapse {
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .team-options {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 1.25rem;
+      margin-right: 0.75rem;
+      background-color: #e1e1e1;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      overflow: hidden;
+      transition: all 0.3s;
+
+      i {
+        margin: 0 0.65rem;
+      }
+
+      i.restart {
+        color: #fcc143;
+      }
+    }
+
+    .team-options:not(.expanded):hover {
+      box-shadow: 0 0 3px 0px #555555;
+      transform: scale(1.05);
+    }
+
+    .team-options.expanded {
+      box-shadow: 0 0 3px 0px #555555;
+      transform: scale(1.05);
+      width: 5rem;
+    }
+  }
+
+  .networks {
+    width: calc(100% - 1.25rem);
+    margin-left: 1.25rem;
+    padding: 0.5rem 0 0 0.5rem;
+    border-left: 1px solid #999999;
+    border-bottom: 1px solid #999999;
+
+    ::ng-deep .network {
+      padding-bottom: 0.5rem;
+    }
+  }
+}
+
+.team.selectable {
+  .rebuild-select {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .team-container {
+    width: calc(100% - 2.5rem);
+  }
+}

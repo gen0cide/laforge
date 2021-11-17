@@ -1,0 +1,48 @@
+<!--begin::Header-->
+<ng-container>
+  <div class="d-flex flex-column pt-6 bg-gray-600 rounded-top">
+    <!--begin::Title-->
+    <h4 class="d-flex flex-center">
+      <span class="text-white">Server Tasks</span>
+      <!-- <span class="btn btn-text btn-primary btn-sm font-weight-bold btn-font-md ml-2">2 new</span> -->
+    </h4>
+    <!--end::Title-->
+  </div>
+</ng-container>
+
+<!--begin::Alerts-->
+<div class="navi navi-hover scroll my-4" data-scroll="true" style="position: relative; max-height: 300px" perfectScrollbar>
+  <ng-container *ngIf="tasks | async as _tasks">
+    <!--begin::Empty-->
+    <a *ngIf="_tasks.length === 0" class="navi-item" disabled aria-disabled="true">
+      <div class="navi-link">
+        <!-- <div class="navi-icon mr-2">
+          <i class="fad" [ngClass]="getIconClass(task)"></i>
+        </div> -->
+        <div class="navi-text">
+          <!-- <div class="font-weight-bold">Build of 'test-win-vdi' has been completed.</div> -->
+          <div class="text-muted">You have no tasks</div>
+        </div>
+      </div>
+    </a>
+    <!--end::Empty-->
+    <!--begin::Item-->
+    <a *ngFor="let task of _tasks" href="api/view_server_logs/{{ task.id }}" class="navi-item">
+      <div class="navi-link">
+        <div class="navi-icon mr-2">
+          <i class="fad" [ngClass]="getIconClass(task)"></i>
+        </div>
+        <div class="navi-text">
+          <!-- <div class="font-weight-bold">Build of 'test-win-vdi' has been completed.</div> -->
+          <div class="font-weight-bold">{{ getMessage(task) }}</div>
+          <div class="text-muted">
+            {{ task.end_time || task.start_time | dateAgo
+            }}<span *ngIf="task.end_time">, took {{ task.end_time | dateBetween: task.start_time }}</span>
+          </div>
+        </div>
+      </div>
+    </a>
+    <!--end::Item-->
+  </ng-container>
+</div>
+<!--end::Alerts-->

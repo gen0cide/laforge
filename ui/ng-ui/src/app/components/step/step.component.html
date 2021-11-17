@@ -1,0 +1,13 @@
+<!-- <div class="host" (click)="viewDetails()"> -->
+<div class="step w-100">
+  <!-- <div class="step-info" (click)="toggleOptions()" #container> -->
+  <div class="step-info w-100 d-flex align-items-center justify-content-start flex-wrap" #container (click)="viewDetails()">
+    <div class="step-status-icon d-flex align-items-center justify-content-center" [ngClass]="'text-' + getStatusColor()">
+      <i class="fas fa-1x" [ngClass]="'fa-' + getStatusIcon()"></i>
+    </div>
+    <div class="step-preview mr-1">
+      #{{ provisioningStep.step_number }} {{ getText() }}
+      <!-- <span class="step-stepname">{{ provisionedHost ? provisionedHost.host.hostname : '' }}</span> -->
+    </div>
+  </div>
+</div>

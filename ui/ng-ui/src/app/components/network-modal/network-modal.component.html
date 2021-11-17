@@ -1,0 +1,72 @@
+<div class="network-dialog-header d-flex align-items-center">
+  <div class="flex-fill network-status-icon d-flex align-items-center justify-content-start" [ngClass]="'text-' + getStatusColor()">
+    <i class="fas fa-2x" [ngClass]="'fa-' + getStatusIcon()"></i>
+    <h4 class="m-0">&nbsp;{{ failedChildren ? 'Children Failed' : getStatusText() }}</h4>
+    <!-- <h4 class="m-0">&nbsp;{{ failedChildren ? 'Has Failed Hosts' : getStatusText() }}</h4> -->
+  </div>
+  <div class="flex-fill d-flex align-items-center justify-content-center">
+    <h4 class="network-name m-0">{{ data.provisionedNetwork.name }}</h4>
+  </div>
+  <div class="flex-fill d-flex align-items-center justify-content-end">
+    <button mat-icon-button color="basic" aria-label="Close" (click)="onClose()">
+      <!-- <mat-icon>undo</mat-icon> -->
+      <i class="fa fa-times"></i>
+    </button>
+  </div>
+</div>
+<hr />
+<div class="row" *ngIf="getStatusText() === 'ProvStatusFailed' || getStatusText() === 'ProvStatusInProgress'">
+  <div class="col-12" *ngIf="getStatusText() === 'ProvStatusFailed'">
+    <p class="text-center text-danger">
+      None of the agents on this network could connect. The network/hosts may still be deploying. Otherwise, please ensure this network
+      deployed properly.
+    </p>
+  </div>
+  <div class="col-12" *ngIf="getStatusText() === 'ProvStatusInProgress'">
+    <p class="text-center text-warning">
+      Some of the agents on this network couldn't connect. They may still be deploying. Otherwise, please ensure they deployed properly.
+    </p>
+  </div>
+</div>
+<div class="row">
+  <div class="col-6">
+    <p class="detail-title"><b>CIDR</b></p>
+    <p class="detail-value">{{ data.provisionedNetwork.cidr }}</p>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>VDI Visible?</b></p>
+    <p class="detail-value">{{ data.provisionedNetwork.ProvisionedNetworkToNetwork.vdi_visible ? 'yes' : 'no' }}</p>
+  </div>
+</div>
+<div class="row">
+  <div class="col-12">
+    <p class="detail-title"><b>Vars</b></p>
+    <mat-table [dataSource]="data.provisionedNetwork.ProvisionedNetworkToNetwork.vars" class="bg-gray-100">
+      <ng-container matColumnDef="key">
+        <mat-header-cell *matHeaderCellDef> Key </mat-header-cell>
+        <mat-cell *matCellDef="let varMap"> {{ varMap.key }} </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="value">
+        <mat-header-cell *matHeaderCellDef> Value </mat-header-cell>
+        <mat-cell *matCellDef="let varMap"> {{ varMap.value }} </mat-cell>
+      </ng-container>
+      <mat-header-row *matHeaderRowDef="varsColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: varsColumns"></mat-row>
+    </mat-table>
+  </div>
+  <div class="col-12">
+    <p class="detail-title"><b>Tags</b></p>
+    <mat-table [dataSource]="data.provisionedNetwork.ProvisionedNetworkToNetwork.tags" class="bg-gray-100">
+      <ng-container matColumnDef="key">
+        <mat-header-cell *matHeaderCellDef> Key </mat-header-cell>
+        <mat-cell *matCellDef="let tagMap"> {{ tagMap.key }} </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="value">
+        <mat-header-cell *matHeaderCellDef> Value </mat-header-cell>
+        <mat-cell *matCellDef="let tagMap"> {{ tagMap.value }} </mat-cell>
+      </ng-container>
+      <mat-header-row *matHeaderRowDef="tagsColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: tagsColumns"></mat-row>
+    </mat-table>
+  </div>
+</div>

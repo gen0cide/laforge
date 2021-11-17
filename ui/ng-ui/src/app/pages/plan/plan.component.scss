@@ -1,0 +1,101 @@
+// ::ng-deep .mat-card-header {
+//   align-items: flex-start;
+//   justify-content: space-between;
+// }
+// .mat-header-cell,
+// .mat-cell {
+//   text-align: center;
+//   padding: 1rem;
+// }
+::ng-deep mat-card-header {
+  display: flex;
+  flex-direction: column !important;
+}
+
+::ng-deep mat-table {
+  width: 100%;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+::ng-deep mat-cell,
+::ng-deep mat-header-cell {
+  justify-content: center;
+}
+
+::ng-deep app-team {
+  width: 100%;
+}
+
+::ng-deep .env-header {
+  button {
+    transform: scale(0.8);
+    transition: all 0.3s ease-in-out;
+  }
+
+  button:hover {
+    transform: scale(0.85);
+    box-shadow: 0 0 4px 2px #aaa;
+  }
+
+  i {
+    //   // animation: out 0.5s ease-in-out;
+    padding: 0;
+    //   transition: all 0.5s ease-in-out;
+  }
+
+  // i:hover {
+  //   // animation: in 0.5s ease-in-out;
+  //   transform: scale(1.2);
+  // }
+}
+
+// @keyframe in {
+//   to {
+//     transform: rotate(-90deg), scale(1);
+//     // font-size: 1rem;
+//   }
+// }
+
+// @keyframe out {
+//   to {
+//     transform: rotate(0deg), scale(1.2);
+//     // font-size: 1.5rem;
+//   }
+// }
+
+::ng-deep .mat-card-header-text {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 !important;
+  padding: 0 1rem;
+}
+
+::ng-deep mat-card-title {
+  margin: 0 !important;
+}
+
+::ng-deep mat-card-subtitle {
+  margin: 0 !important;
+}
+
+::ng-deep .mat-card-content {
+  display: flex !important;
+  flex-direction: column;
+  // flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+app-team {
+  width: 100%;
+}
+
+::ng-deep .team {
+  margin-bottom: 2rem;
+  width: 100%;
+  // flex: 1 1 40%;
+}

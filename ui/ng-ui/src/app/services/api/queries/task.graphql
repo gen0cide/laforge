@@ -1,0 +1,25 @@
+fragment ServerTaskFields on ServerTask {
+  id
+  type
+  start_time
+  end_time
+  errors
+  log_file_path
+  ServerTaskToStatus {
+    ...StatusFields
+  }
+  ServerTaskToEnvironment {
+    id
+    name
+  }
+  ServerTaskToBuild {
+    id
+    revision
+  }
+}
+
+query GetCurrentUserTasks {
+  getCurrentUserTasks {
+    ...ServerTaskFields
+  }
+}

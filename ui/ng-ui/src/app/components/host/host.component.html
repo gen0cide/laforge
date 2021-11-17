@@ -1,0 +1,52 @@
+<div
+  class="host"
+  (click)="style === 'compact' && mode !== 'plan' && viewDetails()"
+  [ngClass]="style"
+  [class.selectable]="selectable"
+  *ngIf="shouldHideLoading || !shouldHide"
+>
+  <div class="rebuild-select" *ngIf="selectable">
+    <mat-checkbox
+      [checked]="isSelected()"
+      [indeterminate]="parentSelected"
+      (click)="$event.stopPropagation()"
+      (change)="onSelect()"
+      (indeterminateChange)="onIndeterminateChange($event)"
+      [aria-label]="'Select Network'"
+    ></mat-checkbox>
+  </div>
+  <div class="host-container">
+    <div class="host-info">
+      <div class="host-status-icon" [ngClass]="'text-' + getStatusColor()" *ngIf="style === 'compact'">
+        <i class="fas fa-1x" [ngClass]="'fa-' + getStatusIcon()"></i>
+      </div>
+      <div class="host-status-icon" [ngClass]="'bg-' + getStatusColor()" *ngIf="style !== 'compact'">
+        <ng-container *ngIf="shouldHideLoading">
+          <i class="fas fa-spinner fa-spin"></i>
+        </ng-container>
+        <ng-container *ngIf="!shouldHideLoading">
+          <i [ngClass]="getStatusIcon()"></i>
+        </ng-container>
+      </div>
+      <div class="host-preview" (click)="style !== 'compact' && mode !== 'plan' && viewDetails()">
+        <span class="host-hostname">{{ provisionedHost ? provisionedHost.ProvisionedHostToHost.hostname : '' }}</span>
+        <span class="host-ip" *ngIf="style !== 'compact'"
+          ><em> | {{ provisionedHost ? provisionedHost.subnet_ip : '' }}</em></span
+        >
+      </div>
+      <div class="toggle-collapse" *ngIf="style !== 'compact' && shouldCollapse()">
+        <i class="fas cursor-pointer" [ngClass]="'fa-' + (expandOverride ? 'chevron-up' : 'chevron-down')" (click)="toggleCollapse()"></i>
+      </div>
+    </div>
+    <div class="steps" *ngIf="expandOverride || (!shouldCollapse() && style === 'expanded')">
+      <app-step
+        *ngFor="let step of provisionedHost.ProvisionedHostToProvisioningStep | sortBy: 'asc':'step_number'; let i = index"
+        [stepNumber]="i + 1"
+        [provisioningStep]="step"
+        [showDetail]="false"
+        [style]="'expanded'"
+        [mode]="mode"
+      ></app-step>
+    </div>
+  </div>
+</div>

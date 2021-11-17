@@ -1,0 +1,19 @@
+overwrite: true
+schema: '../../graphql/graph/schema.graphqls'
+documents: 'src/**/*.graphql'
+generates:
+  src/generated/graphql.ts:
+    config:
+      serviceName: 'GraphQL'
+      serviceProvidedInRoot: true
+      typesPrefix: 'LaForge'
+    hooks:
+      afterOneFileWrite:
+        - eslint ./src/generated --fix
+    plugins:
+      - 'typescript'
+      - 'typescript-operations'
+      - 'typescript-apollo-angular'
+  ./graphql.schema.json:
+    plugins:
+      - 'introspection'

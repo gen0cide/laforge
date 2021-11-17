@@ -1,0 +1,11 @@
+<div class="tasks-content">
+  <div class="tasks-header d-flex align-items-center justify-content-between">
+    <h4>Server Tasks</h4>
+    <i class="fas fa-chevron-double-down text-dark"></i>
+  </div>
+  <ng-container *ngIf="tasks | async as _tasks">
+    <div class="tasks-list">
+      <app-task *ngFor="let task of _tasks" [task]="task"></app-task>
+    </div>
+  </ng-container>
+</div>

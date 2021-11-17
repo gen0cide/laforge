@@ -1,0 +1,22 @@
+:host {
+  .aside {
+    height: 100%;
+
+    .aside-menu {
+      margin: 0;
+    }
+  }
+
+  // fixed text line break issue on minimized aside hover
+  .menu-text {
+    white-space: nowrap;
+  }
+}
+
+.menu-nav > .menu-section:first-of-type {
+  margin: 0 !important;
+}
+
+.menu-nav {
+  padding: 0 !important;
+}

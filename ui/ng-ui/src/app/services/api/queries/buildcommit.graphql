@@ -1,0 +1,7 @@
+mutation ApproveBuildCommit($buildCommitId: String!) {
+  approveCommit(commitUUID: $buildCommitId)
+}
+
+mutation CancelBuildCommit($buildCommitId: String!) {
+  cancelCommit(commitUUID: $buildCommitId)
+}

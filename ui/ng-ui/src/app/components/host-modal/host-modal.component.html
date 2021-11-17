@@ -1,0 +1,185 @@
+<div class="host-dialog-header d-flex align-items-center justify-content-between">
+  <div class="flex-fill host-status-icon d-flex align-items-center justify-content-start" [ngClass]="'text-' + getStatusColor()">
+    <i class="fas fa-2x" [ngClass]="'fa-' + getStatusIcon()"></i>
+    <h4 class="m-0">&nbsp;{{ isAgentStale() ? (!data.agentStatus ? 'No Connection' : 'Connection Lost') : 'Connected' }}</h4>
+  </div>
+  <div class="flex-fill d-flex align-items-center justify-content-center">
+    <h4 class="host-name m-0">{{ data.provisionedHost.ProvisionedHostToHost.hostname }}</h4>
+  </div>
+  <div class="flex-fill d-flex align-items-center justify-content-end">
+    <button mat-icon-button color="basic" aria-label="Close" (click)="onClose()">
+      <!-- <mat-icon>undo</mat-icon> -->
+      <i class="fa fa-times"></i>
+    </button>
+  </div>
+</div>
+<hr />
+<div class="row">
+  <div class="col-12">
+    <h3 class="text-center">Agent Data</h3>
+    <p class="text-center text-secondary" *ngIf="data.agentStatus">ClientID - {{ data.agentStatus.clientId }}</p>
+    <p class="text-center text-secondary" *ngIf="data.agentStatus">
+      {{ data.agentStatus.timestamp | amFromUnix | amDateFormat: 'h:mm A, MMMM D YYYY' }}
+    </p>
+  </div>
+  <div class="col-12">
+    <div class="row" *ngIf="!data.agentStatus">
+      <div class="col-12">
+        <p class="text-center text-danger">Could not connect to the Agent. Please ensure the host deployed properly.</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-12">
+    <div class="row" *ngIf="data.agentStatus">
+      <!-- <div class="col-6">
+      <p class="detail-title"><b>Hostname</b></p>
+      <p class="detail-value">{{ agentStatus.hostname }}</p>
+    </div> -->
+      <div class="col-4">
+        <p class="detail-title"><b>Uptime</b></p>
+        <p class="detail-value">{{ data.agentStatus.upTime | amDuration: 'seconds' }}</p>
+      </div>
+      <div class="col-4">
+        <p class="detail-title"><b>Boot Time</b></p>
+        <p class="detail-value">{{ data.agentStatus.bootTime | amFromUnix | amDateFormat: 'hh:mm A' }}</p>
+      </div>
+      <div class="col-4">
+        <p class="detail-title"><b># Processes Running</b></p>
+        <p class="detail-value">{{ data.agentStatus.numProcs }}</p>
+      </div>
+      <!-- Fred said to ignore hostID for now -->
+      <!-- <div class="col-6">
+      <p class="detail-title"><b>Host ID</b></p>
+      <p class="detail-value">{{ agentStatus.hostID }}</p>
+    </div> -->
+      <div class="col-4" *ngIf="data.agentStatus.load1 != null">
+        <p class="detail-title"><b>1 Minute Load</b></p>
+        <p class="detail-value">{{ data.agentStatus.load1 / 100 | percent: '1.2' }}</p>
+      </div>
+      <div class="col-4" *ngIf="data.agentStatus.load5 != null">
+        <p class="detail-title"><b>5 Minute Load</b></p>
+        <p class="detail-value">{{ data.agentStatus.load5 / 100 | percent: '1.2' }}</p>
+      </div>
+      <div class="col-4" *ngIf="data.agentStatus.load15 != null">
+        <p class="detail-title"><b>15 Minute Load</b></p>
+        <p class="detail-value">{{ data.agentStatus.load15 / 100 | percent: '1.2' }}</p>
+      </div>
+      <div class="col-4">
+        <p class="detail-title"><b>Total Memory</b></p>
+        <p class="detail-value">{{ data.agentStatus.totalMem | fromBytes }}</p>
+      </div>
+      <div class="col-4">
+        <p class="detail-title"><b>Free Memory</b></p>
+        <p class="detail-value">{{ data.agentStatus.freeMem | fromBytes }}</p>
+      </div>
+      <div class="col-4">
+        <p class="detail-title"><b>Used Memory</b></p>
+        <p class="detail-value">{{ data.agentStatus.usedMem | fromBytes }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-12">
+    <h3 class="text-center">Host Configuration</h3>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>Host ID</b></p>
+    <p class="detail-value">{{ data.provisionedHost.ProvisionedHostToHost.id }}</p>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>OS</b></p>
+    <p class="detail-value">{{ data.provisionedHost.ProvisionedHostToHost.OS }}</p>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>Allow MAC Changes?</b></p>
+    <p class="detail-value">{{ data.provisionedHost.ProvisionedHostToHost.allow_mac_changes ? 'yes' : 'no' }}</p>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>Exposed TCP Ports</b></p>
+    <p class="detail-value">
+      {{
+        data.provisionedHost.ProvisionedHostToHost.exposed_tcp_ports.length > 0
+          ? data.provisionedHost.ProvisionedHostToHost.exposed_tcp_ports.join(', ')
+          : 'N/A'
+      }}
+    </p>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>Exposed UDP Ports</b></p>
+    <p class="detail-value">
+      {{
+        data.provisionedHost.ProvisionedHostToHost.exposed_udp_ports.length > 0
+          ? data.provisionedHost.ProvisionedHostToHost.exposed_udp_ports.join(', ')
+          : 'N/A'
+      }}
+    </p>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>User Groups</b></p>
+    <p class="detail-value">
+      {{
+        data.provisionedHost.ProvisionedHostToHost.user_groups.length > 0
+          ? data.provisionedHost.ProvisionedHostToHost.user_groups.join(', ')
+          : 'N/A'
+      }}
+    </p>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>Override Password</b></p>
+    <p class="detail-value">{{ data.provisionedHost.ProvisionedHostToHost.override_password }}</p>
+  </div>
+  <div class="col-6">
+    <p class="detail-title"><b>Ip Address</b></p>
+    <p class="detail-value">{{ data.provisionedHost.subnet_ip }}</p>
+  </div>
+  <!-- <div class="col-6">
+    <p class="detail-title"><b>Maintainer</b></p>
+    <p class="detail-value">
+      {{ data.provisionedHost.ProvisionedHostToHost.maintainer.name }} <{{ data.provisionedHost.ProvisionedHostToHost.maintainer.email }}>
+    </p>
+  </div> -->
+</div>
+<div class="row">
+  <div class="col-12">
+    <p class="detail-title"><b>Vars</b></p>
+    <mat-table [dataSource]="data.provisionedHost.ProvisionedHostToHost.vars" class="bg-gray-100">
+      <ng-container matColumnDef="key">
+        <mat-header-cell *matHeaderCellDef> Key </mat-header-cell>
+        <mat-cell *matCellDef="let varMap"> {{ varMap.key }} </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="value">
+        <mat-header-cell *matHeaderCellDef> Value </mat-header-cell>
+        <mat-cell *matCellDef="let varMap"> {{ varMap.value }} </mat-cell>
+      </ng-container>
+      <mat-header-row *matHeaderRowDef="varsColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: varsColumns"></mat-row>
+    </mat-table>
+  </div>
+  <div class="col-12">
+    <p class="detail-title"><b>Tags</b></p>
+    <mat-table [dataSource]="data.provisionedHost.ProvisionedHostToHost.tags" class="bg-gray-100">
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef> Key </mat-header-cell>
+        <mat-cell *matCellDef="let tag"> {{ tag.name }} </mat-cell>
+      </ng-container>
+      <ng-container matColumnDef="description">
+        <mat-header-cell *matHeaderCellDef> Value </mat-header-cell>
+        <mat-cell *matCellDef="let tag"> {{ tag.description }} </mat-cell>
+      </ng-container>
+      <mat-header-row *matHeaderRowDef="tagsColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: tagsColumns"></mat-row>
+    </mat-table>
+  </div>
+  <div class="col-12">
+    <p class="detail-title"><b>Steps</b></p>
+    <app-step
+      *ngFor="let step of data.provisionedHost.ProvisionedHostToProvisioningStep | sortBy: 'asc':'step_number'; let i = index"
+      [stepNumber]="i + 1"
+      [provisioningStep]="step"
+      [showDetail]="false"
+      [style]="'compact'"
+    ></app-step>
+    <!-- <i class="fas fa-2x fa-sync fa-spin" *ngIf="data.provisionedHost.ProvisionedHostToProvisioningStep == null"></i> -->
+  </div>
+</div>

@@ -1,0 +1,37 @@
+query GetUserList {
+  getUserList {
+    ...UserListFields
+  }
+}
+
+mutation UpdateUser(
+  $userId: String!
+  $firstName: String
+  $lastName: String
+  $email: String!
+  $phone: String
+  $company: String
+  $occupation: String
+  $role: RoleLevel!
+  $provider: ProviderType!
+) {
+  modifyAdminUserInfo(
+    userID: $userId
+    firstName: $firstName
+    lastName: $lastName
+    email: $email
+    phone: $phone
+    company: $company
+    occupation: $occupation
+    role: $role
+    provider: $provider
+  ) {
+    ...UserListFields
+  }
+}
+
+mutation CreateUser($username: String!, $password: String!, $provider: ProviderType!, $role: RoleLevel!) {
+  createUser(username: $username, password: $password, provider: $provider, role: $role) {
+    ...UserListFields
+  }
+}

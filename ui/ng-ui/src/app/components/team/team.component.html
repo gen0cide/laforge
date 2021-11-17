@@ -1,0 +1,37 @@
+<div class="team" [ngClass]="style" [class.selectable]="selectable" *ngIf="shouldHideLoading || !shouldHide">
+  <div class="rebuild-select" *ngIf="selectable">
+    <!-- <input type="checkbox" (change)="onSelect($event)" title="Select for rebuild" aria-label="Select for rebuild" /> -->
+    <mat-checkbox [checked]="isSelected()" (change)="onSelect()" [aria-label]="'Select Network'"></mat-checkbox>
+  </div>
+  <div class="team-container">
+    <div class="team-info">
+      <div class="team-status-icon" [ngClass]="'bg-' + getStatusColor()">
+        <ng-container *ngIf="shouldHideLoading">
+          <i class="fas fa-spinner fa-spin"></i>
+        </ng-container>
+        <ng-container *ngIf="!shouldHideLoading">
+          <i [ngClass]="getStatusIcon()"></i>
+        </ng-container>
+      </div>
+      <div class="team-details">
+        <span class="team-number"
+          ><b>Team {{ team.team_number }}</b></span
+        >
+      </div>
+      <div class="toggle-collapse" *ngIf="shouldCollapse()">
+        <i class="fas cursor-pointer" [ngClass]="'fa-' + (expandOverride ? 'chevron-up' : 'chevron-down')" (click)="toggleCollapse()"></i>
+      </div>
+    </div>
+    <div class="networks" *ngIf="expandOverride || (!shouldCollapse() && style === 'expanded') || style === 'compact'">
+      <app-network
+        *ngFor="let provNetwork of team.TeamToProvisionedNetwork | sortBy: 'asc':'name'"
+        [provisionedNetwork]="provNetwork"
+        [status]="provNetwork.ProvisionedNetworkToStatus"
+        [style]="style"
+        [selectable]="selectable"
+        [parentSelected]="isSelected()"
+        [mode]="mode"
+      ></app-network>
+    </div>
+  </div>
+</div>

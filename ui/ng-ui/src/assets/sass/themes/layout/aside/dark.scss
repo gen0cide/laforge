@@ -1,0 +1,19 @@
+//
+// Aside dark theme
+//
+
+// Initialization of global variables, mixins and functions
+@import '../../../init';
+
+.aside {
+  background-color: #fff4dd;
+
+  // Aside Menu
+  .aside-menu {
+    // Scrollbar
+    @include perfect-scrollbar-theme(#fff4dd);
+  }
+}
+
+// Build aside menu theme
+@include menu-ver-build-theme($aside-menu-config, dark);

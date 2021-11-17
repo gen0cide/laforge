@@ -1,0 +1,109 @@
+<!--begin::Brand-->
+<div class="brand flex-column-auto" id="kt_brand" [ngClass]="brandClasses">
+  <!--begin::Logo-->
+  <a routerLink="/" class="brand-logo">
+    <img alt="Logo" [attr.src]="headerLogo" />
+  </a>
+  <!--end::Logo-->
+
+  <ng-container *ngIf="asideSelfMinimizeToggle">
+    <button class="brand-toggle btn btn-sm px-0" id="kt_aside_toggle">
+      <span [inlineSVG]="'/assets/media/svg/icons/Navigation/Angle-double-left.svg'" cacheSVG="true" class="svg-icon svg-icon-xl"></span>
+    </button>
+  </ng-container>
+</div>
+<!--end::Brand-->
+
+<!--begin::Aside Menu-->
+<div class="aside-menu-wrapper flex-column-fluid" id="kt_aside_menu_wrapper">
+  <ng-container *ngIf="disableAsideSelfDisplay">
+    <!--begin::Header Logo-->
+    <a routerLink="/">
+      <img alt="Logo" [attr.src]="headerLogo" />
+    </a>
+    <!--end::Header Logo-->
+  </ng-container>
+  <!--begin::Menu Container-->
+  <div
+    id="kt_aside_menu"
+    class="aside-menu scroll my-4 ps ps--active-y"
+    [ngClass]="asideMenuCSSClasses"
+    data-menu-vertical="1"
+    data-menu-scroll="1"
+    [attr.data-menu-scroll]="asideMenuScroll"
+    data-menu-dropdown-timeout="500"
+  >
+    <!-- begin::Menu Nav -->
+    <ul class="menu-nav" [ngClass]="ulCSSClasses">
+      <!-- begin::section -->
+      <li class="menu-section">
+        <h4 class="menu-text">Main</h4>
+        <i class="menu-icon flaticon-more-v2"></i>
+      </li>
+      <!-- end:: section -->
+
+      <!-- Material-UI -->
+      <!-- begin::1 Level -->
+      <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover" routerLinkActive="menu-item-open">
+        <a class="menu-link menu-toggle" routerLink="/dashboard" routerLinkActive="active">
+          <span [inlineSVG]="'/assets/media/svg/icons/Home/Home.svg'" cacheSVG="true" class="svg-icon menu-icon"></span>
+          <span class="menu-text">Dashboard</span>
+        </a>
+      </li>
+      <!-- end::1 Level -->
+
+      <!-- begin::section -->
+      <li class="menu-section">
+        <h4 class="menu-text">Develop</h4>
+        <i class="menu-icon flaticon-more-v2"></i>
+      </li>
+      <!-- end:: section -->
+
+      <!-- Material-UI -->
+      <!-- begin::1 Level -->
+      <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover" routerLinkActive="menu-item-open">
+        <a class="menu-link menu-toggle" routerLink="/plan" routerLinkActive="active">
+          <span [inlineSVG]="'/assets/media/svg/icons/Design/Layers.svg'" cacheSVG="true" class="svg-icon menu-icon"></span>
+          <span class="menu-text">Plan</span>
+        </a>
+      </li>
+      <!-- end::1 Level -->
+      <!-- begin::1 Level -->
+      <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover" routerLinkActive="menu-item-open">
+        <a class="menu-link menu-toggle" routerLink="/build" routerLinkActive="active">
+          <span [inlineSVG]="'/assets/media/svg/icons/Tools/Hummer2.svg'" cacheSVG="true" class="svg-icon menu-icon"></span>
+          <span class="menu-text">Build</span>
+        </a>
+      </li>
+      <!-- end::1 Level -->
+
+      <!-- begin::section -->
+      <li class="menu-section">
+        <h4 class="menu-text">Manage</h4>
+        <i class="menu-icon flaticon-more-v2"></i>
+      </li>
+      <!-- end:: section -->
+
+      <!-- Material-UI -->
+      <!-- begin::1 Level -->
+      <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover" routerLinkActive="menu-item-open">
+        <a class="menu-link menu-toggle" routerLink="/manage" routerLinkActive="active">
+          <span [inlineSVG]="'/assets/media/svg/icons/Devices/Server.svg'" cacheSVG="true" class="svg-icon menu-icon"></span>
+          <span class="menu-text">Environment</span>
+        </a>
+      </li>
+      <!-- end::1 Level -->
+      <!-- begin::1 Level -->
+      <!-- <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover" routerLinkActive="menu-item-open">
+        <a class="menu-link menu-toggle" routerLink="/monitor" routerLinkActive="active">
+          <span [inlineSVG]="'/assets/media/svg/icons/Code/Spy.svg'" cacheSVG="true" class="svg-icon menu-icon"></span>
+          <span class="menu-text">Monitor Agents</span>
+        </a>
+      </li> -->
+      <!-- end::1 Level -->
+    </ul>
+    <!-- end::Menu Nav -->
+  </div>
+  <!--end::Menu Container-->
+</div>
+<!--end::Aside Menu-->

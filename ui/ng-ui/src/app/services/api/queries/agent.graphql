@@ -1,0 +1,5 @@
+query GetAgentTasks($proStepId: String!) {
+  getAgentTasks(proStepUUID: $proStepId) {
+    ...AgentTaskFields
+  }
+}

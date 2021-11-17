@@ -1,0 +1,53 @@
+<div
+  class="network"
+  (click)="style === 'collapsed' && viewDetails()"
+  [ngClass]="style"
+  [class.selectable]="selectable"
+  *ngIf="shouldHideLoading || !shouldHide"
+>
+  <div class="rebuild-select" *ngIf="selectable">
+    <mat-checkbox
+      [checked]="isSelected()"
+      [indeterminate]="parentSelected"
+      (click)="$event.stopPropagation()"
+      (change)="onSelect()"
+      (indeterminateChange)="onIndeterminateChange($event)"
+      [aria-label]="'Select Network'"
+    ></mat-checkbox>
+  </div>
+  <div class="network-container">
+    <div class="network-info">
+      <div class="network-status-icon" [ngClass]="'bg-' + getStatusColor()">
+        <ng-container *ngIf="shouldHideLoading">
+          <i class="fas fa-spinner fa-spin"></i>
+        </ng-container>
+        <ng-container *ngIf="!shouldHideLoading">
+          <i [ngClass]="getStatusIcon()"></i>
+        </ng-container>
+      </div>
+      <div class="network-header" (click)="style !== 'collapsed' && viewDetails()">
+        <span class="network-title"
+          ><b>{{ provisionedNetwork.name }}</b></span
+        >
+        <span class="network-details"
+          ><em
+            >{{ provisionedNetwork.cidr }} | VDI: {{ provisionedNetwork.ProvisionedNetworkToNetwork.vdi_visible ? 'true' : 'false' }}</em
+          ></span
+        >
+      </div>
+      <div class="toggle-collapse" *ngIf="shouldCollapse()">
+        <i class="fas cursor-pointer" [ngClass]="'fa-' + (expandOverride ? 'chevron-up' : 'chevron-down')" (click)="toggleCollapse()"></i>
+      </div>
+    </div>
+    <div class="hosts" *ngIf="expandOverride || (!shouldCollapse() && style === 'expanded') || style === 'compact'">
+      <app-host
+        *ngFor="let provHost of provisionedNetwork.ProvisionedNetworkToProvisionedHost | sortBy: 'asc':'ProvisionedHostToHost.hostname'"
+        [provisionedHost]="provHost"
+        [style]="style"
+        [selectable]="selectable"
+        [parentSelected]="isSelected() || parentSelected"
+        [mode]="mode"
+      ></app-host>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,99 @@
+fragment StatusFields on Status {
+  id
+  state
+  started_at
+  ended_at
+  failed
+  completed
+  error
+}
+
+fragment AgentStatusFields on AgentStatus {
+  clientId
+  hostname
+  upTime
+  bootTime
+  numProcs
+  OS
+  hostID
+  load1
+  load5
+  load15
+  totalMem
+  freeMem
+  usedMem
+  timestamp
+}
+
+fragment PlanFields on Plan {
+  id
+  step_number
+  type
+  PlanToStatus {
+    ...StatusFields
+  }
+  PlanToPlanDiffs {
+    ...PlanDiffFields
+  }
+}
+
+fragment PlanDiffFields on PlanDiff {
+  id
+  revision
+  new_state
+  # PlanDiffToPlan {
+  #   ...PlanFields
+  # }
+}
+
+fragment BuildCommitFields on BuildCommit {
+  id
+  revision
+  type
+  state
+  BuildCommitToPlanDiffs {
+    ...PlanDiffFields
+  }
+}
+
+fragment AuthUserFields on AuthUser {
+  id
+  username
+  role
+  provider
+  first_name
+  last_name
+  email
+  phone
+  company
+  occupation
+  publicKey
+}
+
+fragment AgentTaskFields on AgentTask {
+  id
+  state
+  command
+  args
+  number
+  output
+  error_message
+}
+
+fragment PageInfoFields on LaForgePageInfo {
+  total
+  nextOffset
+}
+
+fragment UserListFields on AuthUser {
+  id
+  first_name
+  last_name
+  username
+  provider
+  role
+  email
+  phone
+  company
+  occupation
+}

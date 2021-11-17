@@ -1,0 +1,98 @@
+<!-- <mat-grid-list cols="2" gutterSize="1rem" rowHeight="2:1">
+  <mat-grid-tile> -->
+<div class="laforge-card-list">
+  <mat-card class="laforge-card">
+    <mat-card-header>
+      <mat-card-title>
+        Environments
+        <ng-container *ngIf="getEnvironmentsLoading | async">
+          <i class="fad fa-1x fa-spinner-third fa-spin ml-3"></i>
+        </ng-container>
+      </mat-card-title>
+      <!-- <mat-card-subtitle></mat-card-subtitle> -->
+    </mat-card-header>
+    <mat-card-content>
+      <ng-container *ngIf="!(getEnvironmentsLoading | async)">
+        <ng-container *ngIf="environments | async as _environments">
+          <!-- <p *ngFor="let env of _environments">{{ env.name }}</p> -->
+          <mat-table [dataSource]="_environments | sortBy: 'asc':'name'" class="bg-gray-100">
+            <ng-container matColumnDef="name">
+              <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
+              <mat-cell *matCellDef="let env">{{ env.name }}</mat-cell>
+            </ng-container>
+            <ng-container matColumnDef="competition_id">
+              <mat-header-cell *matHeaderCellDef class="justify-content-center">Competition</mat-header-cell>
+              <mat-cell *matCellDef="let env" class="justify-content-center">{{ env.competition_id }}</mat-cell>
+            </ng-container>
+            <ng-container matColumnDef="revision">
+              <mat-header-cell *matHeaderCellDef class="justify-content-center">Revision</mat-header-cell>
+              <mat-cell *matCellDef="let env" class="justify-content-center">{{ env.revision }}</mat-cell>
+            </ng-container>
+            <ng-container matColumnDef="build_count">
+              <mat-header-cell *matHeaderCellDef class="justify-content-center"># Builds</mat-header-cell>
+              <mat-cell *matCellDef="let env" class="justify-content-center">{{ env.EnvironmentToBuild?.length }}</mat-cell>
+            </ng-container>
+            <ng-container matColumnDef="actions">
+              <mat-header-cell *matHeaderCellDef class="justify-content-center">Plan</mat-header-cell>
+              <mat-cell *matCellDef="let env" class="justify-content-center">
+                <button mat-flat-button (click)="createBuild(env.id)" color="primary">
+                  <i class="fad fa-rocket-launch text-light"></i>
+                </button>
+              </mat-cell>
+            </ng-container>
+            <ng-container matColumnDef="pull-actions">
+              <mat-header-cell *matHeaderCellDef class="justify-content-center">Pull</mat-header-cell>
+              <mat-cell *matCellDef="let env" class="justify-content-center">
+                <button mat-flat-button (click)="updateEnvironmentFromGit(env.id)" color="primary">
+                  <i class="fas fa-cloud-download text-light"></i>
+                </button>
+              </mat-cell>
+            </ng-container>
+            <mat-header-row *matHeaderRowDef="environmentsCols"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: environmentsCols"></mat-row>
+          </mat-table>
+          <div *ngIf="_environments?.length === 0" class="text-center my-2 text-muted">No environments loaded</div>
+        </ng-container>
+      </ng-container>
+    </mat-card-content>
+  </mat-card>
+  <!-- </mat-grid-tile>
+  <mat-grid-tile> -->
+  <mat-card class="laforge-card">
+    <mat-card-header>
+      <mat-card-title>Import Repo From Git</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="git-form">
+        <mat-form-field appearance="fill" class="repo-url w-100 mb-5">
+          <mat-label>Enter Repo URL</mat-label>
+          <input matInput placeholder="git@example.com:ExampleOrg/example-repo" [formControl]="gitUrl" />
+          <mat-error *ngIf="gitUrl.invalid">{{ getGitErrorMessage() }}</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="fill" class="repo-name w-100 mb-5">
+          <mat-label>Enter Repo Name</mat-label>
+          <input matInput placeholder="example_environment" [formControl]="repoName" />
+          <mat-error *ngIf="repoName.invalid">{{ getRepoNameErrorMessage() }}</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="fill" class="branch-name w-100 mb-5">
+          <mat-label>Enter Branch Name</mat-label>
+          <input matInput placeholder="example-branch" [formControl]="branchName" />
+          <mat-error *ngIf="branchName.invalid">{{ getBranchNameErrorMessage() }}</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="fill" class="repo-url w-100 mb-5">
+          <mat-label>Enter Env File Path</mat-label>
+          <input matInput placeholder="envs/example/env.laforge" [formControl]="envFilePath" />
+          <mat-error *ngIf="envFilePath.invalid">{{ getEnvFilePathErrorMessage() }}</mat-error>
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="cloneEnvironmentFromGit()" class="submit-repo w-100">
+          <ng-container *ngIf="gitIsLoading | async">
+            <i class="fad fa-spinner-third fa-spin text-white"></i>
+          </ng-container>
+          <ng-container *ngIf="!(gitIsLoading | async)"> Import </ng-container>
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+<!-- </mat-grid-tile>
+</mat-grid-list> -->

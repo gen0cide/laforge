@@ -5,6 +5,7 @@
 *.dll
 *.so
 *.dylib
+*.sqlite
 
 # Test binary, build with `go test -c`
 *.test
@@ -16,3 +17,11 @@
 .glide/
 
 dist/
+builds/
+logs/
+users/
+repos/
+
+session.cache
+*.env
+*.lfglog

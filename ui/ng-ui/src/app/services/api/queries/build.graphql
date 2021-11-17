@@ -1,0 +1,197 @@
+query GetBuildTree($buildId: String!) {
+  build(buildUUID: $buildId) {
+    id
+    revision
+    BuildToLatestBuildCommit {
+      id
+    }
+    buildToStatus {
+      ...StatusFields
+    }
+    buildToTeam {
+      id
+      team_number
+      TeamToStatus {
+        id
+      }
+      TeamToPlan {
+        id
+        PlanToStatus {
+          id
+        }
+      }
+      TeamToProvisionedNetwork {
+        id
+        name
+        cidr
+        ProvisionedNetworkToNetwork {
+          id
+          vdi_visible
+          vars {
+            key
+            value
+          }
+          tags {
+            key
+            value
+          }
+        }
+        ProvisionedNetworkToStatus {
+          id
+        }
+        ProvisionedNetworkToPlan {
+          id
+          PlanToStatus {
+            id
+          }
+        }
+        ProvisionedNetworkToProvisionedHost {
+          id
+          subnet_ip
+          ProvisionedHostToHost {
+            id
+            hostname
+            description
+            OS
+            allow_mac_changes
+            exposed_tcp_ports
+            exposed_udp_ports
+            user_groups
+            override_password
+            vars {
+              key
+              value
+            }
+            tags {
+              key
+              value
+            }
+          }
+          ProvisionedHostToStatus {
+            id
+          }
+          ProvisionedHostToPlan {
+            id
+            PlanToStatus {
+              id
+            }
+          }
+          ProvisionedHostToProvisioningStep {
+            id
+            type
+            step_number
+            ProvisioningStepToScript {
+              id
+              name
+              language
+              description
+              source
+              source_type
+              disabled
+              args
+              vars {
+                key
+                value
+              }
+              tags {
+                key
+                value
+              }
+            }
+            ProvisioningStepToCommand {
+              id
+              name
+              description
+              program
+              args
+              disabled
+              vars {
+                key
+                value
+              }
+              tags {
+                key
+                value
+              }
+            }
+            ProvisioningStepToDNSRecord {
+              id
+              name
+              values
+              type
+              zone
+              disabled
+              vars {
+                key
+                value
+              }
+              tags {
+                key
+                value
+              }
+            }
+            ProvisioningStepToFileDownload {
+              id
+              source
+              sourceType
+              destination
+              disabled
+              tags {
+                key
+                value
+              }
+            }
+            ProvisioningStepToFileDelete {
+              id
+              path
+              tags {
+                key
+                value
+              }
+            }
+            ProvisioningStepToFileExtract {
+              id
+              source
+              destination
+              type
+              tags {
+                key
+                value
+              }
+            }
+            ProvisioningStepToStatus {
+              id
+            }
+            ProvisioningStepToPlan {
+              id
+              PlanToStatus {
+                id
+              }
+            }
+          }
+          ProvisionedHostToAgentStatus {
+            clientId
+          }
+        }
+      }
+    }
+  }
+}
+
+query GetBuildPlans($buildId: String!) {
+  build(buildUUID: $buildId) {
+    id
+    buildToPlan {
+      ...PlanFields
+    }
+  }
+}
+
+query GetBuildCommits($buildId: String!) {
+  build(buildUUID: $buildId) {
+    id
+    BuildToBuildCommits {
+      ...BuildCommitFields
+    }
+  }
+}

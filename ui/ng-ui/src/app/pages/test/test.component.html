@@ -1,0 +1,151 @@
+<i class="fa fa-spinner fa-spin" *ngIf="!environment"></i>
+<mat-accordion *ngIf="environment">
+  <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel-header>
+      <mat-panel-title> Host Component </mat-panel-title>
+      <mat-panel-description> This is a summary of the content </mat-panel-description>
+    </mat-expansion-panel-header>
+    <h4>Compact (<code>[style]="'compact'"</code>)</h4>
+    <app-host
+      [provisionedHost]="
+        environment.EnvironmentToBuild[0].buildToTeam[0].TeamToProvisionedNetwork[0].ProvisionedNetworkToProvisionedHost[0]
+      "
+      [status]="completeStatus"
+      [style]="'compact'"
+    ></app-host>
+    <mat-divider></mat-divider>
+    <h4>Collapsed (<code>[style]="'collapsed'"</code>)</h4>
+    <app-host
+      [provisionedHost]="
+        environment.EnvironmentToBuild[0].buildToTeam[0].TeamToProvisionedNetwork[0].ProvisionedNetworkToProvisionedHost[0]
+      "
+      [status]="completeStatus"
+      [style]="'collapsed'"
+    ></app-host>
+    <mat-divider></mat-divider>
+    <h4>Expanded (<code>[style]="'expanded'"</code>)</h4>
+    <app-host
+      [provisionedHost]="
+        environment.EnvironmentToBuild[0].buildToTeam[0].TeamToProvisionedNetwork[0].ProvisionedNetworkToProvisionedHost[0]
+      "
+      [status]="completeStatus"
+      [style]="'expanded'"
+    ></app-host>
+  </mat-expansion-panel>
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title> Network Component </mat-panel-title>
+      <mat-panel-description> This is a summary of the content </mat-panel-description>
+    </mat-expansion-panel-header>
+    <h4>Compact (<code>[style]="'compact'"</code>)</h4>
+    <app-network
+      [provisionedNetwork]="environment.EnvironmentToBuild[0].buildToTeam[0].TeamToProvisionedNetwork[0]"
+      [status]="completeStatus"
+      [style]="'compact'"
+    ></app-network>
+    <mat-divider></mat-divider>
+    <h4>Collapsed (<code>[style]="'collapsed'"</code>)</h4>
+    <app-network
+      [provisionedNetwork]="environment.EnvironmentToBuild[0].buildToTeam[0].TeamToProvisionedNetwork[0]"
+      [status]="completeStatus"
+      [style]="'collapsed'"
+    ></app-network>
+    <mat-divider></mat-divider>
+    <h4>Expanded (<code>[style]="'expanded'"</code>)</h4>
+    <app-network
+      [provisionedNetwork]="environment.EnvironmentToBuild[0].buildToTeam[0].TeamToProvisionedNetwork[0]"
+      [status]="completeStatus"
+      [style]="'expanded'"
+    ></app-network>
+  </mat-expansion-panel>
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title> Team Component </mat-panel-title>
+      <mat-panel-description> This is a summary of the content </mat-panel-description>
+    </mat-expansion-panel-header>
+    <h4>Compact (<code>[style]="'compact'"</code>)</h4>
+    <app-team [team]="environment.EnvironmentToBuild[0].buildToTeam[0]" [style]="'compact'"></app-team>
+    <mat-divider></mat-divider>
+    <h4>Collapsed (<code>[style]="'collapsed'"</code>)</h4>
+    <app-team [team]="environment.EnvironmentToBuild[0].buildToTeam[0]" [style]="'collapsed'"></app-team>
+    <mat-divider></mat-divider>
+    <h4>Expanded (<code>[style]="'expanded'"</code>)</h4>
+    <app-team [team]="environment.EnvironmentToBuild[0].buildToTeam[0]" [style]="'expanded'"></app-team>
+  </mat-expansion-panel>
+</mat-accordion>
+
+<!-- <mat-card *ngIf="environment">
+  <mat-card-header>
+    <mat-card-title>Host Component</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <h4>Compact (<code>[style]="'compact'"</code>)</h4>
+    <app-host
+      [provisionedHost]="
+        environment.EnvironmentToBuild[0].buildToTeam[0].TeamToProvisionedNetwork[0].ProvisionedNetworkToProvisionedHost[0]
+      "
+      [status]="completeStatus"
+      [style]="'compact'"
+    ></app-host>
+    <mat-divider></mat-divider>
+    <h4>Collapsed (<code>[style]="'collapsed'"</code>)</h4>
+    <app-host
+      [provisionedHost]="
+        environment.EnvironmentToBuild[0].buildToTeam[0].TeamToProvisionedNetwork[0].ProvisionedNetworkToProvisionedHost[0]
+      "
+      [status]="completeStatus"
+      [style]="'collapsed'"
+    ></app-host>
+    <mat-divider></mat-divider>
+    <h4>Expanded (<code>[style]="'expanded'"</code>)</h4>
+    <app-host
+      [provisionedHost]="
+        environment.EnvironmentToBuild[0].buildToTeam[0].TeamToProvisionedNetwork[0].ProvisionedNetworkToProvisionedHost[0]
+      "
+      [status]="completeStatus"
+      [style]="'expanded'"
+    ></app-host>
+  </mat-card-content>
+</mat-card> -->
+<!-- <mat-card *ngIf="environment">
+  <mat-card-header>
+    <mat-card-title>Network Component</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <h4>Compact (<code>[style]="'compact'"</code>)</h4>
+    <app-network
+      [provisionedNetwork]="environment.EnvironmentToBuild[0].buildToTeam[0].TeamToProvisionedNetwork[0]"
+      [status]="completeStatus"
+      [style]="'compact'"
+    ></app-network>
+    <mat-divider></mat-divider>
+    <h4>Collapsed (<code>[style]="'collapsed'"</code>)</h4>
+    <app-network
+      [provisionedNetwork]="environment.EnvironmentToBuild[0].buildToTeam[0].TeamToProvisionedNetwork[0]"
+      [status]="completeStatus"
+      [style]="'collapsed'"
+    ></app-network>
+    <mat-divider></mat-divider>
+    <h4>Expanded (<code>[style]="'expanded'"</code>)</h4>
+    <app-network
+      [provisionedNetwork]="environment.EnvironmentToBuild[0].buildToTeam[0].TeamToProvisionedNetwork[0]"
+      [status]="completeStatus"
+      [style]="'expanded'"
+    ></app-network>
+  </mat-card-content>
+</mat-card> -->
+<!-- <mat-card *ngIf="environment">
+  <mat-card-header>
+    <mat-card-title>Team Component</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <h4>Compact (<code>[style]="'compact'"</code>)</h4>
+    <app-team [team]="environment.EnvironmentToBuild[0].buildToTeam[0]" [style]="'compact'"></app-team>
+    <mat-divider></mat-divider>
+    <h4>Collapsed (<code>[style]="'collapsed'"</code>)</h4>
+    <app-team [team]="environment.EnvironmentToBuild[0].buildToTeam[0]" [style]="'collapsed'"></app-team>
+    <mat-divider></mat-divider>
+    <h4>Expanded (<code>[style]="'expanded'"</code>)</h4>
+    <app-team [team]="environment.EnvironmentToBuild[0].buildToTeam[0]" [style]="'expanded'"></app-team>
+  </mat-card-content>
+</mat-card> -->

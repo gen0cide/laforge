@@ -1,0 +1,83 @@
+<ng-container *ngIf="user$ | async as _user">
+  <ng-container *ngIf="extrasUserDropdownStyle === 'light'">
+    <!--begin::Header-->
+    <div class="d-flex align-items-center p-8 rounded-top">
+      <!--begin::Symbol-->
+      <div class="symbol symbol-md bg-light-primary mr-3 flex-shrink-0">
+        <img src="./assets/media/users/300_21.jpg" alt="" />
+      </div>
+      <!--end::Symbol-->
+
+      <!--begin::Text-->
+      <div class="text-dark m-0 flex-grow-1 mr-3 font-size-h5">
+        {{ _user.username }}
+      </div>
+      <span class="label label-light-success label-lg font-weight-bold label-inline">3 messages</span>
+      <!--end::Text-->
+    </div>
+    <div class="separator separator-solid"></div>
+    <!--end::Header-->
+  </ng-container>
+
+  <ng-container *ngIf="extrasUserDropdownStyle === 'dark'">
+    <!--begin::Header-->
+    <div
+      class="d-flex align-items-center justify-content-between flex-wrap p-8 bgi-size-cover bgi-no-repeat rounded-top"
+      style="background-image: url('./assets/media/misc/bg-1.jpg')"
+    >
+      <div class="d-flex align-items-center mr-2">
+        <!--begin::Symbol-->
+        <div class="symbol bg-white-o-15 mr-3">
+          <span class="symbol-label text-success font-weight-bold font-size-h4">{{ _user.username | firstLetter }}</span>
+        </div>
+        <!--end::Symbol-->
+
+        <!--begin::Text-->
+        <div class="text-white m-0 flex-grow-1 mr-3 font-size-h5">
+          {{ _user.username }}
+        </div>
+        <!--end::Text-->
+      </div>
+    </div>
+    <!--end::Header-->
+  </ng-container>
+
+  <!--begin::Nav-->
+  <div class="navi navi-spacer-x-0 pt-5">
+    <!--begin::Item-->
+    <a href="/account" class="navi-item px-8 cursor-pointer">
+      <div class="navi-link">
+        <div class="navi-icon mr-2">
+          <i class="fas fa-user-visor text-primary"></i>
+        </div>
+        <div class="navi-text">
+          <div class="font-weight-bold">My Account</div>
+          <div class="text-muted">Github, email, and more</div>
+        </div>
+      </div>
+    </a>
+    <!--end::Item-->
+
+    <!--begin::Item-->
+    <a href="/admin" class="navi-item px-8 cursor-pointer" *ngIf="(user$ | async).role === 'ADMIN'">
+      <div class="navi-link">
+        <div class="navi-icon mr-2">
+          <i class="fas fa-users text-success"></i>
+        </div>
+        <div class="navi-text">
+          <div class="font-weight-bold">Manage Users</div>
+          <div class="text-muted">Add, delete, modify users</div>
+        </div>
+      </div>
+    </a>
+    <!--end::Item-->
+
+    <!--begin::Footer-->
+    <div class="navi-separator mt-3"></div>
+    <div class="navi-footer px-8 py-5 float-right">
+      <a class="btn btn-light-primary font-weight-bold cursor-pointer" (click)="logout()">Sign Out</a>
+    </div>
+    <!--end::Footer-->
+  </div>
+  <!--end::Nav-->
+</ng-container>

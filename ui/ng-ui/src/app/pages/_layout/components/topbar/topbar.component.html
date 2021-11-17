@@ -1,0 +1,67 @@
+<!--begin::Topbar-->
+
+<ng-container>
+  <div class="theme-selector">
+    <i class="fad fa-sun text-dark theme-label"></i>
+    <mat-slide-toggle color="primary" (toggleChange)="toggleTheme()" [checked]="themeService.getTheme() === 'dark'"> </mat-slide-toggle>
+    <i class="fad fa-moon text-dark theme-label"></i>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="extrasNotificationsDisplay">
+  <ng-container>
+    <!--begin::Notifications-->
+    <div class="dropdown" ngbDropdown placement="bottom" (openChange)="clearNotification($event)">
+      <!--begin::Toggle-->
+      <div class="topbar-item" data-toggle="dropdown" data-offset="10px,0px" ngbDropdownToggle>
+        <div class="btn btn-icon btn-clean btn-dropdown btn-lg mr-1 pulse pulse-primary">
+          <span
+            [inlineSVG]="'/assets/media/svg/icons/Code/Compiling.svg'"
+            cacheSVG="true"
+            class="svg-icon svg-icon-xl svg-icon-primary"
+          ></span>
+          <span class="pulse-ring" *ngIf="shouldNotifyUser"></span>
+        </div>
+      </div>
+      <!--end::Toggle-->
+
+      <!--begin::Dropdown-->
+      <div ngbDropdownMenu class="dropdown-menu p-0 m-0 dropdown-menu-anim-up dropdown-menu-lg">
+        <form>
+          <app-notifications-dropdown-inner></app-notifications-dropdown-inner>
+        </form>
+      </div>
+      <!--end::Dropdown-->
+    </div>
+    <!--end::Notifications-->
+  </ng-container>
+</ng-container>
+
+<ng-container *ngIf="extrasUserDisplay">
+  <ng-container>
+    <!--begin::User-->
+    <ng-container *ngIf="user$ | async as _user">
+      <div class="dropdown" ngbDropdown placement="bottom-right">
+        <div class="topbar-item" data-toggle="dropdown" data-offset="0px,0px" ngbDropdownToggle>
+          <div class="btn btn-icon w-auto btn-clean d-flex align-items-center btn-lg px-2">
+            <span class="text-muted font-weight-bold font-size-base d-none d-md-inline mr-1">Hi,</span>
+            <span class="text-dark-50 font-weight-bolder font-size-base d-none d-md-inline mr-3">{{ _user.username }}</span>
+            <span class="symbol symbol-35 symbol-light">
+              <!--todo: gravatar-->
+              <span class="symbol-label font-size-h5 font-weight-bold">{{ _user.username | firstLetter }}</span>
+            </span>
+          </div>
+        </div>
+        <!--end::Toggle-->
+        <!--begin::Dropdown-->
+        <div ngbDropdownMenu class="dropdown-menu p-0 m-0 dropdown-menu-right dropdown-menu-anim-up dropdown-menu-lg p-0">
+          <app-user-dropdown-inner></app-user-dropdown-inner>
+        </div>
+      </div>
+      <!--end::Dropdown-->
+    </ng-container>
+    <!--end::User-->
+  </ng-container>
+</ng-container>
+
+<!--end::Topbar-->
