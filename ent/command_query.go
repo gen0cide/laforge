@@ -9,13 +9,14 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/command"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // CommandQuery is the builder for querying Command entities.
@@ -23,18 +24,20 @@ type CommandQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
+	fields     []string
 	predicates []predicate.Command
 	// eager-loading edges.
-	withUser *UserQuery
-	withTag  *TagQuery
-	withFKs  bool
+	withCommandToUser        *UserQuery
+	withCommandToEnvironment *EnvironmentQuery
+	withFKs                  bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the CommandQuery builder.
 func (cq *CommandQuery) Where(ps ...predicate.Command) *CommandQuery {
 	cq.predicates = append(cq.predicates, ps...)
 	return cq
@@ -52,27 +55,34 @@ func (cq *CommandQuery) Offset(offset int) *CommandQuery {
 	return cq
 }
 
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (cq *CommandQuery) Unique(unique bool) *CommandQuery {
+	cq.unique = &unique
+	return cq
+}
+
 // Order adds an order step to the query.
 func (cq *CommandQuery) Order(o ...OrderFunc) *CommandQuery {
 	cq.order = append(cq.order, o...)
 	return cq
 }
 
-// QueryUser chains the current query on the user edge.
-func (cq *CommandQuery) QueryUser() *UserQuery {
+// QueryCommandToUser chains the current query on the "CommandToUser" edge.
+func (cq *CommandQuery) QueryCommandToUser() *UserQuery {
 	query := &UserQuery{config: cq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := cq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := cq.sqlQuery()
+		selector := cq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(command.Table, command.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, command.UserTable, command.UserColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, command.CommandToUserTable, command.CommandToUserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -80,21 +90,21 @@ func (cq *CommandQuery) QueryUser() *UserQuery {
 	return query
 }
 
-// QueryTag chains the current query on the tag edge.
-func (cq *CommandQuery) QueryTag() *TagQuery {
-	query := &TagQuery{config: cq.config}
+// QueryCommandToEnvironment chains the current query on the "CommandToEnvironment" edge.
+func (cq *CommandQuery) QueryCommandToEnvironment() *EnvironmentQuery {
+	query := &EnvironmentQuery{config: cq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := cq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := cq.sqlQuery()
+		selector := cq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(command.Table, command.FieldID, selector),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, command.TagTable, command.TagColumn),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, command.CommandToEnvironmentTable, command.CommandToEnvironmentColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -102,7 +112,8 @@ func (cq *CommandQuery) QueryTag() *TagQuery {
 	return query
 }
 
-// First returns the first Command entity in the query. Returns *NotFoundError when no command was found.
+// First returns the first Command entity from the query.
+// Returns a *NotFoundError when no Command was found.
 func (cq *CommandQuery) First(ctx context.Context) (*Command, error) {
 	nodes, err := cq.Limit(1).All(ctx)
 	if err != nil {
@@ -123,9 +134,10 @@ func (cq *CommandQuery) FirstX(ctx context.Context) *Command {
 	return node
 }
 
-// FirstID returns the first Command id in the query. Returns *NotFoundError when no id was found.
-func (cq *CommandQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+// FirstID returns the first Command ID from the query.
+// Returns a *NotFoundError when no Command ID was found.
+func (cq *CommandQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = cq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -137,7 +149,7 @@ func (cq *CommandQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (cq *CommandQuery) FirstIDX(ctx context.Context) int {
+func (cq *CommandQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := cq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -145,7 +157,9 @@ func (cq *CommandQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns the only Command entity in the query, returns an error if not exactly one entity was returned.
+// Only returns a single Command entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when exactly one Command entity is not found.
+// Returns a *NotFoundError when no Command entities are found.
 func (cq *CommandQuery) Only(ctx context.Context) (*Command, error) {
 	nodes, err := cq.Limit(2).All(ctx)
 	if err != nil {
@@ -170,9 +184,11 @@ func (cq *CommandQuery) OnlyX(ctx context.Context) *Command {
 	return node
 }
 
-// OnlyID returns the only Command id in the query, returns an error if not exactly one id was returned.
-func (cq *CommandQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+// OnlyID is like Only, but returns the only Command ID in the query.
+// Returns a *NotSingularError when exactly one Command ID is not found.
+// Returns a *NotFoundError when no entities are found.
+func (cq *CommandQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = cq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -188,7 +204,7 @@ func (cq *CommandQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (cq *CommandQuery) OnlyIDX(ctx context.Context) int {
+func (cq *CommandQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := cq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -213,9 +229,9 @@ func (cq *CommandQuery) AllX(ctx context.Context) []*Command {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Command ids.
-func (cq *CommandQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+// IDs executes the query and returns a list of Command IDs.
+func (cq *CommandQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := cq.Select(command.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -223,7 +239,7 @@ func (cq *CommandQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (cq *CommandQuery) IDsX(ctx context.Context) []int {
+func (cq *CommandQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := cq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -265,60 +281,60 @@ func (cq *CommandQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the query builder, including all associated steps. It can be
+// Clone returns a duplicate of the CommandQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
 func (cq *CommandQuery) Clone() *CommandQuery {
 	if cq == nil {
 		return nil
 	}
 	return &CommandQuery{
-		config:     cq.config,
-		limit:      cq.limit,
-		offset:     cq.offset,
-		order:      append([]OrderFunc{}, cq.order...),
-		predicates: append([]predicate.Command{}, cq.predicates...),
-		withUser:   cq.withUser.Clone(),
-		withTag:    cq.withTag.Clone(),
+		config:                   cq.config,
+		limit:                    cq.limit,
+		offset:                   cq.offset,
+		order:                    append([]OrderFunc{}, cq.order...),
+		predicates:               append([]predicate.Command{}, cq.predicates...),
+		withCommandToUser:        cq.withCommandToUser.Clone(),
+		withCommandToEnvironment: cq.withCommandToEnvironment.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
 	}
 }
 
-//  WithUser tells the query-builder to eager-loads the nodes that are connected to
-// the "user" edge. The optional arguments used to configure the query builder of the edge.
-func (cq *CommandQuery) WithUser(opts ...func(*UserQuery)) *CommandQuery {
+// WithCommandToUser tells the query-builder to eager-load the nodes that are connected to
+// the "CommandToUser" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CommandQuery) WithCommandToUser(opts ...func(*UserQuery)) *CommandQuery {
 	query := &UserQuery{config: cq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	cq.withUser = query
+	cq.withCommandToUser = query
 	return cq
 }
 
-//  WithTag tells the query-builder to eager-loads the nodes that are connected to
-// the "tag" edge. The optional arguments used to configure the query builder of the edge.
-func (cq *CommandQuery) WithTag(opts ...func(*TagQuery)) *CommandQuery {
-	query := &TagQuery{config: cq.config}
+// WithCommandToEnvironment tells the query-builder to eager-load the nodes that are connected to
+// the "CommandToEnvironment" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CommandQuery) WithCommandToEnvironment(opts ...func(*EnvironmentQuery)) *CommandQuery {
+	query := &EnvironmentQuery{config: cq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	cq.withTag = query
+	cq.withCommandToEnvironment = query
 	return cq
 }
 
-// GroupBy used to group vertices by one or more fields/columns.
+// GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Command.Query().
-//		GroupBy(command.FieldName).
+//		GroupBy(command.FieldHclID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -329,36 +345,35 @@ func (cq *CommandQuery) GroupBy(field string, fields ...string) *CommandGroupBy 
 		if err := cq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return cq.sqlQuery(), nil
+		return cq.sqlQuery(ctx), nil
 	}
 	return group
 }
 
-// Select one or more fields from the given query.
+// Select allows the selection one or more fields/columns for the given query,
+// instead of selecting all fields in the entity.
 //
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 //	}
 //
 //	client.Command.Query().
-//		Select(command.FieldName).
+//		Select(command.FieldHclID).
 //		Scan(ctx, &v)
 //
-func (cq *CommandQuery) Select(field string, fields ...string) *CommandSelect {
-	selector := &CommandSelect{config: cq.config}
-	selector.fields = append([]string{field}, fields...)
-	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := cq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return cq.sqlQuery(), nil
-	}
-	return selector
+func (cq *CommandQuery) Select(fields ...string) *CommandSelect {
+	cq.fields = append(cq.fields, fields...)
+	return &CommandSelect{CommandQuery: cq}
 }
 
 func (cq *CommandQuery) prepareQuery(ctx context.Context) error {
+	for _, f := range cq.fields {
+		if !command.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+		}
+	}
 	if cq.path != nil {
 		prev, err := cq.path(ctx)
 		if err != nil {
@@ -375,29 +390,28 @@ func (cq *CommandQuery) sqlAll(ctx context.Context) ([]*Command, error) {
 		withFKs     = cq.withFKs
 		_spec       = cq.querySpec()
 		loadedTypes = [2]bool{
-			cq.withUser != nil,
-			cq.withTag != nil,
+			cq.withCommandToUser != nil,
+			cq.withCommandToEnvironment != nil,
 		}
 	)
+	if cq.withCommandToEnvironment != nil {
+		withFKs = true
+	}
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, command.ForeignKeys...)
 	}
-	_spec.ScanValues = func() []interface{} {
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Command{config: cq.config}
 		nodes = append(nodes, node)
-		values := node.scanValues()
-		if withFKs {
-			values = append(values, node.fkValues()...)
-		}
-		return values
+		return node.scanValues(columns)
 	}
-	_spec.Assign = func(values ...interface{}) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		if len(nodes) == 0 {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
 		node.Edges.loadedTypes = loadedTypes
-		return node.assignValues(values...)
+		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, cq.driver, _spec); err != nil {
 		return nil, err
@@ -406,61 +420,61 @@ func (cq *CommandQuery) sqlAll(ctx context.Context) ([]*Command, error) {
 		return nodes, nil
 	}
 
-	if query := cq.withUser; query != nil {
+	if query := cq.withCommandToUser; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Command)
+		nodeids := make(map[uuid.UUID]*Command)
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.User = []*User{}
+			nodes[i].Edges.CommandToUser = []*User{}
 		}
 		query.withFKs = true
 		query.Where(predicate.User(func(s *sql.Selector) {
-			s.Where(sql.InValues(command.UserColumn, fks...))
+			s.Where(sql.InValues(command.CommandToUserColumn, fks...))
 		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.command_user
+			fk := n.command_command_to_user
 			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "command_user" is nil for node %v`, n.ID)
+				return nil, fmt.Errorf(`foreign-key "command_command_to_user" is nil for node %v`, n.ID)
 			}
 			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "command_user" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "command_command_to_user" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.User = append(node.Edges.User, n)
+			node.Edges.CommandToUser = append(node.Edges.CommandToUser, n)
 		}
 	}
 
-	if query := cq.withTag; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*Command)
+	if query := cq.withCommandToEnvironment; query != nil {
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Command)
 		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Tag = []*Tag{}
+			if nodes[i].environment_environment_to_command == nil {
+				continue
+			}
+			fk := *nodes[i].environment_environment_to_command
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
-		query.withFKs = true
-		query.Where(predicate.Tag(func(s *sql.Selector) {
-			s.Where(sql.InValues(command.TagColumn, fks...))
-		}))
+		query.Where(environment.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			fk := n.command_tag
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "command_tag" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "command_tag" returned %v for node %v`, *fk, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "environment_environment_to_command" returned %v`, n.ID)
 			}
-			node.Edges.Tag = append(node.Edges.Tag, n)
+			for i := range nodes {
+				nodes[i].Edges.CommandToEnvironment = n
+			}
 		}
 	}
 
@@ -475,7 +489,7 @@ func (cq *CommandQuery) sqlCount(ctx context.Context) (int, error) {
 func (cq *CommandQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := cq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -486,12 +500,24 @@ func (cq *CommandQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   command.Table,
 			Columns: command.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: command.FieldID,
 			},
 		},
 		From:   cq.sql,
 		Unique: true,
+	}
+	if unique := cq.unique; unique != nil {
+		_spec.Unique = *unique
+	}
+	if fields := cq.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, command.FieldID)
+		for i := range fields {
+			if fields[i] != command.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
+			}
+		}
 	}
 	if ps := cq.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -509,26 +535,30 @@ func (cq *CommandQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := cq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, command.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
 	return _spec
 }
 
-func (cq *CommandQuery) sqlQuery() *sql.Selector {
+func (cq *CommandQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(cq.driver.Dialect())
 	t1 := builder.Table(command.Table)
-	selector := builder.Select(t1.Columns(command.Columns...)...).From(t1)
+	columns := cq.fields
+	if len(columns) == 0 {
+		columns = command.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if cq.sql != nil {
 		selector = cq.sql
-		selector.Select(selector.Columns(command.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range cq.predicates {
 		p(selector)
 	}
 	for _, p := range cq.order {
-		p(selector, command.ValidColumn)
+		p(selector)
 	}
 	if offset := cq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -541,7 +571,7 @@ func (cq *CommandQuery) sqlQuery() *sql.Selector {
 	return selector
 }
 
-// CommandGroupBy is the builder for group-by Command entities.
+// CommandGroupBy is the group-by builder for Command entities.
 type CommandGroupBy struct {
 	config
 	fields []string
@@ -557,7 +587,7 @@ func (cgb *CommandGroupBy) Aggregate(fns ...AggregateFunc) *CommandGroupBy {
 	return cgb
 }
 
-// Scan applies the group-by query and scan the result into the given value.
+// Scan applies the group-by query and scans the result into the given value.
 func (cgb *CommandGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := cgb.path(ctx)
 	if err != nil {
@@ -574,7 +604,8 @@ func (cgb *CommandGroupBy) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from group-by. It is only allowed when querying group-by with one field.
+// Strings returns list of strings from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (cgb *CommandGroupBy) Strings(ctx context.Context) ([]string, error) {
 	if len(cgb.fields) > 1 {
 		return nil, errors.New("ent: CommandGroupBy.Strings is not achievable when grouping more than 1 field")
@@ -595,7 +626,8 @@ func (cgb *CommandGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+// String returns a single string from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (cgb *CommandGroupBy) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = cgb.Strings(ctx); err != nil {
@@ -621,7 +653,8 @@ func (cgb *CommandGroupBy) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
+// Ints returns list of ints from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (cgb *CommandGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(cgb.fields) > 1 {
 		return nil, errors.New("ent: CommandGroupBy.Ints is not achievable when grouping more than 1 field")
@@ -642,7 +675,8 @@ func (cgb *CommandGroupBy) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+// Int returns a single int from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (cgb *CommandGroupBy) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = cgb.Ints(ctx); err != nil {
@@ -668,7 +702,8 @@ func (cgb *CommandGroupBy) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from group-by. It is only allowed when querying group-by with one field.
+// Float64s returns list of float64s from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (cgb *CommandGroupBy) Float64s(ctx context.Context) ([]float64, error) {
 	if len(cgb.fields) > 1 {
 		return nil, errors.New("ent: CommandGroupBy.Float64s is not achievable when grouping more than 1 field")
@@ -689,7 +724,8 @@ func (cgb *CommandGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+// Float64 returns a single float64 from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (cgb *CommandGroupBy) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = cgb.Float64s(ctx); err != nil {
@@ -715,7 +751,8 @@ func (cgb *CommandGroupBy) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
+// Bools returns list of bools from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (cgb *CommandGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(cgb.fields) > 1 {
 		return nil, errors.New("ent: CommandGroupBy.Bools is not achievable when grouping more than 1 field")
@@ -736,7 +773,8 @@ func (cgb *CommandGroupBy) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+// Bool returns a single bool from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (cgb *CommandGroupBy) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = cgb.Bools(ctx); err != nil {
@@ -782,31 +820,39 @@ func (cgb *CommandGroupBy) sqlScan(ctx context.Context, v interface{}) error {
 }
 
 func (cgb *CommandGroupBy) sqlQuery() *sql.Selector {
-	selector := cgb.sql
-	columns := make([]string, 0, len(cgb.fields)+len(cgb.fns))
-	columns = append(columns, cgb.fields...)
+	selector := cgb.sql.Select()
+	aggregation := make([]string, 0, len(cgb.fns))
 	for _, fn := range cgb.fns {
-		columns = append(columns, fn(selector, command.ValidColumn))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(cgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(cgb.fields)+len(cgb.fns))
+		for _, f := range cgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(cgb.fields...)...)
 }
 
-// CommandSelect is the builder for select fields of Command entities.
+// CommandSelect is the builder for selecting fields of Command entities.
 type CommandSelect struct {
-	config
-	fields []string
+	*CommandQuery
 	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	sql *sql.Selector
 }
 
-// Scan applies the selector query and scan the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (cs *CommandSelect) Scan(ctx context.Context, v interface{}) error {
-	query, err := cs.path(ctx)
-	if err != nil {
+	if err := cs.prepareQuery(ctx); err != nil {
 		return err
 	}
-	cs.sql = query
+	cs.sql = cs.CommandQuery.sqlQuery(ctx)
 	return cs.sqlScan(ctx, v)
 }
 
@@ -817,7 +863,7 @@ func (cs *CommandSelect) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from selector. It is only allowed when selecting one field.
+// Strings returns list of strings from a selector. It is only allowed when selecting one field.
 func (cs *CommandSelect) Strings(ctx context.Context) ([]string, error) {
 	if len(cs.fields) > 1 {
 		return nil, errors.New("ent: CommandSelect.Strings is not achievable when selecting more than 1 field")
@@ -838,7 +884,7 @@ func (cs *CommandSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from selector. It is only allowed when selecting one field.
+// String returns a single string from a selector. It is only allowed when selecting one field.
 func (cs *CommandSelect) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = cs.Strings(ctx); err != nil {
@@ -864,7 +910,7 @@ func (cs *CommandSelect) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from selector. It is only allowed when selecting one field.
+// Ints returns list of ints from a selector. It is only allowed when selecting one field.
 func (cs *CommandSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(cs.fields) > 1 {
 		return nil, errors.New("ent: CommandSelect.Ints is not achievable when selecting more than 1 field")
@@ -885,7 +931,7 @@ func (cs *CommandSelect) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from selector. It is only allowed when selecting one field.
+// Int returns a single int from a selector. It is only allowed when selecting one field.
 func (cs *CommandSelect) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = cs.Ints(ctx); err != nil {
@@ -911,7 +957,7 @@ func (cs *CommandSelect) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from selector. It is only allowed when selecting one field.
+// Float64s returns list of float64s from a selector. It is only allowed when selecting one field.
 func (cs *CommandSelect) Float64s(ctx context.Context) ([]float64, error) {
 	if len(cs.fields) > 1 {
 		return nil, errors.New("ent: CommandSelect.Float64s is not achievable when selecting more than 1 field")
@@ -932,7 +978,7 @@ func (cs *CommandSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+// Float64 returns a single float64 from a selector. It is only allowed when selecting one field.
 func (cs *CommandSelect) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = cs.Float64s(ctx); err != nil {
@@ -958,7 +1004,7 @@ func (cs *CommandSelect) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from selector. It is only allowed when selecting one field.
+// Bools returns list of bools from a selector. It is only allowed when selecting one field.
 func (cs *CommandSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(cs.fields) > 1 {
 		return nil, errors.New("ent: CommandSelect.Bools is not achievable when selecting more than 1 field")
@@ -979,7 +1025,7 @@ func (cs *CommandSelect) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from selector. It is only allowed when selecting one field.
+// Bool returns a single bool from a selector. It is only allowed when selecting one field.
 func (cs *CommandSelect) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = cs.Bools(ctx); err != nil {
@@ -1006,22 +1052,11 @@ func (cs *CommandSelect) BoolX(ctx context.Context) bool {
 }
 
 func (cs *CommandSelect) sqlScan(ctx context.Context, v interface{}) error {
-	for _, f := range cs.fields {
-		if !command.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
-		}
-	}
 	rows := &sql.Rows{}
-	query, args := cs.sqlQuery().Query()
+	query, args := cs.sql.Query()
 	if err := cs.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (cs *CommandSelect) sqlQuery() sql.Querier {
-	selector := cs.sql
-	selector.Select(selector.Columns(cs.fields...)...)
-	return selector
 }

@@ -7,13 +7,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/script"
-	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // FindingCreate is the builder for creating a Finding entity.
@@ -23,88 +24,112 @@ type FindingCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the name field.
+// SetName sets the "name" field.
 func (fc *FindingCreate) SetName(s string) *FindingCreate {
 	fc.mutation.SetName(s)
 	return fc
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (fc *FindingCreate) SetDescription(s string) *FindingCreate {
 	fc.mutation.SetDescription(s)
 	return fc
 }
 
-// SetSeverity sets the severity field.
+// SetSeverity sets the "severity" field.
 func (fc *FindingCreate) SetSeverity(f finding.Severity) *FindingCreate {
 	fc.mutation.SetSeverity(f)
 	return fc
 }
 
-// SetDifficulty sets the difficulty field.
+// SetDifficulty sets the "difficulty" field.
 func (fc *FindingCreate) SetDifficulty(f finding.Difficulty) *FindingCreate {
 	fc.mutation.SetDifficulty(f)
 	return fc
 }
 
-// AddUserIDs adds the user edge to User by ids.
-func (fc *FindingCreate) AddUserIDs(ids ...int) *FindingCreate {
-	fc.mutation.AddUserIDs(ids...)
+// SetTags sets the "tags" field.
+func (fc *FindingCreate) SetTags(m map[string]string) *FindingCreate {
+	fc.mutation.SetTags(m)
 	return fc
 }
 
-// AddUser adds the user edges to User.
-func (fc *FindingCreate) AddUser(u ...*User) *FindingCreate {
-	ids := make([]int, len(u))
+// SetID sets the "id" field.
+func (fc *FindingCreate) SetID(u uuid.UUID) *FindingCreate {
+	fc.mutation.SetID(u)
+	return fc
+}
+
+// AddFindingToUserIDs adds the "FindingToUser" edge to the User entity by IDs.
+func (fc *FindingCreate) AddFindingToUserIDs(ids ...uuid.UUID) *FindingCreate {
+	fc.mutation.AddFindingToUserIDs(ids...)
+	return fc
+}
+
+// AddFindingToUser adds the "FindingToUser" edges to the User entity.
+func (fc *FindingCreate) AddFindingToUser(u ...*User) *FindingCreate {
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return fc.AddUserIDs(ids...)
+	return fc.AddFindingToUserIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (fc *FindingCreate) AddTagIDs(ids ...int) *FindingCreate {
-	fc.mutation.AddTagIDs(ids...)
+// SetFindingToHostID sets the "FindingToHost" edge to the Host entity by ID.
+func (fc *FindingCreate) SetFindingToHostID(id uuid.UUID) *FindingCreate {
+	fc.mutation.SetFindingToHostID(id)
 	return fc
 }
 
-// AddTag adds the tag edges to Tag.
-func (fc *FindingCreate) AddTag(t ...*Tag) *FindingCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableFindingToHostID sets the "FindingToHost" edge to the Host entity by ID if the given value is not nil.
+func (fc *FindingCreate) SetNillableFindingToHostID(id *uuid.UUID) *FindingCreate {
+	if id != nil {
+		fc = fc.SetFindingToHostID(*id)
 	}
-	return fc.AddTagIDs(ids...)
-}
-
-// AddHostIDs adds the host edge to Host by ids.
-func (fc *FindingCreate) AddHostIDs(ids ...int) *FindingCreate {
-	fc.mutation.AddHostIDs(ids...)
 	return fc
 }
 
-// AddHost adds the host edges to Host.
-func (fc *FindingCreate) AddHost(h ...*Host) *FindingCreate {
-	ids := make([]int, len(h))
-	for i := range h {
-		ids[i] = h[i].ID
-	}
-	return fc.AddHostIDs(ids...)
+// SetFindingToHost sets the "FindingToHost" edge to the Host entity.
+func (fc *FindingCreate) SetFindingToHost(h *Host) *FindingCreate {
+	return fc.SetFindingToHostID(h.ID)
 }
 
-// AddScriptIDs adds the script edge to Script by ids.
-func (fc *FindingCreate) AddScriptIDs(ids ...int) *FindingCreate {
-	fc.mutation.AddScriptIDs(ids...)
+// SetFindingToScriptID sets the "FindingToScript" edge to the Script entity by ID.
+func (fc *FindingCreate) SetFindingToScriptID(id uuid.UUID) *FindingCreate {
+	fc.mutation.SetFindingToScriptID(id)
 	return fc
 }
 
-// AddScript adds the script edges to Script.
-func (fc *FindingCreate) AddScript(s ...*Script) *FindingCreate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// SetNillableFindingToScriptID sets the "FindingToScript" edge to the Script entity by ID if the given value is not nil.
+func (fc *FindingCreate) SetNillableFindingToScriptID(id *uuid.UUID) *FindingCreate {
+	if id != nil {
+		fc = fc.SetFindingToScriptID(*id)
 	}
-	return fc.AddScriptIDs(ids...)
+	return fc
+}
+
+// SetFindingToScript sets the "FindingToScript" edge to the Script entity.
+func (fc *FindingCreate) SetFindingToScript(s *Script) *FindingCreate {
+	return fc.SetFindingToScriptID(s.ID)
+}
+
+// SetFindingToEnvironmentID sets the "FindingToEnvironment" edge to the Environment entity by ID.
+func (fc *FindingCreate) SetFindingToEnvironmentID(id uuid.UUID) *FindingCreate {
+	fc.mutation.SetFindingToEnvironmentID(id)
+	return fc
+}
+
+// SetNillableFindingToEnvironmentID sets the "FindingToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (fc *FindingCreate) SetNillableFindingToEnvironmentID(id *uuid.UUID) *FindingCreate {
+	if id != nil {
+		fc = fc.SetFindingToEnvironmentID(*id)
+	}
+	return fc
+}
+
+// SetFindingToEnvironment sets the "FindingToEnvironment" edge to the Environment entity.
+func (fc *FindingCreate) SetFindingToEnvironment(e *Environment) *FindingCreate {
+	return fc.SetFindingToEnvironmentID(e.ID)
 }
 
 // Mutation returns the FindingMutation object of the builder.
@@ -118,6 +143,7 @@ func (fc *FindingCreate) Save(ctx context.Context) (*Finding, error) {
 		err  error
 		node *Finding
 	)
+	fc.defaults()
 	if len(fc.hooks) == 0 {
 		if err = fc.check(); err != nil {
 			return nil, err
@@ -133,11 +159,17 @@ func (fc *FindingCreate) Save(ctx context.Context) (*Finding, error) {
 				return nil, err
 			}
 			fc.mutation = mutation
-			node, err = fc.sqlSave(ctx)
+			if node, err = fc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(fc.hooks) - 1; i >= 0; i-- {
+			if fc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fc.mutation); err != nil {
@@ -156,29 +188,53 @@ func (fc *FindingCreate) SaveX(ctx context.Context) *Finding {
 	return v
 }
 
+// Exec executes the query.
+func (fc *FindingCreate) Exec(ctx context.Context) error {
+	_, err := fc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (fc *FindingCreate) ExecX(ctx context.Context) {
+	if err := fc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (fc *FindingCreate) defaults() {
+	if _, ok := fc.mutation.ID(); !ok {
+		v := finding.DefaultID()
+		fc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (fc *FindingCreate) check() error {
 	if _, ok := fc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
 	}
 	if _, ok := fc.mutation.Description(); !ok {
-		return &ValidationError{Name: "description", err: errors.New("ent: missing required field \"description\"")}
+		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "description"`)}
 	}
 	if _, ok := fc.mutation.Severity(); !ok {
-		return &ValidationError{Name: "severity", err: errors.New("ent: missing required field \"severity\"")}
+		return &ValidationError{Name: "severity", err: errors.New(`ent: missing required field "severity"`)}
 	}
 	if v, ok := fc.mutation.Severity(); ok {
 		if err := finding.SeverityValidator(v); err != nil {
-			return &ValidationError{Name: "severity", err: fmt.Errorf("ent: validator failed for field \"severity\": %w", err)}
+			return &ValidationError{Name: "severity", err: fmt.Errorf(`ent: validator failed for field "severity": %w`, err)}
 		}
 	}
 	if _, ok := fc.mutation.Difficulty(); !ok {
-		return &ValidationError{Name: "difficulty", err: errors.New("ent: missing required field \"difficulty\"")}
+		return &ValidationError{Name: "difficulty", err: errors.New(`ent: missing required field "difficulty"`)}
 	}
 	if v, ok := fc.mutation.Difficulty(); ok {
 		if err := finding.DifficultyValidator(v); err != nil {
-			return &ValidationError{Name: "difficulty", err: fmt.Errorf("ent: validator failed for field \"difficulty\": %w", err)}
+			return &ValidationError{Name: "difficulty", err: fmt.Errorf(`ent: validator failed for field "difficulty": %w`, err)}
 		}
+	}
+	if _, ok := fc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "tags"`)}
 	}
 	return nil
 }
@@ -186,13 +242,14 @@ func (fc *FindingCreate) check() error {
 func (fc *FindingCreate) sqlSave(ctx context.Context) (*Finding, error) {
 	_node, _spec := fc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, fc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
+	}
 	return _node, nil
 }
 
@@ -202,11 +259,15 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: finding.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: finding.FieldID,
 			},
 		}
 	)
+	if id, ok := fc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := fc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -239,16 +300,24 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 		})
 		_node.Difficulty = value
 	}
-	if nodes := fc.mutation.UserIDs(); len(nodes) > 0 {
+	if value, ok := fc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: finding.FieldTags,
+		})
+		_node.Tags = value
+	}
+	if nodes := fc.mutation.FindingToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   finding.UserTable,
-			Columns: []string{finding.UserColumn},
+			Table:   finding.FindingToUserTable,
+			Columns: []string{finding.FindingToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -258,35 +327,16 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := fc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := fc.mutation.FindingToHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   finding.TagTable,
-			Columns: []string{finding.TagColumn},
+			Table:   finding.FindingToHostTable,
+			Columns: []string{finding.FindingToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := fc.mutation.HostIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   finding.HostTable,
-			Columns: []string{finding.HostColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: host.FieldID,
 				},
 			},
@@ -294,18 +344,19 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.finding_finding_to_host = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := fc.mutation.ScriptIDs(); len(nodes) > 0 {
+	if nodes := fc.mutation.FindingToScriptIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   finding.ScriptTable,
-			Columns: finding.ScriptPrimaryKey,
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   finding.FindingToScriptTable,
+			Columns: []string{finding.FindingToScriptColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: script.FieldID,
 				},
 			},
@@ -313,12 +364,33 @@ func (fc *FindingCreate) createSpec() (*Finding, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.script_script_to_finding = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := fc.mutation.FindingToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   finding.FindingToEnvironmentTable,
+			Columns: []string{finding.FindingToEnvironmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.environment_environment_to_finding = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
 
-// FindingCreateBulk is the builder for creating a bulk of Finding entities.
+// FindingCreateBulk is the builder for creating many Finding entities in bulk.
 type FindingCreateBulk struct {
 	config
 	builders []*FindingCreate
@@ -332,6 +404,7 @@ func (fcb *FindingCreateBulk) Save(ctx context.Context) ([]*Finding, error) {
 	for i := range fcb.builders {
 		func(i int, root context.Context) {
 			builder := fcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*FindingMutation)
 				if !ok {
@@ -346,19 +419,19 @@ func (fcb *FindingCreateBulk) Save(ctx context.Context) ([]*Finding, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, fcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, fcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, fcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -375,11 +448,24 @@ func (fcb *FindingCreateBulk) Save(ctx context.Context) ([]*Finding, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (fcb *FindingCreateBulk) SaveX(ctx context.Context) []*Finding {
 	v, err := fcb.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (fcb *FindingCreateBulk) Exec(ctx context.Context) error {
+	_, err := fcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (fcb *FindingCreateBulk) ExecX(ctx context.Context) {
+	if err := fcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

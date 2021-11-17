@@ -5,34 +5,35 @@ package status
 import (
 	"time"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
-// ID filters vertices based on their identifier.
-func ID(id int) predicate.Status {
+// ID filters vertices based on their ID field.
+func ID(id uuid.UUID) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Status {
+func IDEQ(id uuid.UUID) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Status {
+func IDNEQ(id uuid.UUID) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldID), id))
 	})
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Status {
+func IDIn(ids ...uuid.UUID) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -49,7 +50,7 @@ func IDIn(ids ...int) predicate.Status {
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Status {
+func IDNotIn(ids ...uuid.UUID) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -66,28 +67,28 @@ func IDNotIn(ids ...int) predicate.Status {
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Status {
+func IDGT(id uuid.UUID) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldID), id))
 	})
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Status {
+func IDGTE(id uuid.UUID) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldID), id))
 	})
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Status {
+func IDLT(id uuid.UUID) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldID), id))
 	})
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Status {
+func IDLTE(id uuid.UUID) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
 	})
@@ -176,6 +177,54 @@ func StateNotIn(vs ...State) predicate.Status {
 	})
 }
 
+// StatusForEQ applies the EQ predicate on the "status_for" field.
+func StatusForEQ(v StatusFor) predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldStatusFor), v))
+	})
+}
+
+// StatusForNEQ applies the NEQ predicate on the "status_for" field.
+func StatusForNEQ(v StatusFor) predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldStatusFor), v))
+	})
+}
+
+// StatusForIn applies the In predicate on the "status_for" field.
+func StatusForIn(vs ...StatusFor) predicate.Status {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Status(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldStatusFor), v...))
+	})
+}
+
+// StatusForNotIn applies the NotIn predicate on the "status_for" field.
+func StatusForNotIn(vs ...StatusFor) predicate.Status {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Status(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldStatusFor), v...))
+	})
+}
+
 // StartedAtEQ applies the EQ predicate on the "started_at" field.
 func StartedAtEQ(v time.Time) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
@@ -252,6 +301,20 @@ func StartedAtLTE(v time.Time) predicate.Status {
 	})
 }
 
+// StartedAtIsNil applies the IsNil predicate on the "started_at" field.
+func StartedAtIsNil() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldStartedAt)))
+	})
+}
+
+// StartedAtNotNil applies the NotNil predicate on the "started_at" field.
+func StartedAtNotNil() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldStartedAt)))
+	})
+}
+
 // EndedAtEQ applies the EQ predicate on the "ended_at" field.
 func EndedAtEQ(v time.Time) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
@@ -325,6 +388,20 @@ func EndedAtLT(v time.Time) predicate.Status {
 func EndedAtLTE(v time.Time) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldEndedAt), v))
+	})
+}
+
+// EndedAtIsNil applies the IsNil predicate on the "ended_at" field.
+func EndedAtIsNil() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldEndedAt)))
+	})
+}
+
+// EndedAtNotNil applies the NotNil predicate on the "ended_at" field.
+func EndedAtNotNil() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldEndedAt)))
 	})
 }
 
@@ -453,6 +530,20 @@ func ErrorHasSuffix(v string) predicate.Status {
 	})
 }
 
+// ErrorIsNil applies the IsNil predicate on the "error" field.
+func ErrorIsNil() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldError)))
+	})
+}
+
+// ErrorNotNil applies the NotNil predicate on the "error" field.
+func ErrorNotNil() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldError)))
+	})
+}
+
 // ErrorEqualFold applies the EqualFold predicate on the "error" field.
 func ErrorEqualFold(v string) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
@@ -467,25 +558,25 @@ func ErrorContainsFold(v string) predicate.Status {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.Status {
+// HasStatusToBuild applies the HasEdge predicate on the "StatusToBuild" edge.
+func HasStatusToBuild() predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(StatusToBuildTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToBuildTable, StatusToBuildColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.Status {
+// HasStatusToBuildWith applies the HasEdge predicate on the "StatusToBuild" edge with a given conditions (other predicates).
+func HasStatusToBuildWith(preds ...predicate.Build) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(StatusToBuildInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToBuildTable, StatusToBuildColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -495,7 +586,203 @@ func HasTagWith(preds ...predicate.Tag) predicate.Status {
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// HasStatusToProvisionedNetwork applies the HasEdge predicate on the "StatusToProvisionedNetwork" edge.
+func HasStatusToProvisionedNetwork() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToProvisionedNetworkTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToProvisionedNetworkTable, StatusToProvisionedNetworkColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStatusToProvisionedNetworkWith applies the HasEdge predicate on the "StatusToProvisionedNetwork" edge with a given conditions (other predicates).
+func HasStatusToProvisionedNetworkWith(preds ...predicate.ProvisionedNetwork) predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToProvisionedNetworkInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToProvisionedNetworkTable, StatusToProvisionedNetworkColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasStatusToProvisionedHost applies the HasEdge predicate on the "StatusToProvisionedHost" edge.
+func HasStatusToProvisionedHost() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToProvisionedHostTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToProvisionedHostTable, StatusToProvisionedHostColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStatusToProvisionedHostWith applies the HasEdge predicate on the "StatusToProvisionedHost" edge with a given conditions (other predicates).
+func HasStatusToProvisionedHostWith(preds ...predicate.ProvisionedHost) predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToProvisionedHostInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToProvisionedHostTable, StatusToProvisionedHostColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasStatusToProvisioningStep applies the HasEdge predicate on the "StatusToProvisioningStep" edge.
+func HasStatusToProvisioningStep() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToProvisioningStepTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToProvisioningStepTable, StatusToProvisioningStepColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStatusToProvisioningStepWith applies the HasEdge predicate on the "StatusToProvisioningStep" edge with a given conditions (other predicates).
+func HasStatusToProvisioningStepWith(preds ...predicate.ProvisioningStep) predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToProvisioningStepInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToProvisioningStepTable, StatusToProvisioningStepColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasStatusToTeam applies the HasEdge predicate on the "StatusToTeam" edge.
+func HasStatusToTeam() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToTeamTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToTeamTable, StatusToTeamColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStatusToTeamWith applies the HasEdge predicate on the "StatusToTeam" edge with a given conditions (other predicates).
+func HasStatusToTeamWith(preds ...predicate.Team) predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToTeamInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToTeamTable, StatusToTeamColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasStatusToPlan applies the HasEdge predicate on the "StatusToPlan" edge.
+func HasStatusToPlan() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToPlanTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToPlanTable, StatusToPlanColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStatusToPlanWith applies the HasEdge predicate on the "StatusToPlan" edge with a given conditions (other predicates).
+func HasStatusToPlanWith(preds ...predicate.Plan) predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToPlanInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToPlanTable, StatusToPlanColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasStatusToServerTask applies the HasEdge predicate on the "StatusToServerTask" edge.
+func HasStatusToServerTask() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToServerTaskTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToServerTaskTable, StatusToServerTaskColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStatusToServerTaskWith applies the HasEdge predicate on the "StatusToServerTask" edge with a given conditions (other predicates).
+func HasStatusToServerTaskWith(preds ...predicate.ServerTask) predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToServerTaskInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToServerTaskTable, StatusToServerTaskColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasStatusToAdhocPlan applies the HasEdge predicate on the "StatusToAdhocPlan" edge.
+func HasStatusToAdhocPlan() predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToAdhocPlanTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToAdhocPlanTable, StatusToAdhocPlanColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStatusToAdhocPlanWith applies the HasEdge predicate on the "StatusToAdhocPlan" edge with a given conditions (other predicates).
+func HasStatusToAdhocPlanWith(preds ...predicate.AdhocPlan) predicate.Status {
+	return predicate.Status(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StatusToAdhocPlanInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, StatusToAdhocPlanTable, StatusToAdhocPlanColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Status) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -506,7 +793,7 @@ func And(predicates ...predicate.Status) predicate.Status {
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.Status) predicate.Status {
 	return predicate.Status(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

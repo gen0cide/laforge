@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/tag"
 )
@@ -20,9 +20,9 @@ type TagDelete struct {
 	mutation *TagMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where appends a list predicates to the TagDelete builder.
 func (td *TagDelete) Where(ps ...predicate.Tag) *TagDelete {
-	td.mutation.predicates = append(td.mutation.predicates, ps...)
+	td.mutation.Where(ps...)
 	return td
 }
 
@@ -46,6 +46,9 @@ func (td *TagDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(td.hooks) - 1; i >= 0; i-- {
+			if td.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = td.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, td.mutation); err != nil {
@@ -69,7 +72,7 @@ func (td *TagDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: tag.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: tag.FieldID,
 			},
 		},

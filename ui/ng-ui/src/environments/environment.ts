@@ -8,11 +8,13 @@ export const environment = {
   USERDATA_KEY: 'authf649fc9a5f55',
   isMockEnabled: true,
   apiUrl: 'api',
-  graphqlUrl: 'http://localhost:8080/query',
+  graphqlUrl: 'http://localhost:8080/api/query',
+  wsUrl: 'ws://localhost:8080/api/query',
   isMockApi: false,
   mockEnvTree: null,
   mockEnvList: null,
-  mockAgentStatuses: null
+  mockAgentStatuses: null,
+  authBaseUrl: 'http://localhost:8080/auth'
 };
 
 /*

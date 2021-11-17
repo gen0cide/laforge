@@ -6,163 +6,183 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // User is the model entity for the User schema.
 type User struct {
-	config `json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// UUID holds the value of the "uuid" field.
-	UUID string `json:"uuid,omitempty"`
+	UUID string `json:"uuid,omitempty" hcl:"uuid,optional"`
 	// Email holds the value of the "email" field.
-	Email string `json:"email,omitempty"`
+	Email string `json:"email,omitempty" hcl:"email,attr"`
+	// HclID holds the value of the "hcl_id" field.
+	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
-	Edges             UserEdges `json:"edges"`
-	build_maintainer  *int
-	command_user      *int
-	environment_user  *int
-	finding_user      *int
-	host_maintainer   *int
-	script_maintainer *int
-	team_maintainer   *int
+	Edges UserEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// UserToTag holds the value of the UserToTag edge.
+	HCLUserToTag []*Tag `json:"UserToTag,omitempty"`
+	// UserToEnvironment holds the value of the UserToEnvironment edge.
+	HCLUserToEnvironment []*Environment `json:"UserToEnvironment,omitempty"`
+	//
+	command_command_to_user *uuid.UUID
+	finding_finding_to_user *uuid.UUID
+	host_host_to_user       *uuid.UUID
+	script_script_to_user   *uuid.UUID
 }
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
+	// UserToTag holds the value of the UserToTag edge.
+	UserToTag []*Tag `json:"UserToTag,omitempty"`
+	// UserToEnvironment holds the value of the UserToEnvironment edge.
+	UserToEnvironment []*Environment `json:"UserToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// UserToTagOrErr returns the UserToTag value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) TagOrErr() ([]*Tag, error) {
+func (e UserEdges) UserToTagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.UserToTag, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "UserToTag"}
+}
+
+// UserToEnvironmentOrErr returns the UserToEnvironment value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) UserToEnvironmentOrErr() ([]*Environment, error) {
+	if e.loadedTypes[1] {
+		return e.UserToEnvironment, nil
+	}
+	return nil, &NotLoadedError{edge: "UserToEnvironment"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*User) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&sql.NullString{}, // name
-		&sql.NullString{}, // uuid
-		&sql.NullString{}, // email
+func (*User) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case user.FieldName, user.FieldUUID, user.FieldEmail, user.FieldHclID:
+			values[i] = new(sql.NullString)
+		case user.FieldID:
+			values[i] = new(uuid.UUID)
+		case user.ForeignKeys[0]: // command_command_to_user
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case user.ForeignKeys[1]: // finding_finding_to_user
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case user.ForeignKeys[2]: // host_host_to_user
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case user.ForeignKeys[3]: // script_script_to_user
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type User", columns[i])
+		}
 	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*User) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // build_maintainer
-		&sql.NullInt64{}, // command_user
-		&sql.NullInt64{}, // environment_user
-		&sql.NullInt64{}, // finding_user
-		&sql.NullInt64{}, // host_maintainer
-		&sql.NullInt64{}, // script_maintainer
-		&sql.NullInt64{}, // team_maintainer
-	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the User fields.
-func (u *User) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(user.Columns); m < n {
+func (u *User) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	u.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field name", values[0])
-	} else if value.Valid {
-		u.Name = value.String
-	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field uuid", values[1])
-	} else if value.Valid {
-		u.UUID = value.String
-	}
-	if value, ok := values[2].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field email", values[2])
-	} else if value.Valid {
-		u.Email = value.String
-	}
-	values = values[3:]
-	if len(values) == len(user.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field build_maintainer", value)
-		} else if value.Valid {
-			u.build_maintainer = new(int)
-			*u.build_maintainer = int(value.Int64)
-		}
-		if value, ok := values[1].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field command_user", value)
-		} else if value.Valid {
-			u.command_user = new(int)
-			*u.command_user = int(value.Int64)
-		}
-		if value, ok := values[2].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field environment_user", value)
-		} else if value.Valid {
-			u.environment_user = new(int)
-			*u.environment_user = int(value.Int64)
-		}
-		if value, ok := values[3].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field finding_user", value)
-		} else if value.Valid {
-			u.finding_user = new(int)
-			*u.finding_user = int(value.Int64)
-		}
-		if value, ok := values[4].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field host_maintainer", value)
-		} else if value.Valid {
-			u.host_maintainer = new(int)
-			*u.host_maintainer = int(value.Int64)
-		}
-		if value, ok := values[5].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field script_maintainer", value)
-		} else if value.Valid {
-			u.script_maintainer = new(int)
-			*u.script_maintainer = int(value.Int64)
-		}
-		if value, ok := values[6].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field team_maintainer", value)
-		} else if value.Valid {
-			u.team_maintainer = new(int)
-			*u.team_maintainer = int(value.Int64)
+	for i := range columns {
+		switch columns[i] {
+		case user.FieldID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				u.ID = *value
+			}
+		case user.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				u.Name = value.String
+			}
+		case user.FieldUUID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field uuid", values[i])
+			} else if value.Valid {
+				u.UUID = value.String
+			}
+		case user.FieldEmail:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field email", values[i])
+			} else if value.Valid {
+				u.Email = value.String
+			}
+		case user.FieldHclID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
+			} else if value.Valid {
+				u.HclID = value.String
+			}
+		case user.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field command_command_to_user", values[i])
+			} else if value.Valid {
+				u.command_command_to_user = new(uuid.UUID)
+				*u.command_command_to_user = *value.S.(*uuid.UUID)
+			}
+		case user.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field finding_finding_to_user", values[i])
+			} else if value.Valid {
+				u.finding_finding_to_user = new(uuid.UUID)
+				*u.finding_finding_to_user = *value.S.(*uuid.UUID)
+			}
+		case user.ForeignKeys[2]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field host_host_to_user", values[i])
+			} else if value.Valid {
+				u.host_host_to_user = new(uuid.UUID)
+				*u.host_host_to_user = *value.S.(*uuid.UUID)
+			}
+		case user.ForeignKeys[3]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field script_script_to_user", values[i])
+			} else if value.Valid {
+				u.script_script_to_user = new(uuid.UUID)
+				*u.script_script_to_user = *value.S.(*uuid.UUID)
+			}
 		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the User.
-func (u *User) QueryTag() *TagQuery {
-	return (&UserClient{config: u.config}).QueryTag(u)
+// QueryUserToTag queries the "UserToTag" edge of the User entity.
+func (u *User) QueryUserToTag() *TagQuery {
+	return (&UserClient{config: u.config}).QueryUserToTag(u)
+}
+
+// QueryUserToEnvironment queries the "UserToEnvironment" edge of the User entity.
+func (u *User) QueryUserToEnvironment() *EnvironmentQuery {
+	return (&UserClient{config: u.config}).QueryUserToEnvironment(u)
 }
 
 // Update returns a builder for updating this User.
-// Note that, you need to call User.Unwrap() before calling this method, if this User
+// Note that you need to call User.Unwrap() before calling this method if this User
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (u *User) Update() *UserUpdateOne {
 	return (&UserClient{config: u.config}).UpdateOne(u)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the User entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (u *User) Unwrap() *User {
 	tx, ok := u.config.driver.(*txDriver)
 	if !ok {
@@ -183,6 +203,8 @@ func (u *User) String() string {
 	builder.WriteString(u.UUID)
 	builder.WriteString(", email=")
 	builder.WriteString(u.Email)
+	builder.WriteString(", hcl_id=")
+	builder.WriteString(u.HclID)
 	builder.WriteByte(')')
 	return builder.String()
 }

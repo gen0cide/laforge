@@ -24,6 +24,10 @@
   }
 }
 
+.flex-fill {
+  flex-basis: 0px !important;
+}
+
 ::ng-deep app-step:not(:last-of-type) .step {
   margin-bottom: 1rem;
 }

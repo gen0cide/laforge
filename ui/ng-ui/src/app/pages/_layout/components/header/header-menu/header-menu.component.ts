@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+
 import { LayoutService } from '../../../../../_metronic/core';
 
 function getCurrentURL(location) {

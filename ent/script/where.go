@@ -3,34 +3,35 @@
 package script
 
 import (
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
-// ID filters vertices based on their identifier.
-func ID(id int) predicate.Script {
+// ID filters vertices based on their ID field.
+func ID(id uuid.UUID) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Script {
+func IDEQ(id uuid.UUID) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Script {
+func IDNEQ(id uuid.UUID) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldID), id))
 	})
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Script {
+func IDIn(ids ...uuid.UUID) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -47,7 +48,7 @@ func IDIn(ids ...int) predicate.Script {
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Script {
+func IDNotIn(ids ...uuid.UUID) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -64,30 +65,37 @@ func IDNotIn(ids ...int) predicate.Script {
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Script {
+func IDGT(id uuid.UUID) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldID), id))
 	})
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Script {
+func IDGTE(id uuid.UUID) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldID), id))
 	})
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Script {
+func IDLT(id uuid.UUID) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldID), id))
 	})
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Script {
+func IDLTE(id uuid.UUID) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
+	})
+}
+
+// HclID applies equality check predicate on the "hcl_id" field. It's identical to HclIDEQ.
+func HclID(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldHclID), v))
 	})
 }
 
@@ -158,6 +166,117 @@ func Disabled(v bool) predicate.Script {
 func AbsPath(v string) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldAbsPath), v))
+	})
+}
+
+// HclIDEQ applies the EQ predicate on the "hcl_id" field.
+func HclIDEQ(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDNEQ applies the NEQ predicate on the "hcl_id" field.
+func HclIDNEQ(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDIn applies the In predicate on the "hcl_id" field.
+func HclIDIn(vs ...string) predicate.Script {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Script(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldHclID), v...))
+	})
+}
+
+// HclIDNotIn applies the NotIn predicate on the "hcl_id" field.
+func HclIDNotIn(vs ...string) predicate.Script {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Script(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldHclID), v...))
+	})
+}
+
+// HclIDGT applies the GT predicate on the "hcl_id" field.
+func HclIDGT(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDGTE applies the GTE predicate on the "hcl_id" field.
+func HclIDGTE(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDLT applies the LT predicate on the "hcl_id" field.
+func HclIDLT(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDLTE applies the LTE predicate on the "hcl_id" field.
+func HclIDLTE(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDContains applies the Contains predicate on the "hcl_id" field.
+func HclIDContains(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDHasPrefix applies the HasPrefix predicate on the "hcl_id" field.
+func HclIDHasPrefix(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDHasSuffix applies the HasSuffix predicate on the "hcl_id" field.
+func HclIDHasSuffix(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDEqualFold applies the EqualFold predicate on the "hcl_id" field.
+func HclIDEqualFold(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDContainsFold applies the ContainsFold predicate on the "hcl_id" field.
+func HclIDContainsFold(v string) predicate.Script {
+	return predicate.Script(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldHclID), v))
 	})
 }
 
@@ -1007,25 +1126,25 @@ func AbsPathContainsFold(v string) predicate.Script {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.Script {
+// HasScriptToUser applies the HasEdge predicate on the "ScriptToUser" edge.
+func HasScriptToUser() predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(ScriptToUserTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ScriptToUserTable, ScriptToUserColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.Script {
+// HasScriptToUserWith applies the HasEdge predicate on the "ScriptToUser" edge with a given conditions (other predicates).
+func HasScriptToUserWith(preds ...predicate.User) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(ScriptToUserInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ScriptToUserTable, ScriptToUserColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -1035,25 +1154,25 @@ func HasTagWith(preds ...predicate.Tag) predicate.Script {
 	})
 }
 
-// HasMaintainer applies the HasEdge predicate on the "maintainer" edge.
-func HasMaintainer() predicate.Script {
+// HasScriptToFinding applies the HasEdge predicate on the "ScriptToFinding" edge.
+func HasScriptToFinding() predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(MaintainerTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, MaintainerTable, MaintainerColumn),
+			sqlgraph.To(ScriptToFindingTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ScriptToFindingTable, ScriptToFindingColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasMaintainerWith applies the HasEdge predicate on the "maintainer" edge with a given conditions (other predicates).
-func HasMaintainerWith(preds ...predicate.User) predicate.Script {
+// HasScriptToFindingWith applies the HasEdge predicate on the "ScriptToFinding" edge with a given conditions (other predicates).
+func HasScriptToFindingWith(preds ...predicate.Finding) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(MaintainerInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, MaintainerTable, MaintainerColumn),
+			sqlgraph.To(ScriptToFindingInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ScriptToFindingTable, ScriptToFindingColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -1063,25 +1182,25 @@ func HasMaintainerWith(preds ...predicate.User) predicate.Script {
 	})
 }
 
-// HasFinding applies the HasEdge predicate on the "finding" edge.
-func HasFinding() predicate.Script {
+// HasScriptToEnvironment applies the HasEdge predicate on the "ScriptToEnvironment" edge.
+func HasScriptToEnvironment() predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FindingTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, FindingTable, FindingPrimaryKey...),
+			sqlgraph.To(ScriptToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ScriptToEnvironmentTable, ScriptToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasFindingWith applies the HasEdge predicate on the "finding" edge with a given conditions (other predicates).
-func HasFindingWith(preds ...predicate.Finding) predicate.Script {
+// HasScriptToEnvironmentWith applies the HasEdge predicate on the "ScriptToEnvironment" edge with a given conditions (other predicates).
+func HasScriptToEnvironmentWith(preds ...predicate.Environment) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(FindingInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, FindingTable, FindingPrimaryKey...),
+			sqlgraph.To(ScriptToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ScriptToEnvironmentTable, ScriptToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -1091,7 +1210,7 @@ func HasFindingWith(preds ...predicate.Finding) predicate.Script {
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Script) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -1102,7 +1221,7 @@ func And(predicates ...predicate.Script) predicate.Script {
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.Script) predicate.Script {
 	return predicate.Script(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

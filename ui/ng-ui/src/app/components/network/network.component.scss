@@ -19,6 +19,7 @@
     justify-content: flex-start;
     transition: background-color 0.3s ease-in-out;
     cursor: pointer;
+    box-sizing: border-box;
 
     .network-status-icon {
       width: 2.5rem;
@@ -34,16 +35,25 @@
     }
 
     .network-header {
-      width: 100%;
+      width: calc(100% - 2.5rem);
       display: flex;
       flex-direction: row;
       justify-content: space-between;
       padding: 0 1.25rem;
+      box-sizing: border-box;
     }
   }
 
   .network-info:hover {
     background-color: #e5e5e5;
+  }
+
+  .toggle-collapse {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .hosts {

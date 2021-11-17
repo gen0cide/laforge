@@ -19,7 +19,8 @@
             {{ _title }}
             <ng-container *ngIf="subheaderDisplayDesc">
               <ng-container *ngIf="description$ | async as _description">
-                |&nbsp;<small>{{ _description }}</small>
+                <i class="fad fa-grip-lines-vertical fa-1x mx-2 text-black"></i>
+                <small>{{ _description }}</small>
               </ng-container>
             </ng-container>
           </h2>
@@ -41,20 +42,35 @@
 
     <!--begin::Toolbar-->
     <div class="d-flex align-items-center">
-      <!-- HIDE FOR FINALS...
-      <mat-form-field appearance="fill">
-        <mat-label>Git Branch</mat-label>
+      <ng-container *ngIf="showEnvDropdown$ | async">
+        <i class="fad fa-spinner-third fa-spin mr-2" *ngIf="(envIsLoading | async) || (buildIsLoading | async)"></i>
+        <mat-form-field appearance="fill" *ngIf="this.environments | async as _environments">
+          <mat-label>Environments</mat-label>
+          <mat-select
+            (selectionChange)="selectEnvironment($event)"
+            [value]="(environment ? environment?.id : '') + '|' + (build ? build.id : '')"
+          >
+            <mat-optgroup *ngFor="let env of _environments" [label]="env.name + ' | ' + env.competition_id">
+              <mat-option *ngFor="let bld of env.EnvironmentToBuild | sortBy: 'desc':'revision'" [value]="env.id + '|' + bld.id">
+                <em>{{ env.name + ' | ' + env.competition_id + ' | v' + bld.revision }}</em>
+              </mat-option>
+            </mat-optgroup>
+          </mat-select>
+        </mat-form-field>
+      </ng-container>
+      <!-- <mat-form-field appearance="fill">
+        <mat-label>Environment</mat-label>
         <mat-select (selectionChange)="onBranchSelect($event)">
           <mat-option *ngFor="let branch of branches" [value]="branch.hash">
             {{ branch.name }}
           </mat-option>
         </mat-select>
-      </mat-form-field>
+      </mat-form-field> -->
 
-      <button class="btn btn-success btn-icon font-weight-bold cursor-pointer" title="Clear plan">
+      <!-- <button class="btn btn-success btn-icon font-weight-bold cursor-pointer" title="Clear plan">
         <span [inlineSVG]="'./assets/media/svg/icons/Files/File-minus.svg'" cacheSVG="true" class="svg-icon svg-icon-lg"></span>
-      </button>
-      -->
+      </button> -->
+
       <!--begin::Button-->
       <!-- <a
         class="btn btn-fixed-height btn-default btn-hover-primary font-weight-bold px-2 px-lg-5 mr-2 cursor-pointer"

@@ -7,11 +7,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/command"
-	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // CommandCreate is the builder for creating a Command entity.
@@ -21,88 +22,110 @@ type CommandCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the name field.
+// SetHclID sets the "hcl_id" field.
+func (cc *CommandCreate) SetHclID(s string) *CommandCreate {
+	cc.mutation.SetHclID(s)
+	return cc
+}
+
+// SetName sets the "name" field.
 func (cc *CommandCreate) SetName(s string) *CommandCreate {
 	cc.mutation.SetName(s)
 	return cc
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (cc *CommandCreate) SetDescription(s string) *CommandCreate {
 	cc.mutation.SetDescription(s)
 	return cc
 }
 
-// SetProgram sets the program field.
+// SetProgram sets the "program" field.
 func (cc *CommandCreate) SetProgram(s string) *CommandCreate {
 	cc.mutation.SetProgram(s)
 	return cc
 }
 
-// SetArgs sets the args field.
+// SetArgs sets the "args" field.
 func (cc *CommandCreate) SetArgs(s []string) *CommandCreate {
 	cc.mutation.SetArgs(s)
 	return cc
 }
 
-// SetIgnoreErrors sets the ignore_errors field.
+// SetIgnoreErrors sets the "ignore_errors" field.
 func (cc *CommandCreate) SetIgnoreErrors(b bool) *CommandCreate {
 	cc.mutation.SetIgnoreErrors(b)
 	return cc
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (cc *CommandCreate) SetDisabled(b bool) *CommandCreate {
 	cc.mutation.SetDisabled(b)
 	return cc
 }
 
-// SetCooldown sets the cooldown field.
+// SetCooldown sets the "cooldown" field.
 func (cc *CommandCreate) SetCooldown(i int) *CommandCreate {
 	cc.mutation.SetCooldown(i)
 	return cc
 }
 
-// SetTimeout sets the timeout field.
+// SetTimeout sets the "timeout" field.
 func (cc *CommandCreate) SetTimeout(i int) *CommandCreate {
 	cc.mutation.SetTimeout(i)
 	return cc
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (cc *CommandCreate) SetVars(m map[string]string) *CommandCreate {
 	cc.mutation.SetVars(m)
 	return cc
 }
 
-// AddUserIDs adds the user edge to User by ids.
-func (cc *CommandCreate) AddUserIDs(ids ...int) *CommandCreate {
-	cc.mutation.AddUserIDs(ids...)
+// SetTags sets the "tags" field.
+func (cc *CommandCreate) SetTags(m map[string]string) *CommandCreate {
+	cc.mutation.SetTags(m)
 	return cc
 }
 
-// AddUser adds the user edges to User.
-func (cc *CommandCreate) AddUser(u ...*User) *CommandCreate {
-	ids := make([]int, len(u))
+// SetID sets the "id" field.
+func (cc *CommandCreate) SetID(u uuid.UUID) *CommandCreate {
+	cc.mutation.SetID(u)
+	return cc
+}
+
+// AddCommandToUserIDs adds the "CommandToUser" edge to the User entity by IDs.
+func (cc *CommandCreate) AddCommandToUserIDs(ids ...uuid.UUID) *CommandCreate {
+	cc.mutation.AddCommandToUserIDs(ids...)
+	return cc
+}
+
+// AddCommandToUser adds the "CommandToUser" edges to the User entity.
+func (cc *CommandCreate) AddCommandToUser(u ...*User) *CommandCreate {
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return cc.AddUserIDs(ids...)
+	return cc.AddCommandToUserIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (cc *CommandCreate) AddTagIDs(ids ...int) *CommandCreate {
-	cc.mutation.AddTagIDs(ids...)
+// SetCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by ID.
+func (cc *CommandCreate) SetCommandToEnvironmentID(id uuid.UUID) *CommandCreate {
+	cc.mutation.SetCommandToEnvironmentID(id)
 	return cc
 }
 
-// AddTag adds the tag edges to Tag.
-func (cc *CommandCreate) AddTag(t ...*Tag) *CommandCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableCommandToEnvironmentID sets the "CommandToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (cc *CommandCreate) SetNillableCommandToEnvironmentID(id *uuid.UUID) *CommandCreate {
+	if id != nil {
+		cc = cc.SetCommandToEnvironmentID(*id)
 	}
-	return cc.AddTagIDs(ids...)
+	return cc
+}
+
+// SetCommandToEnvironment sets the "CommandToEnvironment" edge to the Environment entity.
+func (cc *CommandCreate) SetCommandToEnvironment(e *Environment) *CommandCreate {
+	return cc.SetCommandToEnvironmentID(e.ID)
 }
 
 // Mutation returns the CommandMutation object of the builder.
@@ -116,6 +139,7 @@ func (cc *CommandCreate) Save(ctx context.Context) (*Command, error) {
 		err  error
 		node *Command
 	)
+	cc.defaults()
 	if len(cc.hooks) == 0 {
 		if err = cc.check(); err != nil {
 			return nil, err
@@ -131,11 +155,17 @@ func (cc *CommandCreate) Save(ctx context.Context) (*Command, error) {
 				return nil, err
 			}
 			cc.mutation = mutation
-			node, err = cc.sqlSave(ctx)
+			if node, err = cc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(cc.hooks) - 1; i >= 0; i-- {
+			if cc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = cc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, cc.mutation); err != nil {
@@ -154,44 +184,71 @@ func (cc *CommandCreate) SaveX(ctx context.Context) *Command {
 	return v
 }
 
+// Exec executes the query.
+func (cc *CommandCreate) Exec(ctx context.Context) error {
+	_, err := cc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (cc *CommandCreate) ExecX(ctx context.Context) {
+	if err := cc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (cc *CommandCreate) defaults() {
+	if _, ok := cc.mutation.ID(); !ok {
+		v := command.DefaultID()
+		cc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (cc *CommandCreate) check() error {
+	if _, ok := cc.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New(`ent: missing required field "hcl_id"`)}
+	}
 	if _, ok := cc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
 	}
 	if _, ok := cc.mutation.Description(); !ok {
-		return &ValidationError{Name: "description", err: errors.New("ent: missing required field \"description\"")}
+		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "description"`)}
 	}
 	if _, ok := cc.mutation.Program(); !ok {
-		return &ValidationError{Name: "program", err: errors.New("ent: missing required field \"program\"")}
+		return &ValidationError{Name: "program", err: errors.New(`ent: missing required field "program"`)}
 	}
 	if _, ok := cc.mutation.Args(); !ok {
-		return &ValidationError{Name: "args", err: errors.New("ent: missing required field \"args\"")}
+		return &ValidationError{Name: "args", err: errors.New(`ent: missing required field "args"`)}
 	}
 	if _, ok := cc.mutation.IgnoreErrors(); !ok {
-		return &ValidationError{Name: "ignore_errors", err: errors.New("ent: missing required field \"ignore_errors\"")}
+		return &ValidationError{Name: "ignore_errors", err: errors.New(`ent: missing required field "ignore_errors"`)}
 	}
 	if _, ok := cc.mutation.Disabled(); !ok {
-		return &ValidationError{Name: "disabled", err: errors.New("ent: missing required field \"disabled\"")}
+		return &ValidationError{Name: "disabled", err: errors.New(`ent: missing required field "disabled"`)}
 	}
 	if _, ok := cc.mutation.Cooldown(); !ok {
-		return &ValidationError{Name: "cooldown", err: errors.New("ent: missing required field \"cooldown\"")}
+		return &ValidationError{Name: "cooldown", err: errors.New(`ent: missing required field "cooldown"`)}
 	}
 	if v, ok := cc.mutation.Cooldown(); ok {
 		if err := command.CooldownValidator(v); err != nil {
-			return &ValidationError{Name: "cooldown", err: fmt.Errorf("ent: validator failed for field \"cooldown\": %w", err)}
+			return &ValidationError{Name: "cooldown", err: fmt.Errorf(`ent: validator failed for field "cooldown": %w`, err)}
 		}
 	}
 	if _, ok := cc.mutation.Timeout(); !ok {
-		return &ValidationError{Name: "timeout", err: errors.New("ent: missing required field \"timeout\"")}
+		return &ValidationError{Name: "timeout", err: errors.New(`ent: missing required field "timeout"`)}
 	}
 	if v, ok := cc.mutation.Timeout(); ok {
 		if err := command.TimeoutValidator(v); err != nil {
-			return &ValidationError{Name: "timeout", err: fmt.Errorf("ent: validator failed for field \"timeout\": %w", err)}
+			return &ValidationError{Name: "timeout", err: fmt.Errorf(`ent: validator failed for field "timeout": %w`, err)}
 		}
 	}
 	if _, ok := cc.mutation.Vars(); !ok {
-		return &ValidationError{Name: "vars", err: errors.New("ent: missing required field \"vars\"")}
+		return &ValidationError{Name: "vars", err: errors.New(`ent: missing required field "vars"`)}
+	}
+	if _, ok := cc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "tags"`)}
 	}
 	return nil
 }
@@ -199,13 +256,14 @@ func (cc *CommandCreate) check() error {
 func (cc *CommandCreate) sqlSave(ctx context.Context) (*Command, error) {
 	_node, _spec := cc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, cc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
+	}
 	return _node, nil
 }
 
@@ -215,11 +273,23 @@ func (cc *CommandCreate) createSpec() (*Command, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: command.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: command.FieldID,
 			},
 		}
 	)
+	if id, ok := cc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
+	if value, ok := cc.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: command.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := cc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -292,16 +362,24 @@ func (cc *CommandCreate) createSpec() (*Command, *sqlgraph.CreateSpec) {
 		})
 		_node.Vars = value
 	}
-	if nodes := cc.mutation.UserIDs(); len(nodes) > 0 {
+	if value, ok := cc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: command.FieldTags,
+		})
+		_node.Tags = value
+	}
+	if nodes := cc.mutation.CommandToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   command.UserTable,
-			Columns: []string{command.UserColumn},
+			Table:   command.CommandToUserTable,
+			Columns: []string{command.CommandToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -311,29 +389,30 @@ func (cc *CommandCreate) createSpec() (*Command, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := cc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := cc.mutation.CommandToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   command.TagTable,
-			Columns: []string{command.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   command.CommandToEnvironmentTable,
+			Columns: []string{command.CommandToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.environment_environment_to_command = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
 
-// CommandCreateBulk is the builder for creating a bulk of Command entities.
+// CommandCreateBulk is the builder for creating many Command entities in bulk.
 type CommandCreateBulk struct {
 	config
 	builders []*CommandCreate
@@ -347,6 +426,7 @@ func (ccb *CommandCreateBulk) Save(ctx context.Context) ([]*Command, error) {
 	for i := range ccb.builders {
 		func(i int, root context.Context) {
 			builder := ccb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*CommandMutation)
 				if !ok {
@@ -361,19 +441,19 @@ func (ccb *CommandCreateBulk) Save(ctx context.Context) ([]*Command, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, ccb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, ccb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, ccb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -390,11 +470,24 @@ func (ccb *CommandCreateBulk) Save(ctx context.Context) ([]*Command, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (ccb *CommandCreateBulk) SaveX(ctx context.Context) []*Command {
 	v, err := ccb.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (ccb *CommandCreateBulk) Exec(ctx context.Context) error {
+	_, err := ccb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (ccb *CommandCreateBulk) ExecX(ctx context.Context) {
+	if err := ccb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

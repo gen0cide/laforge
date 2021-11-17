@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
@@ -20,9 +20,9 @@ type AgentStatusDelete struct {
 	mutation *AgentStatusMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where appends a list predicates to the AgentStatusDelete builder.
 func (asd *AgentStatusDelete) Where(ps ...predicate.AgentStatus) *AgentStatusDelete {
-	asd.mutation.predicates = append(asd.mutation.predicates, ps...)
+	asd.mutation.Where(ps...)
 	return asd
 }
 
@@ -46,6 +46,9 @@ func (asd *AgentStatusDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(asd.hooks) - 1; i >= 0; i-- {
+			if asd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = asd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, asd.mutation); err != nil {
@@ -69,7 +72,7 @@ func (asd *AgentStatusDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: agentstatus.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: agentstatus.FieldID,
 			},
 		},

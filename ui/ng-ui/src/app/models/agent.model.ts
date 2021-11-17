@@ -1,9 +1,22 @@
-import { Team } from './common.model';
-import { Environment } from './environment.model';
-import { ProvisionedNetwork } from './network.model';
 import { ProvisionedHost } from 'src/app/models/host.model';
-import { AgentStatusQueryResult } from './api.model';
 
+import { AgentStatusQueryResult } from './api.model';
+import { Team } from './common.model';
+import { Build, Environment } from './environment.model';
+import { ProvisionedNetwork } from './network.model';
+
+export enum AgentCommand {
+  DEFAULT,
+  DELETE,
+  REBOOT,
+  EXTRACT,
+  DOWNLOAD,
+  CREATEUSER,
+  CREATEUSERPASS,
+  ADDTOGROUP,
+  EXECUTE,
+  VALIDATE
+}
 export interface AgentStatus {
   clientId: string;
   hostname: string;
@@ -22,30 +35,84 @@ export interface AgentStatus {
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export function updateAgentStatuses(environment: Environment, statusQueryResult: AgentStatusQueryResult): Environment {
+export function updateEnvAgentStatuses(environment: Environment, statusQueryResult: AgentStatusQueryResult): Environment {
   return {
     ...environment,
-    build: {
-      ...environment.build,
-      teams: environment.build.teams.map(
-        (team: Team) =>
-          ({
+    EnvironmentToBuild: environment.EnvironmentToBuild
+      ? environment.EnvironmentToBuild.map(
+          (build: any): Build => ({
+            ...build,
+            buildToTeam: build.buildToTeam
+              ? build.buildToTeam.map(
+                  (team: any): Team => ({
+                    ...team,
+                    TeamToProvisionedNetwork: team.TeamToProvisionedNetwork
+                      ? team.TeamToProvisionedNetwork.map(
+                          (provisionedNetwork: any): ProvisionedNetwork => ({
+                            ...provisionedNetwork,
+                            ProvisionedNetworkToProvisionedHost: provisionedNetwork.ProvisionedNetworkToProvisionedHost
+                              ? provisionedNetwork.ProvisionedNetworkToProvisionedHost.map(
+                                  (provisionedHost: any): ProvisionedHost => {
+                                    const matchedHost = statusQueryResult.build.buildToTeam
+                                      .filter((t: any) => t.id === team.id)[0]
+                                      .TeamToProvisionedNetwork.filter((pN: any) => pN.id === provisionedNetwork.id)[0]
+                                      .ProvisionedNetworkToProvisionedHost.filter((pH: any) => pH.id === provisionedHost.id)[0];
+                                    // if (matchedHost != null) {
+                                    //   console.log(matchedHost.id, matchedHost.ProvisionedHostToAgentStatus);
+                                    // }
+                                    return {
+                                      ...provisionedHost,
+                                      ProvisionedHostToAgentStatus: { ...matchedHost.ProvisionedHostToAgentStatus }
+                                    };
+                                  }
+                                )
+                              : null
+                          })
+                        )
+                      : null
+                  })
+                )
+              : null
+          })
+        )
+      : null
+  };
+}
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export function updateBuildAgentStatuses(build: Build, statusQueryResult: AgentStatusQueryResult): Build {
+  return {
+    ...build,
+    buildToTeam: build.buildToTeam
+      ? build.buildToTeam.map(
+          (team: any): Team => ({
             ...team,
-            provisionedNetworks: team.provisionedNetworks.map((provNetwork: ProvisionedNetwork) => ({
-              ...provNetwork,
-              provisionedHosts: provNetwork.provisionedHosts.map((provHost: ProvisionedHost) => {
-                const matchedHost = statusQueryResult.environment.build.teams
-                  .filter((t: any) => t.id === team.id)[0]
-                  .provisionedNetworks.filter((pN: any) => pN.id === provNetwork.id)[0]
-                  .provisionedHosts.filter((pH: any) => pH.id === provHost.id)[0];
-                return {
-                  ...provHost,
-                  heartbeat: matchedHost.heartbeat
-                };
-              })
-            }))
-          } as Team)
-      )
-    }
+            TeamToProvisionedNetwork: team.TeamToProvisionedNetwork
+              ? team.TeamToProvisionedNetwork.map(
+                  (provisionedNetwork: any): ProvisionedNetwork => ({
+                    ...provisionedNetwork,
+                    ProvisionedNetworkToProvisionedHost: provisionedNetwork.ProvisionedNetworkToProvisionedHost
+                      ? provisionedNetwork.ProvisionedNetworkToProvisionedHost.map(
+                          (provisionedHost: any): ProvisionedHost => {
+                            const matchedHost = statusQueryResult.build.buildToTeam
+                              .filter((t: any) => t.id === team.id)[0]
+                              .TeamToProvisionedNetwork.filter((pN: any) => pN.id === provisionedNetwork.id)[0]
+                              .ProvisionedNetworkToProvisionedHost.filter((pH: any) => pH.id === provisionedHost.id)[0];
+                            // if (matchedHost != null) {
+                            //   console.log(matchedHost.id, matchedHost.ProvisionedHostToAgentStatus);
+                            // }
+                            return {
+                              ...provisionedHost,
+                              ProvisionedHostToAgentStatus: { ...matchedHost.ProvisionedHostToAgentStatus }
+                            };
+                          }
+                        )
+                      : null
+                  })
+                )
+              : null
+          })
+        )
+      : null
   };
 }

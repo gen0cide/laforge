@@ -7,12 +7,15 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/disk"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/host"
-	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/gen0cide/laforge/ent/hostdependency"
+	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // HostCreate is the builder for creating a Host entity.
@@ -22,139 +25,192 @@ type HostCreate struct {
 	hooks    []Hook
 }
 
-// SetHostname sets the hostname field.
+// SetHclID sets the "hcl_id" field.
+func (hc *HostCreate) SetHclID(s string) *HostCreate {
+	hc.mutation.SetHclID(s)
+	return hc
+}
+
+// SetHostname sets the "hostname" field.
 func (hc *HostCreate) SetHostname(s string) *HostCreate {
 	hc.mutation.SetHostname(s)
 	return hc
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (hc *HostCreate) SetDescription(s string) *HostCreate {
 	hc.mutation.SetDescription(s)
 	return hc
 }
 
-// SetOS sets the OS field.
+// SetOS sets the "OS" field.
 func (hc *HostCreate) SetOS(s string) *HostCreate {
 	hc.mutation.SetOS(s)
 	return hc
 }
 
-// SetLastOctet sets the last_octet field.
+// SetLastOctet sets the "last_octet" field.
 func (hc *HostCreate) SetLastOctet(i int) *HostCreate {
 	hc.mutation.SetLastOctet(i)
 	return hc
 }
 
-// SetAllowMACChanges sets the allow_mac_changes field.
+// SetInstanceSize sets the "instance_size" field.
+func (hc *HostCreate) SetInstanceSize(s string) *HostCreate {
+	hc.mutation.SetInstanceSize(s)
+	return hc
+}
+
+// SetAllowMACChanges sets the "allow_mac_changes" field.
 func (hc *HostCreate) SetAllowMACChanges(b bool) *HostCreate {
 	hc.mutation.SetAllowMACChanges(b)
 	return hc
 }
 
-// SetExposedTCPPorts sets the exposed_tcp_ports field.
+// SetExposedTCPPorts sets the "exposed_tcp_ports" field.
 func (hc *HostCreate) SetExposedTCPPorts(s []string) *HostCreate {
 	hc.mutation.SetExposedTCPPorts(s)
 	return hc
 }
 
-// SetExposedUDPPorts sets the exposed_udp_ports field.
+// SetExposedUDPPorts sets the "exposed_udp_ports" field.
 func (hc *HostCreate) SetExposedUDPPorts(s []string) *HostCreate {
 	hc.mutation.SetExposedUDPPorts(s)
 	return hc
 }
 
-// SetOverridePassword sets the override_password field.
+// SetOverridePassword sets the "override_password" field.
 func (hc *HostCreate) SetOverridePassword(s string) *HostCreate {
 	hc.mutation.SetOverridePassword(s)
 	return hc
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (hc *HostCreate) SetVars(m map[string]string) *HostCreate {
 	hc.mutation.SetVars(m)
 	return hc
 }
 
-// SetUserGroups sets the user_groups field.
+// SetUserGroups sets the "user_groups" field.
 func (hc *HostCreate) SetUserGroups(s []string) *HostCreate {
 	hc.mutation.SetUserGroups(s)
 	return hc
 }
 
-// SetDependsOn sets the depends_on field.
-func (hc *HostCreate) SetDependsOn(s []string) *HostCreate {
-	hc.mutation.SetDependsOn(s)
+// SetProvisionSteps sets the "provision_steps" field.
+func (hc *HostCreate) SetProvisionSteps(s []string) *HostCreate {
+	hc.mutation.SetProvisionSteps(s)
 	return hc
 }
 
-// SetScripts sets the scripts field.
-func (hc *HostCreate) SetScripts(s []string) *HostCreate {
-	hc.mutation.SetScripts(s)
+// SetTags sets the "tags" field.
+func (hc *HostCreate) SetTags(m map[string]string) *HostCreate {
+	hc.mutation.SetTags(m)
 	return hc
 }
 
-// SetCommands sets the commands field.
-func (hc *HostCreate) SetCommands(s []string) *HostCreate {
-	hc.mutation.SetCommands(s)
+// SetID sets the "id" field.
+func (hc *HostCreate) SetID(u uuid.UUID) *HostCreate {
+	hc.mutation.SetID(u)
 	return hc
 }
 
-// SetRemoteFiles sets the remote_files field.
-func (hc *HostCreate) SetRemoteFiles(s []string) *HostCreate {
-	hc.mutation.SetRemoteFiles(s)
+// SetHostToDiskID sets the "HostToDisk" edge to the Disk entity by ID.
+func (hc *HostCreate) SetHostToDiskID(id uuid.UUID) *HostCreate {
+	hc.mutation.SetHostToDiskID(id)
 	return hc
 }
 
-// SetDNSRecords sets the dns_records field.
-func (hc *HostCreate) SetDNSRecords(s []string) *HostCreate {
-	hc.mutation.SetDNSRecords(s)
-	return hc
-}
-
-// AddDiskIDs adds the disk edge to Disk by ids.
-func (hc *HostCreate) AddDiskIDs(ids ...int) *HostCreate {
-	hc.mutation.AddDiskIDs(ids...)
-	return hc
-}
-
-// AddDisk adds the disk edges to Disk.
-func (hc *HostCreate) AddDisk(d ...*Disk) *HostCreate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
+// SetNillableHostToDiskID sets the "HostToDisk" edge to the Disk entity by ID if the given value is not nil.
+func (hc *HostCreate) SetNillableHostToDiskID(id *uuid.UUID) *HostCreate {
+	if id != nil {
+		hc = hc.SetHostToDiskID(*id)
 	}
-	return hc.AddDiskIDs(ids...)
-}
-
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (hc *HostCreate) AddMaintainerIDs(ids ...int) *HostCreate {
-	hc.mutation.AddMaintainerIDs(ids...)
 	return hc
 }
 
-// AddMaintainer adds the maintainer edges to User.
-func (hc *HostCreate) AddMaintainer(u ...*User) *HostCreate {
-	ids := make([]int, len(u))
+// SetHostToDisk sets the "HostToDisk" edge to the Disk entity.
+func (hc *HostCreate) SetHostToDisk(d *Disk) *HostCreate {
+	return hc.SetHostToDiskID(d.ID)
+}
+
+// AddHostToUserIDs adds the "HostToUser" edge to the User entity by IDs.
+func (hc *HostCreate) AddHostToUserIDs(ids ...uuid.UUID) *HostCreate {
+	hc.mutation.AddHostToUserIDs(ids...)
+	return hc
+}
+
+// AddHostToUser adds the "HostToUser" edges to the User entity.
+func (hc *HostCreate) AddHostToUser(u ...*User) *HostCreate {
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return hc.AddMaintainerIDs(ids...)
+	return hc.AddHostToUserIDs(ids...)
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (hc *HostCreate) AddTagIDs(ids ...int) *HostCreate {
-	hc.mutation.AddTagIDs(ids...)
+// SetHostToEnvironmentID sets the "HostToEnvironment" edge to the Environment entity by ID.
+func (hc *HostCreate) SetHostToEnvironmentID(id uuid.UUID) *HostCreate {
+	hc.mutation.SetHostToEnvironmentID(id)
 	return hc
 }
 
-// AddTag adds the tag edges to Tag.
-func (hc *HostCreate) AddTag(t ...*Tag) *HostCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableHostToEnvironmentID sets the "HostToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (hc *HostCreate) SetNillableHostToEnvironmentID(id *uuid.UUID) *HostCreate {
+	if id != nil {
+		hc = hc.SetHostToEnvironmentID(*id)
 	}
-	return hc.AddTagIDs(ids...)
+	return hc
+}
+
+// SetHostToEnvironment sets the "HostToEnvironment" edge to the Environment entity.
+func (hc *HostCreate) SetHostToEnvironment(e *Environment) *HostCreate {
+	return hc.SetHostToEnvironmentID(e.ID)
+}
+
+// AddHostToIncludedNetworkIDs adds the "HostToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
+func (hc *HostCreate) AddHostToIncludedNetworkIDs(ids ...uuid.UUID) *HostCreate {
+	hc.mutation.AddHostToIncludedNetworkIDs(ids...)
+	return hc
+}
+
+// AddHostToIncludedNetwork adds the "HostToIncludedNetwork" edges to the IncludedNetwork entity.
+func (hc *HostCreate) AddHostToIncludedNetwork(i ...*IncludedNetwork) *HostCreate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return hc.AddHostToIncludedNetworkIDs(ids...)
+}
+
+// AddDependOnHostToHostDependencyIDs adds the "DependOnHostToHostDependency" edge to the HostDependency entity by IDs.
+func (hc *HostCreate) AddDependOnHostToHostDependencyIDs(ids ...uuid.UUID) *HostCreate {
+	hc.mutation.AddDependOnHostToHostDependencyIDs(ids...)
+	return hc
+}
+
+// AddDependOnHostToHostDependency adds the "DependOnHostToHostDependency" edges to the HostDependency entity.
+func (hc *HostCreate) AddDependOnHostToHostDependency(h ...*HostDependency) *HostCreate {
+	ids := make([]uuid.UUID, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return hc.AddDependOnHostToHostDependencyIDs(ids...)
+}
+
+// AddDependByHostToHostDependencyIDs adds the "DependByHostToHostDependency" edge to the HostDependency entity by IDs.
+func (hc *HostCreate) AddDependByHostToHostDependencyIDs(ids ...uuid.UUID) *HostCreate {
+	hc.mutation.AddDependByHostToHostDependencyIDs(ids...)
+	return hc
+}
+
+// AddDependByHostToHostDependency adds the "DependByHostToHostDependency" edges to the HostDependency entity.
+func (hc *HostCreate) AddDependByHostToHostDependency(h ...*HostDependency) *HostCreate {
+	ids := make([]uuid.UUID, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return hc.AddDependByHostToHostDependencyIDs(ids...)
 }
 
 // Mutation returns the HostMutation object of the builder.
@@ -168,6 +224,7 @@ func (hc *HostCreate) Save(ctx context.Context) (*Host, error) {
 		err  error
 		node *Host
 	)
+	hc.defaults()
 	if len(hc.hooks) == 0 {
 		if err = hc.check(); err != nil {
 			return nil, err
@@ -183,11 +240,17 @@ func (hc *HostCreate) Save(ctx context.Context) (*Host, error) {
 				return nil, err
 			}
 			hc.mutation = mutation
-			node, err = hc.sqlSave(ctx)
+			if node, err = hc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(hc.hooks) - 1; i >= 0; i-- {
+			if hc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = hc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, hc.mutation); err != nil {
@@ -206,37 +269,67 @@ func (hc *HostCreate) SaveX(ctx context.Context) *Host {
 	return v
 }
 
+// Exec executes the query.
+func (hc *HostCreate) Exec(ctx context.Context) error {
+	_, err := hc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (hc *HostCreate) ExecX(ctx context.Context) {
+	if err := hc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (hc *HostCreate) defaults() {
+	if _, ok := hc.mutation.ID(); !ok {
+		v := host.DefaultID()
+		hc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (hc *HostCreate) check() error {
+	if _, ok := hc.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New(`ent: missing required field "hcl_id"`)}
+	}
 	if _, ok := hc.mutation.Hostname(); !ok {
-		return &ValidationError{Name: "hostname", err: errors.New("ent: missing required field \"hostname\"")}
+		return &ValidationError{Name: "hostname", err: errors.New(`ent: missing required field "hostname"`)}
 	}
 	if _, ok := hc.mutation.Description(); !ok {
-		return &ValidationError{Name: "description", err: errors.New("ent: missing required field \"description\"")}
+		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "description"`)}
 	}
 	if _, ok := hc.mutation.OS(); !ok {
-		return &ValidationError{Name: "OS", err: errors.New("ent: missing required field \"OS\"")}
+		return &ValidationError{Name: "OS", err: errors.New(`ent: missing required field "OS"`)}
 	}
 	if _, ok := hc.mutation.LastOctet(); !ok {
-		return &ValidationError{Name: "last_octet", err: errors.New("ent: missing required field \"last_octet\"")}
+		return &ValidationError{Name: "last_octet", err: errors.New(`ent: missing required field "last_octet"`)}
+	}
+	if _, ok := hc.mutation.InstanceSize(); !ok {
+		return &ValidationError{Name: "instance_size", err: errors.New(`ent: missing required field "instance_size"`)}
 	}
 	if _, ok := hc.mutation.AllowMACChanges(); !ok {
-		return &ValidationError{Name: "allow_mac_changes", err: errors.New("ent: missing required field \"allow_mac_changes\"")}
+		return &ValidationError{Name: "allow_mac_changes", err: errors.New(`ent: missing required field "allow_mac_changes"`)}
 	}
 	if _, ok := hc.mutation.ExposedTCPPorts(); !ok {
-		return &ValidationError{Name: "exposed_tcp_ports", err: errors.New("ent: missing required field \"exposed_tcp_ports\"")}
+		return &ValidationError{Name: "exposed_tcp_ports", err: errors.New(`ent: missing required field "exposed_tcp_ports"`)}
 	}
 	if _, ok := hc.mutation.ExposedUDPPorts(); !ok {
-		return &ValidationError{Name: "exposed_udp_ports", err: errors.New("ent: missing required field \"exposed_udp_ports\"")}
+		return &ValidationError{Name: "exposed_udp_ports", err: errors.New(`ent: missing required field "exposed_udp_ports"`)}
 	}
 	if _, ok := hc.mutation.OverridePassword(); !ok {
-		return &ValidationError{Name: "override_password", err: errors.New("ent: missing required field \"override_password\"")}
+		return &ValidationError{Name: "override_password", err: errors.New(`ent: missing required field "override_password"`)}
 	}
 	if _, ok := hc.mutation.Vars(); !ok {
-		return &ValidationError{Name: "vars", err: errors.New("ent: missing required field \"vars\"")}
+		return &ValidationError{Name: "vars", err: errors.New(`ent: missing required field "vars"`)}
 	}
 	if _, ok := hc.mutation.UserGroups(); !ok {
-		return &ValidationError{Name: "user_groups", err: errors.New("ent: missing required field \"user_groups\"")}
+		return &ValidationError{Name: "user_groups", err: errors.New(`ent: missing required field "user_groups"`)}
+	}
+	if _, ok := hc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "tags"`)}
 	}
 	return nil
 }
@@ -244,13 +337,14 @@ func (hc *HostCreate) check() error {
 func (hc *HostCreate) sqlSave(ctx context.Context) (*Host, error) {
 	_node, _spec := hc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, hc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
+	}
 	return _node, nil
 }
 
@@ -260,11 +354,23 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: host.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: host.FieldID,
 			},
 		}
 	)
+	if id, ok := hc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
+	if value, ok := hc.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: host.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := hc.mutation.Hostname(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -296,6 +402,14 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 			Column: host.FieldLastOctet,
 		})
 		_node.LastOctet = value
+	}
+	if value, ok := hc.mutation.InstanceSize(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: host.FieldInstanceSize,
+		})
+		_node.InstanceSize = value
 	}
 	if value, ok := hc.mutation.AllowMACChanges(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -345,56 +459,32 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 		})
 		_node.UserGroups = value
 	}
-	if value, ok := hc.mutation.DependsOn(); ok {
+	if value, ok := hc.mutation.ProvisionSteps(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: host.FieldDependsOn,
+			Column: host.FieldProvisionSteps,
 		})
-		_node.DependsOn = value
+		_node.ProvisionSteps = value
 	}
-	if value, ok := hc.mutation.Scripts(); ok {
+	if value, ok := hc.mutation.Tags(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: host.FieldScripts,
+			Column: host.FieldTags,
 		})
-		_node.Scripts = value
+		_node.Tags = value
 	}
-	if value, ok := hc.mutation.Commands(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: host.FieldCommands,
-		})
-		_node.Commands = value
-	}
-	if value, ok := hc.mutation.RemoteFiles(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: host.FieldRemoteFiles,
-		})
-		_node.RemoteFiles = value
-	}
-	if value, ok := hc.mutation.DNSRecords(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
-			Value:  value,
-			Column: host.FieldDNSRecords,
-		})
-		_node.DNSRecords = value
-	}
-	if nodes := hc.mutation.DiskIDs(); len(nodes) > 0 {
+	if nodes := hc.mutation.HostToDiskIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   host.DiskTable,
-			Columns: []string{host.DiskColumn},
+			Table:   host.HostToDiskTable,
+			Columns: []string{host.HostToDiskColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: disk.FieldID,
 				},
 			},
@@ -404,16 +494,16 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := hc.mutation.MaintainerIDs(); len(nodes) > 0 {
+	if nodes := hc.mutation.HostToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   host.MaintainerTable,
-			Columns: []string{host.MaintainerColumn},
+			Table:   host.HostToUserTable,
+			Columns: []string{host.HostToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -423,17 +513,75 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := hc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := hc.mutation.HostToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   host.TagTable,
-			Columns: []string{host.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   host.HostToEnvironmentTable,
+			Columns: []string{host.HostToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.environment_environment_to_host = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := hc.mutation.HostToIncludedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   host.HostToIncludedNetworkTable,
+			Columns: host.HostToIncludedNetworkPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := hc.mutation.DependOnHostToHostDependencyIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   host.DependOnHostToHostDependencyTable,
+			Columns: []string{host.DependOnHostToHostDependencyColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: hostdependency.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := hc.mutation.DependByHostToHostDependencyIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   host.DependByHostToHostDependencyTable,
+			Columns: []string{host.DependByHostToHostDependencyColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: hostdependency.FieldID,
 				},
 			},
 		}
@@ -445,7 +593,7 @@ func (hc *HostCreate) createSpec() (*Host, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// HostCreateBulk is the builder for creating a bulk of Host entities.
+// HostCreateBulk is the builder for creating many Host entities in bulk.
 type HostCreateBulk struct {
 	config
 	builders []*HostCreate
@@ -459,6 +607,7 @@ func (hcb *HostCreateBulk) Save(ctx context.Context) ([]*Host, error) {
 	for i := range hcb.builders {
 		func(i int, root context.Context) {
 			builder := hcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*HostMutation)
 				if !ok {
@@ -473,19 +622,19 @@ func (hcb *HostCreateBulk) Save(ctx context.Context) ([]*Host, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, hcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, hcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, hcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -502,11 +651,24 @@ func (hcb *HostCreateBulk) Save(ctx context.Context) ([]*Host, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (hcb *HostCreateBulk) SaveX(ctx context.Context) []*Host {
 	v, err := hcb.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (hcb *HostCreateBulk) Exec(ctx context.Context) error {
+	_, err := hcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (hcb *HostCreateBulk) ExecX(ctx context.Context) {
+	if err := hcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

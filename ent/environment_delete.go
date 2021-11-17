@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
@@ -20,9 +20,9 @@ type EnvironmentDelete struct {
 	mutation *EnvironmentMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where appends a list predicates to the EnvironmentDelete builder.
 func (ed *EnvironmentDelete) Where(ps ...predicate.Environment) *EnvironmentDelete {
-	ed.mutation.predicates = append(ed.mutation.predicates, ps...)
+	ed.mutation.Where(ps...)
 	return ed
 }
 
@@ -46,6 +46,9 @@ func (ed *EnvironmentDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(ed.hooks) - 1; i >= 0; i-- {
+			if ed.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = ed.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, ed.mutation); err != nil {
@@ -69,7 +72,7 @@ func (ed *EnvironmentDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: environment.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: environment.FieldID,
 			},
 		},

@@ -1,1 +1,1 @@
-declare var ClipboardJS: any;
+declare let ClipboardJS: any;

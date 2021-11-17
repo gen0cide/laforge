@@ -6,14 +6,15 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/script"
-	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // ScriptUpdate is the builder for updating Script entities.
@@ -23,141 +24,157 @@ type ScriptUpdate struct {
 	mutation *ScriptMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where appends a list predicates to the ScriptUpdate builder.
 func (su *ScriptUpdate) Where(ps ...predicate.Script) *ScriptUpdate {
-	su.mutation.predicates = append(su.mutation.predicates, ps...)
+	su.mutation.Where(ps...)
 	return su
 }
 
-// SetName sets the name field.
+// SetHclID sets the "hcl_id" field.
+func (su *ScriptUpdate) SetHclID(s string) *ScriptUpdate {
+	su.mutation.SetHclID(s)
+	return su
+}
+
+// SetName sets the "name" field.
 func (su *ScriptUpdate) SetName(s string) *ScriptUpdate {
 	su.mutation.SetName(s)
 	return su
 }
 
-// SetLanguage sets the language field.
+// SetLanguage sets the "language" field.
 func (su *ScriptUpdate) SetLanguage(s string) *ScriptUpdate {
 	su.mutation.SetLanguage(s)
 	return su
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (su *ScriptUpdate) SetDescription(s string) *ScriptUpdate {
 	su.mutation.SetDescription(s)
 	return su
 }
 
-// SetSource sets the source field.
+// SetSource sets the "source" field.
 func (su *ScriptUpdate) SetSource(s string) *ScriptUpdate {
 	su.mutation.SetSource(s)
 	return su
 }
 
-// SetSourceType sets the source_type field.
+// SetSourceType sets the "source_type" field.
 func (su *ScriptUpdate) SetSourceType(s string) *ScriptUpdate {
 	su.mutation.SetSourceType(s)
 	return su
 }
 
-// SetCooldown sets the cooldown field.
+// SetCooldown sets the "cooldown" field.
 func (su *ScriptUpdate) SetCooldown(i int) *ScriptUpdate {
 	su.mutation.ResetCooldown()
 	su.mutation.SetCooldown(i)
 	return su
 }
 
-// AddCooldown adds i to cooldown.
+// AddCooldown adds i to the "cooldown" field.
 func (su *ScriptUpdate) AddCooldown(i int) *ScriptUpdate {
 	su.mutation.AddCooldown(i)
 	return su
 }
 
-// SetTimeout sets the timeout field.
+// SetTimeout sets the "timeout" field.
 func (su *ScriptUpdate) SetTimeout(i int) *ScriptUpdate {
 	su.mutation.ResetTimeout()
 	su.mutation.SetTimeout(i)
 	return su
 }
 
-// AddTimeout adds i to timeout.
+// AddTimeout adds i to the "timeout" field.
 func (su *ScriptUpdate) AddTimeout(i int) *ScriptUpdate {
 	su.mutation.AddTimeout(i)
 	return su
 }
 
-// SetIgnoreErrors sets the ignore_errors field.
+// SetIgnoreErrors sets the "ignore_errors" field.
 func (su *ScriptUpdate) SetIgnoreErrors(b bool) *ScriptUpdate {
 	su.mutation.SetIgnoreErrors(b)
 	return su
 }
 
-// SetArgs sets the args field.
+// SetArgs sets the "args" field.
 func (su *ScriptUpdate) SetArgs(s []string) *ScriptUpdate {
 	su.mutation.SetArgs(s)
 	return su
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (su *ScriptUpdate) SetDisabled(b bool) *ScriptUpdate {
 	su.mutation.SetDisabled(b)
 	return su
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (su *ScriptUpdate) SetVars(m map[string]string) *ScriptUpdate {
 	su.mutation.SetVars(m)
 	return su
 }
 
-// SetAbsPath sets the abs_path field.
+// SetAbsPath sets the "abs_path" field.
 func (su *ScriptUpdate) SetAbsPath(s string) *ScriptUpdate {
 	su.mutation.SetAbsPath(s)
 	return su
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (su *ScriptUpdate) AddTagIDs(ids ...int) *ScriptUpdate {
-	su.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (su *ScriptUpdate) SetTags(m map[string]string) *ScriptUpdate {
+	su.mutation.SetTags(m)
 	return su
 }
 
-// AddTag adds the tag edges to Tag.
-func (su *ScriptUpdate) AddTag(t ...*Tag) *ScriptUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return su.AddTagIDs(ids...)
-}
-
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (su *ScriptUpdate) AddMaintainerIDs(ids ...int) *ScriptUpdate {
-	su.mutation.AddMaintainerIDs(ids...)
+// AddScriptToUserIDs adds the "ScriptToUser" edge to the User entity by IDs.
+func (su *ScriptUpdate) AddScriptToUserIDs(ids ...uuid.UUID) *ScriptUpdate {
+	su.mutation.AddScriptToUserIDs(ids...)
 	return su
 }
 
-// AddMaintainer adds the maintainer edges to User.
-func (su *ScriptUpdate) AddMaintainer(u ...*User) *ScriptUpdate {
-	ids := make([]int, len(u))
+// AddScriptToUser adds the "ScriptToUser" edges to the User entity.
+func (su *ScriptUpdate) AddScriptToUser(u ...*User) *ScriptUpdate {
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return su.AddMaintainerIDs(ids...)
+	return su.AddScriptToUserIDs(ids...)
 }
 
-// AddFindingIDs adds the finding edge to Finding by ids.
-func (su *ScriptUpdate) AddFindingIDs(ids ...int) *ScriptUpdate {
-	su.mutation.AddFindingIDs(ids...)
+// AddScriptToFindingIDs adds the "ScriptToFinding" edge to the Finding entity by IDs.
+func (su *ScriptUpdate) AddScriptToFindingIDs(ids ...uuid.UUID) *ScriptUpdate {
+	su.mutation.AddScriptToFindingIDs(ids...)
 	return su
 }
 
-// AddFinding adds the finding edges to Finding.
-func (su *ScriptUpdate) AddFinding(f ...*Finding) *ScriptUpdate {
-	ids := make([]int, len(f))
+// AddScriptToFinding adds the "ScriptToFinding" edges to the Finding entity.
+func (su *ScriptUpdate) AddScriptToFinding(f ...*Finding) *ScriptUpdate {
+	ids := make([]uuid.UUID, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return su.AddFindingIDs(ids...)
+	return su.AddScriptToFindingIDs(ids...)
+}
+
+// SetScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by ID.
+func (su *ScriptUpdate) SetScriptToEnvironmentID(id uuid.UUID) *ScriptUpdate {
+	su.mutation.SetScriptToEnvironmentID(id)
+	return su
+}
+
+// SetNillableScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (su *ScriptUpdate) SetNillableScriptToEnvironmentID(id *uuid.UUID) *ScriptUpdate {
+	if id != nil {
+		su = su.SetScriptToEnvironmentID(*id)
+	}
+	return su
+}
+
+// SetScriptToEnvironment sets the "ScriptToEnvironment" edge to the Environment entity.
+func (su *ScriptUpdate) SetScriptToEnvironment(e *Environment) *ScriptUpdate {
+	return su.SetScriptToEnvironmentID(e.ID)
 }
 
 // Mutation returns the ScriptMutation object of the builder.
@@ -165,67 +182,52 @@ func (su *ScriptUpdate) Mutation() *ScriptMutation {
 	return su.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (su *ScriptUpdate) ClearTag() *ScriptUpdate {
-	su.mutation.ClearTag()
+// ClearScriptToUser clears all "ScriptToUser" edges to the User entity.
+func (su *ScriptUpdate) ClearScriptToUser() *ScriptUpdate {
+	su.mutation.ClearScriptToUser()
 	return su
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (su *ScriptUpdate) RemoveTagIDs(ids ...int) *ScriptUpdate {
-	su.mutation.RemoveTagIDs(ids...)
+// RemoveScriptToUserIDs removes the "ScriptToUser" edge to User entities by IDs.
+func (su *ScriptUpdate) RemoveScriptToUserIDs(ids ...uuid.UUID) *ScriptUpdate {
+	su.mutation.RemoveScriptToUserIDs(ids...)
 	return su
 }
 
-// RemoveTag removes tag edges to Tag.
-func (su *ScriptUpdate) RemoveTag(t ...*Tag) *ScriptUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return su.RemoveTagIDs(ids...)
-}
-
-// ClearMaintainer clears all "maintainer" edges to type User.
-func (su *ScriptUpdate) ClearMaintainer() *ScriptUpdate {
-	su.mutation.ClearMaintainer()
-	return su
-}
-
-// RemoveMaintainerIDs removes the maintainer edge to User by ids.
-func (su *ScriptUpdate) RemoveMaintainerIDs(ids ...int) *ScriptUpdate {
-	su.mutation.RemoveMaintainerIDs(ids...)
-	return su
-}
-
-// RemoveMaintainer removes maintainer edges to User.
-func (su *ScriptUpdate) RemoveMaintainer(u ...*User) *ScriptUpdate {
-	ids := make([]int, len(u))
+// RemoveScriptToUser removes "ScriptToUser" edges to User entities.
+func (su *ScriptUpdate) RemoveScriptToUser(u ...*User) *ScriptUpdate {
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return su.RemoveMaintainerIDs(ids...)
+	return su.RemoveScriptToUserIDs(ids...)
 }
 
-// ClearFinding clears all "finding" edges to type Finding.
-func (su *ScriptUpdate) ClearFinding() *ScriptUpdate {
-	su.mutation.ClearFinding()
+// ClearScriptToFinding clears all "ScriptToFinding" edges to the Finding entity.
+func (su *ScriptUpdate) ClearScriptToFinding() *ScriptUpdate {
+	su.mutation.ClearScriptToFinding()
 	return su
 }
 
-// RemoveFindingIDs removes the finding edge to Finding by ids.
-func (su *ScriptUpdate) RemoveFindingIDs(ids ...int) *ScriptUpdate {
-	su.mutation.RemoveFindingIDs(ids...)
+// RemoveScriptToFindingIDs removes the "ScriptToFinding" edge to Finding entities by IDs.
+func (su *ScriptUpdate) RemoveScriptToFindingIDs(ids ...uuid.UUID) *ScriptUpdate {
+	su.mutation.RemoveScriptToFindingIDs(ids...)
 	return su
 }
 
-// RemoveFinding removes finding edges to Finding.
-func (su *ScriptUpdate) RemoveFinding(f ...*Finding) *ScriptUpdate {
-	ids := make([]int, len(f))
+// RemoveScriptToFinding removes "ScriptToFinding" edges to Finding entities.
+func (su *ScriptUpdate) RemoveScriptToFinding(f ...*Finding) *ScriptUpdate {
+	ids := make([]uuid.UUID, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return su.RemoveFindingIDs(ids...)
+	return su.RemoveScriptToFindingIDs(ids...)
+}
+
+// ClearScriptToEnvironment clears the "ScriptToEnvironment" edge to the Environment entity.
+func (su *ScriptUpdate) ClearScriptToEnvironment() *ScriptUpdate {
+	su.mutation.ClearScriptToEnvironment()
+	return su
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -248,6 +250,9 @@ func (su *ScriptUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(su.hooks) - 1; i >= 0; i-- {
+			if su.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = su.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, su.mutation); err != nil {
@@ -285,7 +290,7 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   script.Table,
 			Columns: script.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: script.FieldID,
 			},
 		},
@@ -296,6 +301,13 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := su.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: script.FieldHclID,
+		})
 	}
 	if value, ok := su.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
@@ -395,86 +407,39 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: script.FieldAbsPath,
 		})
 	}
-	if su.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   script.TagTable,
-			Columns: []string{script.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	if value, ok := su.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: script.FieldTags,
+		})
 	}
-	if nodes := su.mutation.RemovedTagIDs(); len(nodes) > 0 && !su.mutation.TagCleared() {
+	if su.mutation.ScriptToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   script.TagTable,
-			Columns: []string{script.TagColumn},
+			Table:   script.ScriptToUserTable,
+			Columns: []string{script.ScriptToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   script.TagTable,
-			Columns: []string{script.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if su.mutation.MaintainerCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   script.MaintainerTable,
-			Columns: []string{script.MaintainerColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.RemovedMaintainerIDs(); len(nodes) > 0 && !su.mutation.MaintainerCleared() {
+	if nodes := su.mutation.RemovedScriptToUserIDs(); len(nodes) > 0 && !su.mutation.ScriptToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   script.MaintainerTable,
-			Columns: []string{script.MaintainerColumn},
+			Table:   script.ScriptToUserTable,
+			Columns: []string{script.ScriptToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -484,16 +449,16 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.MaintainerIDs(); len(nodes) > 0 {
+	if nodes := su.mutation.ScriptToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   script.MaintainerTable,
-			Columns: []string{script.MaintainerColumn},
+			Table:   script.ScriptToUserTable,
+			Columns: []string{script.ScriptToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -503,32 +468,32 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if su.mutation.FindingCleared() {
+	if su.mutation.ScriptToFindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   script.FindingTable,
-			Columns: script.FindingPrimaryKey,
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   script.ScriptToFindingTable,
+			Columns: []string{script.ScriptToFindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: finding.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.RemovedFindingIDs(); len(nodes) > 0 && !su.mutation.FindingCleared() {
+	if nodes := su.mutation.RemovedScriptToFindingIDs(); len(nodes) > 0 && !su.mutation.ScriptToFindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   script.FindingTable,
-			Columns: script.FindingPrimaryKey,
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   script.ScriptToFindingTable,
+			Columns: []string{script.ScriptToFindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: finding.FieldID,
 				},
 			},
@@ -538,17 +503,52 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.FindingIDs(); len(nodes) > 0 {
+	if nodes := su.mutation.ScriptToFindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   script.FindingTable,
-			Columns: script.FindingPrimaryKey,
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   script.ScriptToFindingTable,
+			Columns: []string{script.ScriptToFindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: finding.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if su.mutation.ScriptToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   script.ScriptToEnvironmentTable,
+			Columns: []string{script.ScriptToEnvironmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.ScriptToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   script.ScriptToEnvironmentTable,
+			Columns: []string{script.ScriptToEnvironmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -560,8 +560,8 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{script.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -571,139 +571,156 @@ func (su *ScriptUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // ScriptUpdateOne is the builder for updating a single Script entity.
 type ScriptUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *ScriptMutation
 }
 
-// SetName sets the name field.
+// SetHclID sets the "hcl_id" field.
+func (suo *ScriptUpdateOne) SetHclID(s string) *ScriptUpdateOne {
+	suo.mutation.SetHclID(s)
+	return suo
+}
+
+// SetName sets the "name" field.
 func (suo *ScriptUpdateOne) SetName(s string) *ScriptUpdateOne {
 	suo.mutation.SetName(s)
 	return suo
 }
 
-// SetLanguage sets the language field.
+// SetLanguage sets the "language" field.
 func (suo *ScriptUpdateOne) SetLanguage(s string) *ScriptUpdateOne {
 	suo.mutation.SetLanguage(s)
 	return suo
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (suo *ScriptUpdateOne) SetDescription(s string) *ScriptUpdateOne {
 	suo.mutation.SetDescription(s)
 	return suo
 }
 
-// SetSource sets the source field.
+// SetSource sets the "source" field.
 func (suo *ScriptUpdateOne) SetSource(s string) *ScriptUpdateOne {
 	suo.mutation.SetSource(s)
 	return suo
 }
 
-// SetSourceType sets the source_type field.
+// SetSourceType sets the "source_type" field.
 func (suo *ScriptUpdateOne) SetSourceType(s string) *ScriptUpdateOne {
 	suo.mutation.SetSourceType(s)
 	return suo
 }
 
-// SetCooldown sets the cooldown field.
+// SetCooldown sets the "cooldown" field.
 func (suo *ScriptUpdateOne) SetCooldown(i int) *ScriptUpdateOne {
 	suo.mutation.ResetCooldown()
 	suo.mutation.SetCooldown(i)
 	return suo
 }
 
-// AddCooldown adds i to cooldown.
+// AddCooldown adds i to the "cooldown" field.
 func (suo *ScriptUpdateOne) AddCooldown(i int) *ScriptUpdateOne {
 	suo.mutation.AddCooldown(i)
 	return suo
 }
 
-// SetTimeout sets the timeout field.
+// SetTimeout sets the "timeout" field.
 func (suo *ScriptUpdateOne) SetTimeout(i int) *ScriptUpdateOne {
 	suo.mutation.ResetTimeout()
 	suo.mutation.SetTimeout(i)
 	return suo
 }
 
-// AddTimeout adds i to timeout.
+// AddTimeout adds i to the "timeout" field.
 func (suo *ScriptUpdateOne) AddTimeout(i int) *ScriptUpdateOne {
 	suo.mutation.AddTimeout(i)
 	return suo
 }
 
-// SetIgnoreErrors sets the ignore_errors field.
+// SetIgnoreErrors sets the "ignore_errors" field.
 func (suo *ScriptUpdateOne) SetIgnoreErrors(b bool) *ScriptUpdateOne {
 	suo.mutation.SetIgnoreErrors(b)
 	return suo
 }
 
-// SetArgs sets the args field.
+// SetArgs sets the "args" field.
 func (suo *ScriptUpdateOne) SetArgs(s []string) *ScriptUpdateOne {
 	suo.mutation.SetArgs(s)
 	return suo
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (suo *ScriptUpdateOne) SetDisabled(b bool) *ScriptUpdateOne {
 	suo.mutation.SetDisabled(b)
 	return suo
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (suo *ScriptUpdateOne) SetVars(m map[string]string) *ScriptUpdateOne {
 	suo.mutation.SetVars(m)
 	return suo
 }
 
-// SetAbsPath sets the abs_path field.
+// SetAbsPath sets the "abs_path" field.
 func (suo *ScriptUpdateOne) SetAbsPath(s string) *ScriptUpdateOne {
 	suo.mutation.SetAbsPath(s)
 	return suo
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (suo *ScriptUpdateOne) AddTagIDs(ids ...int) *ScriptUpdateOne {
-	suo.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (suo *ScriptUpdateOne) SetTags(m map[string]string) *ScriptUpdateOne {
+	suo.mutation.SetTags(m)
 	return suo
 }
 
-// AddTag adds the tag edges to Tag.
-func (suo *ScriptUpdateOne) AddTag(t ...*Tag) *ScriptUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return suo.AddTagIDs(ids...)
-}
-
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (suo *ScriptUpdateOne) AddMaintainerIDs(ids ...int) *ScriptUpdateOne {
-	suo.mutation.AddMaintainerIDs(ids...)
+// AddScriptToUserIDs adds the "ScriptToUser" edge to the User entity by IDs.
+func (suo *ScriptUpdateOne) AddScriptToUserIDs(ids ...uuid.UUID) *ScriptUpdateOne {
+	suo.mutation.AddScriptToUserIDs(ids...)
 	return suo
 }
 
-// AddMaintainer adds the maintainer edges to User.
-func (suo *ScriptUpdateOne) AddMaintainer(u ...*User) *ScriptUpdateOne {
-	ids := make([]int, len(u))
+// AddScriptToUser adds the "ScriptToUser" edges to the User entity.
+func (suo *ScriptUpdateOne) AddScriptToUser(u ...*User) *ScriptUpdateOne {
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return suo.AddMaintainerIDs(ids...)
+	return suo.AddScriptToUserIDs(ids...)
 }
 
-// AddFindingIDs adds the finding edge to Finding by ids.
-func (suo *ScriptUpdateOne) AddFindingIDs(ids ...int) *ScriptUpdateOne {
-	suo.mutation.AddFindingIDs(ids...)
+// AddScriptToFindingIDs adds the "ScriptToFinding" edge to the Finding entity by IDs.
+func (suo *ScriptUpdateOne) AddScriptToFindingIDs(ids ...uuid.UUID) *ScriptUpdateOne {
+	suo.mutation.AddScriptToFindingIDs(ids...)
 	return suo
 }
 
-// AddFinding adds the finding edges to Finding.
-func (suo *ScriptUpdateOne) AddFinding(f ...*Finding) *ScriptUpdateOne {
-	ids := make([]int, len(f))
+// AddScriptToFinding adds the "ScriptToFinding" edges to the Finding entity.
+func (suo *ScriptUpdateOne) AddScriptToFinding(f ...*Finding) *ScriptUpdateOne {
+	ids := make([]uuid.UUID, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return suo.AddFindingIDs(ids...)
+	return suo.AddScriptToFindingIDs(ids...)
+}
+
+// SetScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by ID.
+func (suo *ScriptUpdateOne) SetScriptToEnvironmentID(id uuid.UUID) *ScriptUpdateOne {
+	suo.mutation.SetScriptToEnvironmentID(id)
+	return suo
+}
+
+// SetNillableScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (suo *ScriptUpdateOne) SetNillableScriptToEnvironmentID(id *uuid.UUID) *ScriptUpdateOne {
+	if id != nil {
+		suo = suo.SetScriptToEnvironmentID(*id)
+	}
+	return suo
+}
+
+// SetScriptToEnvironment sets the "ScriptToEnvironment" edge to the Environment entity.
+func (suo *ScriptUpdateOne) SetScriptToEnvironment(e *Environment) *ScriptUpdateOne {
+	return suo.SetScriptToEnvironmentID(e.ID)
 }
 
 // Mutation returns the ScriptMutation object of the builder.
@@ -711,70 +728,62 @@ func (suo *ScriptUpdateOne) Mutation() *ScriptMutation {
 	return suo.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (suo *ScriptUpdateOne) ClearTag() *ScriptUpdateOne {
-	suo.mutation.ClearTag()
+// ClearScriptToUser clears all "ScriptToUser" edges to the User entity.
+func (suo *ScriptUpdateOne) ClearScriptToUser() *ScriptUpdateOne {
+	suo.mutation.ClearScriptToUser()
 	return suo
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (suo *ScriptUpdateOne) RemoveTagIDs(ids ...int) *ScriptUpdateOne {
-	suo.mutation.RemoveTagIDs(ids...)
+// RemoveScriptToUserIDs removes the "ScriptToUser" edge to User entities by IDs.
+func (suo *ScriptUpdateOne) RemoveScriptToUserIDs(ids ...uuid.UUID) *ScriptUpdateOne {
+	suo.mutation.RemoveScriptToUserIDs(ids...)
 	return suo
 }
 
-// RemoveTag removes tag edges to Tag.
-func (suo *ScriptUpdateOne) RemoveTag(t ...*Tag) *ScriptUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return suo.RemoveTagIDs(ids...)
-}
-
-// ClearMaintainer clears all "maintainer" edges to type User.
-func (suo *ScriptUpdateOne) ClearMaintainer() *ScriptUpdateOne {
-	suo.mutation.ClearMaintainer()
-	return suo
-}
-
-// RemoveMaintainerIDs removes the maintainer edge to User by ids.
-func (suo *ScriptUpdateOne) RemoveMaintainerIDs(ids ...int) *ScriptUpdateOne {
-	suo.mutation.RemoveMaintainerIDs(ids...)
-	return suo
-}
-
-// RemoveMaintainer removes maintainer edges to User.
-func (suo *ScriptUpdateOne) RemoveMaintainer(u ...*User) *ScriptUpdateOne {
-	ids := make([]int, len(u))
+// RemoveScriptToUser removes "ScriptToUser" edges to User entities.
+func (suo *ScriptUpdateOne) RemoveScriptToUser(u ...*User) *ScriptUpdateOne {
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return suo.RemoveMaintainerIDs(ids...)
+	return suo.RemoveScriptToUserIDs(ids...)
 }
 
-// ClearFinding clears all "finding" edges to type Finding.
-func (suo *ScriptUpdateOne) ClearFinding() *ScriptUpdateOne {
-	suo.mutation.ClearFinding()
+// ClearScriptToFinding clears all "ScriptToFinding" edges to the Finding entity.
+func (suo *ScriptUpdateOne) ClearScriptToFinding() *ScriptUpdateOne {
+	suo.mutation.ClearScriptToFinding()
 	return suo
 }
 
-// RemoveFindingIDs removes the finding edge to Finding by ids.
-func (suo *ScriptUpdateOne) RemoveFindingIDs(ids ...int) *ScriptUpdateOne {
-	suo.mutation.RemoveFindingIDs(ids...)
+// RemoveScriptToFindingIDs removes the "ScriptToFinding" edge to Finding entities by IDs.
+func (suo *ScriptUpdateOne) RemoveScriptToFindingIDs(ids ...uuid.UUID) *ScriptUpdateOne {
+	suo.mutation.RemoveScriptToFindingIDs(ids...)
 	return suo
 }
 
-// RemoveFinding removes finding edges to Finding.
-func (suo *ScriptUpdateOne) RemoveFinding(f ...*Finding) *ScriptUpdateOne {
-	ids := make([]int, len(f))
+// RemoveScriptToFinding removes "ScriptToFinding" edges to Finding entities.
+func (suo *ScriptUpdateOne) RemoveScriptToFinding(f ...*Finding) *ScriptUpdateOne {
+	ids := make([]uuid.UUID, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return suo.RemoveFindingIDs(ids...)
+	return suo.RemoveScriptToFindingIDs(ids...)
 }
 
-// Save executes the query and returns the updated entity.
+// ClearScriptToEnvironment clears the "ScriptToEnvironment" edge to the Environment entity.
+func (suo *ScriptUpdateOne) ClearScriptToEnvironment() *ScriptUpdateOne {
+	suo.mutation.ClearScriptToEnvironment()
+	return suo
+}
+
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (suo *ScriptUpdateOne) Select(field string, fields ...string) *ScriptUpdateOne {
+	suo.fields = append([]string{field}, fields...)
+	return suo
+}
+
+// Save executes the query and returns the updated Script entity.
 func (suo *ScriptUpdateOne) Save(ctx context.Context) (*Script, error) {
 	var (
 		err  error
@@ -794,6 +803,9 @@ func (suo *ScriptUpdateOne) Save(ctx context.Context) (*Script, error) {
 			return node, err
 		})
 		for i := len(suo.hooks) - 1; i >= 0; i-- {
+			if suo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = suo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, suo.mutation); err != nil {
@@ -831,7 +843,7 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 			Table:   script.Table,
 			Columns: script.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: script.FieldID,
 			},
 		},
@@ -841,6 +853,32 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Script.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := suo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, script.FieldID)
+		for _, f := range fields {
+			if !script.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != script.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
+	if ps := suo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
+	if value, ok := suo.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: script.FieldHclID,
+		})
+	}
 	if value, ok := suo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -939,86 +977,39 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 			Column: script.FieldAbsPath,
 		})
 	}
-	if suo.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   script.TagTable,
-			Columns: []string{script.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	if value, ok := suo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: script.FieldTags,
+		})
 	}
-	if nodes := suo.mutation.RemovedTagIDs(); len(nodes) > 0 && !suo.mutation.TagCleared() {
+	if suo.mutation.ScriptToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   script.TagTable,
-			Columns: []string{script.TagColumn},
+			Table:   script.ScriptToUserTable,
+			Columns: []string{script.ScriptToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   script.TagTable,
-			Columns: []string{script.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if suo.mutation.MaintainerCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   script.MaintainerTable,
-			Columns: []string{script.MaintainerColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.RemovedMaintainerIDs(); len(nodes) > 0 && !suo.mutation.MaintainerCleared() {
+	if nodes := suo.mutation.RemovedScriptToUserIDs(); len(nodes) > 0 && !suo.mutation.ScriptToUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   script.MaintainerTable,
-			Columns: []string{script.MaintainerColumn},
+			Table:   script.ScriptToUserTable,
+			Columns: []string{script.ScriptToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -1028,16 +1019,16 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.MaintainerIDs(); len(nodes) > 0 {
+	if nodes := suo.mutation.ScriptToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   script.MaintainerTable,
-			Columns: []string{script.MaintainerColumn},
+			Table:   script.ScriptToUserTable,
+			Columns: []string{script.ScriptToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -1047,32 +1038,32 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if suo.mutation.FindingCleared() {
+	if suo.mutation.ScriptToFindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   script.FindingTable,
-			Columns: script.FindingPrimaryKey,
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   script.ScriptToFindingTable,
+			Columns: []string{script.ScriptToFindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: finding.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.RemovedFindingIDs(); len(nodes) > 0 && !suo.mutation.FindingCleared() {
+	if nodes := suo.mutation.RemovedScriptToFindingIDs(); len(nodes) > 0 && !suo.mutation.ScriptToFindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   script.FindingTable,
-			Columns: script.FindingPrimaryKey,
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   script.ScriptToFindingTable,
+			Columns: []string{script.ScriptToFindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: finding.FieldID,
 				},
 			},
@@ -1082,17 +1073,52 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.FindingIDs(); len(nodes) > 0 {
+	if nodes := suo.mutation.ScriptToFindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   script.FindingTable,
-			Columns: script.FindingPrimaryKey,
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   script.ScriptToFindingTable,
+			Columns: []string{script.ScriptToFindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: finding.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if suo.mutation.ScriptToEnvironmentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   script.ScriptToEnvironmentTable,
+			Columns: []string{script.ScriptToEnvironmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.ScriptToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   script.ScriptToEnvironmentTable,
+			Columns: []string{script.ScriptToEnvironmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -1103,12 +1129,12 @@ func (suo *ScriptUpdateOne) sqlSave(ctx context.Context) (_node *Script, err err
 	}
 	_node = &Script{config: suo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, suo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{script.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

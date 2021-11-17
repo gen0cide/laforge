@@ -106,80 +106,60 @@ const getEnvConfigQuery = (id: ID): DocumentNode => gql`
   {
     environment(envUUID: "${id}") {
       id
-      CompetitionID
-      Name
-      Description
-      Builder
-      TeamCount
-      AdminCIDRs
-      ExposedVDIPorts
+      competition_id
+      name
+      description
+      builder
+      team_count
+      admin_cidrs
+      exposed_vdi_ports
       tags {
-        id
-        name
-        description
+        key
+        value
       }
       config {
         key
         value
       }
-      maintainer {
+      EnvironmentToUser {
         id
         name
         uuid
         email
       }
-      build {
+      EnvironmentToBuild {
         id
         revision
-        tags {
+        buildToTeam {
           id
-          name
-          description
-        }
-        config {
-          key
-          value
-        }
-        maintainer {
-          id
-          name
-          uuid
-          email
-        }
-        teams {
-          id
-          teamNumber
-          provisionedNetworks {
+          team_number
+          TeamToProvisionedNetwork {
             id
             name
             cidr
-            network {
+            ProvisionedNetworkToNetwork {
               id
-              vdiVisible
+              vdi_visible
             }
-            provisionedHosts {
+            ProvisionedNetworkToProvisionedHost {
               id
-              subnetIP
-              host {
+              subnet_ip
+              ProvisionedHostToHost {
                 id
                 hostname
                 OS
-                allowMacChanges
-                exposedTCPPorts
-                exposedUDPPorts
-                userGroups
-                overridePassword
-                maintainer {
-                  name
-                  email
-                }
+                allow_mac_changes
+                exposed_tcp_ports
+                exposed_udp_ports
+                user_groups
+                override_password
                 vars {
                   key
                   value
                 }
                 tags {
-                  name
-                  description
+                  key
+                  value
                 }
               }
             }

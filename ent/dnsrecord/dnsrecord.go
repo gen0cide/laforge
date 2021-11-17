@@ -2,11 +2,17 @@
 
 package dnsrecord
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the dnsrecord type in the database.
 	Label = "dns_record"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldHclID holds the string denoting the hcl_id field in the database.
+	FieldHclID = "hcl_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldValues holds the string denoting the values field in the database.
@@ -19,35 +25,38 @@ const (
 	FieldVars = "vars"
 	// FieldDisabled holds the string denoting the disabled field in the database.
 	FieldDisabled = "disabled"
-
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
-
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
+	// EdgeDNSRecordToEnvironment holds the string denoting the dnsrecordtoenvironment edge name in mutations.
+	EdgeDNSRecordToEnvironment = "DNSRecordToEnvironment"
 	// Table holds the table name of the dnsrecord in the database.
 	Table = "dns_records"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "dns_record_tag"
+	// DNSRecordToEnvironmentTable is the table that holds the DNSRecordToEnvironment relation/edge.
+	DNSRecordToEnvironmentTable = "dns_records"
+	// DNSRecordToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	DNSRecordToEnvironmentInverseTable = "environments"
+	// DNSRecordToEnvironmentColumn is the table column denoting the DNSRecordToEnvironment relation/edge.
+	DNSRecordToEnvironmentColumn = "environment_environment_to_dns_record"
 )
 
 // Columns holds all SQL columns for dnsrecord fields.
 var Columns = []string{
 	FieldID,
+	FieldHclID,
 	FieldName,
 	FieldValues,
 	FieldType,
 	FieldZone,
 	FieldVars,
 	FieldDisabled,
+	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the DNSRecord type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "dns_records"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"provisioning_step_dns_record",
+	"environment_environment_to_dns_record",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -64,3 +73,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)

@@ -1,3 +1,4 @@
+//go:build ignore
 // +build ignore
 
 package main
@@ -5,16 +6,21 @@ package main
 import (
 	"log"
 
-	"github.com/facebook/ent/entc"
-	"github.com/facebook/ent/entc/gen"
-	"github.com/facebookincubator/ent-contrib/entgql"
+	"entgo.io/contrib/entgql"
+	"entgo.io/ent/entc"
+	"entgo.io/ent/entc/gen"
+	"github.com/hedwigz/entviz"
 )
 
 func main() {
-    err := entc.Generate("./schema", &gen.Config{
-        Templates: entgql.AllTemplates,
-    })
-    if err != nil {
-        log.Fatalf("running ent codegen: %v", err)
-    }
+	opts := []entc.Option{
+		entc.TemplateFiles("template/ent.tmpl"),
+		entc.Extensions(entviz.Extension{}),
+	}
+	err := entc.Generate("./schema", &gen.Config{
+		Templates: entgql.AllTemplates,
+	}, opts...)
+	if err != nil {
+		log.Fatalf("running ent codegen: %v", err)
+	}
 }

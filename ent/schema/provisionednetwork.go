@@ -1,9 +1,11 @@
 package schema
 
 import (
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // ProvisionedNetwork holds the schema definition for the ProvisionedNetwork entity.
@@ -14,6 +16,8 @@ type ProvisionedNetwork struct {
 // Fields of the ProvisionedNetwork.
 func (ProvisionedNetwork) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New),
 		field.String("name"),
 		field.String("cidr"),
 	}
@@ -22,10 +26,16 @@ func (ProvisionedNetwork) Fields() []ent.Field {
 // Edges of the ProvisionedNetwork.
 func (ProvisionedNetwork) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("status", Status.Type),
-		edge.To("network", Network.Type),
-		edge.From("build", Build.Type).Ref("ProvisionedNetworkToBuild"),
-		edge.To("ProvisionedNetworkToTeam", Team.Type),
-		edge.From("provisioned_hosts", ProvisionedHost.Type).Ref("provisioned_network"),
+		edge.To("ProvisionedNetworkToStatus", Status.Type).Unique().
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.To("ProvisionedNetworkToNetwork", Network.Type).Unique(),
+		edge.To("ProvisionedNetworkToBuild", Build.Type).Unique(),
+		edge.To("ProvisionedNetworkToTeam", Team.Type).Unique(),
+		edge.From("ProvisionedNetworkToProvisionedHost", ProvisionedHost.Type).
+			Ref("ProvisionedHostToProvisionedNetwork"),
+		edge.From("ProvisionedNetworkToPlan", Plan.Type).
+			Ref("PlanToProvisionedNetwork").Unique(),
 	}
 }

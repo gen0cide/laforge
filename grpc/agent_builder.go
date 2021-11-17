@@ -1,9 +1,8 @@
-package main
+package grpc
 
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,32 +10,33 @@ import (
 	"strings"
 
 	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/logging"
+	"github.com/sirupsen/logrus"
 )
 
-func buildAgent(agentID string, serverAddress string, binarypath string) {
-	if runtime.GOOS == "windows" {
-		binarypath = binarypath + ".exe"
+func BuildAgent(logger *logging.Logger, agentID string, serverAddress string, binarypath string, isWindows bool) error {
+	command := ""
+	if isWindows {
+		command = "CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=\"zcc\" go build -ldflags=\" -X 'main.clientID=" + agentID + "' -X 'main.address=" + serverAddress + "'\" -o " + binarypath + " github.com/gen0cide/laforge/grpc/agent"
+	} else {
+		command = "CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags=\" -X 'main.clientID=" + agentID + "' -X 'main.address=" + serverAddress + "'\" -o " + binarypath + " github.com/gen0cide/laforge/grpc/agent"
 	}
-	command := "go build -ldflags=\" -s -w -X 'main.clientID=" + agentID + "' -X 'main.address=" + serverAddress + "'\" -o " + binarypath + " github.com/gen0cide/laforge/grpc/agent"
-	fmt.Println(command)
 	cmd := exec.Command("bash", "-c", command)
-	if runtime.GOOS == "windows" {
-		cmd = exec.Command("powershell", "-c", command)
-	}
 	stdoutStderr, err := cmd.CombinedOutput()
 	cmd.Run()
 	if err != nil {
-		log.Fatal(err)
+		logrus.Errorf("Agent for %s failed to create: %v", agentID, err)
+		return err
 	}
-	fmt.Printf("Created %s, Output %s\n", binarypath, stdoutStderr)
-
+	logger.Log.Debugf("Created %s, Output %s\n", binarypath, stdoutStderr)
+	return nil
 }
 
 func main() {
 
 	client := &ent.Client{}
 
-	pgHost, ok := os.LookupEnv("PG_HOST")
+	pgHost, ok := os.LookupEnv("PG_URI")
 	if !ok {
 		client = ent.PGOpen("postgresql://laforger:laforge@127.0.0.1/laforge")
 	} else {
@@ -53,18 +53,18 @@ func main() {
 
 	// Run the auto migration tool.
 	if err := client.Schema.Create(ctx); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
+		logrus.Errorf("failed creating schema resources: %v", err)
 	}
 
 	phs, err := client.ProvisionedHost.Query().All(ctx)
 	if err != nil {
-		log.Fatalf("Failed to Query All Provisioned Hosts: %v", err)
+		logrus.Errorf("Failed to Query All Provisioned Hosts: %v", err)
 	}
 
 	for _, ph := range phs {
-		host, err := ph.QueryHost().Only(ctx)
+		host, err := ph.QueryProvisionedHostToHost().Only(ctx)
 		if err != nil {
-			log.Fatalf("Failed to Query Host: %v", err)
+			logrus.Errorf("Failed to Query Host: %v", err)
 		}
 		hostName := host.Hostname
 
@@ -79,24 +79,29 @@ func main() {
 			}
 		}
 
-		pn, err := ph.QueryProvisionedNetwork().Only(ctx)
+		pn, err := ph.QueryProvisionedHostToProvisionedNetwork().Only(ctx)
 		if err != nil {
-			log.Fatalf("Failed to Query Provisioned Network: %v", err)
+			logrus.Errorf("Failed to Query Provisioned Network: %v", err)
 		}
 		networkName := pn.Name
 
 		team, err := pn.QueryProvisionedNetworkToTeam().Only(ctx)
 		if err != nil {
-			log.Fatalf("Failed to Query Team: %v", err)
+			logrus.Errorf("Failed to Query Team: %v", err)
 		}
 		teamName := team.TeamNumber
-		env, err := team.QueryTeamToEnvironment().Only(ctx)
+		env, err := team.QueryTeamToBuild().QueryBuildToEnvironment().Only(ctx)
 		if err != nil {
-			log.Fatalf("Failed to Query Enviroment: %v", err)
+			logrus.Errorf("Failed to Query Enviroment: %v", err)
 		}
 		envName := env.Name
 
+		logger := logging.Logger{
+			Log:     &logrus.Logger{},
+			LogFile: "",
+		}
+
 		binaryName := filepath.Join(envName, "team", fmt.Sprint(teamName), networkName, hostName)
-		buildAgent(fmt.Sprint(ph.ID), serverAddress, binaryName)
+		BuildAgent(&logger, fmt.Sprint(ph.ID), serverAddress, binaryName, false)
 	}
 }

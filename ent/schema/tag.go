@@ -1,8 +1,8 @@
 package schema
 
 import (
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
 
@@ -14,6 +14,8 @@ type Tag struct {
 // Fields of the Tag.
 func (Tag) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New),
 		field.UUID("uuid", uuid.UUID{}),
 		field.String("name"),
 		field.JSON("description", map[string]string{}),

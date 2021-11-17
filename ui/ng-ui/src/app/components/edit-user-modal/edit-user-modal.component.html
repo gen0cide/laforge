@@ -1,0 +1,70 @@
+<div class="w-100 h-100 d-flex flex-column align-items-center justify-content-between">
+  <div>
+    <h2>
+      {{ data.user ? 'Editing' : 'Create User' }} <code *ngIf="data.user">{{ data.user.username }}</code>
+    </h2>
+    <p class="text-error" *ngIf="errorMessage | async">
+      {{ errorMessage | async }}
+    </p>
+    <hr />
+    <div class="overflow-scroll">
+      <mat-form-field appearance="fill" class="w-50 mb-5" *ngIf="!data.user">
+        <mat-label>Username *</mat-label>
+        <input matInput [formControl]="username" />
+        <mat-error *ngIf="username.invalid">{{ getUsernameErrorMessage() }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="fill" class="w-50 mb-5" *ngIf="data.user">
+        <mat-label>First Name</mat-label>
+        <input matInput [formControl]="firstName" />
+      </mat-form-field>
+      <mat-form-field appearance="fill" class="w-50 mb-5" *ngIf="data.user">
+        <mat-label>Last Name</mat-label>
+        <input matInput [formControl]="lastName" />
+      </mat-form-field>
+      <mat-form-field appearance="fill" class="w-50 mb-5">
+        <mat-label>Email *</mat-label>
+        <input matInput [formControl]="email" />
+        <mat-error *ngIf="email.invalid">{{ getEmailErrorMessage() }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="fill" class="w-100 mb-5" *ngIf="!data.user">
+        <mat-label>Password *</mat-label>
+        <input matInput [formControl]="password" type="password" />
+        <mat-error *ngIf="password.invalid">{{ getPasswordErrorMessage() }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="fill" class="w-50 mb-5" *ngIf="data.user">
+        <mat-label>Phone</mat-label>
+        <input matInput [formControl]="phone" />
+        <mat-error *ngIf="phone.invalid">{{ getPhoneErrorMessage() }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="fill" class="w-50 mb-5" *ngIf="data.user">
+        <mat-label>Company</mat-label>
+        <input matInput [formControl]="company" />
+      </mat-form-field>
+      <mat-form-field appearance="fill" class="w-50 mb-5" *ngIf="data.user">
+        <mat-label>Occupation</mat-label>
+        <input matInput [formControl]="occupation" />
+      </mat-form-field>
+      <mat-form-field appearance="fill" class="w-100 mb-5">
+        <mat-label>Role *</mat-label>
+        <mat-select mat [formControl]="role">
+          <mat-option *ngFor="let role of roleList" [value]="role">{{ role }}</mat-option>
+        </mat-select>
+        <mat-error *ngIf="provider.invalid">{{ getRoleErrorMessage() }}</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="fill" class="w-100 mb-5">
+        <mat-label>Provider *</mat-label>
+        <mat-select mat [formControl]="provider">
+          <mat-option *ngFor="let provider of providerList" [value]="provider">{{ provider }}</mat-option>
+        </mat-select>
+        <mat-error *ngIf="provider.invalid">{{ getProviderErrorMessage() }}</mat-error>
+      </mat-form-field>
+    </div>
+  </div>
+  <div class="w-100">
+    <hr />
+    <div class="w-100 d-flex align-items-center justify-content-end">
+      <button mat-flat-button (click)="cancel()" color="link" class="ml-auto mr-3"> Cancel </button>
+      <button mat-flat-button (click)="submit()" color="primary"> Submit </button>
+    </div>
+  </div>
+</div>

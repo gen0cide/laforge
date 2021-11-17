@@ -2,6 +2,10 @@
 
 package agentstatus
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the agentstatus type in the database.
 	Label = "agent_status"
@@ -35,17 +39,35 @@ const (
 	FieldUsedMem = "used_mem"
 	// FieldTimestamp holds the string denoting the timestamp field in the database.
 	FieldTimestamp = "timestamp"
-
-	// EdgeHost holds the string denoting the host edge name in mutations.
-	EdgeHost = "host"
-
+	// EdgeAgentStatusToProvisionedHost holds the string denoting the agentstatustoprovisionedhost edge name in mutations.
+	EdgeAgentStatusToProvisionedHost = "AgentStatusToProvisionedHost"
+	// EdgeAgentStatusToProvisionedNetwork holds the string denoting the agentstatustoprovisionednetwork edge name in mutations.
+	EdgeAgentStatusToProvisionedNetwork = "AgentStatusToProvisionedNetwork"
+	// EdgeAgentStatusToBuild holds the string denoting the agentstatustobuild edge name in mutations.
+	EdgeAgentStatusToBuild = "AgentStatusToBuild"
 	// Table holds the table name of the agentstatus in the database.
 	Table = "agent_status"
-	// HostTable is the table the holds the host relation/edge. The primary key declared below.
-	HostTable = "agent_status_host"
-	// HostInverseTable is the table name for the ProvisionedHost entity.
+	// AgentStatusToProvisionedHostTable is the table that holds the AgentStatusToProvisionedHost relation/edge.
+	AgentStatusToProvisionedHostTable = "agent_status"
+	// AgentStatusToProvisionedHostInverseTable is the table name for the ProvisionedHost entity.
 	// It exists in this package in order to avoid circular dependency with the "provisionedhost" package.
-	HostInverseTable = "provisioned_hosts"
+	AgentStatusToProvisionedHostInverseTable = "provisioned_hosts"
+	// AgentStatusToProvisionedHostColumn is the table column denoting the AgentStatusToProvisionedHost relation/edge.
+	AgentStatusToProvisionedHostColumn = "agent_status_agent_status_to_provisioned_host"
+	// AgentStatusToProvisionedNetworkTable is the table that holds the AgentStatusToProvisionedNetwork relation/edge.
+	AgentStatusToProvisionedNetworkTable = "agent_status"
+	// AgentStatusToProvisionedNetworkInverseTable is the table name for the ProvisionedNetwork entity.
+	// It exists in this package in order to avoid circular dependency with the "provisionednetwork" package.
+	AgentStatusToProvisionedNetworkInverseTable = "provisioned_networks"
+	// AgentStatusToProvisionedNetworkColumn is the table column denoting the AgentStatusToProvisionedNetwork relation/edge.
+	AgentStatusToProvisionedNetworkColumn = "agent_status_agent_status_to_provisioned_network"
+	// AgentStatusToBuildTable is the table that holds the AgentStatusToBuild relation/edge.
+	AgentStatusToBuildTable = "agent_status"
+	// AgentStatusToBuildInverseTable is the table name for the Build entity.
+	// It exists in this package in order to avoid circular dependency with the "build" package.
+	AgentStatusToBuildInverseTable = "builds"
+	// AgentStatusToBuildColumn is the table column denoting the AgentStatusToBuild relation/edge.
+	AgentStatusToBuildColumn = "agent_status_agent_status_to_build"
 )
 
 // Columns holds all SQL columns for agentstatus fields.
@@ -67,11 +89,13 @@ var Columns = []string{
 	FieldTimestamp,
 }
 
-var (
-	// HostPrimaryKey and HostColumn2 are the table columns denoting the
-	// primary key for the host relation (M2M).
-	HostPrimaryKey = []string{"agent_status_id", "provisioned_host_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the "agent_status"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"agent_status_agent_status_to_provisioned_host",
+	"agent_status_agent_status_to_provisioned_network",
+	"agent_status_agent_status_to_build",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -80,5 +104,15 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
+			return true
+		}
+	}
 	return false
 }
+
+var (
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)

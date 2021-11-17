@@ -18,9 +18,11 @@ import { UserOffcanvasComponent } from './offcanvas/user-offcanvas/user-offcanva
 import { CoreModule } from '../../../core';
 import { ScrollTopComponent } from './scroll-top/scroll-top.component';
 import { ToolbarComponent } from './toolbar/toolbar.component';
+import { LaforgePipesModule } from '../../../../pipes/pipes.module';
+import { MomentModule } from 'ngx-moment';
 
 const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
-  suppressScrollX: true,
+  suppressScrollX: true
 };
 
 @NgModule({
@@ -37,14 +39,14 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     QuickPanelOffcanvasComponent,
     UserOffcanvasComponent,
     ScrollTopComponent,
-    ToolbarComponent,
+    ToolbarComponent
   ],
-  imports: [CommonModule, InlineSVGModule, PerfectScrollbarModule, CoreModule],
+  imports: [CommonModule, InlineSVGModule, PerfectScrollbarModule, CoreModule, LaforgePipesModule, MomentModule],
   providers: [
     {
       provide: PERFECT_SCROLLBAR_CONFIG,
-      useValue: DEFAULT_PERFECT_SCROLLBAR_CONFIG,
-    },
+      useValue: DEFAULT_PERFECT_SCROLLBAR_CONFIG
+    }
   ],
   exports: [
     SearchDropdownInnerComponent,
@@ -58,7 +60,7 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     QuickPanelOffcanvasComponent,
     UserOffcanvasComponent,
     ToolbarComponent,
-    ScrollTopComponent,
-  ],
+    ScrollTopComponent
+  ]
 })
-export class ExtrasModule { }
+export class ExtrasModule {}

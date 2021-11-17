@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
@@ -20,9 +20,9 @@ type HostDelete struct {
 	mutation *HostMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where appends a list predicates to the HostDelete builder.
 func (hd *HostDelete) Where(ps ...predicate.Host) *HostDelete {
-	hd.mutation.predicates = append(hd.mutation.predicates, ps...)
+	hd.mutation.Where(ps...)
 	return hd
 }
 
@@ -46,6 +46,9 @@ func (hd *HostDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(hd.hooks) - 1; i >= 0; i-- {
+			if hd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = hd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, hd.mutation); err != nil {
@@ -69,7 +72,7 @@ func (hd *HostDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: host.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: host.FieldID,
 			},
 		},

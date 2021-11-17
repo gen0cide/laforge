@@ -1,9 +1,9 @@
-import { Renderer2, ChangeDetectorRef, Type } from '@angular/core';
-import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
-
-import { HostComponent } from './host.component';
+import { Renderer2, ChangeDetectorRef } from '@angular/core';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { coins_heads_01_provisioned } from 'src/data/corp';
+
+import { HostComponent } from './host.component';
 
 describe('HostComponent', () => {
   let component: HostComponent;

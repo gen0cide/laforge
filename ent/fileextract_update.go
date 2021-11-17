@@ -6,12 +6,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/google/uuid"
 )
 
 // FileExtractUpdate is the builder for updating FileExtract entities.
@@ -21,43 +22,59 @@ type FileExtractUpdate struct {
 	mutation *FileExtractMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where appends a list predicates to the FileExtractUpdate builder.
 func (feu *FileExtractUpdate) Where(ps ...predicate.FileExtract) *FileExtractUpdate {
-	feu.mutation.predicates = append(feu.mutation.predicates, ps...)
+	feu.mutation.Where(ps...)
 	return feu
 }
 
-// SetSource sets the source field.
+// SetHclID sets the "hcl_id" field.
+func (feu *FileExtractUpdate) SetHclID(s string) *FileExtractUpdate {
+	feu.mutation.SetHclID(s)
+	return feu
+}
+
+// SetSource sets the "source" field.
 func (feu *FileExtractUpdate) SetSource(s string) *FileExtractUpdate {
 	feu.mutation.SetSource(s)
 	return feu
 }
 
-// SetDestination sets the destination field.
+// SetDestination sets the "destination" field.
 func (feu *FileExtractUpdate) SetDestination(s string) *FileExtractUpdate {
 	feu.mutation.SetDestination(s)
 	return feu
 }
 
-// SetType sets the type field.
+// SetType sets the "type" field.
 func (feu *FileExtractUpdate) SetType(s string) *FileExtractUpdate {
 	feu.mutation.SetType(s)
 	return feu
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (feu *FileExtractUpdate) AddTagIDs(ids ...int) *FileExtractUpdate {
-	feu.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (feu *FileExtractUpdate) SetTags(m map[string]string) *FileExtractUpdate {
+	feu.mutation.SetTags(m)
 	return feu
 }
 
-// AddTag adds the tag edges to Tag.
-func (feu *FileExtractUpdate) AddTag(t ...*Tag) *FileExtractUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by ID.
+func (feu *FileExtractUpdate) SetFileExtractToEnvironmentID(id uuid.UUID) *FileExtractUpdate {
+	feu.mutation.SetFileExtractToEnvironmentID(id)
+	return feu
+}
+
+// SetNillableFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (feu *FileExtractUpdate) SetNillableFileExtractToEnvironmentID(id *uuid.UUID) *FileExtractUpdate {
+	if id != nil {
+		feu = feu.SetFileExtractToEnvironmentID(*id)
 	}
-	return feu.AddTagIDs(ids...)
+	return feu
+}
+
+// SetFileExtractToEnvironment sets the "FileExtractToEnvironment" edge to the Environment entity.
+func (feu *FileExtractUpdate) SetFileExtractToEnvironment(e *Environment) *FileExtractUpdate {
+	return feu.SetFileExtractToEnvironmentID(e.ID)
 }
 
 // Mutation returns the FileExtractMutation object of the builder.
@@ -65,25 +82,10 @@ func (feu *FileExtractUpdate) Mutation() *FileExtractMutation {
 	return feu.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (feu *FileExtractUpdate) ClearTag() *FileExtractUpdate {
-	feu.mutation.ClearTag()
+// ClearFileExtractToEnvironment clears the "FileExtractToEnvironment" edge to the Environment entity.
+func (feu *FileExtractUpdate) ClearFileExtractToEnvironment() *FileExtractUpdate {
+	feu.mutation.ClearFileExtractToEnvironment()
 	return feu
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (feu *FileExtractUpdate) RemoveTagIDs(ids ...int) *FileExtractUpdate {
-	feu.mutation.RemoveTagIDs(ids...)
-	return feu
-}
-
-// RemoveTag removes tag edges to Tag.
-func (feu *FileExtractUpdate) RemoveTag(t ...*Tag) *FileExtractUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return feu.RemoveTagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -106,6 +108,9 @@ func (feu *FileExtractUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(feu.hooks) - 1; i >= 0; i-- {
+			if feu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = feu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, feu.mutation); err != nil {
@@ -143,7 +148,7 @@ func (feu *FileExtractUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   fileextract.Table,
 			Columns: fileextract.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: fileextract.FieldID,
 			},
 		},
@@ -154,6 +159,13 @@ func (feu *FileExtractUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := feu.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: fileextract.FieldHclID,
+		})
 	}
 	if value, ok := feu.mutation.Source(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
@@ -176,52 +188,40 @@ func (feu *FileExtractUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: fileextract.FieldType,
 		})
 	}
-	if feu.mutation.TagCleared() {
+	if value, ok := feu.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: fileextract.FieldTags,
+		})
+	}
+	if feu.mutation.FileExtractToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   fileextract.TagTable,
-			Columns: []string{fileextract.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   fileextract.FileExtractToEnvironmentTable,
+			Columns: []string{fileextract.FileExtractToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := feu.mutation.RemovedTagIDs(); len(nodes) > 0 && !feu.mutation.TagCleared() {
+	if nodes := feu.mutation.FileExtractToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   fileextract.TagTable,
-			Columns: []string{fileextract.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   fileextract.FileExtractToEnvironmentTable,
+			Columns: []string{fileextract.FileExtractToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := feu.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   fileextract.TagTable,
-			Columns: []string{fileextract.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -233,8 +233,8 @@ func (feu *FileExtractUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, feu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{fileextract.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -244,41 +244,58 @@ func (feu *FileExtractUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // FileExtractUpdateOne is the builder for updating a single FileExtract entity.
 type FileExtractUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *FileExtractMutation
 }
 
-// SetSource sets the source field.
+// SetHclID sets the "hcl_id" field.
+func (feuo *FileExtractUpdateOne) SetHclID(s string) *FileExtractUpdateOne {
+	feuo.mutation.SetHclID(s)
+	return feuo
+}
+
+// SetSource sets the "source" field.
 func (feuo *FileExtractUpdateOne) SetSource(s string) *FileExtractUpdateOne {
 	feuo.mutation.SetSource(s)
 	return feuo
 }
 
-// SetDestination sets the destination field.
+// SetDestination sets the "destination" field.
 func (feuo *FileExtractUpdateOne) SetDestination(s string) *FileExtractUpdateOne {
 	feuo.mutation.SetDestination(s)
 	return feuo
 }
 
-// SetType sets the type field.
+// SetType sets the "type" field.
 func (feuo *FileExtractUpdateOne) SetType(s string) *FileExtractUpdateOne {
 	feuo.mutation.SetType(s)
 	return feuo
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (feuo *FileExtractUpdateOne) AddTagIDs(ids ...int) *FileExtractUpdateOne {
-	feuo.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (feuo *FileExtractUpdateOne) SetTags(m map[string]string) *FileExtractUpdateOne {
+	feuo.mutation.SetTags(m)
 	return feuo
 }
 
-// AddTag adds the tag edges to Tag.
-func (feuo *FileExtractUpdateOne) AddTag(t ...*Tag) *FileExtractUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by ID.
+func (feuo *FileExtractUpdateOne) SetFileExtractToEnvironmentID(id uuid.UUID) *FileExtractUpdateOne {
+	feuo.mutation.SetFileExtractToEnvironmentID(id)
+	return feuo
+}
+
+// SetNillableFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (feuo *FileExtractUpdateOne) SetNillableFileExtractToEnvironmentID(id *uuid.UUID) *FileExtractUpdateOne {
+	if id != nil {
+		feuo = feuo.SetFileExtractToEnvironmentID(*id)
 	}
-	return feuo.AddTagIDs(ids...)
+	return feuo
+}
+
+// SetFileExtractToEnvironment sets the "FileExtractToEnvironment" edge to the Environment entity.
+func (feuo *FileExtractUpdateOne) SetFileExtractToEnvironment(e *Environment) *FileExtractUpdateOne {
+	return feuo.SetFileExtractToEnvironmentID(e.ID)
 }
 
 // Mutation returns the FileExtractMutation object of the builder.
@@ -286,28 +303,20 @@ func (feuo *FileExtractUpdateOne) Mutation() *FileExtractMutation {
 	return feuo.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (feuo *FileExtractUpdateOne) ClearTag() *FileExtractUpdateOne {
-	feuo.mutation.ClearTag()
+// ClearFileExtractToEnvironment clears the "FileExtractToEnvironment" edge to the Environment entity.
+func (feuo *FileExtractUpdateOne) ClearFileExtractToEnvironment() *FileExtractUpdateOne {
+	feuo.mutation.ClearFileExtractToEnvironment()
 	return feuo
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (feuo *FileExtractUpdateOne) RemoveTagIDs(ids ...int) *FileExtractUpdateOne {
-	feuo.mutation.RemoveTagIDs(ids...)
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (feuo *FileExtractUpdateOne) Select(field string, fields ...string) *FileExtractUpdateOne {
+	feuo.fields = append([]string{field}, fields...)
 	return feuo
 }
 
-// RemoveTag removes tag edges to Tag.
-func (feuo *FileExtractUpdateOne) RemoveTag(t ...*Tag) *FileExtractUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return feuo.RemoveTagIDs(ids...)
-}
-
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated FileExtract entity.
 func (feuo *FileExtractUpdateOne) Save(ctx context.Context) (*FileExtract, error) {
 	var (
 		err  error
@@ -327,6 +336,9 @@ func (feuo *FileExtractUpdateOne) Save(ctx context.Context) (*FileExtract, error
 			return node, err
 		})
 		for i := len(feuo.hooks) - 1; i >= 0; i-- {
+			if feuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = feuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, feuo.mutation); err != nil {
@@ -364,7 +376,7 @@ func (feuo *FileExtractUpdateOne) sqlSave(ctx context.Context) (_node *FileExtra
 			Table:   fileextract.Table,
 			Columns: fileextract.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: fileextract.FieldID,
 			},
 		},
@@ -374,6 +386,32 @@ func (feuo *FileExtractUpdateOne) sqlSave(ctx context.Context) (_node *FileExtra
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing FileExtract.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := feuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, fileextract.FieldID)
+		for _, f := range fields {
+			if !fileextract.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != fileextract.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
+	if ps := feuo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
+	if value, ok := feuo.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: fileextract.FieldHclID,
+		})
+	}
 	if value, ok := feuo.mutation.Source(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -395,52 +433,40 @@ func (feuo *FileExtractUpdateOne) sqlSave(ctx context.Context) (_node *FileExtra
 			Column: fileextract.FieldType,
 		})
 	}
-	if feuo.mutation.TagCleared() {
+	if value, ok := feuo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: fileextract.FieldTags,
+		})
+	}
+	if feuo.mutation.FileExtractToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   fileextract.TagTable,
-			Columns: []string{fileextract.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   fileextract.FileExtractToEnvironmentTable,
+			Columns: []string{fileextract.FileExtractToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := feuo.mutation.RemovedTagIDs(); len(nodes) > 0 && !feuo.mutation.TagCleared() {
+	if nodes := feuo.mutation.FileExtractToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   fileextract.TagTable,
-			Columns: []string{fileextract.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   fileextract.FileExtractToEnvironmentTable,
+			Columns: []string{fileextract.FileExtractToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := feuo.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   fileextract.TagTable,
-			Columns: []string{fileextract.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -451,12 +477,12 @@ func (feuo *FileExtractUpdateOne) sqlSave(ctx context.Context) (_node *FileExtra
 	}
 	_node = &FileExtract{config: feuo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, feuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{fileextract.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

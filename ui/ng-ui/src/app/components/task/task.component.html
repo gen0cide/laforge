@@ -1,0 +1,14 @@
+<div class="task d-flex align-items-center justify-content-between">
+  <div class="task-type">
+    {{ task.type }}
+  </div>
+  <div class="task-status">
+    {{ taskStatus.state }}
+  </div>
+  <div class="task-start">
+    {{ task.start_time ? (task.start_time | amFromUtc | amDateFormat: 'MM/DD/YYYY, h:mm:ss A') : '' }}
+  </div>
+  <div class="task-end">
+    {{ task.end_time ? (task.end_time | amFromUtc | amDateFormat: 'MM/DD/YYYY, h:mm:ss A') : '' }}
+  </div>
+</div>

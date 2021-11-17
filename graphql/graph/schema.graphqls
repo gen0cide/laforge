@@ -2,6 +2,8 @@
 #
 # https://gqlgen.com/getting-started/
 
+scalar Time
+
 type varsMap {
   key: String!
   value: String!
@@ -12,21 +14,9 @@ type configMap {
   value: String!
 }
 
-type Disk {
-  size: Int!
-}
-
-type User {
-  id: ID!
-  name: String!
-  uuid: String!
-  email: String!
-}
-
-type Tag {
-  id: ID!
-  name: String!
-  description: String
+type tagMap {
+  key: String!
+  value: String!
 }
 
 enum FindingSeverity {
@@ -46,196 +36,105 @@ enum FindingDifficulty {
   NullDifficulty
 }
 
-type Finding {
-  name: String!
-  description: String!
-  severity: FindingSeverity!
-  difficulty: FindingDifficulty!
-  maintainer: User!
-  tags: [Tag]
-  Host: Host!
-}
-
-type DNSRecord {
-  id: ID!
-  name: String!
-  values: [String]!
-  type: String!
-  zone: String!
-  vars: [varsMap]
-  tags: [Tag]
-  disabled: Boolean!
-}
-
-type Script {
-  id: ID!
-  name: String!
-  language: String!
-  description: String!
-  source: String!
-  sourceType: String!
-  cooldown: Int!
-  timeout: Int!
-  ignoreErrors: Boolean!
-  args: [String]!
-  disabled: Boolean!
-  vars: [varsMap]
-  tags: [Tag]
-  absPath: String!
-  maintainer: User!
-  findings: [Finding]!
-}
-type Command {
-  id: ID!
-  name: String!
-  description: String!
-  program: String!
-  args: [String]!
-  ignoreErrors: Boolean!
-  cooldown: Int!
-  timeout: Int!
-  disabled: Boolean!
-  vars: [varsMap]
-  tags: [Tag]
-  maintainer: User!
-}
-type FileDownload {
-  id: ID!
-  sourceType: String!
-  source: String!
-  destination: String!
-  templete: Boolean!
-  mode: String!
-  disabled: Boolean!
-  md5: String!
-  absPath: String!
-  tags: [Tag]
-}
-type FileDelete {
-  id: ID!
-  path: String!
-}
-type FileExtract {
-  id: ID!
-  source: String!
-  destination: String!
-  type: String!
-}
-
-type Host {
-  id: ID!
-  hostname: String!
-  OS: String!
-  lastOctet: Int!
-  allowMacChanges: Boolean!
-  exposedTCPPorts: [String]!
-  exposedUDPPorts: [String]!
-  overridePassword: String!
-  vars: [varsMap]
-  userGroups: [String]!
-  dependsOn: [Host]!
-  maintainer: User!
-  tags: [Tag]
-  dnsRecords: [DNSRecord]
-  commands: [Command]
-  disk: Disk!
-  scripts: [Script]
-  fileDeletes: [FileDelete]
-  fileDownloads: [FileDownload]
-  fileExtracts: [FileExtract]
-}
-
-type Network {
-  id: ID!
-  name: String!
-  cidr: String!
-  vdiVisible: Boolean!
-  vars: [varsMap]
-  tags: [Tag]
-}
-
-type DNS {
-  id: ID!
-  type: String!
-  rootDomain: String!
-  DNSServers: [String]!
-  NTPServer: [String]!
-  config: [configMap]
-}
-
-type Build {
-  id: ID!
-  revision: Int!
-  tags: [Tag]
-  config: [configMap]
-  maintainer: User!
-  teams: [Team]!
-}
-
-type Environment {
-  id: ID!
-  CompetitionID: String!
-  Name: String!
-  Description: String!
-  Builder: String!
-  TeamCount: Int!
-  AdminCIDRs: [String]!
-  ExposedVDIPorts: [String]!
-  tags: [Tag]
-  config: [configMap]
-  maintainer: User!
-  networks: [Network]!
-  hosts: [Host]!
-  build: Build!
-  competition: Competition!
-}
-
-type Competition {
-  id: ID!
-  rootPassword: String!
-  config: [configMap]
-  dns: DNS!
-}
-
-type Team {
-  id: ID!
-  teamNumber: Int!
-  config: [configMap]
-  revision: Int!
-  maintainer: User!
-  build: Build!
-  environment: Environment!
-  tags: [Tag]
-  provisionedNetworks: [ProvisionedNetwork]!
-}
-
-type ProvisionedNetwork {
-  id: ID!
-  name: String!
-  cidr: String!
-  provisionedHosts: [ProvisionedHost]!
-  status: Status!
-  network: Network!
-  build: Build!
-}
-
 enum ProvisionStatus {
-  ProvStatusUndefined
-  ProvStatusPlanning
-  ProvStatusAwaiting
-  ProvStatusInProgress
-  ProvStatusFailed
-  ProvStatusComplete
-  ProvStatusTainted
+  PLANNING
+  AWAITING
+  INPROGRESS
+  FAILED
+  COMPLETE
+  TAINTED
+  UNDEFINED
+  TODELETE
+  DELETEINPROGRESS
+  DELETED
+  TOREBUILD
 }
 
-type Status {
-  state: ProvisionStatus!
-  startedAt: String!
-  endedAt: String!
-  failed: Boolean!
-  completed: Boolean!
-  error: String!
+enum ProvisionStatusFor {
+  Build
+  Team
+  Plan
+  ProvisionedNetwork
+  ProvisionedHost
+  ProvisioningStep
+  Undefined
+}
+
+enum PlanType {
+  start_build
+  start_team
+  provision_network
+  provision_host
+  execute_step
+  undefined
+}
+
+enum ProvisioningStepType {
+  Script
+  Command
+  DNSRecord
+  FileDelete
+  FileDownload
+  FileExtract
+  Undefined
+}
+
+enum RoleLevel {
+  ADMIN
+  USER
+  UNDEFINED
+}
+
+enum ProviderType {
+  LOCAL
+  GITHUB
+  OPENID
+  UNDEFINED
+}
+
+enum AgentCommand {
+  DEFAULT
+  DELETE
+  REBOOT
+  EXTRACT
+  DOWNLOAD
+  CREATEUSER
+  CREATEUSERPASS
+  ADDTOGROUP
+  EXECUTE
+  VALIDATE
+  CHANGEPERMS
+  APPENDFILE
+}
+
+enum AgentTaskState {
+  AWAITING
+  INPROGRESS
+  FAILED
+  COMPLETE
+}
+
+enum ServerTaskType {
+  LOADENV
+  CREATEBUILD
+  RENDERFILES
+  DELETEBUILD
+  REBUILD
+  EXECUTEBUILD
+}
+
+enum BuildCommitType {
+  ROOT
+  REBUILD
+  DELETE
+}
+
+enum BuildCommitState {
+  PLANNING
+  INPROGRESS
+  APPLIED
+  CANCELLED
+  APPROVED
 }
 
 type AgentStatus {
@@ -244,7 +143,7 @@ type AgentStatus {
   upTime: Int!
   bootTime: Int!
   numProcs: Int!
-  OS: String! 
+  OS: String!
   hostID: String!
   load1: Float
   load5: Float
@@ -255,55 +154,486 @@ type AgentStatus {
   timestamp: Int!
 }
 
-type ProvisionedHost {
+type AgentTask {
   id: ID!
-  subnetIP: String!
-  status: Status!
-  provisionedNetwork: ProvisionedNetwork!
-  provisionedSteps: [ProvisioningStep]!
-  host: Host!
-  combinedOutput: String # Link to WebSocket
-  heartbeat: AgentStatus
+  args: String
+  command: AgentCommand!
+  number: Int!
+  output: String
+  state: AgentTaskState!
+  error_message: String
 }
 
-type RemoteFile {
+type Build {
   id: ID!
+  revision: Int!
+  environment_revision: Int!
+  completed_plan: Boolean!
+  buildToStatus: Status!
+  buildToEnvironment: Environment!
+  buildToCompetition: Competition!
+  buildToProvisionedNetwork: [ProvisionedNetwork]!
+  buildToTeam: [Team]!
+  buildToPlan: [Plan]!
+  BuildToLatestBuildCommit: BuildCommit
+  BuildToBuildCommits: [BuildCommit]!
+}
+
+type BuildCommit {
+  id: ID!
+  type: BuildCommitType!
+  revision: Int!
+  state: BuildCommitState!
+  BuildCommitToBuild: Build!
+  BuildCommitToPlanDiffs: [PlanDiff]!
+}
+
+type Command {
+  id: ID!
+  hcl_id: String!
+  name: String!
+  description: String!
+  program: String!
+  args: [String]!
+  ignoreErrors: Boolean!
+  disabled: Boolean!
+  cooldown: Int!
+  timeout: Int!
+  vars: [varsMap]
+  tags: [tagMap]
+  CommandToEnvironment: Environment!
+}
+
+type Competition {
+  id: ID!
+  hcl_id: String!
+  root_password: String!
+  config: [configMap]
+  tags: [tagMap]
+  competitionToDNS: [DNS]!
+  CompetitionToEnvironment: Environment!
+  CompetitionToBuild: [Build]!
+}
+
+type Disk {
+  size: Int!
+  DiskToHost: Host!
+}
+
+type DNS {
+  id: ID!
+  hcl_id: String!
+  type: String!
+  root_domain: String!
+  dns_servers: [String]!
+  ntp_servers: [String]!
+  config: [configMap]
+  DNSToEnvironment: [Environment]!
+  DNSToCompetition: [Competition]!
+}
+
+type DNSRecord {
+  id: ID!
+  hcl_id: String!
+  name: String!
+  values: [String]!
+  type: String!
+  zone: String!
+  vars: [varsMap]!
+  disabled: Boolean!
+  tags: [tagMap]!
+  DNSRecordToEnvironment: Environment!
+}
+
+type Environment {
+  id: ID!
+  hcl_id: String!
+  competition_id: String!
+  name: String!
+  description: String!
+  builder: String!
+  team_count: Int!
+  revision: Int!
+  admin_cidrs: [String]!
+  exposed_vdi_ports: [String]!
+  config: [configMap]
+  tags: [tagMap]
+  EnvironmentToUser: [User]!
+  EnvironmentToHost: [Host]!
+  EnvironmentToCompetition: [Competition]!
+  EnvironmentToIdentity: [Identity]!
+  EnvironmentToCommand: [Command]!
+  EnvironmentToScript: [Script]!
+  EnvironmentToFileDownload: [FileDownload]!
+  EnvironmentToFileDelete: [FileDelete]!
+  EnvironmentToFileExtract: [FileExtract]!
+  EnvironmentToDNSRecord: [DNSRecord]!
+  EnvironmentToDNS: [DNS]!
+  EnvironmentToNetwork: [Network]!
+  EnvironmentToBuild: [Build]!
+  EnvironmentToRepository: [Repository]!
+}
+
+type FileDelete {
+  id: ID!
+  hcl_id: String!
+  path: String!
+  tags: [tagMap]!
+  FileDeleteToEnvironment: Environment!
+}
+
+type FileDownload {
+  id: ID!
+  hcl_id: String!
   sourceType: String!
   source: String!
   destination: String!
-  vars: [varsMap]
-  templete: Boolean!
+  template: Boolean!
   perms: String!
   disabled: Boolean!
   md5: String!
   absPath: String!
-  ext: String!
-  tags: [Tag]
+  tags: [tagMap]!
+  FileDownloadToEnvironment: Environment!
+}
+
+type FileExtract {
+  id: ID!
+  hcl_id: String!
+  source: String!
+  destination: String!
+  type: String!
+  tags: [tagMap]!
+  FileExtractToEnvironment: Environment!
+}
+
+type Finding {
+  name: String!
+  description: String!
+  severity: FindingSeverity!
+  difficulty: FindingDifficulty!
+  tags: [tagMap]!
+  FindingToUser: [User]!
+  FindingToScript: Script!
+  FindingToEnvironment: Environment!
+}
+
+type Host {
+  id: ID!
+  hcl_id: String!
+  hostname: String!
+  description: String!
+  OS: String!
+  last_octet: Int!
+  instance_size: String!
+  allow_mac_changes: Boolean!
+  exposed_tcp_ports: [String]!
+  exposed_udp_ports: [String]!
+  override_password: String!
+  vars: [varsMap]
+  user_groups: [String]!
+  provision_steps: [String]!
+  tags: [tagMap]!
+  HostToDisk: Disk!
+  HostToEnvironment: Environment!
+}
+
+type Identity {
+  id: ID!
+  hcl_id: String!
+  first_name: String!
+  last_name: String!
+  email: String!
+  password: String!
+  description: String!
+  avatar_file: String!
+  vars: [varsMap]!
+  tags: [tagMap]!
+  IdentityToEnvironment: Environment!
+}
+
+type Network {
+  id: ID!
+  hcl_id: String!
+  name: String!
+  cidr: String!
+  vdi_visible: Boolean!
+  vars: [varsMap]
+  tags: [tagMap]!
+  NetworkToEnvironment: Environment!
+}
+
+type Plan {
+  id: ID!
+  step_number: Int!
+  type: PlanType!
+  build_id: String!
+  NextPlan: [Plan]!
+  PrevPlan: [Plan]!
+  PlanToBuild: Build!
+  PlanToTeam: Team!
+  PlanToProvisionedNetwork: ProvisionedNetwork!
+  PlanToProvisionedHost: ProvisionedHost!
+  PlanToProvisioningStep: ProvisioningStep!
+  PlanToStatus: Status!
+  PlanToPlanDiffs: [PlanDiff]!
+}
+
+type PlanDiff {
+  id: ID!
+  revision: Int!
+  new_state: ProvisionStatus!
+  PlanDiffToBuildCommit: BuildCommit!
+  PlanDiffToPlan: Plan!
+}
+
+type ProvisionedHost {
+  id: ID!
+  subnet_ip: String!
+  ProvisionedHostToStatus: Status!
+  ProvisionedHostToProvisionedNetwork: ProvisionedNetwork!
+  ProvisionedHostToHost: Host!
+  ProvisionedHostToProvisioningStep: [ProvisioningStep]!
+  ProvisionedHostToAgentStatus: AgentStatus
+  ProvisionedHostToPlan: Plan!
+}
+
+type ProvisionedNetwork {
+  id: ID!
+  name: String!
+  cidr: String!
+  ProvisionedNetworkToStatus: Status!
+  ProvisionedNetworkToNetwork: Network!
+  ProvisionedNetworkToBuild: Build!
+  ProvisionedNetworkToTeam: Team!
+  ProvisionedNetworkToProvisionedHost: [ProvisionedHost]!
+  ProvisionedNetworkToPlan: Plan!
 }
 
 type ProvisioningStep {
   id: ID!
-  provisionType: String!
-  stepNumber: Int!
-  provisionedHost: ProvisionedHost!
-  status: Status!
-  script: Script
-  command: Command
-  DNSRecord: DNSRecord
-  remoteFile: RemoteFile
-  # fileDownload: FileDownload # Not Needed for now
-  # fileDelete: FileDelete
-  # fileExtract: FileExtract
+  type: ProvisioningStepType!
+  step_number: Int!
+  ProvisioningStepToStatus: Status!
+  ProvisioningStepToProvisionedHost: ProvisionedHost!
+  ProvisioningStepToScript: Script
+  ProvisioningStepToCommand: Command
+  ProvisioningStepToDNSRecord: DNSRecord
+  ProvisioningStepToFileDelete: FileDelete
+  ProvisioningStepToFileDownload: FileDownload
+  ProvisioningStepToFileExtract: FileExtract
+  ProvisioningStepToPlan: Plan
 }
 
+type Repository {
+  id: ID!
+  repo_url: String!
+  branch_name: String!
+  environment_filepath: String!
+  commit_info: String!
+}
+
+type Script {
+  id: ID!
+  hcl_id: String!
+  name: String!
+  language: String!
+  description: String!
+  source: String!
+  source_type: String!
+  cooldown: Int!
+  timeout: Int!
+  ignore_errors: Boolean!
+  args: [String]!
+  disabled: Boolean!
+  vars: [varsMap]
+  absPath: String!
+  tags: [tagMap]
+  scriptToFinding: [Finding]!
+  ScriptToEnvironment: Environment!
+}
+
+type ServerTask {
+  id: ID!
+  type: ServerTaskType!
+  start_time: Time
+  end_time: Time
+  errors: [String]
+  log_file_path: String
+  ServerTaskToAuthUser: AuthUser!
+  ServerTaskToStatus: Status!
+  ServerTaskToEnvironment: Environment
+  ServerTaskToBuild: Build
+}
+
+type Status {
+  id: ID!
+  state: ProvisionStatus!
+  status_for: ProvisionStatusFor!
+  started_at: String!
+  ended_at: String!
+  failed: Boolean!
+  completed: Boolean!
+  error: String
+}
+
+type Team {
+  id: ID!
+  team_number: Int!
+  TeamToBuild: Build!
+  TeamToStatus: Status!
+  TeamToProvisionedNetwork: [ProvisionedNetwork]!
+  TeamToPlan: Plan!
+}
+
+## TODO: May need to remove/repurpose in ent and here
+type User {
+  id: ID!
+  name: String!
+  uuid: String!
+  email: String!
+}
+###
+
+type AuthUser {
+  id: ID!
+  username: String!
+  role: RoleLevel!
+  provider: ProviderType!
+  first_name: String!
+  last_name: String!
+  email: String!
+  phone: String!
+  company: String!
+  occupation: String!
+  publicKey: String!
+}
+
+type LaForgePageInfo {
+  total: Int!
+  nextOffset: Int!
+}
+
+type AgentStatusBatch {
+  agentStatuses: [AgentStatus]!
+  pageInfo: LaForgePageInfo!
+}
+
+type StatusBatch {
+  statuses: [Status]!
+  pageInfo: LaForgePageInfo!
+}
+
+# TODO: Can use on INPUT_FIELD_DEFINITION if wanna have auth on a per variable level
+directive @hasRole(roles: [RoleLevel!]!) on FIELD_DEFINITION
+
 type Query {
-  environments: [Environment]!
-  environment(envUUID: String!): Environment!
-  provisionedHost(proHostUUID: String!): ProvisionedHost!
-  provisionedNetwork(proNetUUID: String!): ProvisionedNetwork!
-  provisionedStep(proStepUUID: String!): ProvisioningStep!
+  environments: [Environment] @hasRole(roles: [ADMIN, USER])
+  environment(envUUID: String!): Environment @hasRole(roles: [ADMIN, USER])
+  provisionedHost(proHostUUID: String!): ProvisionedHost
+    @hasRole(roles: [ADMIN, USER])
+  provisionedNetwork(proNetUUID: String!): ProvisionedNetwork
+    @hasRole(roles: [ADMIN, USER])
+  provisionedStep(proStepUUID: String!): ProvisioningStep
+    @hasRole(roles: [ADMIN, USER])
+  plan(planUUID: String!): Plan @hasRole(roles: [ADMIN, USER])
+  build(buildUUID: String!): Build @hasRole(roles: [ADMIN, USER])
+  status(statusUUID: String!): Status @hasRole(roles: [ADMIN, USER])
+  agentStatus(clientId: String!): AgentStatus @hasRole(roles: [ADMIN, USER])
+  getServerTasks: [ServerTask] @hasRole(roles: [ADMIN])
+  currentUser: AuthUser @hasRole(roles: [ADMIN, USER])
+  getUserList: [AuthUser] @hasRole(roles: [ADMIN])
+  getCurrentUserTasks: [ServerTask] @hasRole(roles: [ADMIN, USER])
+  getAgentTasks(proStepUUID: String!): [AgentTask]
+    @hasRole(roles: [ADMIN, USER])
+  getAllAgentStatus(
+    buildUUID: String!
+    count: Int!
+    offset: Int!
+  ): AgentStatusBatch @hasRole(roles: [ADMIN, USER])
+  getAllPlanStatus(buildUUID: String!, count: Int!, offset: Int!): StatusBatch
+    @hasRole(roles: [ADMIN, USER])
+  viewServerTaskLogs(taskID: String!): String! @hasRole(roles: [ADMIN, USER])
+  viewAgentTask(taskID: String!): AgentTask! @hasRole(roles: [ADMIN, USER])
 }
 
 type Mutation {
-  executePlan(buildUUID: String!): Build!
+  loadEnvironment(envFilePath: String!): [Environment]
+    @hasRole(roles: [ADMIN, USER])
+  createBuild(envUUID: String!, renderFiles: Boolean! = true): Build
+    @hasRole(roles: [ADMIN, USER])
+  deleteUser(userUUID: String!): Boolean! @hasRole(roles: [ADMIN, USER])
+  executePlan(buildUUID: String!): Build @hasRole(roles: [ADMIN, USER])
+  deleteBuild(buildUUID: String!): Boolean! @hasRole(roles: [ADMIN, USER])
+  createTask(
+    proHostUUID: String!
+    command: AgentCommand!
+    args: String!
+  ): Boolean! @hasRole(roles: [ADMIN, USER])
+  rebuild(rootPlans: [String]!): Boolean! @hasRole(roles: [ADMIN, USER])
+  approveCommit(commitUUID: String!): Boolean! @hasRole(roles: [ADMIN, USER])
+  cancelCommit(commitUUID: String!): Boolean! @hasRole(roles: [ADMIN, USER])
+
+  # createAdhoc(rootPlans: [AdhocPlan]!): Boolean!
+
+  createAgentTasks(
+    hostHCLID: String!
+    command: AgentCommand!
+    buildUUID: String!
+    args: [String!]!
+    teams: [Int!]!
+  ): [AgentTask]! @hasRole(roles: [ADMIN, USER])
+
+  createEnviromentFromRepo(
+    repoURL: String!
+    branchName: String! = "master"
+    repoName: String! = "REMOVE"
+    envFilePath: String!
+  ): [Environment]! @hasRole(roles: [ADMIN, USER])
+
+  updateEnviromentViaPull(envUUID: String!): [Environment]!
+    @hasRole(roles: [ADMIN, USER])
+
+  # User Info
+  modifySelfPassword(currentPassword: String!, newPassword: String!): Boolean!
+    @hasRole(roles: [ADMIN, USER])
+  modifySelfUserInfo(
+    firstName: String
+    lastName: String
+    email: String
+    phone: String
+    company: String
+    occupation: String
+  ): AuthUser @hasRole(roles: [ADMIN, USER])
+
+  # User Admin Stuff
+  createUser(
+    username: String!
+    password: String!
+    role: RoleLevel!
+    provider: ProviderType!
+  ): AuthUser @hasRole(roles: [ADMIN])
+  modifyAdminUserInfo(
+    userID: String!
+    username: String
+    firstName: String
+    lastName: String
+    email: String
+    phone: String
+    company: String
+    occupation: String
+    role: RoleLevel
+    provider: ProviderType
+  ): AuthUser @hasRole(roles: [ADMIN])
+  modifyAdminPassword(userID: String!, newPassword: String!): Boolean!
+    @hasRole(roles: [ADMIN])
+}
+
+type Subscription {
+  updatedAgentStatus: AgentStatus! @hasRole(roles: [ADMIN, USER])
+  updatedStatus: Status! @hasRole(roles: [ADMIN, USER])
+  updatedServerTask: ServerTask! @hasRole(roles: [ADMIN, USER])
+  updatedBuild: Build! @hasRole(roles: [ADMIN, USER])
+  updatedCommit: BuildCommit! @hasRole(roles: [ADMIN, USER])
+  updatedAgentTask: AgentTask! @hasRole(roles: [ADMIN, USER])
 }

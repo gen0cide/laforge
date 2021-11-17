@@ -10,16 +10,13 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
-	"os/exec"
+	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/gen0cide/laforge/grpc/agent/static"
 	pb "github.com/gen0cide/laforge/grpc/proto"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/kardianos/service"
 	"github.com/mholt/archiver"
 	"github.com/shirou/gopsutil/host"
@@ -27,21 +24,23 @@ import (
 	"github.com/shirou/gopsutil/mem"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
-	TaskFailed    = "Failed"
-	TaskRunning   = "Running"
-	TaskSucceeded = "Completed"
+	TaskFailed    = "FAILED"
+	TaskRunning   = "INPROGRESS"
+	TaskSucceeded = "COMPLETE"
 )
 
 var (
-	logger           service.Logger
-	address          = "localhost:50051"
-	defaultName      = "Laforge Agent"
+	logger  service.Logger
+	address = "localhost:50051"
+	// defaultName      = "Laforge Agent"
 	certFile         = "service.pem"
 	heartbeatSeconds = 10
 	clientID         = "1"
+	previousTask     = ""
 )
 
 // Program structures.
@@ -60,12 +59,8 @@ func (p *program) Start(s service.Service) error {
 }
 
 // ExecuteCommand Runs the Command that is inputted and either returns the error or output
-func ExecuteCommand(command string, args ...string) string {
-	output, err := exec.Command(command, args...).Output()
-	if err != nil {
-		return err.Error()
-	}
-	return string(output)
+func ExecuteCommand(command string, args ...string) (string, error) {
+	return SystemExecuteCommand(command, args...)
 }
 
 // DeleteObject Deletes the Object that is inputted and either returns the error or nothing
@@ -104,25 +99,37 @@ func AddUserGroup(groupname string, username string) error {
 }
 
 // DownloadFile will download a url to a local file.
-func DownloadFile(filepath string, url string) error {
+func DownloadFile(path string, url string) error {
+	return SystemDownloadFile(path, url)
+}
 
-	// Get the data
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
+// ChangePermissions will download a url to a local file.
+func ChangePermissions(path string, perms int) error {
+	var err error
+	_, err = os.Stat(path)
+	if err == nil {
+		// Make sure we have rwx permissions if it's a script
+		err = os.Chmod(path, os.FileMode(perms))
+		if err != nil {
+			return err
+		}
+		return nil
 	}
-	defer resp.Body.Close()
-
-	// Create the file
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	// Write the body to file
-	_, err = io.Copy(out, resp.Body)
 	return err
+}
+
+// AppendFile will download a url to a local file.
+func AppendFile(path string, content string) error {
+	var err error
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	if _, err := f.WriteString(content); err != nil {
+		return err
+	}
+	return nil
 }
 
 // ValidateMD5Hash Validates the MD5 Hash of a file with the provided MD5 Hash
@@ -167,87 +174,118 @@ func RequestTask(c pb.LaforgeClient) {
 	request := &pb.TaskRequest{ClientId: clientID}
 	r, err := c.GetTask(ctx, request)
 
-	taskRequest := &pb.TaskStatusRequest{ClientId: clientID, Status: TaskRunning}
+	if r.GetCommand() == pb.TaskReply_DEFAULT {
+		logger.Error("Recived empty task")
+		return
+	} else if r.Id == previousTask {
+		logger.Error("Recived duplicate Task")
+		return
+	}
+
+	taskRequest := &pb.TaskStatusRequest{
+		TaskId: r.GetId(),
+		Status: TaskRunning,
+	}
 	c.InformTaskStatus(ctx, taskRequest)
 
 	if err != nil {
 		logger.Errorf("Error: %v", err)
 	} else {
-		switch r.Command {
+		switch r.GetCommand() {
 		case pb.TaskReply_EXECUTE:
-			taskArgs := strings.Split(r.Args, " ")
+			taskArgs := strings.Split(r.GetArgs(), "💔")
 			command := taskArgs[0]
 			args := taskArgs[1:]
-			output := ExecuteCommand(command, args...)
-			logger.Infof("Command Output: %s", output)
-			RequestTaskStatusRequest(nil, clientID, c)
+			taskoutput, taskerr := ExecuteCommand(command, args...)
+			taskoutput = strings.ReplaceAll(taskoutput, "\n", "🔥")
+			// logger.Infof("Command Output: %s", output)
+			RequestTaskStatusRequest(taskoutput, taskerr, r.Id, c)
 		case pb.TaskReply_DOWNLOAD:
-			taskArgs := strings.Split(r.Args, ",")
+			taskArgs := strings.Split(r.GetArgs(), "💔")
 			filepath := taskArgs[0]
 			url := taskArgs[1]
 			taskerr := DownloadFile(filepath, url)
-			RequestTaskStatusRequest(taskerr, clientID, c)
+			RequestTaskStatusRequest("", taskerr, r.Id, c)
 		case pb.TaskReply_EXTRACT:
-			taskArgs := strings.Split(r.Args, ",")
+			taskArgs := strings.Split(r.GetArgs(), "💔")
 			filepath := taskArgs[0]
 			folder := taskArgs[1]
 			taskerr := ExtractArchive(filepath, folder)
-			RequestTaskStatusRequest(taskerr, clientID, c)
+			RequestTaskStatusRequest("", taskerr, r.Id, c)
 		case pb.TaskReply_DELETE:
-			taskerr := DeleteObject(r.Args)
-			RequestTaskStatusRequest(taskerr, clientID, c)
+			taskerr := DeleteObject(r.GetArgs())
+			RequestTaskStatusRequest("", taskerr, r.Id, c)
 		case pb.TaskReply_REBOOT:
+			// taskRequest := &pb.TaskStatusRequest{TaskId: r.Id, Status: TaskSucceeded}
+			// c.InformTaskStatus(ctx, taskRequest)
+			// Reboot after telling server task succeeded
+			RequestTaskStatusRequest("", nil, r.Id, c)
 			Reboot()
-			taskRequest := &pb.TaskStatusRequest{ClientId: clientID, Status: TaskSucceeded}
-			c.InformTaskStatus(ctx, taskRequest)
 		case pb.TaskReply_CREATEUSER:
-			taskArgs := strings.Split(r.Args, ",")
+			taskArgs := strings.Split(r.GetArgs(), "💔")
 			username := taskArgs[0]
 			password := taskArgs[1]
 			taskerr := CreateUser(username, password)
-			RequestTaskStatusRequest(taskerr, clientID, c)
+			RequestTaskStatusRequest("", taskerr, r.Id, c)
 		case pb.TaskReply_ADDTOGROUP:
-			taskArgs := strings.Split(r.Args, ",")
+			taskArgs := strings.Split(r.GetArgs(), "💔")
 			group := taskArgs[0]
 			username := taskArgs[1]
 			taskerr := AddUserGroup(group, username)
-			RequestTaskStatusRequest(taskerr, clientID, c)
+			RequestTaskStatusRequest("", taskerr, r.Id, c)
 		case pb.TaskReply_CREATEUSERPASS:
-			taskArgs := strings.Split(r.Args, ",")
+			taskArgs := strings.Split(r.GetArgs(), "💔")
 			username := taskArgs[0]
 			password := taskArgs[1]
 			taskerr := ChangeUserPassword(username, password)
-			RequestTaskStatusRequest(taskerr, clientID, c)
+			RequestTaskStatusRequest("", taskerr, r.Id, c)
 		case pb.TaskReply_VALIDATE:
-			taskArgs := strings.Split(r.Args, ",")
+			taskArgs := strings.Split(r.GetArgs(), "💔")
 			filepath := taskArgs[0]
 			md5hash := taskArgs[1]
 			taskerr := ValidateMD5Hash(filepath, md5hash)
-			RequestTaskStatusRequest(taskerr, clientID, c)
+			RequestTaskStatusRequest("", taskerr, r.Id, c)
+		case pb.TaskReply_CHANGEPERMS:
+			taskArgs := strings.Split(r.GetArgs(), "💔")
+			path := taskArgs[0]
+			permsString := taskArgs[1]
+			perms, taskerr := strconv.Atoi(permsString)
+			if taskerr == nil {
+				taskerr = ChangePermissions(path, perms)
+			}
+			RequestTaskStatusRequest("", taskerr, r.Id, c)
+		case pb.TaskReply_APPENDFILE:
+			taskArgs := strings.Split(r.GetArgs(), "💔")
+			path := taskArgs[0]
+			content := strings.ReplaceAll(taskArgs[1], "🔥", "\n")
+			taskerr := AppendFile(path, content)
+			RequestTaskStatusRequest("", taskerr, r.Id, c)
 		default:
 			logger.Infof("Response Message: %v", r)
-			RequestTaskStatusRequest(nil, clientID, c)
+			RequestTaskStatusRequest("", nil, r.Id, c)
 		}
+
+		previousTask = r.Id
 	}
 }
 
 // RequestTaskStatusRequest Tell the server the status of a completed task
-func RequestTaskStatusRequest(taskerr error, clientID string, c pb.LaforgeClient) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+func RequestTaskStatusRequest(taskoutput string, taskerr error, taskID string, c pb.LaforgeClient) {
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	if taskerr != nil {
 		logger.Errorf("Error: %v", taskerr)
-		taskRequest := &pb.TaskStatusRequest{ClientId: clientID, Status: TaskFailed}
+		taskRequest := &pb.TaskStatusRequest{TaskId: taskID, Status: TaskFailed, ErrorMessage: taskerr.Error(), Output: taskoutput}
 		c.InformTaskStatus(ctx, taskRequest)
 	} else {
-		taskRequest := &pb.TaskStatusRequest{ClientId: clientID, Status: TaskSucceeded}
+		taskRequest := &pb.TaskStatusRequest{TaskId: taskID, Status: TaskSucceeded, ErrorMessage: "", Output: taskoutput}
 		c.InformTaskStatus(ctx, taskRequest)
 	}
 }
 
 // SendHeartBeat Send the GRPC server a Heartbeat with specified parameters
-func SendHeartBeat(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+func SendHeartBeat(c pb.LaforgeClient, taskChannel chan *pb.HeartbeatReply) {
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	request := &pb.HeartbeatRequest{ClientId: clientID}
 	hostInfo, hostErr := host.Info()
@@ -271,18 +309,18 @@ func SendHeartBeat(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
 		(*request).Load5 = load.Load5
 		(*request).Load15 = load.Load15
 	}
-	(*request).Timestamp = ptypes.TimestampNow()
+	(*request).Timestamp = timestamppb.Now()
 	r, err := c.GetHeartBeat(ctx, request)
 	if err != nil {
 		logger.Errorf("Error: %v", err)
 	} else {
-		taskChannel <- *r
+		taskChannel <- r
 	}
 
 }
 
 // StartTaskRunner Gets a Heartbeat reply from the task channel, and if there are avalible tasks it will request them
-func StartTaskRunner(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
+func StartTaskRunner(c pb.LaforgeClient, taskChannel chan *pb.HeartbeatReply, doneChannel chan bool) {
 	r := <-taskChannel
 	// logger.Infof("Response Message: %s", r.GetStatus())
 	// logger.Infof("Avalible Tasks: %s", r.GetAvalibleTasks())
@@ -290,40 +328,75 @@ func StartTaskRunner(c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply) {
 	if r.GetAvalibleTasks() {
 		RequestTask(c)
 	}
+
+	doneChannel <- true
 }
 
 // genSendHeartBeat A goroutine that is called, which periodically send a heartbeat to the GRPC Server
-func genSendHeartBeat(p *program, c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply, wg sync.WaitGroup) {
+func genSendHeartBeat(p *program, c pb.LaforgeClient, taskChannel chan *pb.HeartbeatReply) chan bool {
+	// func genSendHeartBeat(p *program, c pb.LaforgeClient, taskChannel chan *pb.HeartbeatReply, wg *sync.WaitGroup) chan bool {
 	ticker := time.NewTicker(time.Duration(heartbeatSeconds) * time.Second)
-	defer wg.Done()
-	for {
-		select {
-		case <-ticker.C:
-			SendHeartBeat(c, taskChannel)
-		case <-p.exit:
-			ticker.Stop()
+	stop := make(chan bool, 1)
+
+	go func() {
+		defer logger.Info("ticker stopped")
+		for {
+			select {
+			case <-ticker.C:
+				go SendHeartBeat(c, taskChannel)
+			case <-p.exit:
+				stop <- true
+				return
+			}
 		}
-	}
+	}()
+
+	return stop
+	// defer wg.Done()
+	// for {
+	// 	select {
+	// 	case <-ticker.C:
+	// 		SendHeartBeat(c, taskChannel)
+	// 	case <-p.exit:
+	// 		ticker.Stop()
+	// 	}
+	// }
 }
 
 // genStartTaskRunner A goroutine that is called, which checks responses from GRPC server for avalible tasks
-func genStartTaskRunner(p *program, c pb.LaforgeClient, taskChannel chan pb.HeartbeatReply, wg sync.WaitGroup) {
+func genStartTaskRunner(p *program, c pb.LaforgeClient, taskChannel chan *pb.HeartbeatReply) chan bool {
+	// func genStartTaskRunner(p *program, c pb.LaforgeClient, taskChannel chan *pb.HeartbeatReply, wg *sync.WaitGroup) {
 	ticker := time.NewTicker(time.Duration(heartbeatSeconds) * time.Second)
-	defer wg.Done()
-	for {
-		select {
-		case <-ticker.C:
-			StartTaskRunner(c, taskChannel)
-		case <-p.exit:
-			ticker.Stop()
+	stop := make(chan bool, 1)
+
+	go func() {
+		defer logger.Info("ticker stopped")
+		taskIsDone := make(chan bool, 1)
+		// Kick off first task grab
+		taskIsDone <- true
+		for {
+			select {
+			case <-ticker.C:
+				select {
+				case <-taskIsDone:
+					go StartTaskRunner(c, taskChannel, taskIsDone)
+				default:
+					logger.Info("Task in progress")
+				}
+			case <-p.exit:
+				stop <- true
+				return
+			}
 		}
-	}
+	}()
+
+	return stop
 }
 
 // run Function that is called when the program starts and run all the Go Routines
 func (p *program) run() error {
 	logger.Infof("I'm running %v.", service.Platform())
-	var wg sync.WaitGroup
+	// var wg sync.WaitGroup
 
 	// TLS Cert for verifying GRPC Server
 	certPem, certerr := static.ReadFile(certFile)
@@ -345,19 +418,21 @@ func (p *program) run() error {
 	c := pb.NewLaforgeClient(conn)
 
 	// START VARS
-	taskChannel := make(chan pb.HeartbeatReply)
-	wg.Add(2)
-	go genSendHeartBeat(p, c, taskChannel, wg)
-	go genStartTaskRunner(p, c, taskChannel, wg)
+	taskChannel := make(chan *pb.HeartbeatReply)
+	// wg.Add(2)
+	heartbeatDone := genSendHeartBeat(p, c, taskChannel)
+	taskRunnerDone := genStartTaskRunner(p, c, taskChannel)
 
-	wg.Wait()
+	<-heartbeatDone
+	<-taskRunnerDone
+	// wg.Wait()
 	return nil
 }
 
 // Stop Called when the Agent is closed
 func (p *program) Stop(s service.Service) error {
 	// Any work in Stop should be quick, usually a few seconds at most.
-	logger.Info("I'm Stopping!")
+	logger.Error("I'm Stopping!")
 	close(p.exit)
 	return nil
 }
@@ -373,16 +448,14 @@ func main() {
 	flag.Parse()
 
 	options := make(service.KeyValue)
-	options["Restart"] = "on-success"
-	options["SuccessExitStatus"] = "1 2 8 SIGKILL"
+	options["Restart"] = "always"
+	// options["SuccessExitStatus"] = "1 2 8 SIGKILL"
 	svcConfig := &service.Config{
-		Name:        "laforge-agent",
-		DisplayName: "Laforge Client Agent",
-		Description: "Laforge Client Agent",
-		Dependencies: []string{
-			"Requires=network.target",
-			"After=network-online.target"},
-		Option: options,
+		Name:         "laforge-agent",
+		DisplayName:  "Laforge Agent",
+		Description:  "Tool used for monitoring hosts. NOT IN COMPETITION SCOPE",
+		Dependencies: GetSystemDependencies(),
+		Option:       options,
 	}
 
 	prg := &program{}
@@ -400,7 +473,7 @@ func main() {
 		for {
 			err := <-errs
 			if err != nil {
-				logger.Info(err)
+				logger.Error(err)
 			}
 		}
 	}()

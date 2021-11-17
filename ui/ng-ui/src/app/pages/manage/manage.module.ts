@@ -1,12 +1,15 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Routes, RouterModule } from '@angular/router';
-import { ManageComponent } from './manage.component';
-import { MatCardModule } from '@angular/material/card';
-import { MatTableModule } from '@angular/material/table';
+import { NgModule } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
+import { Routes, RouterModule } from '@angular/router';
+import { LaforgePipesModule } from 'src/app/pipes/pipes.module';
 
 import { ViewComponentsModule } from '../../components/view-components.module';
+
+import { ManageComponent } from './manage.component';
 
 const routes: Routes = [
   {
@@ -17,6 +20,15 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [ManageComponent],
-  imports: [CommonModule, RouterModule.forChild(routes), MatCardModule, ViewComponentsModule, MatTableModule, MatButtonModule]
+  imports: [
+    CommonModule,
+    RouterModule.forChild(routes),
+    MatCardModule,
+    ViewComponentsModule,
+    MatTableModule,
+    MatButtonModule,
+    MatSelectModule,
+    LaforgePipesModule
+  ]
 })
 export class ManageModule {}

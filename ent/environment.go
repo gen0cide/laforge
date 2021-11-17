@@ -7,267 +7,482 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/google/uuid"
 )
 
 // Environment is the model entity for the Environment schema.
 type Environment struct {
-	config `json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
+	// HclID holds the value of the "hcl_id" field.
+	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// CompetitionID holds the value of the "competition_id" field.
-	CompetitionID string `json:"competition_id,omitempty"`
+	CompetitionID string `json:"competition_id,omitempty" hcl:"competition_id,attr"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitempty" hcl:"description,attr"`
 	// Builder holds the value of the "builder" field.
-	Builder string `json:"builder,omitempty"`
+	Builder string `json:"builder,omitempty" hcl:"builder,attr"`
 	// TeamCount holds the value of the "team_count" field.
-	TeamCount int `json:"team_count,omitempty"`
+	TeamCount int `json:"team_count,omitempty" hcl:"team_count,attr"`
 	// Revision holds the value of the "revision" field.
-	Revision int `json:"revision,omitempty"`
+	Revision int `json:"revision,omitempty" hcl:"revision,optional"`
 	// AdminCidrs holds the value of the "admin_cidrs" field.
-	AdminCidrs []string `json:"admin_cidrs,omitempty"`
+	AdminCidrs []string `json:"admin_cidrs,omitempty" hcl:"admin_ranges,attr"`
 	// ExposedVdiPorts holds the value of the "exposed_vdi_ports" field.
-	ExposedVdiPorts []string `json:"exposed_vdi_ports,omitempty"`
+	ExposedVdiPorts []string `json:"exposed_vdi_ports,omitempty" hcl:"vdi_allowed_tcp_ports"`
 	// Config holds the value of the "config" field.
-	Config map[string]string `json:"config,omitempty"`
+	Config map[string]string `json:"config,omitempty" hcl:"config,optional"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the EnvironmentQuery when eager-loading is set.
 	Edges EnvironmentEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// EnvironmentToUser holds the value of the EnvironmentToUser edge.
+	HCLEnvironmentToUser []*User `json:"EnvironmentToUser,omitempty" hcl:"maintainer,block"`
+	// EnvironmentToHost holds the value of the EnvironmentToHost edge.
+	HCLEnvironmentToHost []*Host `json:"EnvironmentToHost,omitempty"`
+	// EnvironmentToCompetition holds the value of the EnvironmentToCompetition edge.
+	HCLEnvironmentToCompetition []*Competition `json:"EnvironmentToCompetition,omitempty"`
+	// EnvironmentToIdentity holds the value of the EnvironmentToIdentity edge.
+	HCLEnvironmentToIdentity []*Identity `json:"EnvironmentToIdentity,omitempty"`
+	// EnvironmentToCommand holds the value of the EnvironmentToCommand edge.
+	HCLEnvironmentToCommand []*Command `json:"EnvironmentToCommand,omitempty"`
+	// EnvironmentToScript holds the value of the EnvironmentToScript edge.
+	HCLEnvironmentToScript []*Script `json:"EnvironmentToScript,omitempty"`
+	// EnvironmentToFileDownload holds the value of the EnvironmentToFileDownload edge.
+	HCLEnvironmentToFileDownload []*FileDownload `json:"EnvironmentToFileDownload,omitempty"`
+	// EnvironmentToFileDelete holds the value of the EnvironmentToFileDelete edge.
+	HCLEnvironmentToFileDelete []*FileDelete `json:"EnvironmentToFileDelete,omitempty"`
+	// EnvironmentToFileExtract holds the value of the EnvironmentToFileExtract edge.
+	HCLEnvironmentToFileExtract []*FileExtract `json:"EnvironmentToFileExtract,omitempty"`
+	// EnvironmentToIncludedNetwork holds the value of the EnvironmentToIncludedNetwork edge.
+	HCLEnvironmentToIncludedNetwork []*IncludedNetwork `json:"EnvironmentToIncludedNetwork,omitempty" hcl:"included_network,block"`
+	// EnvironmentToFinding holds the value of the EnvironmentToFinding edge.
+	HCLEnvironmentToFinding []*Finding `json:"EnvironmentToFinding,omitempty"`
+	// EnvironmentToDNSRecord holds the value of the EnvironmentToDNSRecord edge.
+	HCLEnvironmentToDNSRecord []*DNSRecord `json:"EnvironmentToDNSRecord,omitempty"`
+	// EnvironmentToDNS holds the value of the EnvironmentToDNS edge.
+	HCLEnvironmentToDNS []*DNS `json:"EnvironmentToDNS,omitempty"`
+	// EnvironmentToNetwork holds the value of the EnvironmentToNetwork edge.
+	HCLEnvironmentToNetwork []*Network `json:"EnvironmentToNetwork,omitempty"`
+	// EnvironmentToHostDependency holds the value of the EnvironmentToHostDependency edge.
+	HCLEnvironmentToHostDependency []*HostDependency `json:"EnvironmentToHostDependency,omitempty"`
+	// EnvironmentToBuild holds the value of the EnvironmentToBuild edge.
+	HCLEnvironmentToBuild []*Build `json:"EnvironmentToBuild,omitempty"`
+	// EnvironmentToRepository holds the value of the EnvironmentToRepository edge.
+	HCLEnvironmentToRepository []*Repository `json:"EnvironmentToRepository,omitempty"`
+	//
+
 }
 
 // EnvironmentEdges holds the relations/edges for other nodes in the graph.
 type EnvironmentEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
-	// User holds the value of the user edge.
-	User []*User
-	// Host holds the value of the host edge.
-	Host []*Host
-	// Competition holds the value of the competition edge.
-	Competition []*Competition
-	// Build holds the value of the build edge.
-	Build []*Build
-	// IncludedNetwork holds the value of the included_network edge.
-	IncludedNetwork []*IncludedNetwork
-	// Network holds the value of the network edge.
-	Network []*Network
-	// Team holds the value of the team edge.
-	Team []*Team
+	// EnvironmentToUser holds the value of the EnvironmentToUser edge.
+	EnvironmentToUser []*User `json:"EnvironmentToUser,omitempty" hcl:"maintainer,block"`
+	// EnvironmentToHost holds the value of the EnvironmentToHost edge.
+	EnvironmentToHost []*Host `json:"EnvironmentToHost,omitempty"`
+	// EnvironmentToCompetition holds the value of the EnvironmentToCompetition edge.
+	EnvironmentToCompetition []*Competition `json:"EnvironmentToCompetition,omitempty"`
+	// EnvironmentToIdentity holds the value of the EnvironmentToIdentity edge.
+	EnvironmentToIdentity []*Identity `json:"EnvironmentToIdentity,omitempty"`
+	// EnvironmentToCommand holds the value of the EnvironmentToCommand edge.
+	EnvironmentToCommand []*Command `json:"EnvironmentToCommand,omitempty"`
+	// EnvironmentToScript holds the value of the EnvironmentToScript edge.
+	EnvironmentToScript []*Script `json:"EnvironmentToScript,omitempty"`
+	// EnvironmentToFileDownload holds the value of the EnvironmentToFileDownload edge.
+	EnvironmentToFileDownload []*FileDownload `json:"EnvironmentToFileDownload,omitempty"`
+	// EnvironmentToFileDelete holds the value of the EnvironmentToFileDelete edge.
+	EnvironmentToFileDelete []*FileDelete `json:"EnvironmentToFileDelete,omitempty"`
+	// EnvironmentToFileExtract holds the value of the EnvironmentToFileExtract edge.
+	EnvironmentToFileExtract []*FileExtract `json:"EnvironmentToFileExtract,omitempty"`
+	// EnvironmentToIncludedNetwork holds the value of the EnvironmentToIncludedNetwork edge.
+	EnvironmentToIncludedNetwork []*IncludedNetwork `json:"EnvironmentToIncludedNetwork,omitempty" hcl:"included_network,block"`
+	// EnvironmentToFinding holds the value of the EnvironmentToFinding edge.
+	EnvironmentToFinding []*Finding `json:"EnvironmentToFinding,omitempty"`
+	// EnvironmentToDNSRecord holds the value of the EnvironmentToDNSRecord edge.
+	EnvironmentToDNSRecord []*DNSRecord `json:"EnvironmentToDNSRecord,omitempty"`
+	// EnvironmentToDNS holds the value of the EnvironmentToDNS edge.
+	EnvironmentToDNS []*DNS `json:"EnvironmentToDNS,omitempty"`
+	// EnvironmentToNetwork holds the value of the EnvironmentToNetwork edge.
+	EnvironmentToNetwork []*Network `json:"EnvironmentToNetwork,omitempty"`
+	// EnvironmentToHostDependency holds the value of the EnvironmentToHostDependency edge.
+	EnvironmentToHostDependency []*HostDependency `json:"EnvironmentToHostDependency,omitempty"`
+	// EnvironmentToBuild holds the value of the EnvironmentToBuild edge.
+	EnvironmentToBuild []*Build `json:"EnvironmentToBuild,omitempty"`
+	// EnvironmentToRepository holds the value of the EnvironmentToRepository edge.
+	EnvironmentToRepository []*Repository `json:"EnvironmentToRepository,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [17]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// EnvironmentToUserOrErr returns the EnvironmentToUser value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) TagOrErr() ([]*Tag, error) {
+func (e EnvironmentEdges) EnvironmentToUserOrErr() ([]*User, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.EnvironmentToUser, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "EnvironmentToUser"}
 }
 
-// UserOrErr returns the User value or an error if the edge
+// EnvironmentToHostOrErr returns the EnvironmentToHost value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) UserOrErr() ([]*User, error) {
+func (e EnvironmentEdges) EnvironmentToHostOrErr() ([]*Host, error) {
 	if e.loadedTypes[1] {
-		return e.User, nil
+		return e.EnvironmentToHost, nil
 	}
-	return nil, &NotLoadedError{edge: "user"}
+	return nil, &NotLoadedError{edge: "EnvironmentToHost"}
 }
 
-// HostOrErr returns the Host value or an error if the edge
+// EnvironmentToCompetitionOrErr returns the EnvironmentToCompetition value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) HostOrErr() ([]*Host, error) {
+func (e EnvironmentEdges) EnvironmentToCompetitionOrErr() ([]*Competition, error) {
 	if e.loadedTypes[2] {
-		return e.Host, nil
+		return e.EnvironmentToCompetition, nil
 	}
-	return nil, &NotLoadedError{edge: "host"}
+	return nil, &NotLoadedError{edge: "EnvironmentToCompetition"}
 }
 
-// CompetitionOrErr returns the Competition value or an error if the edge
+// EnvironmentToIdentityOrErr returns the EnvironmentToIdentity value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) CompetitionOrErr() ([]*Competition, error) {
+func (e EnvironmentEdges) EnvironmentToIdentityOrErr() ([]*Identity, error) {
 	if e.loadedTypes[3] {
-		return e.Competition, nil
+		return e.EnvironmentToIdentity, nil
 	}
-	return nil, &NotLoadedError{edge: "competition"}
+	return nil, &NotLoadedError{edge: "EnvironmentToIdentity"}
 }
 
-// BuildOrErr returns the Build value or an error if the edge
+// EnvironmentToCommandOrErr returns the EnvironmentToCommand value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) BuildOrErr() ([]*Build, error) {
+func (e EnvironmentEdges) EnvironmentToCommandOrErr() ([]*Command, error) {
 	if e.loadedTypes[4] {
-		return e.Build, nil
+		return e.EnvironmentToCommand, nil
 	}
-	return nil, &NotLoadedError{edge: "build"}
+	return nil, &NotLoadedError{edge: "EnvironmentToCommand"}
 }
 
-// IncludedNetworkOrErr returns the IncludedNetwork value or an error if the edge
+// EnvironmentToScriptOrErr returns the EnvironmentToScript value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) IncludedNetworkOrErr() ([]*IncludedNetwork, error) {
+func (e EnvironmentEdges) EnvironmentToScriptOrErr() ([]*Script, error) {
 	if e.loadedTypes[5] {
-		return e.IncludedNetwork, nil
+		return e.EnvironmentToScript, nil
 	}
-	return nil, &NotLoadedError{edge: "included_network"}
+	return nil, &NotLoadedError{edge: "EnvironmentToScript"}
 }
 
-// NetworkOrErr returns the Network value or an error if the edge
+// EnvironmentToFileDownloadOrErr returns the EnvironmentToFileDownload value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) NetworkOrErr() ([]*Network, error) {
+func (e EnvironmentEdges) EnvironmentToFileDownloadOrErr() ([]*FileDownload, error) {
 	if e.loadedTypes[6] {
-		return e.Network, nil
+		return e.EnvironmentToFileDownload, nil
 	}
-	return nil, &NotLoadedError{edge: "network"}
+	return nil, &NotLoadedError{edge: "EnvironmentToFileDownload"}
 }
 
-// TeamOrErr returns the Team value or an error if the edge
+// EnvironmentToFileDeleteOrErr returns the EnvironmentToFileDelete value or an error if the edge
 // was not loaded in eager-loading.
-func (e EnvironmentEdges) TeamOrErr() ([]*Team, error) {
+func (e EnvironmentEdges) EnvironmentToFileDeleteOrErr() ([]*FileDelete, error) {
 	if e.loadedTypes[7] {
-		return e.Team, nil
+		return e.EnvironmentToFileDelete, nil
 	}
-	return nil, &NotLoadedError{edge: "team"}
+	return nil, &NotLoadedError{edge: "EnvironmentToFileDelete"}
+}
+
+// EnvironmentToFileExtractOrErr returns the EnvironmentToFileExtract value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) EnvironmentToFileExtractOrErr() ([]*FileExtract, error) {
+	if e.loadedTypes[8] {
+		return e.EnvironmentToFileExtract, nil
+	}
+	return nil, &NotLoadedError{edge: "EnvironmentToFileExtract"}
+}
+
+// EnvironmentToIncludedNetworkOrErr returns the EnvironmentToIncludedNetwork value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) EnvironmentToIncludedNetworkOrErr() ([]*IncludedNetwork, error) {
+	if e.loadedTypes[9] {
+		return e.EnvironmentToIncludedNetwork, nil
+	}
+	return nil, &NotLoadedError{edge: "EnvironmentToIncludedNetwork"}
+}
+
+// EnvironmentToFindingOrErr returns the EnvironmentToFinding value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) EnvironmentToFindingOrErr() ([]*Finding, error) {
+	if e.loadedTypes[10] {
+		return e.EnvironmentToFinding, nil
+	}
+	return nil, &NotLoadedError{edge: "EnvironmentToFinding"}
+}
+
+// EnvironmentToDNSRecordOrErr returns the EnvironmentToDNSRecord value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) EnvironmentToDNSRecordOrErr() ([]*DNSRecord, error) {
+	if e.loadedTypes[11] {
+		return e.EnvironmentToDNSRecord, nil
+	}
+	return nil, &NotLoadedError{edge: "EnvironmentToDNSRecord"}
+}
+
+// EnvironmentToDNSOrErr returns the EnvironmentToDNS value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) EnvironmentToDNSOrErr() ([]*DNS, error) {
+	if e.loadedTypes[12] {
+		return e.EnvironmentToDNS, nil
+	}
+	return nil, &NotLoadedError{edge: "EnvironmentToDNS"}
+}
+
+// EnvironmentToNetworkOrErr returns the EnvironmentToNetwork value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) EnvironmentToNetworkOrErr() ([]*Network, error) {
+	if e.loadedTypes[13] {
+		return e.EnvironmentToNetwork, nil
+	}
+	return nil, &NotLoadedError{edge: "EnvironmentToNetwork"}
+}
+
+// EnvironmentToHostDependencyOrErr returns the EnvironmentToHostDependency value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) EnvironmentToHostDependencyOrErr() ([]*HostDependency, error) {
+	if e.loadedTypes[14] {
+		return e.EnvironmentToHostDependency, nil
+	}
+	return nil, &NotLoadedError{edge: "EnvironmentToHostDependency"}
+}
+
+// EnvironmentToBuildOrErr returns the EnvironmentToBuild value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) EnvironmentToBuildOrErr() ([]*Build, error) {
+	if e.loadedTypes[15] {
+		return e.EnvironmentToBuild, nil
+	}
+	return nil, &NotLoadedError{edge: "EnvironmentToBuild"}
+}
+
+// EnvironmentToRepositoryOrErr returns the EnvironmentToRepository value or an error if the edge
+// was not loaded in eager-loading.
+func (e EnvironmentEdges) EnvironmentToRepositoryOrErr() ([]*Repository, error) {
+	if e.loadedTypes[16] {
+		return e.EnvironmentToRepository, nil
+	}
+	return nil, &NotLoadedError{edge: "EnvironmentToRepository"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Environment) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&sql.NullString{}, // competition_id
-		&sql.NullString{}, // name
-		&sql.NullString{}, // description
-		&sql.NullString{}, // builder
-		&sql.NullInt64{},  // team_count
-		&sql.NullInt64{},  // revision
-		&[]byte{},         // admin_cidrs
-		&[]byte{},         // exposed_vdi_ports
-		&[]byte{},         // config
+func (*Environment) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case environment.FieldAdminCidrs, environment.FieldExposedVdiPorts, environment.FieldConfig, environment.FieldTags:
+			values[i] = new([]byte)
+		case environment.FieldTeamCount, environment.FieldRevision:
+			values[i] = new(sql.NullInt64)
+		case environment.FieldHclID, environment.FieldCompetitionID, environment.FieldName, environment.FieldDescription, environment.FieldBuilder:
+			values[i] = new(sql.NullString)
+		case environment.FieldID:
+			values[i] = new(uuid.UUID)
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type Environment", columns[i])
+		}
 	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Environment fields.
-func (e *Environment) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(environment.Columns); m < n {
+func (e *Environment) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	e.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field competition_id", values[0])
-	} else if value.Valid {
-		e.CompetitionID = value.String
-	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field name", values[1])
-	} else if value.Valid {
-		e.Name = value.String
-	}
-	if value, ok := values[2].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field description", values[2])
-	} else if value.Valid {
-		e.Description = value.String
-	}
-	if value, ok := values[3].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field builder", values[3])
-	} else if value.Valid {
-		e.Builder = value.String
-	}
-	if value, ok := values[4].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field team_count", values[4])
-	} else if value.Valid {
-		e.TeamCount = int(value.Int64)
-	}
-	if value, ok := values[5].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field revision", values[5])
-	} else if value.Valid {
-		e.Revision = int(value.Int64)
-	}
-
-	if value, ok := values[6].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field admin_cidrs", values[6])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &e.AdminCidrs); err != nil {
-			return fmt.Errorf("unmarshal field admin_cidrs: %v", err)
-		}
-	}
-
-	if value, ok := values[7].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field exposed_vdi_ports", values[7])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &e.ExposedVdiPorts); err != nil {
-			return fmt.Errorf("unmarshal field exposed_vdi_ports: %v", err)
-		}
-	}
-
-	if value, ok := values[8].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field config", values[8])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &e.Config); err != nil {
-			return fmt.Errorf("unmarshal field config: %v", err)
+	for i := range columns {
+		switch columns[i] {
+		case environment.FieldID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				e.ID = *value
+			}
+		case environment.FieldHclID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
+			} else if value.Valid {
+				e.HclID = value.String
+			}
+		case environment.FieldCompetitionID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field competition_id", values[i])
+			} else if value.Valid {
+				e.CompetitionID = value.String
+			}
+		case environment.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				e.Name = value.String
+			}
+		case environment.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				e.Description = value.String
+			}
+		case environment.FieldBuilder:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field builder", values[i])
+			} else if value.Valid {
+				e.Builder = value.String
+			}
+		case environment.FieldTeamCount:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field team_count", values[i])
+			} else if value.Valid {
+				e.TeamCount = int(value.Int64)
+			}
+		case environment.FieldRevision:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field revision", values[i])
+			} else if value.Valid {
+				e.Revision = int(value.Int64)
+			}
+		case environment.FieldAdminCidrs:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field admin_cidrs", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &e.AdminCidrs); err != nil {
+					return fmt.Errorf("unmarshal field admin_cidrs: %w", err)
+				}
+			}
+		case environment.FieldExposedVdiPorts:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field exposed_vdi_ports", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &e.ExposedVdiPorts); err != nil {
+					return fmt.Errorf("unmarshal field exposed_vdi_ports: %w", err)
+				}
+			}
+		case environment.FieldConfig:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field config", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &e.Config); err != nil {
+					return fmt.Errorf("unmarshal field config: %w", err)
+				}
+			}
+		case environment.FieldTags:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field tags", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &e.Tags); err != nil {
+					return fmt.Errorf("unmarshal field tags: %w", err)
+				}
+			}
 		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the Environment.
-func (e *Environment) QueryTag() *TagQuery {
-	return (&EnvironmentClient{config: e.config}).QueryTag(e)
+// QueryEnvironmentToUser queries the "EnvironmentToUser" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToUser() *UserQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToUser(e)
 }
 
-// QueryUser queries the user edge of the Environment.
-func (e *Environment) QueryUser() *UserQuery {
-	return (&EnvironmentClient{config: e.config}).QueryUser(e)
+// QueryEnvironmentToHost queries the "EnvironmentToHost" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToHost() *HostQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToHost(e)
 }
 
-// QueryHost queries the host edge of the Environment.
-func (e *Environment) QueryHost() *HostQuery {
-	return (&EnvironmentClient{config: e.config}).QueryHost(e)
+// QueryEnvironmentToCompetition queries the "EnvironmentToCompetition" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToCompetition() *CompetitionQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToCompetition(e)
 }
 
-// QueryCompetition queries the competition edge of the Environment.
-func (e *Environment) QueryCompetition() *CompetitionQuery {
-	return (&EnvironmentClient{config: e.config}).QueryCompetition(e)
+// QueryEnvironmentToIdentity queries the "EnvironmentToIdentity" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToIdentity() *IdentityQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToIdentity(e)
 }
 
-// QueryBuild queries the build edge of the Environment.
-func (e *Environment) QueryBuild() *BuildQuery {
-	return (&EnvironmentClient{config: e.config}).QueryBuild(e)
+// QueryEnvironmentToCommand queries the "EnvironmentToCommand" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToCommand() *CommandQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToCommand(e)
 }
 
-// QueryIncludedNetwork queries the included_network edge of the Environment.
-func (e *Environment) QueryIncludedNetwork() *IncludedNetworkQuery {
-	return (&EnvironmentClient{config: e.config}).QueryIncludedNetwork(e)
+// QueryEnvironmentToScript queries the "EnvironmentToScript" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToScript() *ScriptQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToScript(e)
 }
 
-// QueryNetwork queries the network edge of the Environment.
-func (e *Environment) QueryNetwork() *NetworkQuery {
-	return (&EnvironmentClient{config: e.config}).QueryNetwork(e)
+// QueryEnvironmentToFileDownload queries the "EnvironmentToFileDownload" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToFileDownload() *FileDownloadQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToFileDownload(e)
 }
 
-// QueryTeam queries the team edge of the Environment.
-func (e *Environment) QueryTeam() *TeamQuery {
-	return (&EnvironmentClient{config: e.config}).QueryTeam(e)
+// QueryEnvironmentToFileDelete queries the "EnvironmentToFileDelete" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToFileDelete() *FileDeleteQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToFileDelete(e)
+}
+
+// QueryEnvironmentToFileExtract queries the "EnvironmentToFileExtract" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToFileExtract() *FileExtractQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToFileExtract(e)
+}
+
+// QueryEnvironmentToIncludedNetwork queries the "EnvironmentToIncludedNetwork" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToIncludedNetwork() *IncludedNetworkQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToIncludedNetwork(e)
+}
+
+// QueryEnvironmentToFinding queries the "EnvironmentToFinding" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToFinding() *FindingQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToFinding(e)
+}
+
+// QueryEnvironmentToDNSRecord queries the "EnvironmentToDNSRecord" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToDNSRecord() *DNSRecordQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToDNSRecord(e)
+}
+
+// QueryEnvironmentToDNS queries the "EnvironmentToDNS" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToDNS() *DNSQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToDNS(e)
+}
+
+// QueryEnvironmentToNetwork queries the "EnvironmentToNetwork" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToNetwork() *NetworkQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToNetwork(e)
+}
+
+// QueryEnvironmentToHostDependency queries the "EnvironmentToHostDependency" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToHostDependency() *HostDependencyQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToHostDependency(e)
+}
+
+// QueryEnvironmentToBuild queries the "EnvironmentToBuild" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToBuild() *BuildQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToBuild(e)
+}
+
+// QueryEnvironmentToRepository queries the "EnvironmentToRepository" edge of the Environment entity.
+func (e *Environment) QueryEnvironmentToRepository() *RepositoryQuery {
+	return (&EnvironmentClient{config: e.config}).QueryEnvironmentToRepository(e)
 }
 
 // Update returns a builder for updating this Environment.
-// Note that, you need to call Environment.Unwrap() before calling this method, if this Environment
+// Note that you need to call Environment.Unwrap() before calling this method if this Environment
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (e *Environment) Update() *EnvironmentUpdateOne {
 	return (&EnvironmentClient{config: e.config}).UpdateOne(e)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the Environment entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (e *Environment) Unwrap() *Environment {
 	tx, ok := e.config.driver.(*txDriver)
 	if !ok {
@@ -282,6 +497,8 @@ func (e *Environment) String() string {
 	var builder strings.Builder
 	builder.WriteString("Environment(")
 	builder.WriteString(fmt.Sprintf("id=%v", e.ID))
+	builder.WriteString(", hcl_id=")
+	builder.WriteString(e.HclID)
 	builder.WriteString(", competition_id=")
 	builder.WriteString(e.CompetitionID)
 	builder.WriteString(", name=")
@@ -300,6 +517,8 @@ func (e *Environment) String() string {
 	builder.WriteString(fmt.Sprintf("%v", e.ExposedVdiPorts))
 	builder.WriteString(", config=")
 	builder.WriteString(fmt.Sprintf("%v", e.Config))
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", e.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

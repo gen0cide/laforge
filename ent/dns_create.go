@@ -7,9 +7,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/dns"
+	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/google/uuid"
 )
 
 // DNSCreate is the builder for creating a DNS entity.
@@ -19,34 +22,76 @@ type DNSCreate struct {
 	hooks    []Hook
 }
 
-// SetType sets the type field.
+// SetHclID sets the "hcl_id" field.
+func (dc *DNSCreate) SetHclID(s string) *DNSCreate {
+	dc.mutation.SetHclID(s)
+	return dc
+}
+
+// SetType sets the "type" field.
 func (dc *DNSCreate) SetType(s string) *DNSCreate {
 	dc.mutation.SetType(s)
 	return dc
 }
 
-// SetRootDomain sets the root_domain field.
+// SetRootDomain sets the "root_domain" field.
 func (dc *DNSCreate) SetRootDomain(s string) *DNSCreate {
 	dc.mutation.SetRootDomain(s)
 	return dc
 }
 
-// SetDNSServers sets the dns_servers field.
+// SetDNSServers sets the "dns_servers" field.
 func (dc *DNSCreate) SetDNSServers(s []string) *DNSCreate {
 	dc.mutation.SetDNSServers(s)
 	return dc
 }
 
-// SetNtpServers sets the ntp_servers field.
+// SetNtpServers sets the "ntp_servers" field.
 func (dc *DNSCreate) SetNtpServers(s []string) *DNSCreate {
 	dc.mutation.SetNtpServers(s)
 	return dc
 }
 
-// SetConfig sets the config field.
+// SetConfig sets the "config" field.
 func (dc *DNSCreate) SetConfig(m map[string]string) *DNSCreate {
 	dc.mutation.SetConfig(m)
 	return dc
+}
+
+// SetID sets the "id" field.
+func (dc *DNSCreate) SetID(u uuid.UUID) *DNSCreate {
+	dc.mutation.SetID(u)
+	return dc
+}
+
+// AddDNSToEnvironmentIDs adds the "DNSToEnvironment" edge to the Environment entity by IDs.
+func (dc *DNSCreate) AddDNSToEnvironmentIDs(ids ...uuid.UUID) *DNSCreate {
+	dc.mutation.AddDNSToEnvironmentIDs(ids...)
+	return dc
+}
+
+// AddDNSToEnvironment adds the "DNSToEnvironment" edges to the Environment entity.
+func (dc *DNSCreate) AddDNSToEnvironment(e ...*Environment) *DNSCreate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
+	}
+	return dc.AddDNSToEnvironmentIDs(ids...)
+}
+
+// AddDNSToCompetitionIDs adds the "DNSToCompetition" edge to the Competition entity by IDs.
+func (dc *DNSCreate) AddDNSToCompetitionIDs(ids ...uuid.UUID) *DNSCreate {
+	dc.mutation.AddDNSToCompetitionIDs(ids...)
+	return dc
+}
+
+// AddDNSToCompetition adds the "DNSToCompetition" edges to the Competition entity.
+func (dc *DNSCreate) AddDNSToCompetition(c ...*Competition) *DNSCreate {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return dc.AddDNSToCompetitionIDs(ids...)
 }
 
 // Mutation returns the DNSMutation object of the builder.
@@ -60,6 +105,7 @@ func (dc *DNSCreate) Save(ctx context.Context) (*DNS, error) {
 		err  error
 		node *DNS
 	)
+	dc.defaults()
 	if len(dc.hooks) == 0 {
 		if err = dc.check(); err != nil {
 			return nil, err
@@ -75,11 +121,17 @@ func (dc *DNSCreate) Save(ctx context.Context) (*DNS, error) {
 				return nil, err
 			}
 			dc.mutation = mutation
-			node, err = dc.sqlSave(ctx)
+			if node, err = dc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(dc.hooks) - 1; i >= 0; i-- {
+			if dc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = dc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, dc.mutation); err != nil {
@@ -98,22 +150,46 @@ func (dc *DNSCreate) SaveX(ctx context.Context) *DNS {
 	return v
 }
 
+// Exec executes the query.
+func (dc *DNSCreate) Exec(ctx context.Context) error {
+	_, err := dc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (dc *DNSCreate) ExecX(ctx context.Context) {
+	if err := dc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (dc *DNSCreate) defaults() {
+	if _, ok := dc.mutation.ID(); !ok {
+		v := dns.DefaultID()
+		dc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (dc *DNSCreate) check() error {
+	if _, ok := dc.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New(`ent: missing required field "hcl_id"`)}
+	}
 	if _, ok := dc.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New("ent: missing required field \"type\"")}
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "type"`)}
 	}
 	if _, ok := dc.mutation.RootDomain(); !ok {
-		return &ValidationError{Name: "root_domain", err: errors.New("ent: missing required field \"root_domain\"")}
+		return &ValidationError{Name: "root_domain", err: errors.New(`ent: missing required field "root_domain"`)}
 	}
 	if _, ok := dc.mutation.DNSServers(); !ok {
-		return &ValidationError{Name: "dns_servers", err: errors.New("ent: missing required field \"dns_servers\"")}
+		return &ValidationError{Name: "dns_servers", err: errors.New(`ent: missing required field "dns_servers"`)}
 	}
 	if _, ok := dc.mutation.NtpServers(); !ok {
-		return &ValidationError{Name: "ntp_servers", err: errors.New("ent: missing required field \"ntp_servers\"")}
+		return &ValidationError{Name: "ntp_servers", err: errors.New(`ent: missing required field "ntp_servers"`)}
 	}
 	if _, ok := dc.mutation.Config(); !ok {
-		return &ValidationError{Name: "config", err: errors.New("ent: missing required field \"config\"")}
+		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "config"`)}
 	}
 	return nil
 }
@@ -121,13 +197,14 @@ func (dc *DNSCreate) check() error {
 func (dc *DNSCreate) sqlSave(ctx context.Context) (*DNS, error) {
 	_node, _spec := dc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, dc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
+	}
 	return _node, nil
 }
 
@@ -137,11 +214,23 @@ func (dc *DNSCreate) createSpec() (*DNS, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: dns.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: dns.FieldID,
 			},
 		}
 	)
+	if id, ok := dc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
+	if value, ok := dc.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: dns.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := dc.mutation.GetType(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -182,10 +271,48 @@ func (dc *DNSCreate) createSpec() (*DNS, *sqlgraph.CreateSpec) {
 		})
 		_node.Config = value
 	}
+	if nodes := dc.mutation.DNSToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToEnvironmentTable,
+			Columns: dns.DNSToEnvironmentPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.DNSToCompetitionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dns.DNSToCompetitionTable,
+			Columns: dns.DNSToCompetitionPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: competition.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
-// DNSCreateBulk is the builder for creating a bulk of DNS entities.
+// DNSCreateBulk is the builder for creating many DNS entities in bulk.
 type DNSCreateBulk struct {
 	config
 	builders []*DNSCreate
@@ -199,6 +326,7 @@ func (dcb *DNSCreateBulk) Save(ctx context.Context) ([]*DNS, error) {
 	for i := range dcb.builders {
 		func(i int, root context.Context) {
 			builder := dcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*DNSMutation)
 				if !ok {
@@ -213,19 +341,19 @@ func (dcb *DNSCreateBulk) Save(ctx context.Context) ([]*DNS, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, dcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, dcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, dcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -242,11 +370,24 @@ func (dcb *DNSCreateBulk) Save(ctx context.Context) ([]*DNS, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (dcb *DNSCreateBulk) SaveX(ctx context.Context) []*DNS {
 	v, err := dcb.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (dcb *DNSCreateBulk) Exec(ctx context.Context) error {
+	_, err := dcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (dcb *DNSCreateBulk) ExecX(ctx context.Context) {
+	if err := dcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

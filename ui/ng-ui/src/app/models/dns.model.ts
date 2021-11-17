@@ -1,4 +1,5 @@
-import { configMap, ID, Tag, varsMap } from './common.model';
+import { ID, tagMap, varsMap } from './common.model';
+import { Competition, Environment } from './environment.model';
 
 export interface DNSRecord {
   id: ID;
@@ -6,16 +7,20 @@ export interface DNSRecord {
   values: string[];
   type: string;
   zone: string;
-  vars: varsMap[];
-  tags: Tag[];
   disabled: boolean;
+  hcl_id?: string;
+  vars?: varsMap[];
+  tags: tagMap[];
+  DNSRecordToEnvironment?: Environment;
 }
 
 export interface DNS {
   id: ID;
   type: string;
-  rootDomain: string;
-  DNSServers: string[];
-  NTPServer: string[];
-  config: configMap[];
+  root_domain: string;
+  dns_servers: string[];
+  ntp_servers: string[];
+  hcl_id?: string;
+  DNSToEnvironment?: Environment;
+  DNSToCompetition?: Competition;
 }

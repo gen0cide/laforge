@@ -1,0 +1,227 @@
+query GetEnvironment($envId: String!) {
+  environment(envUUID: $envId) {
+    id
+    competition_id
+    name
+    description
+    builder
+    team_count
+    revision
+    admin_cidrs
+    exposed_vdi_ports
+    tags {
+      key
+      value
+    }
+    config {
+      key
+      value
+    }
+    EnvironmentToUser {
+      id
+      name
+      uuid
+      email
+    }
+    EnvironmentToRepository {
+      id
+      repo_url
+      branch_name
+      commit_info
+    }
+    EnvironmentToBuild {
+      id
+      revision
+      buildToStatus {
+        ...StatusFields
+      }
+      buildToTeam {
+        id
+        team_number
+        TeamToStatus {
+          ...StatusFields
+        }
+        TeamToProvisionedNetwork {
+          id
+          name
+          cidr
+          ProvisionedNetworkToStatus {
+            ...StatusFields
+          }
+          ProvisionedNetworkToNetwork {
+            id
+            vdi_visible
+            vars {
+              key
+              value
+            }
+            tags {
+              key
+              value
+            }
+          }
+          ProvisionedNetworkToProvisionedHost {
+            id
+            subnet_ip
+            ProvisionedHostToStatus {
+              ...StatusFields
+            }
+            ProvisionedHostToHost {
+              id
+              hostname
+              description
+              OS
+              allow_mac_changes
+              exposed_tcp_ports
+              exposed_udp_ports
+              user_groups
+              override_password
+              vars {
+                key
+                value
+              }
+              tags {
+                key
+                value
+              }
+            }
+            ProvisionedHostToProvisioningStep {
+              id
+              type
+              ProvisioningStepToStatus {
+                ...StatusFields
+              }
+              ProvisioningStepToScript {
+                id
+                name
+                language
+                description
+                source
+                source_type
+                disabled
+                args
+                vars {
+                  key
+                  value
+                }
+                tags {
+                  key
+                  value
+                }
+              }
+              ProvisioningStepToCommand {
+                id
+                name
+                description
+                program
+                args
+                disabled
+                vars {
+                  key
+                  value
+                }
+                tags {
+                  key
+                  value
+                }
+              }
+              ProvisioningStepToDNSRecord {
+                id
+                name
+                values
+                type
+                zone
+                disabled
+                vars {
+                  key
+                  value
+                }
+                tags {
+                  key
+                  value
+                }
+              }
+              ProvisioningStepToFileDownload {
+                id
+                source
+                sourceType
+                destination
+                disabled
+                tags {
+                  key
+                  value
+                }
+              }
+              ProvisioningStepToFileDelete {
+                id
+                path
+                tags {
+                  key
+                  value
+                }
+              }
+              ProvisioningStepToFileExtract {
+                id
+                source
+                destination
+                type
+                tags {
+                  key
+                  value
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+query GetEnvironments {
+  environments {
+    id
+    name
+    competition_id
+    revision
+    EnvironmentToBuild {
+      id
+      revision
+    }
+  }
+}
+
+query GetEnvironmentInfo($envId: String!) {
+  environment(envUUID: $envId) {
+    id
+    competition_id
+    name
+    description
+    builder
+    team_count
+    revision
+    admin_cidrs
+    exposed_vdi_ports
+    tags {
+      key
+      value
+    }
+    config {
+      key
+      value
+    }
+    EnvironmentToUser {
+      id
+      name
+      uuid
+      email
+    }
+    EnvironmentToBuild {
+      id
+      revision
+      buildToStatus {
+        ...StatusFields
+      }
+    }
+  }
+}

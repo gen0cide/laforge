@@ -7,10 +7,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedelete"
-	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/google/uuid"
 )
 
 // FileDeleteCreate is the builder for creating a FileDelete entity.
@@ -20,25 +21,47 @@ type FileDeleteCreate struct {
 	hooks    []Hook
 }
 
-// SetPath sets the path field.
+// SetHclID sets the "hcl_id" field.
+func (fdc *FileDeleteCreate) SetHclID(s string) *FileDeleteCreate {
+	fdc.mutation.SetHclID(s)
+	return fdc
+}
+
+// SetPath sets the "path" field.
 func (fdc *FileDeleteCreate) SetPath(s string) *FileDeleteCreate {
 	fdc.mutation.SetPath(s)
 	return fdc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (fdc *FileDeleteCreate) AddTagIDs(ids ...int) *FileDeleteCreate {
-	fdc.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (fdc *FileDeleteCreate) SetTags(m map[string]string) *FileDeleteCreate {
+	fdc.mutation.SetTags(m)
 	return fdc
 }
 
-// AddTag adds the tag edges to Tag.
-func (fdc *FileDeleteCreate) AddTag(t ...*Tag) *FileDeleteCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetID sets the "id" field.
+func (fdc *FileDeleteCreate) SetID(u uuid.UUID) *FileDeleteCreate {
+	fdc.mutation.SetID(u)
+	return fdc
+}
+
+// SetFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by ID.
+func (fdc *FileDeleteCreate) SetFileDeleteToEnvironmentID(id uuid.UUID) *FileDeleteCreate {
+	fdc.mutation.SetFileDeleteToEnvironmentID(id)
+	return fdc
+}
+
+// SetNillableFileDeleteToEnvironmentID sets the "FileDeleteToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (fdc *FileDeleteCreate) SetNillableFileDeleteToEnvironmentID(id *uuid.UUID) *FileDeleteCreate {
+	if id != nil {
+		fdc = fdc.SetFileDeleteToEnvironmentID(*id)
 	}
-	return fdc.AddTagIDs(ids...)
+	return fdc
+}
+
+// SetFileDeleteToEnvironment sets the "FileDeleteToEnvironment" edge to the Environment entity.
+func (fdc *FileDeleteCreate) SetFileDeleteToEnvironment(e *Environment) *FileDeleteCreate {
+	return fdc.SetFileDeleteToEnvironmentID(e.ID)
 }
 
 // Mutation returns the FileDeleteMutation object of the builder.
@@ -52,6 +75,7 @@ func (fdc *FileDeleteCreate) Save(ctx context.Context) (*FileDelete, error) {
 		err  error
 		node *FileDelete
 	)
+	fdc.defaults()
 	if len(fdc.hooks) == 0 {
 		if err = fdc.check(); err != nil {
 			return nil, err
@@ -67,11 +91,17 @@ func (fdc *FileDeleteCreate) Save(ctx context.Context) (*FileDelete, error) {
 				return nil, err
 			}
 			fdc.mutation = mutation
-			node, err = fdc.sqlSave(ctx)
+			if node, err = fdc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(fdc.hooks) - 1; i >= 0; i-- {
+			if fdc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fdc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fdc.mutation); err != nil {
@@ -90,10 +120,37 @@ func (fdc *FileDeleteCreate) SaveX(ctx context.Context) *FileDelete {
 	return v
 }
 
+// Exec executes the query.
+func (fdc *FileDeleteCreate) Exec(ctx context.Context) error {
+	_, err := fdc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (fdc *FileDeleteCreate) ExecX(ctx context.Context) {
+	if err := fdc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (fdc *FileDeleteCreate) defaults() {
+	if _, ok := fdc.mutation.ID(); !ok {
+		v := filedelete.DefaultID()
+		fdc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (fdc *FileDeleteCreate) check() error {
+	if _, ok := fdc.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New(`ent: missing required field "hcl_id"`)}
+	}
 	if _, ok := fdc.mutation.Path(); !ok {
-		return &ValidationError{Name: "path", err: errors.New("ent: missing required field \"path\"")}
+		return &ValidationError{Name: "path", err: errors.New(`ent: missing required field "path"`)}
+	}
+	if _, ok := fdc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "tags"`)}
 	}
 	return nil
 }
@@ -101,13 +158,14 @@ func (fdc *FileDeleteCreate) check() error {
 func (fdc *FileDeleteCreate) sqlSave(ctx context.Context) (*FileDelete, error) {
 	_node, _spec := fdc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, fdc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
+	}
 	return _node, nil
 }
 
@@ -117,11 +175,23 @@ func (fdc *FileDeleteCreate) createSpec() (*FileDelete, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: filedelete.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: filedelete.FieldID,
 			},
 		}
 	)
+	if id, ok := fdc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
+	if value, ok := fdc.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: filedelete.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := fdc.mutation.Path(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -130,29 +200,38 @@ func (fdc *FileDeleteCreate) createSpec() (*FileDelete, *sqlgraph.CreateSpec) {
 		})
 		_node.Path = value
 	}
-	if nodes := fdc.mutation.TagIDs(); len(nodes) > 0 {
+	if value, ok := fdc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: filedelete.FieldTags,
+		})
+		_node.Tags = value
+	}
+	if nodes := fdc.mutation.FileDeleteToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filedelete.TagTable,
-			Columns: []string{filedelete.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   filedelete.FileDeleteToEnvironmentTable,
+			Columns: []string{filedelete.FileDeleteToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.environment_environment_to_file_delete = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
 
-// FileDeleteCreateBulk is the builder for creating a bulk of FileDelete entities.
+// FileDeleteCreateBulk is the builder for creating many FileDelete entities in bulk.
 type FileDeleteCreateBulk struct {
 	config
 	builders []*FileDeleteCreate
@@ -166,6 +245,7 @@ func (fdcb *FileDeleteCreateBulk) Save(ctx context.Context) ([]*FileDelete, erro
 	for i := range fdcb.builders {
 		func(i int, root context.Context) {
 			builder := fdcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*FileDeleteMutation)
 				if !ok {
@@ -180,19 +260,19 @@ func (fdcb *FileDeleteCreateBulk) Save(ctx context.Context) ([]*FileDelete, erro
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, fdcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, fdcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, fdcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -209,11 +289,24 @@ func (fdcb *FileDeleteCreateBulk) Save(ctx context.Context) ([]*FileDelete, erro
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (fdcb *FileDeleteCreateBulk) SaveX(ctx context.Context) []*FileDelete {
 	v, err := fdcb.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (fdcb *FileDeleteCreateBulk) Exec(ctx context.Context) error {
+	_, err := fdcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (fdcb *FileDeleteCreateBulk) ExecX(ctx context.Context) {
+	if err := fdcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

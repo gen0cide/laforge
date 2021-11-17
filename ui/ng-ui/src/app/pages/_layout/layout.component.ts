@@ -1,6 +1,8 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { LayoutService, LayoutInitService } from '../../_metronic/core';
+import { ThemeService } from '@services/theme/theme.service';
+
 import KTLayoutContent from '../../../assets/js/layout/base/content';
+import { LayoutService, LayoutInitService } from '../../_metronic/core';
 
 @Component({
   selector: 'app-layout',
@@ -35,7 +37,7 @@ export class LayoutComponent implements OnInit, AfterViewInit {
   @ViewChild('ktHeaderMobile', { static: true }) ktHeaderMobile: ElementRef;
   @ViewChild('ktHeader', { static: true }) ktHeader: ElementRef;
 
-  constructor(private initService: LayoutInitService, private layout: LayoutService) {
+  constructor(private initService: LayoutInitService, private layout: LayoutService, public themeService: ThemeService) {
     this.initService.init();
   }
 

@@ -2,6 +2,10 @@
 
 package disk
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the disk type in the database.
 	Label = "disk"
@@ -9,19 +13,17 @@ const (
 	FieldID = "id"
 	// FieldSize holds the string denoting the size field in the database.
 	FieldSize = "size"
-
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
-
+	// EdgeDiskToHost holds the string denoting the disktohost edge name in mutations.
+	EdgeDiskToHost = "DiskToHost"
 	// Table holds the table name of the disk in the database.
 	Table = "disks"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "disk_tag"
+	// DiskToHostTable is the table that holds the DiskToHost relation/edge.
+	DiskToHostTable = "disks"
+	// DiskToHostInverseTable is the table name for the Host entity.
+	// It exists in this package in order to avoid circular dependency with the "host" package.
+	DiskToHostInverseTable = "hosts"
+	// DiskToHostColumn is the table column denoting the DiskToHost relation/edge.
+	DiskToHostColumn = "host_host_to_disk"
 )
 
 // Columns holds all SQL columns for disk fields.
@@ -30,9 +32,10 @@ var Columns = []string{
 	FieldSize,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Disk type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "disks"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"host_disk",
+	"host_host_to_disk",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -53,4 +56,6 @@ func ValidColumn(column string) bool {
 var (
 	// SizeValidator is a validator for the "size" field. It is called by the builders before save.
 	SizeValidator func(int) error
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )

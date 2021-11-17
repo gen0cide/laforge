@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/filedelete"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
@@ -20,9 +20,9 @@ type FileDeleteDelete struct {
 	mutation *FileDeleteMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where appends a list predicates to the FileDeleteDelete builder.
 func (fdd *FileDeleteDelete) Where(ps ...predicate.FileDelete) *FileDeleteDelete {
-	fdd.mutation.predicates = append(fdd.mutation.predicates, ps...)
+	fdd.mutation.Where(ps...)
 	return fdd
 }
 
@@ -46,6 +46,9 @@ func (fdd *FileDeleteDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(fdd.hooks) - 1; i >= 0; i-- {
+			if fdd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fdd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fdd.mutation); err != nil {
@@ -69,7 +72,7 @@ func (fdd *FileDeleteDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: filedelete.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: filedelete.FieldID,
 			},
 		},

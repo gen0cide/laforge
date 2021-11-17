@@ -14,6 +14,7 @@ export class SubheaderService implements OnDestroy {
   descriptionSubject: BehaviorSubject<string> = new BehaviorSubject<string>('');
   breadCrumbsSubject: BehaviorSubject<BreadcrumbItemModel[]> = new BehaviorSubject<BreadcrumbItemModel[]>([]);
   subheaderVersionSubject: BehaviorSubject<string> = new BehaviorSubject<string>('v1'); // [1-6]
+  showEnvironmentDropdown: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   // private fields
   private unsubscribe: Subscription[] = []; // Read more: => https://brianflove.com/2016/12/11/anguar-2-unsubscribe-observables/
 
@@ -35,6 +36,10 @@ export class SubheaderService implements OnDestroy {
 
   setDescription(description: string) {
     this.descriptionSubject.next(description);
+  }
+
+  setShowEnvDropdown(show: boolean) {
+    this.showEnvironmentDropdown.next(show);
   }
 
   private setSubheaderVersion(version = 'v1') {

@@ -1,162 +1,217 @@
-// Package builder defines the types and interfaces that are used to transpile laforge states
-// into other infrastructure and automation tools.
 package builder
 
 import (
+	"context"
+	"errors"
 	"fmt"
-	"os"
+	"net/http"
+	"strconv"
+	"time"
 
-	"github.com/gen0cide/laforge/builder/tfaws"
-	"github.com/gen0cide/laforge/builder/tfgcp"
-	"github.com/gen0cide/laforge/core/cli"
-
-	validations "github.com/gen0cide/laforge/builder/buildutil/valdations"
-
-	"github.com/fatih/color"
-	"github.com/gen0cide/laforge/builder/buildutil"
-	"github.com/gen0cide/laforge/builder/null"
-	"github.com/gen0cide/laforge/core"
-	"github.com/pkg/errors"
+	"github.com/gen0cide/laforge/builder/vspherensxt"
+	"github.com/gen0cide/laforge/builder/vspherensxt/nsxt"
+	"github.com/gen0cide/laforge/builder/vspherensxt/vsphere"
+	"github.com/gen0cide/laforge/ent"
+	"github.com/gen0cide/laforge/logging"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/semaphore"
 )
 
-var (
-	// ValidBuilders retains a map of ID to empty Builder objects.
-	ValidBuilders = map[string]Builder{
-		"tfgcp": tfgcp.New(),
-		"tfaws": tfaws.New(),
-		// "tfibm": tfibm.New(),
-		"null": null.New(),
-	}
-
-	// ErrNoBuilderFound is thrown when a builder is not a known valid builder parameter
-	ErrNoBuilderFound = errors.New("builder type defined in environment was not recognized")
-)
-
-// BuildEngine is the primary interface for building components in gscript.
-type BuildEngine struct {
-	Base    *core.Laforge
-	Builder Builder
-}
-
-// Steps
-// CheckRequirements(l *core.Laforge) error
-
-// Builder is a generic interface used to implement various builders.
 type Builder interface {
-	// ID of the builder - usually the go package name
-	// - Must be unique and be a valid golang package name.
 	ID() string
-
-	// Name of the builder - usually titleized version of the type
 	Name() string
-
-	// Human readable description information
 	Description() string
-
-	// Author name and contact information
 	Author() string
-
-	// Version of the builder implementation
 	Version() string
-
-	// Validations returns a list of requirements that need to be met for a builder to be successful
-	Validations() validations.Validations
-
-	// Set's a Laforge base instance to work off
-	SetLaforge(*core.Laforge) error
-
-	// Check the provided base instance for any dynamic
-	// configuration and ensure build requirements are met.
-	// While it might seem redundant with Validations(), the point
-	// of CheckRequirements is to be able to provide more
-	// stateful analysis of the context instead of just true/false fields.
-	CheckRequirements() error
-
-	// Gather remote assets, upload to S3, create a unique names, etc.
-	PrepareAssets() error
-
-	// Run all the scripts through a rendering step, templating them out
-	// if needed.
-	GenerateScripts() error
-
-	// Stage any dependencies (or preform pre-rendering tasks)
-	StageDependencies() error
-
-	// Attempt to render the actual configuration
-	Render() error
+	DeployHost(ctx context.Context, provisionedHost *ent.ProvisionedHost) (err error)
+	DeployNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error)
+	TeardownHost(ctx context.Context, provisionedHost *ent.ProvisionedHost) (err error)
+	TeardownNetwork(ctx context.Context, provisionedNetwork *ent.ProvisionedNetwork) (err error)
 }
 
-// New attempts to create a new BuildEngine based on the laforge state parameters
-func New(base *core.Laforge, overwrite, update bool) (*BuildEngine, error) {
-	err := base.AssertMinContext(core.EnvContext)
-	if err != nil {
-		return nil, buildutil.Throw(err, "Cannot perform a build without being in an EnvContext.", nil)
-	}
-
-	setup := core.InitializeBuildDirectory(base, overwrite, update)
-	if setup != nil {
-		return nil, buildutil.Throw(setup, "Cannot initialize build directory", nil)
-	}
-
-	bldr, found := ValidBuilders[base.CurrentEnv.Builder]
-	if !found {
-		return nil, buildutil.Throw(ErrNoBuilderFound, "Invalid builder defined", &buildutil.V{"provided": base.CurrentEnv.Builder})
-	}
-
-	cli.SetLogName(fmt.Sprintf("%s/%s", color.WhiteString("builder"), color.HiGreenString(base.CurrentEnv.Builder)))
-	return &BuildEngine{
-		Base:    base,
-		Builder: bldr,
-	}, nil
-}
-
-// Do performs the waterfall of functions on the given context with it's designated builder
-func (b *BuildEngine) Do() error {
-	err := b.Builder.SetLaforge(b.Base)
-	if err != nil {
-		return buildutil.Throw(err, "failed to set laforge", nil)
-	}
-	cli.Logger.Infof("Injected context into builder")
-	vals := b.Builder.Validations()
-	for _, x := range vals {
-		cli.Logger.Debugf("Checking validation: %s", x.Name)
-		if !x.Check(b.Base) {
-			cli.Logger.Errorf("Build Requirement Failed: %s", x.Name)
-			cli.Logger.Errorf("  Resolution > %s", x.Resolution)
-			os.Exit(1)
+func BuilderFromEnvironment(environment *ent.Environment, logger *logging.Logger) (genericBuilder Builder, err error) {
+	switch environment.Builder {
+	case "vsphere-nsxt":
+		genericBuilder, err = NewVSphereNSXTBuilder(environment, logger)
+		if err != nil {
+			logrus.Errorf("Failed to make vSphere NSX-T builder. Err: %v", err)
+			return
 		}
+		return
 	}
-	err = b.Builder.CheckRequirements()
-	if err != nil {
-		return buildutil.Throw(err, "failed checking requirements", nil)
-	}
-	cli.Logger.Infof("Requirements checks passed")
-	err = b.Builder.PrepareAssets()
-	if err != nil {
-		return buildutil.Throw(err, "failed preparing assets", nil)
-	}
-	cli.Logger.Infof("Resolved and cached required assets")
-	err = b.Builder.StageDependencies()
-	if err != nil {
-		return buildutil.Throw(err, "failed staging dependencies", nil)
-	}
-	cli.Logger.Infof("Staged dependencies for rendering")
-	err = b.Builder.GenerateScripts()
-	if err != nil {
-		return buildutil.Throw(err, "failed generating scripts", nil)
-	}
-	cli.Logger.Infof("Generated scripts and templates")
-	err = b.Builder.Render()
-	if err != nil {
-		return buildutil.Throw(err, "failed rendering build", nil)
-	}
-	cli.Logger.Infof("Successfully rendered build")
+	err = fmt.Errorf("error: builder not found")
+	logrus.Error(err)
+	return
+}
 
-	err = b.Base.StateManager.PersistSnapshot(b.Base.StateManager.Current)
+// NewVSphereNSXTBuilder creates a builder instance to deploy environments to VSphere and NSX-T
+func NewVSphereNSXTBuilder(env *ent.Environment, logger *logging.Logger) (builder vspherensxt.VSphereNSXTBuilder, err error) {
+	laforgeServerUrl, exists := env.Config["laforge_server_url"]
+	if !exists {
+		err = errors.New("laforge_server_url doesn't exist in the environment configuration")
+		return
+	}
+	vsphereUsername, exists := env.Config["vsphere_username"]
+	if !exists {
+		err = errors.New("vsphere_username doesn't exist in the environment configuration")
+		return
+	}
+	vspherePassword, exists := env.Config["vsphere_password"]
+	if !exists {
+		err = errors.New("vsphere_password doesn't exist in the environment configuration")
+		return
+	}
+	vsphereBaseUrl, exists := env.Config["vsphere_base_url"]
+	if !exists {
+		err = errors.New("vsphere_base_url doesn't exist in the environment configuration")
+		return
+	}
+	nsxtCertPath, exists := env.Config["nsxt_cert_path"]
+	if !exists {
+		err = errors.New("nsxt_cert_path doesn't exist in the environment configuration")
+		return
+	}
+	nsxtCACertPath, exists := env.Config["nsxt_ca_cert_path"]
+	if !exists {
+		err = errors.New("nsxt_ca_cert_path doesn't exist in the environment configuration")
+		return
+	}
+	nsxtKeyPath, exists := env.Config["nsxt_key_path"]
+	if !exists {
+		err = errors.New("nsxt_key_path doesn't exist in the environment configuration")
+		return
+	}
+	nsxtBaseUrl, exists := env.Config["nsxt_base_url"]
+	if !exists {
+		err = errors.New("nsxt_base_url doesn't exist in the environment configuration")
+		return
+	}
+	nsxtIpPoolName, exists := env.Config["nsxt_ip_pool_name"]
+	if !exists {
+		err = errors.New("nsxt_ip_pool_name doesn't exist in the environment configuration")
+		return
+	}
+	nsxtEdgeClusterPath, exists := env.Config["nsxt_edge_cluster_path"]
+	if !exists {
+		err = errors.New("nsxt_edge_cluster_path doesn't exist in the environment configuration")
+		return
+	}
+	contentLibraryName, exists := env.Config["vsphere_content_library"]
+	if !exists {
+		err = errors.New("vsphere_content_library doesn't exist in the environment configuration")
+		return
+	}
+	datastoreName, exists := env.Config["vsphere_datastore"]
+	if !exists {
+		err = errors.New("vsphere_datastore doesn't exist in the environment configuration")
+		return
+	}
+	resourcePoolName, exists := env.Config["vsphere_resource_pool"]
+	if !exists {
+		err = errors.New("vsphere_resource_pool doesn't exist in the environment configuration")
+		return
+	}
+	folderName, exists := env.Config["vsphere_folder"]
+	if !exists {
+		err = errors.New("vsphere_folder doesn't exist in the environment configuration")
+		return
+	}
+	templatePrefix, exists := env.Config["vsphere_template_prefix"]
+	if !exists {
+		err = errors.New("vsphere_template_prefix doesn't exist in the environment configuration")
+		return
+	}
+	maxBuildWorkersString, exists := env.Config["vsphere_max_build_workers"]
+	if !exists {
+		maxBuildWorkersString = "8"
+	}
+	maxBuildThreads, err := strconv.Atoi(maxBuildWorkersString)
 	if err != nil {
-		return err
+		maxBuildThreads = 8
+	}
+	maxTeardownWorkersString, exists := env.Config["vsphere_max_teardown_workers"]
+	if !exists {
+		maxTeardownWorkersString = "16"
+	}
+	maxTeardownThreads, err := strconv.Atoi(maxTeardownWorkersString)
+	if err != nil {
+		maxTeardownThreads = 16
 	}
 
-	b.Base.StateManager.DB.Close()
-	return nil
+	httpClient := http.Client{
+		Timeout: 5 * time.Minute,
+	}
+
+	nsxtHttpClient, err := nsxt.NewPrincipalIdentityClient(nsxtCertPath, nsxtKeyPath, nsxtCACertPath)
+	if err != nil {
+		return
+	}
+
+	nsxtClient := nsxt.NSXTClient{
+		HttpClient:      nsxtHttpClient,
+		BaseUrl:         nsxtBaseUrl,
+		IpPoolName:      nsxtIpPoolName,
+		EdgeClusterPath: nsxtEdgeClusterPath,
+		MaxRetries:      10,
+		Logger:          logger,
+	}
+
+	vsphereClient := vsphere.VSphere{
+		HttpClient: httpClient,
+		ServerUrl:  laforgeServerUrl,
+		BaseUrl:    vsphereBaseUrl,
+		Username:   vsphereUsername,
+		Password:   vspherePassword,
+		MaxRetries: 10,
+		Logger:     logger,
+	}
+
+	vsphere.InitializeGovmomi(&vsphereClient, vsphereBaseUrl, vsphereUsername, vspherePassword)
+
+	ctx := context.Background()
+
+	datastore, exists, err := vsphereClient.GetDatastoreSummaryByName(ctx, datastoreName)
+	if err != nil {
+		return
+	}
+	if !exists {
+		err = fmt.Errorf("error datastore \"%s\" doesn't exist", datastoreName)
+		logrus.Error(err)
+		return
+	}
+
+	folder, err := vsphereClient.GetFolderSummaryByName(ctx, folderName)
+	if err != nil {
+		err = fmt.Errorf("error finding folder: %v", err)
+		logrus.Error(err)
+		return
+	}
+
+	resourcePool, err := vsphereClient.Finder.ResourcePool(ctx, resourcePoolName)
+	if err != nil {
+		err = fmt.Errorf("error finding resource pool: %v", err)
+		logrus.Error(err)
+		return
+	}
+
+	deployWorkerPool := semaphore.NewWeighted(int64(maxBuildThreads))
+	teardownWorkerPool := semaphore.NewWeighted(int64(maxTeardownThreads))
+
+	builder = vspherensxt.VSphereNSXTBuilder{
+		HttpClient:                httpClient,
+		Username:                  vsphereUsername,
+		Password:                  vspherePassword,
+		NsxtClient:                nsxtClient,
+		TemplatePrefix:            templatePrefix,
+		VSphereClient:             vsphereClient,
+		VSphereContentLibraryName: contentLibraryName,
+		VSphereDatastore:          datastore,
+		VSphereResourcePool:       resourcePool,
+		VSphereFolder:             folder,
+		Logger:                    logger,
+		MaxWorkers:                maxBuildThreads,
+		DeployWorkerPool:          deployWorkerPool,
+		TeardownWorkerPool:        teardownWorkerPool,
+	}
+	return
 }

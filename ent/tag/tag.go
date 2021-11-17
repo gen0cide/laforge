@@ -2,6 +2,10 @@
 
 package tag
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the tag type in the database.
 	Label = "tag"
@@ -13,7 +17,6 @@ const (
 	FieldName = "name"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
-
 	// Table holds the table name of the tag in the database.
 	Table = "tags"
 )
@@ -26,25 +29,11 @@ var Columns = []string{
 	FieldDescription,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Tag type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "tags"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"build_tag",
-	"command_tag",
-	"dns_record_tag",
-	"disk_tag",
-	"environment_tag",
-	"file_delete_tag",
-	"file_download_tag",
-	"file_extract_tag",
-	"finding_tag",
-	"host_tag",
-	"included_network_tag",
-	"network_tag",
-	"remote_file_tag",
-	"script_tag",
-	"status_tag",
-	"team_tag",
-	"user_tag",
+	"included_network_included_network_to_tag",
+	"user_user_to_tag",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -61,3 +50,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)

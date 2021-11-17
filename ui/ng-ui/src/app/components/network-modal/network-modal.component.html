@@ -1,12 +1,18 @@
-<div class="network-dialog-header d-flex align-items-center justify-content-between">
-  <div class="network-status-icon" [ngClass]="'text-' + getStatusColor()">
+<div class="network-dialog-header d-flex align-items-center">
+  <div class="flex-fill network-status-icon d-flex align-items-center justify-content-start" [ngClass]="'text-' + getStatusColor()">
     <i class="fas fa-2x" [ngClass]="'fa-' + getStatusIcon()"></i>
+    <h4 class="m-0">&nbsp;{{ failedChildren ? 'Children Failed' : getStatusText() }}</h4>
+    <!-- <h4 class="m-0">&nbsp;{{ failedChildren ? 'Has Failed Hosts' : getStatusText() }}</h4> -->
   </div>
-  <h4 class="network-name m-0">{{ data.provisionedNetwork.name }}</h4>
-  <button mat-icon-button color="basic" aria-label="Close" (click)="onClose()">
-    <!-- <mat-icon>undo</mat-icon> -->
-    <i class="fa fa-times"></i>
-  </button>
+  <div class="flex-fill d-flex align-items-center justify-content-center">
+    <h4 class="network-name m-0">{{ data.provisionedNetwork.name }}</h4>
+  </div>
+  <div class="flex-fill d-flex align-items-center justify-content-end">
+    <button mat-icon-button color="basic" aria-label="Close" (click)="onClose()">
+      <!-- <mat-icon>undo</mat-icon> -->
+      <i class="fa fa-times"></i>
+    </button>
+  </div>
 </div>
 <hr />
 <div class="row" *ngIf="getStatusText() === 'ProvStatusFailed' || getStatusText() === 'ProvStatusInProgress'">
@@ -29,13 +35,13 @@
   </div>
   <div class="col-6">
     <p class="detail-title"><b>VDI Visible?</b></p>
-    <p class="detail-value">{{ data.provisionedNetwork.network.vdiVisible ? 'yes' : 'no' }}</p>
+    <p class="detail-value">{{ data.provisionedNetwork.ProvisionedNetworkToNetwork.vdi_visible ? 'yes' : 'no' }}</p>
   </div>
 </div>
 <div class="row">
   <div class="col-12">
     <p class="detail-title"><b>Vars</b></p>
-    <mat-table [dataSource]="data.provisionedNetwork.vars" class="bg-gray-100">
+    <mat-table [dataSource]="data.provisionedNetwork.ProvisionedNetworkToNetwork.vars" class="bg-gray-100">
       <ng-container matColumnDef="key">
         <mat-header-cell *matHeaderCellDef> Key </mat-header-cell>
         <mat-cell *matCellDef="let varMap"> {{ varMap.key }} </mat-cell>
@@ -50,14 +56,14 @@
   </div>
   <div class="col-12">
     <p class="detail-title"><b>Tags</b></p>
-    <mat-table [dataSource]="data.provisionedNetwork.tags" class="bg-gray-100">
-      <ng-container matColumnDef="name">
+    <mat-table [dataSource]="data.provisionedNetwork.ProvisionedNetworkToNetwork.tags" class="bg-gray-100">
+      <ng-container matColumnDef="key">
         <mat-header-cell *matHeaderCellDef> Key </mat-header-cell>
-        <mat-cell *matCellDef="let tag"> {{ tag.name }} </mat-cell>
+        <mat-cell *matCellDef="let tagMap"> {{ tagMap.key }} </mat-cell>
       </ng-container>
-      <ng-container matColumnDef="description">
+      <ng-container matColumnDef="value">
         <mat-header-cell *matHeaderCellDef> Value </mat-header-cell>
-        <mat-cell *matCellDef="let tag"> {{ tag.description }} </mat-cell>
+        <mat-cell *matCellDef="let tagMap"> {{ tagMap.value }} </mat-cell>
       </ng-container>
       <mat-header-row *matHeaderRowDef="tagsColumns"></mat-header-row>
       <mat-row *matRowDef="let row; columns: tagsColumns"></mat-row>

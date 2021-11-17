@@ -6,16 +6,24 @@ import (
 	"context"
 	"sync"
 
-	"github.com/facebook/ent/dialect"
+	"entgo.io/ent/dialect"
 )
 
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// AdhocPlan is the client for interacting with the AdhocPlan builders.
+	AdhocPlan *AdhocPlanClient
 	// AgentStatus is the client for interacting with the AgentStatus builders.
 	AgentStatus *AgentStatusClient
+	// AgentTask is the client for interacting with the AgentTask builders.
+	AgentTask *AgentTaskClient
+	// AuthUser is the client for interacting with the AuthUser builders.
+	AuthUser *AuthUserClient
 	// Build is the client for interacting with the Build builders.
 	Build *BuildClient
+	// BuildCommit is the client for interacting with the BuildCommit builders.
+	BuildCommit *BuildCommitClient
 	// Command is the client for interacting with the Command builders.
 	Command *CommandClient
 	// Competition is the client for interacting with the Competition builders.
@@ -36,28 +44,42 @@ type Tx struct {
 	FileExtract *FileExtractClient
 	// Finding is the client for interacting with the Finding builders.
 	Finding *FindingClient
+	// GinFileMiddleware is the client for interacting with the GinFileMiddleware builders.
+	GinFileMiddleware *GinFileMiddlewareClient
 	// Host is the client for interacting with the Host builders.
 	Host *HostClient
+	// HostDependency is the client for interacting with the HostDependency builders.
+	HostDependency *HostDependencyClient
+	// Identity is the client for interacting with the Identity builders.
+	Identity *IdentityClient
 	// IncludedNetwork is the client for interacting with the IncludedNetwork builders.
 	IncludedNetwork *IncludedNetworkClient
 	// Network is the client for interacting with the Network builders.
 	Network *NetworkClient
+	// Plan is the client for interacting with the Plan builders.
+	Plan *PlanClient
+	// PlanDiff is the client for interacting with the PlanDiff builders.
+	PlanDiff *PlanDiffClient
 	// ProvisionedHost is the client for interacting with the ProvisionedHost builders.
 	ProvisionedHost *ProvisionedHostClient
 	// ProvisionedNetwork is the client for interacting with the ProvisionedNetwork builders.
 	ProvisionedNetwork *ProvisionedNetworkClient
 	// ProvisioningStep is the client for interacting with the ProvisioningStep builders.
 	ProvisioningStep *ProvisioningStepClient
-	// RemoteFile is the client for interacting with the RemoteFile builders.
-	RemoteFile *RemoteFileClient
+	// Repository is the client for interacting with the Repository builders.
+	Repository *RepositoryClient
 	// Script is the client for interacting with the Script builders.
 	Script *ScriptClient
+	// ServerTask is the client for interacting with the ServerTask builders.
+	ServerTask *ServerTaskClient
 	// Status is the client for interacting with the Status builders.
 	Status *StatusClient
 	// Tag is the client for interacting with the Tag builders.
 	Tag *TagClient
 	// Team is the client for interacting with the Team builders.
 	Team *TeamClient
+	// Token is the client for interacting with the Token builders.
+	Token *TokenClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -195,8 +217,12 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.AdhocPlan = NewAdhocPlanClient(tx.config)
 	tx.AgentStatus = NewAgentStatusClient(tx.config)
+	tx.AgentTask = NewAgentTaskClient(tx.config)
+	tx.AuthUser = NewAuthUserClient(tx.config)
 	tx.Build = NewBuildClient(tx.config)
+	tx.BuildCommit = NewBuildCommitClient(tx.config)
 	tx.Command = NewCommandClient(tx.config)
 	tx.Competition = NewCompetitionClient(tx.config)
 	tx.DNS = NewDNSClient(tx.config)
@@ -207,17 +233,24 @@ func (tx *Tx) init() {
 	tx.FileDownload = NewFileDownloadClient(tx.config)
 	tx.FileExtract = NewFileExtractClient(tx.config)
 	tx.Finding = NewFindingClient(tx.config)
+	tx.GinFileMiddleware = NewGinFileMiddlewareClient(tx.config)
 	tx.Host = NewHostClient(tx.config)
+	tx.HostDependency = NewHostDependencyClient(tx.config)
+	tx.Identity = NewIdentityClient(tx.config)
 	tx.IncludedNetwork = NewIncludedNetworkClient(tx.config)
 	tx.Network = NewNetworkClient(tx.config)
+	tx.Plan = NewPlanClient(tx.config)
+	tx.PlanDiff = NewPlanDiffClient(tx.config)
 	tx.ProvisionedHost = NewProvisionedHostClient(tx.config)
 	tx.ProvisionedNetwork = NewProvisionedNetworkClient(tx.config)
 	tx.ProvisioningStep = NewProvisioningStepClient(tx.config)
-	tx.RemoteFile = NewRemoteFileClient(tx.config)
+	tx.Repository = NewRepositoryClient(tx.config)
 	tx.Script = NewScriptClient(tx.config)
+	tx.ServerTask = NewServerTaskClient(tx.config)
 	tx.Status = NewStatusClient(tx.config)
 	tx.Tag = NewTagClient(tx.config)
 	tx.Team = NewTeamClient(tx.config)
+	tx.Token = NewTokenClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 
@@ -228,7 +261,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: AgentStatus.QueryXXX(), the query will be executed
+// applies a query, for example: AdhocPlan.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

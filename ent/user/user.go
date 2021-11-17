@@ -2,6 +2,10 @@
 
 package user
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the user type in the database.
 	Label = "user"
@@ -13,19 +17,26 @@ const (
 	FieldUUID = "uuid"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
-
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
-
+	// FieldHclID holds the string denoting the hcl_id field in the database.
+	FieldHclID = "hcl_id"
+	// EdgeUserToTag holds the string denoting the usertotag edge name in mutations.
+	EdgeUserToTag = "UserToTag"
+	// EdgeUserToEnvironment holds the string denoting the usertoenvironment edge name in mutations.
+	EdgeUserToEnvironment = "UserToEnvironment"
 	// Table holds the table name of the user in the database.
 	Table = "users"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
+	// UserToTagTable is the table that holds the UserToTag relation/edge.
+	UserToTagTable = "tags"
+	// UserToTagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "user_tag"
+	UserToTagInverseTable = "tags"
+	// UserToTagColumn is the table column denoting the UserToTag relation/edge.
+	UserToTagColumn = "user_user_to_tag"
+	// UserToEnvironmentTable is the table that holds the UserToEnvironment relation/edge. The primary key declared below.
+	UserToEnvironmentTable = "environment_EnvironmentToUser"
+	// UserToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	UserToEnvironmentInverseTable = "environments"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -34,18 +45,23 @@ var Columns = []string{
 	FieldName,
 	FieldUUID,
 	FieldEmail,
+	FieldHclID,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the User type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "users"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"build_maintainer",
-	"command_user",
-	"environment_user",
-	"finding_user",
-	"host_maintainer",
-	"script_maintainer",
-	"team_maintainer",
+	"command_command_to_user",
+	"finding_finding_to_user",
+	"host_host_to_user",
+	"script_script_to_user",
 }
+
+var (
+	// UserToEnvironmentPrimaryKey and UserToEnvironmentColumn2 are the table columns denoting the
+	// primary key for the UserToEnvironment relation (M2M).
+	UserToEnvironmentPrimaryKey = []string{"environment_id", "user_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -61,3 +77,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)

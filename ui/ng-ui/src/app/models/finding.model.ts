@@ -1,5 +1,6 @@
-import { Host } from '@angular/core';
-import { Tag, User } from './common.model';
+import { tagMap, User } from './common.model';
+import { Environment } from './environment.model';
+import { Script } from './script.model';
 
 export enum FindingSeverity {
   ZeroSeverity,
@@ -23,7 +24,8 @@ export interface Finding {
   description: string;
   severity: FindingSeverity;
   difficulty: FindingDifficulty;
-  maintainer: User;
-  tags: Tag[];
-  Host: Host;
+  tags: tagMap[];
+  FindingToUser: User[];
+  FindingToScript: Script;
+  FindingToEnvironment: Environment;
 }

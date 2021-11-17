@@ -6,12 +6,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/dnsrecord"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/google/uuid"
 )
 
 // DNSRecordUpdate is the builder for updating DNSRecord entities.
@@ -21,61 +22,77 @@ type DNSRecordUpdate struct {
 	mutation *DNSRecordMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where appends a list predicates to the DNSRecordUpdate builder.
 func (dru *DNSRecordUpdate) Where(ps ...predicate.DNSRecord) *DNSRecordUpdate {
-	dru.mutation.predicates = append(dru.mutation.predicates, ps...)
+	dru.mutation.Where(ps...)
 	return dru
 }
 
-// SetName sets the name field.
+// SetHclID sets the "hcl_id" field.
+func (dru *DNSRecordUpdate) SetHclID(s string) *DNSRecordUpdate {
+	dru.mutation.SetHclID(s)
+	return dru
+}
+
+// SetName sets the "name" field.
 func (dru *DNSRecordUpdate) SetName(s string) *DNSRecordUpdate {
 	dru.mutation.SetName(s)
 	return dru
 }
 
-// SetValues sets the values field.
+// SetValues sets the "values" field.
 func (dru *DNSRecordUpdate) SetValues(s []string) *DNSRecordUpdate {
 	dru.mutation.SetValues(s)
 	return dru
 }
 
-// SetType sets the type field.
+// SetType sets the "type" field.
 func (dru *DNSRecordUpdate) SetType(s string) *DNSRecordUpdate {
 	dru.mutation.SetType(s)
 	return dru
 }
 
-// SetZone sets the zone field.
+// SetZone sets the "zone" field.
 func (dru *DNSRecordUpdate) SetZone(s string) *DNSRecordUpdate {
 	dru.mutation.SetZone(s)
 	return dru
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (dru *DNSRecordUpdate) SetVars(m map[string]string) *DNSRecordUpdate {
 	dru.mutation.SetVars(m)
 	return dru
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (dru *DNSRecordUpdate) SetDisabled(b bool) *DNSRecordUpdate {
 	dru.mutation.SetDisabled(b)
 	return dru
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (dru *DNSRecordUpdate) AddTagIDs(ids ...int) *DNSRecordUpdate {
-	dru.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (dru *DNSRecordUpdate) SetTags(m map[string]string) *DNSRecordUpdate {
+	dru.mutation.SetTags(m)
 	return dru
 }
 
-// AddTag adds the tag edges to Tag.
-func (dru *DNSRecordUpdate) AddTag(t ...*Tag) *DNSRecordUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID.
+func (dru *DNSRecordUpdate) SetDNSRecordToEnvironmentID(id uuid.UUID) *DNSRecordUpdate {
+	dru.mutation.SetDNSRecordToEnvironmentID(id)
+	return dru
+}
+
+// SetNillableDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (dru *DNSRecordUpdate) SetNillableDNSRecordToEnvironmentID(id *uuid.UUID) *DNSRecordUpdate {
+	if id != nil {
+		dru = dru.SetDNSRecordToEnvironmentID(*id)
 	}
-	return dru.AddTagIDs(ids...)
+	return dru
+}
+
+// SetDNSRecordToEnvironment sets the "DNSRecordToEnvironment" edge to the Environment entity.
+func (dru *DNSRecordUpdate) SetDNSRecordToEnvironment(e *Environment) *DNSRecordUpdate {
+	return dru.SetDNSRecordToEnvironmentID(e.ID)
 }
 
 // Mutation returns the DNSRecordMutation object of the builder.
@@ -83,25 +100,10 @@ func (dru *DNSRecordUpdate) Mutation() *DNSRecordMutation {
 	return dru.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (dru *DNSRecordUpdate) ClearTag() *DNSRecordUpdate {
-	dru.mutation.ClearTag()
+// ClearDNSRecordToEnvironment clears the "DNSRecordToEnvironment" edge to the Environment entity.
+func (dru *DNSRecordUpdate) ClearDNSRecordToEnvironment() *DNSRecordUpdate {
+	dru.mutation.ClearDNSRecordToEnvironment()
 	return dru
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (dru *DNSRecordUpdate) RemoveTagIDs(ids ...int) *DNSRecordUpdate {
-	dru.mutation.RemoveTagIDs(ids...)
-	return dru
-}
-
-// RemoveTag removes tag edges to Tag.
-func (dru *DNSRecordUpdate) RemoveTag(t ...*Tag) *DNSRecordUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return dru.RemoveTagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -124,6 +126,9 @@ func (dru *DNSRecordUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(dru.hooks) - 1; i >= 0; i-- {
+			if dru.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = dru.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, dru.mutation); err != nil {
@@ -161,7 +166,7 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   dnsrecord.Table,
 			Columns: dnsrecord.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: dnsrecord.FieldID,
 			},
 		},
@@ -172,6 +177,13 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := dru.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: dnsrecord.FieldHclID,
+		})
 	}
 	if value, ok := dru.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
@@ -215,52 +227,40 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: dnsrecord.FieldDisabled,
 		})
 	}
-	if dru.mutation.TagCleared() {
+	if value, ok := dru.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dnsrecord.FieldTags,
+		})
+	}
+	if dru.mutation.DNSRecordToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dnsrecord.TagTable,
-			Columns: []string{dnsrecord.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   dnsrecord.DNSRecordToEnvironmentTable,
+			Columns: []string{dnsrecord.DNSRecordToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := dru.mutation.RemovedTagIDs(); len(nodes) > 0 && !dru.mutation.TagCleared() {
+	if nodes := dru.mutation.DNSRecordToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dnsrecord.TagTable,
-			Columns: []string{dnsrecord.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   dnsrecord.DNSRecordToEnvironmentTable,
+			Columns: []string{dnsrecord.DNSRecordToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := dru.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dnsrecord.TagTable,
-			Columns: []string{dnsrecord.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -272,8 +272,8 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, dru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{dnsrecord.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -283,59 +283,76 @@ func (dru *DNSRecordUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // DNSRecordUpdateOne is the builder for updating a single DNSRecord entity.
 type DNSRecordUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *DNSRecordMutation
 }
 
-// SetName sets the name field.
+// SetHclID sets the "hcl_id" field.
+func (druo *DNSRecordUpdateOne) SetHclID(s string) *DNSRecordUpdateOne {
+	druo.mutation.SetHclID(s)
+	return druo
+}
+
+// SetName sets the "name" field.
 func (druo *DNSRecordUpdateOne) SetName(s string) *DNSRecordUpdateOne {
 	druo.mutation.SetName(s)
 	return druo
 }
 
-// SetValues sets the values field.
+// SetValues sets the "values" field.
 func (druo *DNSRecordUpdateOne) SetValues(s []string) *DNSRecordUpdateOne {
 	druo.mutation.SetValues(s)
 	return druo
 }
 
-// SetType sets the type field.
+// SetType sets the "type" field.
 func (druo *DNSRecordUpdateOne) SetType(s string) *DNSRecordUpdateOne {
 	druo.mutation.SetType(s)
 	return druo
 }
 
-// SetZone sets the zone field.
+// SetZone sets the "zone" field.
 func (druo *DNSRecordUpdateOne) SetZone(s string) *DNSRecordUpdateOne {
 	druo.mutation.SetZone(s)
 	return druo
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (druo *DNSRecordUpdateOne) SetVars(m map[string]string) *DNSRecordUpdateOne {
 	druo.mutation.SetVars(m)
 	return druo
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (druo *DNSRecordUpdateOne) SetDisabled(b bool) *DNSRecordUpdateOne {
 	druo.mutation.SetDisabled(b)
 	return druo
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (druo *DNSRecordUpdateOne) AddTagIDs(ids ...int) *DNSRecordUpdateOne {
-	druo.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (druo *DNSRecordUpdateOne) SetTags(m map[string]string) *DNSRecordUpdateOne {
+	druo.mutation.SetTags(m)
 	return druo
 }
 
-// AddTag adds the tag edges to Tag.
-func (druo *DNSRecordUpdateOne) AddTag(t ...*Tag) *DNSRecordUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID.
+func (druo *DNSRecordUpdateOne) SetDNSRecordToEnvironmentID(id uuid.UUID) *DNSRecordUpdateOne {
+	druo.mutation.SetDNSRecordToEnvironmentID(id)
+	return druo
+}
+
+// SetNillableDNSRecordToEnvironmentID sets the "DNSRecordToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (druo *DNSRecordUpdateOne) SetNillableDNSRecordToEnvironmentID(id *uuid.UUID) *DNSRecordUpdateOne {
+	if id != nil {
+		druo = druo.SetDNSRecordToEnvironmentID(*id)
 	}
-	return druo.AddTagIDs(ids...)
+	return druo
+}
+
+// SetDNSRecordToEnvironment sets the "DNSRecordToEnvironment" edge to the Environment entity.
+func (druo *DNSRecordUpdateOne) SetDNSRecordToEnvironment(e *Environment) *DNSRecordUpdateOne {
+	return druo.SetDNSRecordToEnvironmentID(e.ID)
 }
 
 // Mutation returns the DNSRecordMutation object of the builder.
@@ -343,28 +360,20 @@ func (druo *DNSRecordUpdateOne) Mutation() *DNSRecordMutation {
 	return druo.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (druo *DNSRecordUpdateOne) ClearTag() *DNSRecordUpdateOne {
-	druo.mutation.ClearTag()
+// ClearDNSRecordToEnvironment clears the "DNSRecordToEnvironment" edge to the Environment entity.
+func (druo *DNSRecordUpdateOne) ClearDNSRecordToEnvironment() *DNSRecordUpdateOne {
+	druo.mutation.ClearDNSRecordToEnvironment()
 	return druo
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (druo *DNSRecordUpdateOne) RemoveTagIDs(ids ...int) *DNSRecordUpdateOne {
-	druo.mutation.RemoveTagIDs(ids...)
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (druo *DNSRecordUpdateOne) Select(field string, fields ...string) *DNSRecordUpdateOne {
+	druo.fields = append([]string{field}, fields...)
 	return druo
 }
 
-// RemoveTag removes tag edges to Tag.
-func (druo *DNSRecordUpdateOne) RemoveTag(t ...*Tag) *DNSRecordUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return druo.RemoveTagIDs(ids...)
-}
-
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated DNSRecord entity.
 func (druo *DNSRecordUpdateOne) Save(ctx context.Context) (*DNSRecord, error) {
 	var (
 		err  error
@@ -384,6 +393,9 @@ func (druo *DNSRecordUpdateOne) Save(ctx context.Context) (*DNSRecord, error) {
 			return node, err
 		})
 		for i := len(druo.hooks) - 1; i >= 0; i-- {
+			if druo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = druo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, druo.mutation); err != nil {
@@ -421,7 +433,7 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 			Table:   dnsrecord.Table,
 			Columns: dnsrecord.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: dnsrecord.FieldID,
 			},
 		},
@@ -431,6 +443,32 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing DNSRecord.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := druo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, dnsrecord.FieldID)
+		for _, f := range fields {
+			if !dnsrecord.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != dnsrecord.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
+	if ps := druo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
+	if value, ok := druo.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: dnsrecord.FieldHclID,
+		})
+	}
 	if value, ok := druo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -473,52 +511,40 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 			Column: dnsrecord.FieldDisabled,
 		})
 	}
-	if druo.mutation.TagCleared() {
+	if value, ok := druo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: dnsrecord.FieldTags,
+		})
+	}
+	if druo.mutation.DNSRecordToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dnsrecord.TagTable,
-			Columns: []string{dnsrecord.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   dnsrecord.DNSRecordToEnvironmentTable,
+			Columns: []string{dnsrecord.DNSRecordToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := druo.mutation.RemovedTagIDs(); len(nodes) > 0 && !druo.mutation.TagCleared() {
+	if nodes := druo.mutation.DNSRecordToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dnsrecord.TagTable,
-			Columns: []string{dnsrecord.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   dnsrecord.DNSRecordToEnvironmentTable,
+			Columns: []string{dnsrecord.DNSRecordToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := druo.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   dnsrecord.TagTable,
-			Columns: []string{dnsrecord.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -529,12 +555,12 @@ func (druo *DNSRecordUpdateOne) sqlSave(ctx context.Context) (_node *DNSRecord, 
 	}
 	_node = &DNSRecord{config: druo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, druo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{dnsrecord.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

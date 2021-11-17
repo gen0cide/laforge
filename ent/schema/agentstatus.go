@@ -1,9 +1,10 @@
 package schema
 
 import (
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // AgentStatus holds the schema definition for the AgentStatus entity.
@@ -14,6 +15,8 @@ type AgentStatus struct {
 // Fields of the AgentStatus.
 func (AgentStatus) Fields() []ent.Field {
 	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New),
 		field.String("ClientID"),
 		field.String("Hostname"),
 		field.Int64("UpTime"),
@@ -34,6 +37,11 @@ func (AgentStatus) Fields() []ent.Field {
 // Edges of the AgentStatus.
 func (AgentStatus) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("host", ProvisionedHost.Type),
+		edge.To("AgentStatusToProvisionedHost", ProvisionedHost.Type).
+			Unique(),
+		edge.To("AgentStatusToProvisionedNetwork", ProvisionedNetwork.Type).
+			Unique(),
+		edge.To("AgentStatusToBuild", Build.Type).
+			Unique(),
 	}
 }

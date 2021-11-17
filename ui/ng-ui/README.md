@@ -25,10 +25,10 @@ Run `ng build` to build the project. The build artifacts will be stored in the `
 
 ### Production
 
-By default, in production, the UI is accessed via the subdirectory `/ui`. When building the UI for production, use:
+When building the UI for production, use:
 
 ```
-ng build --prod --base-href /ui/
+ng build --prod
 ```
 
 ## Running unit tests

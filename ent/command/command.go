@@ -2,11 +2,17 @@
 
 package command
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the command type in the database.
 	Label = "command"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldHclID holds the string denoting the hcl_id field in the database.
+	FieldHclID = "hcl_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldDescription holds the string denoting the description field in the database.
@@ -25,33 +31,34 @@ const (
 	FieldTimeout = "timeout"
 	// FieldVars holds the string denoting the vars field in the database.
 	FieldVars = "vars"
-
-	// EdgeUser holds the string denoting the user edge name in mutations.
-	EdgeUser = "user"
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
-
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
+	// EdgeCommandToUser holds the string denoting the commandtouser edge name in mutations.
+	EdgeCommandToUser = "CommandToUser"
+	// EdgeCommandToEnvironment holds the string denoting the commandtoenvironment edge name in mutations.
+	EdgeCommandToEnvironment = "CommandToEnvironment"
 	// Table holds the table name of the command in the database.
 	Table = "commands"
-	// UserTable is the table the holds the user relation/edge.
-	UserTable = "users"
-	// UserInverseTable is the table name for the User entity.
+	// CommandToUserTable is the table that holds the CommandToUser relation/edge.
+	CommandToUserTable = "users"
+	// CommandToUserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
-	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "command_user"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "command_tag"
+	CommandToUserInverseTable = "users"
+	// CommandToUserColumn is the table column denoting the CommandToUser relation/edge.
+	CommandToUserColumn = "command_command_to_user"
+	// CommandToEnvironmentTable is the table that holds the CommandToEnvironment relation/edge.
+	CommandToEnvironmentTable = "commands"
+	// CommandToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	CommandToEnvironmentInverseTable = "environments"
+	// CommandToEnvironmentColumn is the table column denoting the CommandToEnvironment relation/edge.
+	CommandToEnvironmentColumn = "environment_environment_to_command"
 )
 
 // Columns holds all SQL columns for command fields.
 var Columns = []string{
 	FieldID,
+	FieldHclID,
 	FieldName,
 	FieldDescription,
 	FieldProgram,
@@ -61,11 +68,13 @@ var Columns = []string{
 	FieldCooldown,
 	FieldTimeout,
 	FieldVars,
+	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Command type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "commands"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"provisioning_step_command",
+	"environment_environment_to_command",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -88,4 +97,6 @@ var (
 	CooldownValidator func(int) error
 	// TimeoutValidator is a validator for the "timeout" field. It is called by the builders before save.
 	TimeoutValidator func(int) error
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )

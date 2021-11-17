@@ -1,23 +1,25 @@
-import { ID, varsMap, Tag, Status } from './common.model';
+import { ID, varsMap, Status, tagMap, Team, Plan } from './common.model';
+import { Build, Environment } from './environment.model';
 import { ProvisionedHost } from './host.model';
 
 export interface Network {
   id: ID;
+  vdi_visible: boolean;
   name?: string;
   cidr?: string;
-  vdiVisible: boolean;
   vars?: varsMap[];
-  tags?: Tag[];
+  tags?: tagMap[];
+  NetworkToEnvironment?: Environment;
 }
 
 export interface ProvisionedNetwork {
   id: ID;
   name: string;
   cidr: string;
-  // vars: varsMap[];
-  // tags: Tag[];
-  provisionedHosts: ProvisionedHost[];
-  status?: Status;
-  network: Network;
-  // build: Build; Circular dependency
+  ProvisionedNetworkToStatus?: Status;
+  ProvisionedNetworkToNetwork?: Network;
+  ProvisionedNetworkToBuild?: Build;
+  ProvisionedNetworkToTeam?: Team;
+  ProvisionedNetworkToProvisionedHost?: ProvisionedHost[];
+  ProvisionedNetworkToPlan?: Plan;
 }

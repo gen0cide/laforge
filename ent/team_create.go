@@ -7,14 +7,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
-	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/plan"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
-	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/team"
-	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // TeamCreate is the builder for creating a Team entity.
@@ -24,97 +24,86 @@ type TeamCreate struct {
 	hooks    []Hook
 }
 
-// SetTeamNumber sets the team_number field.
+// SetTeamNumber sets the "team_number" field.
 func (tc *TeamCreate) SetTeamNumber(i int) *TeamCreate {
 	tc.mutation.SetTeamNumber(i)
 	return tc
 }
 
-// SetConfig sets the config field.
-func (tc *TeamCreate) SetConfig(m map[string]string) *TeamCreate {
-	tc.mutation.SetConfig(m)
+// SetVars sets the "vars" field.
+func (tc *TeamCreate) SetVars(m map[string]string) *TeamCreate {
+	tc.mutation.SetVars(m)
 	return tc
 }
 
-// SetRevision sets the revision field.
-func (tc *TeamCreate) SetRevision(i int64) *TeamCreate {
-	tc.mutation.SetRevision(i)
+// SetID sets the "id" field.
+func (tc *TeamCreate) SetID(u uuid.UUID) *TeamCreate {
+	tc.mutation.SetID(u)
 	return tc
 }
 
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (tc *TeamCreate) AddMaintainerIDs(ids ...int) *TeamCreate {
-	tc.mutation.AddMaintainerIDs(ids...)
+// SetTeamToBuildID sets the "TeamToBuild" edge to the Build entity by ID.
+func (tc *TeamCreate) SetTeamToBuildID(id uuid.UUID) *TeamCreate {
+	tc.mutation.SetTeamToBuildID(id)
 	return tc
 }
 
-// AddMaintainer adds the maintainer edges to User.
-func (tc *TeamCreate) AddMaintainer(u ...*User) *TeamCreate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+// SetTeamToBuild sets the "TeamToBuild" edge to the Build entity.
+func (tc *TeamCreate) SetTeamToBuild(b *Build) *TeamCreate {
+	return tc.SetTeamToBuildID(b.ID)
+}
+
+// SetTeamToStatusID sets the "TeamToStatus" edge to the Status entity by ID.
+func (tc *TeamCreate) SetTeamToStatusID(id uuid.UUID) *TeamCreate {
+	tc.mutation.SetTeamToStatusID(id)
+	return tc
+}
+
+// SetNillableTeamToStatusID sets the "TeamToStatus" edge to the Status entity by ID if the given value is not nil.
+func (tc *TeamCreate) SetNillableTeamToStatusID(id *uuid.UUID) *TeamCreate {
+	if id != nil {
+		tc = tc.SetTeamToStatusID(*id)
 	}
-	return tc.AddMaintainerIDs(ids...)
-}
-
-// AddBuildIDs adds the build edge to Build by ids.
-func (tc *TeamCreate) AddBuildIDs(ids ...int) *TeamCreate {
-	tc.mutation.AddBuildIDs(ids...)
 	return tc
 }
 
-// AddBuild adds the build edges to Build.
-func (tc *TeamCreate) AddBuild(b ...*Build) *TeamCreate {
-	ids := make([]int, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return tc.AddBuildIDs(ids...)
+// SetTeamToStatus sets the "TeamToStatus" edge to the Status entity.
+func (tc *TeamCreate) SetTeamToStatus(s *Status) *TeamCreate {
+	return tc.SetTeamToStatusID(s.ID)
 }
 
-// AddTeamToEnvironmentIDs adds the TeamToEnvironment edge to Environment by ids.
-func (tc *TeamCreate) AddTeamToEnvironmentIDs(ids ...int) *TeamCreate {
-	tc.mutation.AddTeamToEnvironmentIDs(ids...)
+// AddTeamToProvisionedNetworkIDs adds the "TeamToProvisionedNetwork" edge to the ProvisionedNetwork entity by IDs.
+func (tc *TeamCreate) AddTeamToProvisionedNetworkIDs(ids ...uuid.UUID) *TeamCreate {
+	tc.mutation.AddTeamToProvisionedNetworkIDs(ids...)
 	return tc
 }
 
-// AddTeamToEnvironment adds the TeamToEnvironment edges to Environment.
-func (tc *TeamCreate) AddTeamToEnvironment(e ...*Environment) *TeamCreate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return tc.AddTeamToEnvironmentIDs(ids...)
-}
-
-// AddTagIDs adds the tag edge to Tag by ids.
-func (tc *TeamCreate) AddTagIDs(ids ...int) *TeamCreate {
-	tc.mutation.AddTagIDs(ids...)
-	return tc
-}
-
-// AddTag adds the tag edges to Tag.
-func (tc *TeamCreate) AddTag(t ...*Tag) *TeamCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return tc.AddTagIDs(ids...)
-}
-
-// AddProvisionedNetworkIDs adds the provisioned_networks edge to ProvisionedNetwork by ids.
-func (tc *TeamCreate) AddProvisionedNetworkIDs(ids ...int) *TeamCreate {
-	tc.mutation.AddProvisionedNetworkIDs(ids...)
-	return tc
-}
-
-// AddProvisionedNetworks adds the provisioned_networks edges to ProvisionedNetwork.
-func (tc *TeamCreate) AddProvisionedNetworks(p ...*ProvisionedNetwork) *TeamCreate {
-	ids := make([]int, len(p))
+// AddTeamToProvisionedNetwork adds the "TeamToProvisionedNetwork" edges to the ProvisionedNetwork entity.
+func (tc *TeamCreate) AddTeamToProvisionedNetwork(p ...*ProvisionedNetwork) *TeamCreate {
+	ids := make([]uuid.UUID, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
 	}
-	return tc.AddProvisionedNetworkIDs(ids...)
+	return tc.AddTeamToProvisionedNetworkIDs(ids...)
+}
+
+// SetTeamToPlanID sets the "TeamToPlan" edge to the Plan entity by ID.
+func (tc *TeamCreate) SetTeamToPlanID(id uuid.UUID) *TeamCreate {
+	tc.mutation.SetTeamToPlanID(id)
+	return tc
+}
+
+// SetNillableTeamToPlanID sets the "TeamToPlan" edge to the Plan entity by ID if the given value is not nil.
+func (tc *TeamCreate) SetNillableTeamToPlanID(id *uuid.UUID) *TeamCreate {
+	if id != nil {
+		tc = tc.SetTeamToPlanID(*id)
+	}
+	return tc
+}
+
+// SetTeamToPlan sets the "TeamToPlan" edge to the Plan entity.
+func (tc *TeamCreate) SetTeamToPlan(p *Plan) *TeamCreate {
+	return tc.SetTeamToPlanID(p.ID)
 }
 
 // Mutation returns the TeamMutation object of the builder.
@@ -128,6 +117,7 @@ func (tc *TeamCreate) Save(ctx context.Context) (*Team, error) {
 		err  error
 		node *Team
 	)
+	tc.defaults()
 	if len(tc.hooks) == 0 {
 		if err = tc.check(); err != nil {
 			return nil, err
@@ -143,11 +133,17 @@ func (tc *TeamCreate) Save(ctx context.Context) (*Team, error) {
 				return nil, err
 			}
 			tc.mutation = mutation
-			node, err = tc.sqlSave(ctx)
+			if node, err = tc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(tc.hooks) - 1; i >= 0; i-- {
+			if tc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = tc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, tc.mutation); err != nil {
@@ -166,16 +162,37 @@ func (tc *TeamCreate) SaveX(ctx context.Context) *Team {
 	return v
 }
 
+// Exec executes the query.
+func (tc *TeamCreate) Exec(ctx context.Context) error {
+	_, err := tc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (tc *TeamCreate) ExecX(ctx context.Context) {
+	if err := tc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (tc *TeamCreate) defaults() {
+	if _, ok := tc.mutation.ID(); !ok {
+		v := team.DefaultID()
+		tc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (tc *TeamCreate) check() error {
 	if _, ok := tc.mutation.TeamNumber(); !ok {
-		return &ValidationError{Name: "team_number", err: errors.New("ent: missing required field \"team_number\"")}
+		return &ValidationError{Name: "team_number", err: errors.New(`ent: missing required field "team_number"`)}
 	}
-	if _, ok := tc.mutation.Config(); !ok {
-		return &ValidationError{Name: "config", err: errors.New("ent: missing required field \"config\"")}
+	if _, ok := tc.mutation.Vars(); !ok {
+		return &ValidationError{Name: "vars", err: errors.New(`ent: missing required field "vars"`)}
 	}
-	if _, ok := tc.mutation.Revision(); !ok {
-		return &ValidationError{Name: "revision", err: errors.New("ent: missing required field \"revision\"")}
+	if _, ok := tc.mutation.TeamToBuildID(); !ok {
+		return &ValidationError{Name: "TeamToBuild", err: errors.New("ent: missing required edge \"TeamToBuild\"")}
 	}
 	return nil
 }
@@ -183,13 +200,14 @@ func (tc *TeamCreate) check() error {
 func (tc *TeamCreate) sqlSave(ctx context.Context) (*Team, error) {
 	_node, _spec := tc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, tc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
+	}
 	return _node, nil
 }
 
@@ -199,11 +217,15 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: team.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: team.FieldID,
 			},
 		}
 	)
+	if id, ok := tc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := tc.mutation.TeamNumber(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
@@ -212,51 +234,24 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 		})
 		_node.TeamNumber = value
 	}
-	if value, ok := tc.mutation.Config(); ok {
+	if value, ok := tc.mutation.Vars(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
-			Column: team.FieldConfig,
+			Column: team.FieldVars,
 		})
-		_node.Config = value
+		_node.Vars = value
 	}
-	if value, ok := tc.mutation.Revision(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt64,
-			Value:  value,
-			Column: team.FieldRevision,
-		})
-		_node.Revision = value
-	}
-	if nodes := tc.mutation.MaintainerIDs(); len(nodes) > 0 {
+	if nodes := tc.mutation.TeamToBuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   team.MaintainerTable,
-			Columns: []string{team.MaintainerColumn},
+			Table:   team.TeamToBuildTable,
+			Columns: []string{team.TeamToBuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := tc.mutation.BuildIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   team.BuildTable,
-			Columns: team.BuildPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: build.FieldID,
 				},
 			},
@@ -264,19 +259,20 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.team_team_to_build = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := tc.mutation.TeamToEnvironmentIDs(); len(nodes) > 0 {
+	if nodes := tc.mutation.TeamToStatusIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   team.TeamToEnvironmentTable,
-			Columns: team.TeamToEnvironmentPrimaryKey,
+			Table:   team.TeamToStatusTable,
+			Columns: []string{team.TeamToStatusColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
+					Type:   field.TypeUUID,
+					Column: status.FieldID,
 				},
 			},
 		}
@@ -285,35 +281,16 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := tc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := tc.mutation.TeamToProvisionedNetworkIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   team.TagTable,
-			Columns: []string{team.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := tc.mutation.ProvisionedNetworksIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   team.ProvisionedNetworksTable,
-			Columns: team.ProvisionedNetworksPrimaryKey,
+			Table:   team.TeamToProvisionedNetworkTable,
+			Columns: []string{team.TeamToProvisionedNetworkColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: provisionednetwork.FieldID,
 				},
 			},
@@ -323,10 +300,30 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := tc.mutation.TeamToPlanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   team.TeamToPlanTable,
+			Columns: []string{team.TeamToPlanColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: plan.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.plan_plan_to_team = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
-// TeamCreateBulk is the builder for creating a bulk of Team entities.
+// TeamCreateBulk is the builder for creating many Team entities in bulk.
 type TeamCreateBulk struct {
 	config
 	builders []*TeamCreate
@@ -340,6 +337,7 @@ func (tcb *TeamCreateBulk) Save(ctx context.Context) ([]*Team, error) {
 	for i := range tcb.builders {
 		func(i int, root context.Context) {
 			builder := tcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*TeamMutation)
 				if !ok {
@@ -354,19 +352,19 @@ func (tcb *TeamCreateBulk) Save(ctx context.Context) ([]*Team, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, tcb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, tcb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, tcb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -383,11 +381,24 @@ func (tcb *TeamCreateBulk) Save(ctx context.Context) ([]*Team, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (tcb *TeamCreateBulk) SaveX(ctx context.Context) []*Team {
 	v, err := tcb.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (tcb *TeamCreateBulk) Exec(ctx context.Context) error {
+	_, err := tcb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (tcb *TeamCreateBulk) ExecX(ctx context.Context) {
+	if err := tcb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

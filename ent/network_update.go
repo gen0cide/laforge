@@ -6,13 +6,15 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/environment"
+	"github.com/gen0cide/laforge/ent/hostdependency"
+	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/google/uuid"
 )
 
 // NetworkUpdate is the builder for updating Network entities.
@@ -22,64 +24,95 @@ type NetworkUpdate struct {
 	mutation *NetworkMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where appends a list predicates to the NetworkUpdate builder.
 func (nu *NetworkUpdate) Where(ps ...predicate.Network) *NetworkUpdate {
-	nu.mutation.predicates = append(nu.mutation.predicates, ps...)
+	nu.mutation.Where(ps...)
 	return nu
 }
 
-// SetName sets the name field.
+// SetHclID sets the "hcl_id" field.
+func (nu *NetworkUpdate) SetHclID(s string) *NetworkUpdate {
+	nu.mutation.SetHclID(s)
+	return nu
+}
+
+// SetName sets the "name" field.
 func (nu *NetworkUpdate) SetName(s string) *NetworkUpdate {
 	nu.mutation.SetName(s)
 	return nu
 }
 
-// SetCidr sets the cidr field.
+// SetCidr sets the "cidr" field.
 func (nu *NetworkUpdate) SetCidr(s string) *NetworkUpdate {
 	nu.mutation.SetCidr(s)
 	return nu
 }
 
-// SetVdiVisible sets the vdi_visible field.
+// SetVdiVisible sets the "vdi_visible" field.
 func (nu *NetworkUpdate) SetVdiVisible(b bool) *NetworkUpdate {
 	nu.mutation.SetVdiVisible(b)
 	return nu
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (nu *NetworkUpdate) SetVars(m map[string]string) *NetworkUpdate {
 	nu.mutation.SetVars(m)
 	return nu
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (nu *NetworkUpdate) AddTagIDs(ids ...int) *NetworkUpdate {
-	nu.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (nu *NetworkUpdate) SetTags(m map[string]string) *NetworkUpdate {
+	nu.mutation.SetTags(m)
 	return nu
 }
 
-// AddTag adds the tag edges to Tag.
-func (nu *NetworkUpdate) AddTag(t ...*Tag) *NetworkUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return nu.AddTagIDs(ids...)
-}
-
-// AddNetworkToEnvironmentIDs adds the NetworkToEnvironment edge to Environment by ids.
-func (nu *NetworkUpdate) AddNetworkToEnvironmentIDs(ids ...int) *NetworkUpdate {
-	nu.mutation.AddNetworkToEnvironmentIDs(ids...)
+// SetNetworkToEnvironmentID sets the "NetworkToEnvironment" edge to the Environment entity by ID.
+func (nu *NetworkUpdate) SetNetworkToEnvironmentID(id uuid.UUID) *NetworkUpdate {
+	nu.mutation.SetNetworkToEnvironmentID(id)
 	return nu
 }
 
-// AddNetworkToEnvironment adds the NetworkToEnvironment edges to Environment.
-func (nu *NetworkUpdate) AddNetworkToEnvironment(e ...*Environment) *NetworkUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+// SetNillableNetworkToEnvironmentID sets the "NetworkToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (nu *NetworkUpdate) SetNillableNetworkToEnvironmentID(id *uuid.UUID) *NetworkUpdate {
+	if id != nil {
+		nu = nu.SetNetworkToEnvironmentID(*id)
 	}
-	return nu.AddNetworkToEnvironmentIDs(ids...)
+	return nu
+}
+
+// SetNetworkToEnvironment sets the "NetworkToEnvironment" edge to the Environment entity.
+func (nu *NetworkUpdate) SetNetworkToEnvironment(e *Environment) *NetworkUpdate {
+	return nu.SetNetworkToEnvironmentID(e.ID)
+}
+
+// AddNetworkToHostDependencyIDs adds the "NetworkToHostDependency" edge to the HostDependency entity by IDs.
+func (nu *NetworkUpdate) AddNetworkToHostDependencyIDs(ids ...uuid.UUID) *NetworkUpdate {
+	nu.mutation.AddNetworkToHostDependencyIDs(ids...)
+	return nu
+}
+
+// AddNetworkToHostDependency adds the "NetworkToHostDependency" edges to the HostDependency entity.
+func (nu *NetworkUpdate) AddNetworkToHostDependency(h ...*HostDependency) *NetworkUpdate {
+	ids := make([]uuid.UUID, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return nu.AddNetworkToHostDependencyIDs(ids...)
+}
+
+// AddNetworkToIncludedNetworkIDs adds the "NetworkToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
+func (nu *NetworkUpdate) AddNetworkToIncludedNetworkIDs(ids ...uuid.UUID) *NetworkUpdate {
+	nu.mutation.AddNetworkToIncludedNetworkIDs(ids...)
+	return nu
+}
+
+// AddNetworkToIncludedNetwork adds the "NetworkToIncludedNetwork" edges to the IncludedNetwork entity.
+func (nu *NetworkUpdate) AddNetworkToIncludedNetwork(i ...*IncludedNetwork) *NetworkUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return nu.AddNetworkToIncludedNetworkIDs(ids...)
 }
 
 // Mutation returns the NetworkMutation object of the builder.
@@ -87,46 +120,52 @@ func (nu *NetworkUpdate) Mutation() *NetworkMutation {
 	return nu.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (nu *NetworkUpdate) ClearTag() *NetworkUpdate {
-	nu.mutation.ClearTag()
-	return nu
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (nu *NetworkUpdate) RemoveTagIDs(ids ...int) *NetworkUpdate {
-	nu.mutation.RemoveTagIDs(ids...)
-	return nu
-}
-
-// RemoveTag removes tag edges to Tag.
-func (nu *NetworkUpdate) RemoveTag(t ...*Tag) *NetworkUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return nu.RemoveTagIDs(ids...)
-}
-
-// ClearNetworkToEnvironment clears all "NetworkToEnvironment" edges to type Environment.
+// ClearNetworkToEnvironment clears the "NetworkToEnvironment" edge to the Environment entity.
 func (nu *NetworkUpdate) ClearNetworkToEnvironment() *NetworkUpdate {
 	nu.mutation.ClearNetworkToEnvironment()
 	return nu
 }
 
-// RemoveNetworkToEnvironmentIDs removes the NetworkToEnvironment edge to Environment by ids.
-func (nu *NetworkUpdate) RemoveNetworkToEnvironmentIDs(ids ...int) *NetworkUpdate {
-	nu.mutation.RemoveNetworkToEnvironmentIDs(ids...)
+// ClearNetworkToHostDependency clears all "NetworkToHostDependency" edges to the HostDependency entity.
+func (nu *NetworkUpdate) ClearNetworkToHostDependency() *NetworkUpdate {
+	nu.mutation.ClearNetworkToHostDependency()
 	return nu
 }
 
-// RemoveNetworkToEnvironment removes NetworkToEnvironment edges to Environment.
-func (nu *NetworkUpdate) RemoveNetworkToEnvironment(e ...*Environment) *NetworkUpdate {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+// RemoveNetworkToHostDependencyIDs removes the "NetworkToHostDependency" edge to HostDependency entities by IDs.
+func (nu *NetworkUpdate) RemoveNetworkToHostDependencyIDs(ids ...uuid.UUID) *NetworkUpdate {
+	nu.mutation.RemoveNetworkToHostDependencyIDs(ids...)
+	return nu
+}
+
+// RemoveNetworkToHostDependency removes "NetworkToHostDependency" edges to HostDependency entities.
+func (nu *NetworkUpdate) RemoveNetworkToHostDependency(h ...*HostDependency) *NetworkUpdate {
+	ids := make([]uuid.UUID, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
 	}
-	return nu.RemoveNetworkToEnvironmentIDs(ids...)
+	return nu.RemoveNetworkToHostDependencyIDs(ids...)
+}
+
+// ClearNetworkToIncludedNetwork clears all "NetworkToIncludedNetwork" edges to the IncludedNetwork entity.
+func (nu *NetworkUpdate) ClearNetworkToIncludedNetwork() *NetworkUpdate {
+	nu.mutation.ClearNetworkToIncludedNetwork()
+	return nu
+}
+
+// RemoveNetworkToIncludedNetworkIDs removes the "NetworkToIncludedNetwork" edge to IncludedNetwork entities by IDs.
+func (nu *NetworkUpdate) RemoveNetworkToIncludedNetworkIDs(ids ...uuid.UUID) *NetworkUpdate {
+	nu.mutation.RemoveNetworkToIncludedNetworkIDs(ids...)
+	return nu
+}
+
+// RemoveNetworkToIncludedNetwork removes "NetworkToIncludedNetwork" edges to IncludedNetwork entities.
+func (nu *NetworkUpdate) RemoveNetworkToIncludedNetwork(i ...*IncludedNetwork) *NetworkUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return nu.RemoveNetworkToIncludedNetworkIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -149,6 +188,9 @@ func (nu *NetworkUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(nu.hooks) - 1; i >= 0; i-- {
+			if nu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = nu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, nu.mutation); err != nil {
@@ -186,7 +228,7 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   network.Table,
 			Columns: network.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: network.FieldID,
 			},
 		},
@@ -197,6 +239,13 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := nu.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: network.FieldHclID,
+		})
 	}
 	if value, ok := nu.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
@@ -226,52 +275,40 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: network.FieldVars,
 		})
 	}
-	if nu.mutation.TagCleared() {
+	if value, ok := nu.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: network.FieldTags,
+		})
+	}
+	if nu.mutation.NetworkToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   network.TagTable,
-			Columns: []string{network.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   network.NetworkToEnvironmentTable,
+			Columns: []string{network.NetworkToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := nu.mutation.RemovedTagIDs(); len(nodes) > 0 && !nu.mutation.TagCleared() {
+	if nodes := nu.mutation.NetworkToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   network.TagTable,
-			Columns: []string{network.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   network.NetworkToEnvironmentTable,
+			Columns: []string{network.NetworkToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := nu.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   network.TagTable,
-			Columns: []string{network.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -280,33 +317,33 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nu.mutation.NetworkToEnvironmentCleared() {
+	if nu.mutation.NetworkToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   network.NetworkToEnvironmentTable,
-			Columns: network.NetworkToEnvironmentPrimaryKey,
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   network.NetworkToHostDependencyTable,
+			Columns: []string{network.NetworkToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
+					Type:   field.TypeUUID,
+					Column: hostdependency.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := nu.mutation.RemovedNetworkToEnvironmentIDs(); len(nodes) > 0 && !nu.mutation.NetworkToEnvironmentCleared() {
+	if nodes := nu.mutation.RemovedNetworkToHostDependencyIDs(); len(nodes) > 0 && !nu.mutation.NetworkToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   network.NetworkToEnvironmentTable,
-			Columns: network.NetworkToEnvironmentPrimaryKey,
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   network.NetworkToHostDependencyTable,
+			Columns: []string{network.NetworkToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
+					Type:   field.TypeUUID,
+					Column: hostdependency.FieldID,
 				},
 			},
 		}
@@ -315,17 +352,71 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := nu.mutation.NetworkToEnvironmentIDs(); len(nodes) > 0 {
+	if nodes := nu.mutation.NetworkToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   network.NetworkToEnvironmentTable,
-			Columns: network.NetworkToEnvironmentPrimaryKey,
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   network.NetworkToHostDependencyTable,
+			Columns: []string{network.NetworkToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
+					Type:   field.TypeUUID,
+					Column: hostdependency.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if nu.mutation.NetworkToIncludedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   network.NetworkToIncludedNetworkTable,
+			Columns: []string{network.NetworkToIncludedNetworkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.RemovedNetworkToIncludedNetworkIDs(); len(nodes) > 0 && !nu.mutation.NetworkToIncludedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   network.NetworkToIncludedNetworkTable,
+			Columns: []string{network.NetworkToIncludedNetworkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nu.mutation.NetworkToIncludedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   network.NetworkToIncludedNetworkTable,
+			Columns: []string{network.NetworkToIncludedNetworkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: includednetwork.FieldID,
 				},
 			},
 		}
@@ -337,8 +428,8 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, nu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{network.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -348,62 +439,94 @@ func (nu *NetworkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // NetworkUpdateOne is the builder for updating a single Network entity.
 type NetworkUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *NetworkMutation
 }
 
-// SetName sets the name field.
+// SetHclID sets the "hcl_id" field.
+func (nuo *NetworkUpdateOne) SetHclID(s string) *NetworkUpdateOne {
+	nuo.mutation.SetHclID(s)
+	return nuo
+}
+
+// SetName sets the "name" field.
 func (nuo *NetworkUpdateOne) SetName(s string) *NetworkUpdateOne {
 	nuo.mutation.SetName(s)
 	return nuo
 }
 
-// SetCidr sets the cidr field.
+// SetCidr sets the "cidr" field.
 func (nuo *NetworkUpdateOne) SetCidr(s string) *NetworkUpdateOne {
 	nuo.mutation.SetCidr(s)
 	return nuo
 }
 
-// SetVdiVisible sets the vdi_visible field.
+// SetVdiVisible sets the "vdi_visible" field.
 func (nuo *NetworkUpdateOne) SetVdiVisible(b bool) *NetworkUpdateOne {
 	nuo.mutation.SetVdiVisible(b)
 	return nuo
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (nuo *NetworkUpdateOne) SetVars(m map[string]string) *NetworkUpdateOne {
 	nuo.mutation.SetVars(m)
 	return nuo
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (nuo *NetworkUpdateOne) AddTagIDs(ids ...int) *NetworkUpdateOne {
-	nuo.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (nuo *NetworkUpdateOne) SetTags(m map[string]string) *NetworkUpdateOne {
+	nuo.mutation.SetTags(m)
 	return nuo
 }
 
-// AddTag adds the tag edges to Tag.
-func (nuo *NetworkUpdateOne) AddTag(t ...*Tag) *NetworkUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return nuo.AddTagIDs(ids...)
-}
-
-// AddNetworkToEnvironmentIDs adds the NetworkToEnvironment edge to Environment by ids.
-func (nuo *NetworkUpdateOne) AddNetworkToEnvironmentIDs(ids ...int) *NetworkUpdateOne {
-	nuo.mutation.AddNetworkToEnvironmentIDs(ids...)
+// SetNetworkToEnvironmentID sets the "NetworkToEnvironment" edge to the Environment entity by ID.
+func (nuo *NetworkUpdateOne) SetNetworkToEnvironmentID(id uuid.UUID) *NetworkUpdateOne {
+	nuo.mutation.SetNetworkToEnvironmentID(id)
 	return nuo
 }
 
-// AddNetworkToEnvironment adds the NetworkToEnvironment edges to Environment.
-func (nuo *NetworkUpdateOne) AddNetworkToEnvironment(e ...*Environment) *NetworkUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+// SetNillableNetworkToEnvironmentID sets the "NetworkToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (nuo *NetworkUpdateOne) SetNillableNetworkToEnvironmentID(id *uuid.UUID) *NetworkUpdateOne {
+	if id != nil {
+		nuo = nuo.SetNetworkToEnvironmentID(*id)
 	}
-	return nuo.AddNetworkToEnvironmentIDs(ids...)
+	return nuo
+}
+
+// SetNetworkToEnvironment sets the "NetworkToEnvironment" edge to the Environment entity.
+func (nuo *NetworkUpdateOne) SetNetworkToEnvironment(e *Environment) *NetworkUpdateOne {
+	return nuo.SetNetworkToEnvironmentID(e.ID)
+}
+
+// AddNetworkToHostDependencyIDs adds the "NetworkToHostDependency" edge to the HostDependency entity by IDs.
+func (nuo *NetworkUpdateOne) AddNetworkToHostDependencyIDs(ids ...uuid.UUID) *NetworkUpdateOne {
+	nuo.mutation.AddNetworkToHostDependencyIDs(ids...)
+	return nuo
+}
+
+// AddNetworkToHostDependency adds the "NetworkToHostDependency" edges to the HostDependency entity.
+func (nuo *NetworkUpdateOne) AddNetworkToHostDependency(h ...*HostDependency) *NetworkUpdateOne {
+	ids := make([]uuid.UUID, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return nuo.AddNetworkToHostDependencyIDs(ids...)
+}
+
+// AddNetworkToIncludedNetworkIDs adds the "NetworkToIncludedNetwork" edge to the IncludedNetwork entity by IDs.
+func (nuo *NetworkUpdateOne) AddNetworkToIncludedNetworkIDs(ids ...uuid.UUID) *NetworkUpdateOne {
+	nuo.mutation.AddNetworkToIncludedNetworkIDs(ids...)
+	return nuo
+}
+
+// AddNetworkToIncludedNetwork adds the "NetworkToIncludedNetwork" edges to the IncludedNetwork entity.
+func (nuo *NetworkUpdateOne) AddNetworkToIncludedNetwork(i ...*IncludedNetwork) *NetworkUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return nuo.AddNetworkToIncludedNetworkIDs(ids...)
 }
 
 // Mutation returns the NetworkMutation object of the builder.
@@ -411,49 +534,62 @@ func (nuo *NetworkUpdateOne) Mutation() *NetworkMutation {
 	return nuo.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (nuo *NetworkUpdateOne) ClearTag() *NetworkUpdateOne {
-	nuo.mutation.ClearTag()
-	return nuo
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (nuo *NetworkUpdateOne) RemoveTagIDs(ids ...int) *NetworkUpdateOne {
-	nuo.mutation.RemoveTagIDs(ids...)
-	return nuo
-}
-
-// RemoveTag removes tag edges to Tag.
-func (nuo *NetworkUpdateOne) RemoveTag(t ...*Tag) *NetworkUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return nuo.RemoveTagIDs(ids...)
-}
-
-// ClearNetworkToEnvironment clears all "NetworkToEnvironment" edges to type Environment.
+// ClearNetworkToEnvironment clears the "NetworkToEnvironment" edge to the Environment entity.
 func (nuo *NetworkUpdateOne) ClearNetworkToEnvironment() *NetworkUpdateOne {
 	nuo.mutation.ClearNetworkToEnvironment()
 	return nuo
 }
 
-// RemoveNetworkToEnvironmentIDs removes the NetworkToEnvironment edge to Environment by ids.
-func (nuo *NetworkUpdateOne) RemoveNetworkToEnvironmentIDs(ids ...int) *NetworkUpdateOne {
-	nuo.mutation.RemoveNetworkToEnvironmentIDs(ids...)
+// ClearNetworkToHostDependency clears all "NetworkToHostDependency" edges to the HostDependency entity.
+func (nuo *NetworkUpdateOne) ClearNetworkToHostDependency() *NetworkUpdateOne {
+	nuo.mutation.ClearNetworkToHostDependency()
 	return nuo
 }
 
-// RemoveNetworkToEnvironment removes NetworkToEnvironment edges to Environment.
-func (nuo *NetworkUpdateOne) RemoveNetworkToEnvironment(e ...*Environment) *NetworkUpdateOne {
-	ids := make([]int, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return nuo.RemoveNetworkToEnvironmentIDs(ids...)
+// RemoveNetworkToHostDependencyIDs removes the "NetworkToHostDependency" edge to HostDependency entities by IDs.
+func (nuo *NetworkUpdateOne) RemoveNetworkToHostDependencyIDs(ids ...uuid.UUID) *NetworkUpdateOne {
+	nuo.mutation.RemoveNetworkToHostDependencyIDs(ids...)
+	return nuo
 }
 
-// Save executes the query and returns the updated entity.
+// RemoveNetworkToHostDependency removes "NetworkToHostDependency" edges to HostDependency entities.
+func (nuo *NetworkUpdateOne) RemoveNetworkToHostDependency(h ...*HostDependency) *NetworkUpdateOne {
+	ids := make([]uuid.UUID, len(h))
+	for i := range h {
+		ids[i] = h[i].ID
+	}
+	return nuo.RemoveNetworkToHostDependencyIDs(ids...)
+}
+
+// ClearNetworkToIncludedNetwork clears all "NetworkToIncludedNetwork" edges to the IncludedNetwork entity.
+func (nuo *NetworkUpdateOne) ClearNetworkToIncludedNetwork() *NetworkUpdateOne {
+	nuo.mutation.ClearNetworkToIncludedNetwork()
+	return nuo
+}
+
+// RemoveNetworkToIncludedNetworkIDs removes the "NetworkToIncludedNetwork" edge to IncludedNetwork entities by IDs.
+func (nuo *NetworkUpdateOne) RemoveNetworkToIncludedNetworkIDs(ids ...uuid.UUID) *NetworkUpdateOne {
+	nuo.mutation.RemoveNetworkToIncludedNetworkIDs(ids...)
+	return nuo
+}
+
+// RemoveNetworkToIncludedNetwork removes "NetworkToIncludedNetwork" edges to IncludedNetwork entities.
+func (nuo *NetworkUpdateOne) RemoveNetworkToIncludedNetwork(i ...*IncludedNetwork) *NetworkUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return nuo.RemoveNetworkToIncludedNetworkIDs(ids...)
+}
+
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (nuo *NetworkUpdateOne) Select(field string, fields ...string) *NetworkUpdateOne {
+	nuo.fields = append([]string{field}, fields...)
+	return nuo
+}
+
+// Save executes the query and returns the updated Network entity.
 func (nuo *NetworkUpdateOne) Save(ctx context.Context) (*Network, error) {
 	var (
 		err  error
@@ -473,6 +609,9 @@ func (nuo *NetworkUpdateOne) Save(ctx context.Context) (*Network, error) {
 			return node, err
 		})
 		for i := len(nuo.hooks) - 1; i >= 0; i-- {
+			if nuo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = nuo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, nuo.mutation); err != nil {
@@ -510,7 +649,7 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 			Table:   network.Table,
 			Columns: network.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: network.FieldID,
 			},
 		},
@@ -520,6 +659,32 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Network.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := nuo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, network.FieldID)
+		for _, f := range fields {
+			if !network.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != network.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
+	if ps := nuo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
+	if value, ok := nuo.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: network.FieldHclID,
+		})
+	}
 	if value, ok := nuo.mutation.Name(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -548,52 +713,40 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 			Column: network.FieldVars,
 		})
 	}
-	if nuo.mutation.TagCleared() {
+	if value, ok := nuo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: network.FieldTags,
+		})
+	}
+	if nuo.mutation.NetworkToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   network.TagTable,
-			Columns: []string{network.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   network.NetworkToEnvironmentTable,
+			Columns: []string{network.NetworkToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := nuo.mutation.RemovedTagIDs(); len(nodes) > 0 && !nuo.mutation.TagCleared() {
+	if nodes := nuo.mutation.NetworkToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   network.TagTable,
-			Columns: []string{network.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   network.NetworkToEnvironmentTable,
+			Columns: []string{network.NetworkToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := nuo.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   network.TagTable,
-			Columns: []string{network.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -602,33 +755,33 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nuo.mutation.NetworkToEnvironmentCleared() {
+	if nuo.mutation.NetworkToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   network.NetworkToEnvironmentTable,
-			Columns: network.NetworkToEnvironmentPrimaryKey,
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   network.NetworkToHostDependencyTable,
+			Columns: []string{network.NetworkToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
+					Type:   field.TypeUUID,
+					Column: hostdependency.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := nuo.mutation.RemovedNetworkToEnvironmentIDs(); len(nodes) > 0 && !nuo.mutation.NetworkToEnvironmentCleared() {
+	if nodes := nuo.mutation.RemovedNetworkToHostDependencyIDs(); len(nodes) > 0 && !nuo.mutation.NetworkToHostDependencyCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   network.NetworkToEnvironmentTable,
-			Columns: network.NetworkToEnvironmentPrimaryKey,
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   network.NetworkToHostDependencyTable,
+			Columns: []string{network.NetworkToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
+					Type:   field.TypeUUID,
+					Column: hostdependency.FieldID,
 				},
 			},
 		}
@@ -637,17 +790,71 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := nuo.mutation.NetworkToEnvironmentIDs(); len(nodes) > 0 {
+	if nodes := nuo.mutation.NetworkToHostDependencyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   network.NetworkToEnvironmentTable,
-			Columns: network.NetworkToEnvironmentPrimaryKey,
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   network.NetworkToHostDependencyTable,
+			Columns: []string{network.NetworkToHostDependencyColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: environment.FieldID,
+					Type:   field.TypeUUID,
+					Column: hostdependency.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if nuo.mutation.NetworkToIncludedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   network.NetworkToIncludedNetworkTable,
+			Columns: []string{network.NetworkToIncludedNetworkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.RemovedNetworkToIncludedNetworkIDs(); len(nodes) > 0 && !nuo.mutation.NetworkToIncludedNetworkCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   network.NetworkToIncludedNetworkTable,
+			Columns: []string{network.NetworkToIncludedNetworkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: includednetwork.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := nuo.mutation.NetworkToIncludedNetworkIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   network.NetworkToIncludedNetworkTable,
+			Columns: []string{network.NetworkToIncludedNetworkColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: includednetwork.FieldID,
 				},
 			},
 		}
@@ -658,12 +865,12 @@ func (nuo *NetworkUpdateOne) sqlSave(ctx context.Context) (_node *Network, err e
 	}
 	_node = &Network{config: nuo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, nuo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{network.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

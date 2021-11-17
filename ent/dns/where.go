@@ -3,33 +3,35 @@
 package dns
 
 import (
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
-// ID filters vertices based on their identifier.
-func ID(id int) predicate.DNS {
+// ID filters vertices based on their ID field.
+func ID(id uuid.UUID) predicate.DNS {
 	return predicate.DNS(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.DNS {
+func IDEQ(id uuid.UUID) predicate.DNS {
 	return predicate.DNS(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.DNS {
+func IDNEQ(id uuid.UUID) predicate.DNS {
 	return predicate.DNS(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldID), id))
 	})
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.DNS {
+func IDIn(ids ...uuid.UUID) predicate.DNS {
 	return predicate.DNS(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -46,7 +48,7 @@ func IDIn(ids ...int) predicate.DNS {
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.DNS {
+func IDNotIn(ids ...uuid.UUID) predicate.DNS {
 	return predicate.DNS(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -63,30 +65,37 @@ func IDNotIn(ids ...int) predicate.DNS {
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.DNS {
+func IDGT(id uuid.UUID) predicate.DNS {
 	return predicate.DNS(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldID), id))
 	})
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.DNS {
+func IDGTE(id uuid.UUID) predicate.DNS {
 	return predicate.DNS(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldID), id))
 	})
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.DNS {
+func IDLT(id uuid.UUID) predicate.DNS {
 	return predicate.DNS(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldID), id))
 	})
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.DNS {
+func IDLTE(id uuid.UUID) predicate.DNS {
 	return predicate.DNS(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
+	})
+}
+
+// HclID applies equality check predicate on the "hcl_id" field. It's identical to HclIDEQ.
+func HclID(v string) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldHclID), v))
 	})
 }
 
@@ -101,6 +110,117 @@ func Type(v string) predicate.DNS {
 func RootDomain(v string) predicate.DNS {
 	return predicate.DNS(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldRootDomain), v))
+	})
+}
+
+// HclIDEQ applies the EQ predicate on the "hcl_id" field.
+func HclIDEQ(v string) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDNEQ applies the NEQ predicate on the "hcl_id" field.
+func HclIDNEQ(v string) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDIn applies the In predicate on the "hcl_id" field.
+func HclIDIn(vs ...string) predicate.DNS {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.DNS(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldHclID), v...))
+	})
+}
+
+// HclIDNotIn applies the NotIn predicate on the "hcl_id" field.
+func HclIDNotIn(vs ...string) predicate.DNS {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.DNS(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldHclID), v...))
+	})
+}
+
+// HclIDGT applies the GT predicate on the "hcl_id" field.
+func HclIDGT(v string) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDGTE applies the GTE predicate on the "hcl_id" field.
+func HclIDGTE(v string) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDLT applies the LT predicate on the "hcl_id" field.
+func HclIDLT(v string) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDLTE applies the LTE predicate on the "hcl_id" field.
+func HclIDLTE(v string) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDContains applies the Contains predicate on the "hcl_id" field.
+func HclIDContains(v string) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDHasPrefix applies the HasPrefix predicate on the "hcl_id" field.
+func HclIDHasPrefix(v string) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDHasSuffix applies the HasSuffix predicate on the "hcl_id" field.
+func HclIDHasSuffix(v string) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDEqualFold applies the EqualFold predicate on the "hcl_id" field.
+func HclIDEqualFold(v string) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldHclID), v))
+	})
+}
+
+// HclIDContainsFold applies the ContainsFold predicate on the "hcl_id" field.
+func HclIDContainsFold(v string) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldHclID), v))
 	})
 }
 
@@ -326,7 +446,63 @@ func RootDomainContainsFold(v string) predicate.DNS {
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// HasDNSToEnvironment applies the HasEdge predicate on the "DNSToEnvironment" edge.
+func HasDNSToEnvironment() predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(DNSToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DNSToEnvironmentTable, DNSToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDNSToEnvironmentWith applies the HasEdge predicate on the "DNSToEnvironment" edge with a given conditions (other predicates).
+func HasDNSToEnvironmentWith(preds ...predicate.Environment) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(DNSToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DNSToEnvironmentTable, DNSToEnvironmentPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasDNSToCompetition applies the HasEdge predicate on the "DNSToCompetition" edge.
+func HasDNSToCompetition() predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(DNSToCompetitionTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DNSToCompetitionTable, DNSToCompetitionPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDNSToCompetitionWith applies the HasEdge predicate on the "DNSToCompetition" edge with a given conditions (other predicates).
+func HasDNSToCompetitionWith(preds ...predicate.Competition) predicate.DNS {
+	return predicate.DNS(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(DNSToCompetitionInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DNSToCompetitionTable, DNSToCompetitionPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.DNS) predicate.DNS {
 	return predicate.DNS(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -337,7 +513,7 @@ func And(predicates ...predicate.DNS) predicate.DNS {
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.DNS) predicate.DNS {
 	return predicate.DNS(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

@@ -4,17 +4,19 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
+	"github.com/gen0cide/laforge/ent/provisionednetwork"
+	"github.com/google/uuid"
 )
 
 // AgentStatusQuery is the builder for querying AgentStatus entities.
@@ -22,16 +24,21 @@ type AgentStatusQuery struct {
 	config
 	limit      *int
 	offset     *int
+	unique     *bool
 	order      []OrderFunc
+	fields     []string
 	predicates []predicate.AgentStatus
 	// eager-loading edges.
-	withHost *ProvisionedHostQuery
+	withAgentStatusToProvisionedHost    *ProvisionedHostQuery
+	withAgentStatusToProvisionedNetwork *ProvisionedNetworkQuery
+	withAgentStatusToBuild              *BuildQuery
+	withFKs                             bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the builder.
+// Where adds a new predicate for the AgentStatusQuery builder.
 func (asq *AgentStatusQuery) Where(ps ...predicate.AgentStatus) *AgentStatusQuery {
 	asq.predicates = append(asq.predicates, ps...)
 	return asq
@@ -49,27 +56,34 @@ func (asq *AgentStatusQuery) Offset(offset int) *AgentStatusQuery {
 	return asq
 }
 
+// Unique configures the query builder to filter duplicate records on query.
+// By default, unique is set to true, and can be disabled using this method.
+func (asq *AgentStatusQuery) Unique(unique bool) *AgentStatusQuery {
+	asq.unique = &unique
+	return asq
+}
+
 // Order adds an order step to the query.
 func (asq *AgentStatusQuery) Order(o ...OrderFunc) *AgentStatusQuery {
 	asq.order = append(asq.order, o...)
 	return asq
 }
 
-// QueryHost chains the current query on the host edge.
-func (asq *AgentStatusQuery) QueryHost() *ProvisionedHostQuery {
+// QueryAgentStatusToProvisionedHost chains the current query on the "AgentStatusToProvisionedHost" edge.
+func (asq *AgentStatusQuery) QueryAgentStatusToProvisionedHost() *ProvisionedHostQuery {
 	query := &ProvisionedHostQuery{config: asq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := asq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := asq.sqlQuery()
+		selector := asq.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, selector),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, agentstatus.HostTable, agentstatus.HostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentstatus.AgentStatusToProvisionedHostTable, agentstatus.AgentStatusToProvisionedHostColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(asq.driver.Dialect(), step)
 		return fromU, nil
@@ -77,7 +91,52 @@ func (asq *AgentStatusQuery) QueryHost() *ProvisionedHostQuery {
 	return query
 }
 
-// First returns the first AgentStatus entity in the query. Returns *NotFoundError when no agentstatus was found.
+// QueryAgentStatusToProvisionedNetwork chains the current query on the "AgentStatusToProvisionedNetwork" edge.
+func (asq *AgentStatusQuery) QueryAgentStatusToProvisionedNetwork() *ProvisionedNetworkQuery {
+	query := &ProvisionedNetworkQuery{config: asq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := asq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := asq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, selector),
+			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentstatus.AgentStatusToProvisionedNetworkTable, agentstatus.AgentStatusToProvisionedNetworkColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(asq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAgentStatusToBuild chains the current query on the "AgentStatusToBuild" edge.
+func (asq *AgentStatusQuery) QueryAgentStatusToBuild() *BuildQuery {
+	query := &BuildQuery{config: asq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := asq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := asq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, selector),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentstatus.AgentStatusToBuildTable, agentstatus.AgentStatusToBuildColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(asq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// First returns the first AgentStatus entity from the query.
+// Returns a *NotFoundError when no AgentStatus was found.
 func (asq *AgentStatusQuery) First(ctx context.Context) (*AgentStatus, error) {
 	nodes, err := asq.Limit(1).All(ctx)
 	if err != nil {
@@ -98,9 +157,10 @@ func (asq *AgentStatusQuery) FirstX(ctx context.Context) *AgentStatus {
 	return node
 }
 
-// FirstID returns the first AgentStatus id in the query. Returns *NotFoundError when no id was found.
-func (asq *AgentStatusQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+// FirstID returns the first AgentStatus ID from the query.
+// Returns a *NotFoundError when no AgentStatus ID was found.
+func (asq *AgentStatusQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = asq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -112,7 +172,7 @@ func (asq *AgentStatusQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (asq *AgentStatusQuery) FirstIDX(ctx context.Context) int {
+func (asq *AgentStatusQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := asq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -120,7 +180,9 @@ func (asq *AgentStatusQuery) FirstIDX(ctx context.Context) int {
 	return id
 }
 
-// Only returns the only AgentStatus entity in the query, returns an error if not exactly one entity was returned.
+// Only returns a single AgentStatus entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when exactly one AgentStatus entity is not found.
+// Returns a *NotFoundError when no AgentStatus entities are found.
 func (asq *AgentStatusQuery) Only(ctx context.Context) (*AgentStatus, error) {
 	nodes, err := asq.Limit(2).All(ctx)
 	if err != nil {
@@ -145,9 +207,11 @@ func (asq *AgentStatusQuery) OnlyX(ctx context.Context) *AgentStatus {
 	return node
 }
 
-// OnlyID returns the only AgentStatus id in the query, returns an error if not exactly one id was returned.
-func (asq *AgentStatusQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+// OnlyID is like Only, but returns the only AgentStatus ID in the query.
+// Returns a *NotSingularError when exactly one AgentStatus ID is not found.
+// Returns a *NotFoundError when no entities are found.
+func (asq *AgentStatusQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = asq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -163,7 +227,7 @@ func (asq *AgentStatusQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (asq *AgentStatusQuery) OnlyIDX(ctx context.Context) int {
+func (asq *AgentStatusQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := asq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -188,9 +252,9 @@ func (asq *AgentStatusQuery) AllX(ctx context.Context) []*AgentStatus {
 	return nodes
 }
 
-// IDs executes the query and returns a list of AgentStatus ids.
-func (asq *AgentStatusQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+// IDs executes the query and returns a list of AgentStatus IDs.
+func (asq *AgentStatusQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := asq.Select(agentstatus.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -198,7 +262,7 @@ func (asq *AgentStatusQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (asq *AgentStatusQuery) IDsX(ctx context.Context) []int {
+func (asq *AgentStatusQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := asq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -240,37 +304,61 @@ func (asq *AgentStatusQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the query builder, including all associated steps. It can be
+// Clone returns a duplicate of the AgentStatusQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
 func (asq *AgentStatusQuery) Clone() *AgentStatusQuery {
 	if asq == nil {
 		return nil
 	}
 	return &AgentStatusQuery{
-		config:     asq.config,
-		limit:      asq.limit,
-		offset:     asq.offset,
-		order:      append([]OrderFunc{}, asq.order...),
-		predicates: append([]predicate.AgentStatus{}, asq.predicates...),
-		withHost:   asq.withHost.Clone(),
+		config:                              asq.config,
+		limit:                               asq.limit,
+		offset:                              asq.offset,
+		order:                               append([]OrderFunc{}, asq.order...),
+		predicates:                          append([]predicate.AgentStatus{}, asq.predicates...),
+		withAgentStatusToProvisionedHost:    asq.withAgentStatusToProvisionedHost.Clone(),
+		withAgentStatusToProvisionedNetwork: asq.withAgentStatusToProvisionedNetwork.Clone(),
+		withAgentStatusToBuild:              asq.withAgentStatusToBuild.Clone(),
 		// clone intermediate query.
 		sql:  asq.sql.Clone(),
 		path: asq.path,
 	}
 }
 
-//  WithHost tells the query-builder to eager-loads the nodes that are connected to
-// the "host" edge. The optional arguments used to configure the query builder of the edge.
-func (asq *AgentStatusQuery) WithHost(opts ...func(*ProvisionedHostQuery)) *AgentStatusQuery {
+// WithAgentStatusToProvisionedHost tells the query-builder to eager-load the nodes that are connected to
+// the "AgentStatusToProvisionedHost" edge. The optional arguments are used to configure the query builder of the edge.
+func (asq *AgentStatusQuery) WithAgentStatusToProvisionedHost(opts ...func(*ProvisionedHostQuery)) *AgentStatusQuery {
 	query := &ProvisionedHostQuery{config: asq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	asq.withHost = query
+	asq.withAgentStatusToProvisionedHost = query
 	return asq
 }
 
-// GroupBy used to group vertices by one or more fields/columns.
+// WithAgentStatusToProvisionedNetwork tells the query-builder to eager-load the nodes that are connected to
+// the "AgentStatusToProvisionedNetwork" edge. The optional arguments are used to configure the query builder of the edge.
+func (asq *AgentStatusQuery) WithAgentStatusToProvisionedNetwork(opts ...func(*ProvisionedNetworkQuery)) *AgentStatusQuery {
+	query := &ProvisionedNetworkQuery{config: asq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	asq.withAgentStatusToProvisionedNetwork = query
+	return asq
+}
+
+// WithAgentStatusToBuild tells the query-builder to eager-load the nodes that are connected to
+// the "AgentStatusToBuild" edge. The optional arguments are used to configure the query builder of the edge.
+func (asq *AgentStatusQuery) WithAgentStatusToBuild(opts ...func(*BuildQuery)) *AgentStatusQuery {
+	query := &BuildQuery{config: asq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	asq.withAgentStatusToBuild = query
+	return asq
+}
+
+// GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
@@ -292,12 +380,13 @@ func (asq *AgentStatusQuery) GroupBy(field string, fields ...string) *AgentStatu
 		if err := asq.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		return asq.sqlQuery(), nil
+		return asq.sqlQuery(ctx), nil
 	}
 	return group
 }
 
-// Select one or more fields from the given query.
+// Select allows the selection one or more fields/columns for the given query,
+// instead of selecting all fields in the entity.
 //
 // Example:
 //
@@ -309,19 +398,17 @@ func (asq *AgentStatusQuery) GroupBy(field string, fields ...string) *AgentStatu
 //		Select(agentstatus.FieldClientID).
 //		Scan(ctx, &v)
 //
-func (asq *AgentStatusQuery) Select(field string, fields ...string) *AgentStatusSelect {
-	selector := &AgentStatusSelect{config: asq.config}
-	selector.fields = append([]string{field}, fields...)
-	selector.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := asq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return asq.sqlQuery(), nil
-	}
-	return selector
+func (asq *AgentStatusQuery) Select(fields ...string) *AgentStatusSelect {
+	asq.fields = append(asq.fields, fields...)
+	return &AgentStatusSelect{AgentStatusQuery: asq}
 }
 
 func (asq *AgentStatusQuery) prepareQuery(ctx context.Context) error {
+	for _, f := range asq.fields {
+		if !agentstatus.ValidColumn(f) {
+			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+		}
+	}
 	if asq.path != nil {
 		prev, err := asq.path(ctx)
 		if err != nil {
@@ -335,24 +422,32 @@ func (asq *AgentStatusQuery) prepareQuery(ctx context.Context) error {
 func (asq *AgentStatusQuery) sqlAll(ctx context.Context) ([]*AgentStatus, error) {
 	var (
 		nodes       = []*AgentStatus{}
+		withFKs     = asq.withFKs
 		_spec       = asq.querySpec()
-		loadedTypes = [1]bool{
-			asq.withHost != nil,
+		loadedTypes = [3]bool{
+			asq.withAgentStatusToProvisionedHost != nil,
+			asq.withAgentStatusToProvisionedNetwork != nil,
+			asq.withAgentStatusToBuild != nil,
 		}
 	)
-	_spec.ScanValues = func() []interface{} {
+	if asq.withAgentStatusToProvisionedHost != nil || asq.withAgentStatusToProvisionedNetwork != nil || asq.withAgentStatusToBuild != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, agentstatus.ForeignKeys...)
+	}
+	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &AgentStatus{config: asq.config}
 		nodes = append(nodes, node)
-		values := node.scanValues()
-		return values
+		return node.scanValues(columns)
 	}
-	_spec.Assign = func(values ...interface{}) error {
+	_spec.Assign = func(columns []string, values []interface{}) error {
 		if len(nodes) == 0 {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
 		node.Edges.loadedTypes = loadedTypes
-		return node.assignValues(values...)
+		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, asq.driver, _spec); err != nil {
 		return nil, err
@@ -361,66 +456,89 @@ func (asq *AgentStatusQuery) sqlAll(ctx context.Context) ([]*AgentStatus, error)
 		return nodes, nil
 	}
 
-	if query := asq.withHost; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		ids := make(map[int]*AgentStatus, len(nodes))
-		for _, node := range nodes {
-			ids[node.ID] = node
-			fks = append(fks, node.ID)
-			node.Edges.Host = []*ProvisionedHost{}
+	if query := asq.withAgentStatusToProvisionedHost; query != nil {
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*AgentStatus)
+		for i := range nodes {
+			if nodes[i].agent_status_agent_status_to_provisioned_host == nil {
+				continue
+			}
+			fk := *nodes[i].agent_status_agent_status_to_provisioned_host
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
 		}
-		var (
-			edgeids []int
-			edges   = make(map[int][]*AgentStatus)
-		)
-		_spec := &sqlgraph.EdgeQuerySpec{
-			Edge: &sqlgraph.EdgeSpec{
-				Inverse: false,
-				Table:   agentstatus.HostTable,
-				Columns: agentstatus.HostPrimaryKey,
-			},
-			Predicate: func(s *sql.Selector) {
-				s.Where(sql.InValues(agentstatus.HostPrimaryKey[0], fks...))
-			},
-
-			ScanValues: func() [2]interface{} {
-				return [2]interface{}{&sql.NullInt64{}, &sql.NullInt64{}}
-			},
-			Assign: func(out, in interface{}) error {
-				eout, ok := out.(*sql.NullInt64)
-				if !ok || eout == nil {
-					return fmt.Errorf("unexpected id value for edge-out")
-				}
-				ein, ok := in.(*sql.NullInt64)
-				if !ok || ein == nil {
-					return fmt.Errorf("unexpected id value for edge-in")
-				}
-				outValue := int(eout.Int64)
-				inValue := int(ein.Int64)
-				node, ok := ids[outValue]
-				if !ok {
-					return fmt.Errorf("unexpected node id in edges: %v", outValue)
-				}
-				edgeids = append(edgeids, inValue)
-				edges[inValue] = append(edges[inValue], node)
-				return nil
-			},
-		}
-		if err := sqlgraph.QueryEdges(ctx, asq.driver, _spec); err != nil {
-			return nil, fmt.Errorf(`query edges "host": %v`, err)
-		}
-		query.Where(provisionedhost.IDIn(edgeids...))
+		query.Where(provisionedhost.IDIn(ids...))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := edges[n.ID]
+			nodes, ok := nodeids[n.ID]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected "host" node returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "agent_status_agent_status_to_provisioned_host" returned %v`, n.ID)
 			}
 			for i := range nodes {
-				nodes[i].Edges.Host = append(nodes[i].Edges.Host, n)
+				nodes[i].Edges.AgentStatusToProvisionedHost = n
+			}
+		}
+	}
+
+	if query := asq.withAgentStatusToProvisionedNetwork; query != nil {
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*AgentStatus)
+		for i := range nodes {
+			if nodes[i].agent_status_agent_status_to_provisioned_network == nil {
+				continue
+			}
+			fk := *nodes[i].agent_status_agent_status_to_provisioned_network
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(provisionednetwork.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "agent_status_agent_status_to_provisioned_network" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.AgentStatusToProvisionedNetwork = n
+			}
+		}
+	}
+
+	if query := asq.withAgentStatusToBuild; query != nil {
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*AgentStatus)
+		for i := range nodes {
+			if nodes[i].agent_status_agent_status_to_build == nil {
+				continue
+			}
+			fk := *nodes[i].agent_status_agent_status_to_build
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(build.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "agent_status_agent_status_to_build" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.AgentStatusToBuild = n
 			}
 		}
 	}
@@ -436,7 +554,7 @@ func (asq *AgentStatusQuery) sqlCount(ctx context.Context) (int, error) {
 func (asq *AgentStatusQuery) sqlExist(ctx context.Context) (bool, error) {
 	n, err := asq.sqlCount(ctx)
 	if err != nil {
-		return false, fmt.Errorf("ent: check existence: %v", err)
+		return false, fmt.Errorf("ent: check existence: %w", err)
 	}
 	return n > 0, nil
 }
@@ -447,12 +565,24 @@ func (asq *AgentStatusQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   agentstatus.Table,
 			Columns: agentstatus.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: agentstatus.FieldID,
 			},
 		},
 		From:   asq.sql,
 		Unique: true,
+	}
+	if unique := asq.unique; unique != nil {
+		_spec.Unique = *unique
+	}
+	if fields := asq.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, agentstatus.FieldID)
+		for i := range fields {
+			if fields[i] != agentstatus.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
+			}
+		}
 	}
 	if ps := asq.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -470,26 +600,30 @@ func (asq *AgentStatusQuery) querySpec() *sqlgraph.QuerySpec {
 	if ps := asq.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
-				ps[i](selector, agentstatus.ValidColumn)
+				ps[i](selector)
 			}
 		}
 	}
 	return _spec
 }
 
-func (asq *AgentStatusQuery) sqlQuery() *sql.Selector {
+func (asq *AgentStatusQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(asq.driver.Dialect())
 	t1 := builder.Table(agentstatus.Table)
-	selector := builder.Select(t1.Columns(agentstatus.Columns...)...).From(t1)
+	columns := asq.fields
+	if len(columns) == 0 {
+		columns = agentstatus.Columns
+	}
+	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if asq.sql != nil {
 		selector = asq.sql
-		selector.Select(selector.Columns(agentstatus.Columns...)...)
+		selector.Select(selector.Columns(columns...)...)
 	}
 	for _, p := range asq.predicates {
 		p(selector)
 	}
 	for _, p := range asq.order {
-		p(selector, agentstatus.ValidColumn)
+		p(selector)
 	}
 	if offset := asq.offset; offset != nil {
 		// limit is mandatory for offset clause. We start
@@ -502,7 +636,7 @@ func (asq *AgentStatusQuery) sqlQuery() *sql.Selector {
 	return selector
 }
 
-// AgentStatusGroupBy is the builder for group-by AgentStatus entities.
+// AgentStatusGroupBy is the group-by builder for AgentStatus entities.
 type AgentStatusGroupBy struct {
 	config
 	fields []string
@@ -518,7 +652,7 @@ func (asgb *AgentStatusGroupBy) Aggregate(fns ...AggregateFunc) *AgentStatusGrou
 	return asgb
 }
 
-// Scan applies the group-by query and scan the result into the given value.
+// Scan applies the group-by query and scans the result into the given value.
 func (asgb *AgentStatusGroupBy) Scan(ctx context.Context, v interface{}) error {
 	query, err := asgb.path(ctx)
 	if err != nil {
@@ -535,7 +669,8 @@ func (asgb *AgentStatusGroupBy) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from group-by. It is only allowed when querying group-by with one field.
+// Strings returns list of strings from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (asgb *AgentStatusGroupBy) Strings(ctx context.Context) ([]string, error) {
 	if len(asgb.fields) > 1 {
 		return nil, errors.New("ent: AgentStatusGroupBy.Strings is not achievable when grouping more than 1 field")
@@ -556,7 +691,8 @@ func (asgb *AgentStatusGroupBy) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from group-by. It is only allowed when querying group-by with one field.
+// String returns a single string from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (asgb *AgentStatusGroupBy) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = asgb.Strings(ctx); err != nil {
@@ -582,7 +718,8 @@ func (asgb *AgentStatusGroupBy) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from group-by. It is only allowed when querying group-by with one field.
+// Ints returns list of ints from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (asgb *AgentStatusGroupBy) Ints(ctx context.Context) ([]int, error) {
 	if len(asgb.fields) > 1 {
 		return nil, errors.New("ent: AgentStatusGroupBy.Ints is not achievable when grouping more than 1 field")
@@ -603,7 +740,8 @@ func (asgb *AgentStatusGroupBy) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from group-by. It is only allowed when querying group-by with one field.
+// Int returns a single int from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (asgb *AgentStatusGroupBy) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = asgb.Ints(ctx); err != nil {
@@ -629,7 +767,8 @@ func (asgb *AgentStatusGroupBy) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from group-by. It is only allowed when querying group-by with one field.
+// Float64s returns list of float64s from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (asgb *AgentStatusGroupBy) Float64s(ctx context.Context) ([]float64, error) {
 	if len(asgb.fields) > 1 {
 		return nil, errors.New("ent: AgentStatusGroupBy.Float64s is not achievable when grouping more than 1 field")
@@ -650,7 +789,8 @@ func (asgb *AgentStatusGroupBy) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from group-by. It is only allowed when querying group-by with one field.
+// Float64 returns a single float64 from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (asgb *AgentStatusGroupBy) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = asgb.Float64s(ctx); err != nil {
@@ -676,7 +816,8 @@ func (asgb *AgentStatusGroupBy) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from group-by. It is only allowed when querying group-by with one field.
+// Bools returns list of bools from group-by.
+// It is only allowed when executing a group-by query with one field.
 func (asgb *AgentStatusGroupBy) Bools(ctx context.Context) ([]bool, error) {
 	if len(asgb.fields) > 1 {
 		return nil, errors.New("ent: AgentStatusGroupBy.Bools is not achievable when grouping more than 1 field")
@@ -697,7 +838,8 @@ func (asgb *AgentStatusGroupBy) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from group-by. It is only allowed when querying group-by with one field.
+// Bool returns a single bool from a group-by query.
+// It is only allowed when executing a group-by query with one field.
 func (asgb *AgentStatusGroupBy) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = asgb.Bools(ctx); err != nil {
@@ -743,31 +885,39 @@ func (asgb *AgentStatusGroupBy) sqlScan(ctx context.Context, v interface{}) erro
 }
 
 func (asgb *AgentStatusGroupBy) sqlQuery() *sql.Selector {
-	selector := asgb.sql
-	columns := make([]string, 0, len(asgb.fields)+len(asgb.fns))
-	columns = append(columns, asgb.fields...)
+	selector := asgb.sql.Select()
+	aggregation := make([]string, 0, len(asgb.fns))
 	for _, fn := range asgb.fns {
-		columns = append(columns, fn(selector, agentstatus.ValidColumn))
+		aggregation = append(aggregation, fn(selector))
 	}
-	return selector.Select(columns...).GroupBy(asgb.fields...)
+	// If no columns were selected in a custom aggregation function, the default
+	// selection is the fields used for "group-by", and the aggregation functions.
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(asgb.fields)+len(asgb.fns))
+		for _, f := range asgb.fields {
+			columns = append(columns, selector.C(f))
+		}
+		for _, c := range aggregation {
+			columns = append(columns, c)
+		}
+		selector.Select(columns...)
+	}
+	return selector.GroupBy(selector.Columns(asgb.fields...)...)
 }
 
-// AgentStatusSelect is the builder for select fields of AgentStatus entities.
+// AgentStatusSelect is the builder for selecting fields of AgentStatus entities.
 type AgentStatusSelect struct {
-	config
-	fields []string
+	*AgentStatusQuery
 	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	sql *sql.Selector
 }
 
-// Scan applies the selector query and scan the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (ass *AgentStatusSelect) Scan(ctx context.Context, v interface{}) error {
-	query, err := ass.path(ctx)
-	if err != nil {
+	if err := ass.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ass.sql = query
+	ass.sql = ass.AgentStatusQuery.sqlQuery(ctx)
 	return ass.sqlScan(ctx, v)
 }
 
@@ -778,7 +928,7 @@ func (ass *AgentStatusSelect) ScanX(ctx context.Context, v interface{}) {
 	}
 }
 
-// Strings returns list of strings from selector. It is only allowed when selecting one field.
+// Strings returns list of strings from a selector. It is only allowed when selecting one field.
 func (ass *AgentStatusSelect) Strings(ctx context.Context) ([]string, error) {
 	if len(ass.fields) > 1 {
 		return nil, errors.New("ent: AgentStatusSelect.Strings is not achievable when selecting more than 1 field")
@@ -799,7 +949,7 @@ func (ass *AgentStatusSelect) StringsX(ctx context.Context) []string {
 	return v
 }
 
-// String returns a single string from selector. It is only allowed when selecting one field.
+// String returns a single string from a selector. It is only allowed when selecting one field.
 func (ass *AgentStatusSelect) String(ctx context.Context) (_ string, err error) {
 	var v []string
 	if v, err = ass.Strings(ctx); err != nil {
@@ -825,7 +975,7 @@ func (ass *AgentStatusSelect) StringX(ctx context.Context) string {
 	return v
 }
 
-// Ints returns list of ints from selector. It is only allowed when selecting one field.
+// Ints returns list of ints from a selector. It is only allowed when selecting one field.
 func (ass *AgentStatusSelect) Ints(ctx context.Context) ([]int, error) {
 	if len(ass.fields) > 1 {
 		return nil, errors.New("ent: AgentStatusSelect.Ints is not achievable when selecting more than 1 field")
@@ -846,7 +996,7 @@ func (ass *AgentStatusSelect) IntsX(ctx context.Context) []int {
 	return v
 }
 
-// Int returns a single int from selector. It is only allowed when selecting one field.
+// Int returns a single int from a selector. It is only allowed when selecting one field.
 func (ass *AgentStatusSelect) Int(ctx context.Context) (_ int, err error) {
 	var v []int
 	if v, err = ass.Ints(ctx); err != nil {
@@ -872,7 +1022,7 @@ func (ass *AgentStatusSelect) IntX(ctx context.Context) int {
 	return v
 }
 
-// Float64s returns list of float64s from selector. It is only allowed when selecting one field.
+// Float64s returns list of float64s from a selector. It is only allowed when selecting one field.
 func (ass *AgentStatusSelect) Float64s(ctx context.Context) ([]float64, error) {
 	if len(ass.fields) > 1 {
 		return nil, errors.New("ent: AgentStatusSelect.Float64s is not achievable when selecting more than 1 field")
@@ -893,7 +1043,7 @@ func (ass *AgentStatusSelect) Float64sX(ctx context.Context) []float64 {
 	return v
 }
 
-// Float64 returns a single float64 from selector. It is only allowed when selecting one field.
+// Float64 returns a single float64 from a selector. It is only allowed when selecting one field.
 func (ass *AgentStatusSelect) Float64(ctx context.Context) (_ float64, err error) {
 	var v []float64
 	if v, err = ass.Float64s(ctx); err != nil {
@@ -919,7 +1069,7 @@ func (ass *AgentStatusSelect) Float64X(ctx context.Context) float64 {
 	return v
 }
 
-// Bools returns list of bools from selector. It is only allowed when selecting one field.
+// Bools returns list of bools from a selector. It is only allowed when selecting one field.
 func (ass *AgentStatusSelect) Bools(ctx context.Context) ([]bool, error) {
 	if len(ass.fields) > 1 {
 		return nil, errors.New("ent: AgentStatusSelect.Bools is not achievable when selecting more than 1 field")
@@ -940,7 +1090,7 @@ func (ass *AgentStatusSelect) BoolsX(ctx context.Context) []bool {
 	return v
 }
 
-// Bool returns a single bool from selector. It is only allowed when selecting one field.
+// Bool returns a single bool from a selector. It is only allowed when selecting one field.
 func (ass *AgentStatusSelect) Bool(ctx context.Context) (_ bool, err error) {
 	var v []bool
 	if v, err = ass.Bools(ctx); err != nil {
@@ -967,22 +1117,11 @@ func (ass *AgentStatusSelect) BoolX(ctx context.Context) bool {
 }
 
 func (ass *AgentStatusSelect) sqlScan(ctx context.Context, v interface{}) error {
-	for _, f := range ass.fields {
-		if !agentstatus.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for selection", f)}
-		}
-	}
 	rows := &sql.Rows{}
-	query, args := ass.sqlQuery().Query()
+	query, args := ass.sql.Query()
 	if err := ass.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
-}
-
-func (ass *AgentStatusSelect) sqlQuery() sql.Querier {
-	selector := ass.sql
-	selector.Select(selector.Columns(ass.fields...)...)
-	return selector
 }

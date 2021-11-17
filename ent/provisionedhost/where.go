@@ -3,34 +3,35 @@
 package provisionedhost
 
 import (
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
-// ID filters vertices based on their identifier.
-func ID(id int) predicate.ProvisionedHost {
+// ID filters vertices based on their ID field.
+func ID(id uuid.UUID) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.ProvisionedHost {
+func IDEQ(id uuid.UUID) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.ProvisionedHost {
+func IDNEQ(id uuid.UUID) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldID), id))
 	})
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.ProvisionedHost {
+func IDIn(ids ...uuid.UUID) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -47,7 +48,7 @@ func IDIn(ids ...int) predicate.ProvisionedHost {
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.ProvisionedHost {
+func IDNotIn(ids ...uuid.UUID) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -64,28 +65,28 @@ func IDNotIn(ids ...int) predicate.ProvisionedHost {
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.ProvisionedHost {
+func IDGT(id uuid.UUID) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldID), id))
 	})
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.ProvisionedHost {
+func IDGTE(id uuid.UUID) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldID), id))
 	})
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.ProvisionedHost {
+func IDLT(id uuid.UUID) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldID), id))
 	})
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.ProvisionedHost {
+func IDLTE(id uuid.UUID) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
 	})
@@ -209,25 +210,87 @@ func SubnetIPContainsFold(v string) predicate.ProvisionedHost {
 	})
 }
 
-// HasStatus applies the HasEdge predicate on the "status" edge.
-func HasStatus() predicate.ProvisionedHost {
+// AddonTypeEQ applies the EQ predicate on the "addon_type" field.
+func AddonTypeEQ(v AddonType) predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldAddonType), v))
+	})
+}
+
+// AddonTypeNEQ applies the NEQ predicate on the "addon_type" field.
+func AddonTypeNEQ(v AddonType) predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldAddonType), v))
+	})
+}
+
+// AddonTypeIn applies the In predicate on the "addon_type" field.
+func AddonTypeIn(vs ...AddonType) predicate.ProvisionedHost {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldAddonType), v...))
+	})
+}
+
+// AddonTypeNotIn applies the NotIn predicate on the "addon_type" field.
+func AddonTypeNotIn(vs ...AddonType) predicate.ProvisionedHost {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldAddonType), v...))
+	})
+}
+
+// AddonTypeIsNil applies the IsNil predicate on the "addon_type" field.
+func AddonTypeIsNil() predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldAddonType)))
+	})
+}
+
+// AddonTypeNotNil applies the NotNil predicate on the "addon_type" field.
+func AddonTypeNotNil() predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldAddonType)))
+	})
+}
+
+// HasProvisionedHostToStatus applies the HasEdge predicate on the "ProvisionedHostToStatus" edge.
+func HasProvisionedHostToStatus() predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(StatusTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, StatusTable, StatusColumn),
+			sqlgraph.To(ProvisionedHostToStatusTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, ProvisionedHostToStatusTable, ProvisionedHostToStatusColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasStatusWith applies the HasEdge predicate on the "status" edge with a given conditions (other predicates).
-func HasStatusWith(preds ...predicate.Status) predicate.ProvisionedHost {
+// HasProvisionedHostToStatusWith applies the HasEdge predicate on the "ProvisionedHostToStatus" edge with a given conditions (other predicates).
+func HasProvisionedHostToStatusWith(preds ...predicate.Status) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(StatusInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, StatusTable, StatusColumn),
+			sqlgraph.To(ProvisionedHostToStatusInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, ProvisionedHostToStatusTable, ProvisionedHostToStatusColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -237,25 +300,25 @@ func HasStatusWith(preds ...predicate.Status) predicate.ProvisionedHost {
 	})
 }
 
-// HasProvisionedNetwork applies the HasEdge predicate on the "provisioned_network" edge.
-func HasProvisionedNetwork() predicate.ProvisionedHost {
+// HasProvisionedHostToProvisionedNetwork applies the HasEdge predicate on the "ProvisionedHostToProvisionedNetwork" edge.
+func HasProvisionedHostToProvisionedNetwork() predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ProvisionedNetworkTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, ProvisionedNetworkTable, ProvisionedNetworkPrimaryKey...),
+			sqlgraph.To(ProvisionedHostToProvisionedNetworkTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProvisionedHostToProvisionedNetworkTable, ProvisionedHostToProvisionedNetworkColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasProvisionedNetworkWith applies the HasEdge predicate on the "provisioned_network" edge with a given conditions (other predicates).
-func HasProvisionedNetworkWith(preds ...predicate.ProvisionedNetwork) predicate.ProvisionedHost {
+// HasProvisionedHostToProvisionedNetworkWith applies the HasEdge predicate on the "ProvisionedHostToProvisionedNetwork" edge with a given conditions (other predicates).
+func HasProvisionedHostToProvisionedNetworkWith(preds ...predicate.ProvisionedNetwork) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ProvisionedNetworkInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, ProvisionedNetworkTable, ProvisionedNetworkPrimaryKey...),
+			sqlgraph.To(ProvisionedHostToProvisionedNetworkInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProvisionedHostToProvisionedNetworkTable, ProvisionedHostToProvisionedNetworkColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -265,25 +328,25 @@ func HasProvisionedNetworkWith(preds ...predicate.ProvisionedNetwork) predicate.
 	})
 }
 
-// HasHost applies the HasEdge predicate on the "host" edge.
-func HasHost() predicate.ProvisionedHost {
+// HasProvisionedHostToHost applies the HasEdge predicate on the "ProvisionedHostToHost" edge.
+func HasProvisionedHostToHost() predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(HostTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, HostTable, HostColumn),
+			sqlgraph.To(ProvisionedHostToHostTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProvisionedHostToHostTable, ProvisionedHostToHostColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasHostWith applies the HasEdge predicate on the "host" edge with a given conditions (other predicates).
-func HasHostWith(preds ...predicate.Host) predicate.ProvisionedHost {
+// HasProvisionedHostToHostWith applies the HasEdge predicate on the "ProvisionedHostToHost" edge with a given conditions (other predicates).
+func HasProvisionedHostToHostWith(preds ...predicate.Host) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(HostInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, HostTable, HostColumn),
+			sqlgraph.To(ProvisionedHostToHostInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProvisionedHostToHostTable, ProvisionedHostToHostColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -293,25 +356,25 @@ func HasHostWith(preds ...predicate.Host) predicate.ProvisionedHost {
 	})
 }
 
-// HasProvisionedSteps applies the HasEdge predicate on the "provisioned_steps" edge.
-func HasProvisionedSteps() predicate.ProvisionedHost {
+// HasProvisionedHostToEndStepPlan applies the HasEdge predicate on the "ProvisionedHostToEndStepPlan" edge.
+func HasProvisionedHostToEndStepPlan() predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ProvisionedStepsTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedStepsTable, ProvisionedStepsPrimaryKey...),
+			sqlgraph.To(ProvisionedHostToEndStepPlanTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProvisionedHostToEndStepPlanTable, ProvisionedHostToEndStepPlanColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasProvisionedStepsWith applies the HasEdge predicate on the "provisioned_steps" edge with a given conditions (other predicates).
-func HasProvisionedStepsWith(preds ...predicate.ProvisioningStep) predicate.ProvisionedHost {
+// HasProvisionedHostToEndStepPlanWith applies the HasEdge predicate on the "ProvisionedHostToEndStepPlan" edge with a given conditions (other predicates).
+func HasProvisionedHostToEndStepPlanWith(preds ...predicate.Plan) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ProvisionedStepsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ProvisionedStepsTable, ProvisionedStepsPrimaryKey...),
+			sqlgraph.To(ProvisionedHostToEndStepPlanInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProvisionedHostToEndStepPlanTable, ProvisionedHostToEndStepPlanColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -321,25 +384,25 @@ func HasProvisionedStepsWith(preds ...predicate.ProvisioningStep) predicate.Prov
 	})
 }
 
-// HasAgentStatus applies the HasEdge predicate on the "agent_status" edge.
-func HasAgentStatus() predicate.ProvisionedHost {
+// HasProvisionedHostToBuild applies the HasEdge predicate on the "ProvisionedHostToBuild" edge.
+func HasProvisionedHostToBuild() predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AgentStatusTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, AgentStatusTable, AgentStatusPrimaryKey...),
+			sqlgraph.To(ProvisionedHostToBuildTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProvisionedHostToBuildTable, ProvisionedHostToBuildColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasAgentStatusWith applies the HasEdge predicate on the "agent_status" edge with a given conditions (other predicates).
-func HasAgentStatusWith(preds ...predicate.AgentStatus) predicate.ProvisionedHost {
+// HasProvisionedHostToBuildWith applies the HasEdge predicate on the "ProvisionedHostToBuild" edge with a given conditions (other predicates).
+func HasProvisionedHostToBuildWith(preds ...predicate.Build) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AgentStatusInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, AgentStatusTable, AgentStatusPrimaryKey...),
+			sqlgraph.To(ProvisionedHostToBuildInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProvisionedHostToBuildTable, ProvisionedHostToBuildColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -349,7 +412,147 @@ func HasAgentStatusWith(preds ...predicate.AgentStatus) predicate.ProvisionedHos
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// HasProvisionedHostToProvisioningStep applies the HasEdge predicate on the "ProvisionedHostToProvisioningStep" edge.
+func HasProvisionedHostToProvisioningStep() predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToProvisioningStepTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedHostToProvisioningStepTable, ProvisionedHostToProvisioningStepColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProvisionedHostToProvisioningStepWith applies the HasEdge predicate on the "ProvisionedHostToProvisioningStep" edge with a given conditions (other predicates).
+func HasProvisionedHostToProvisioningStepWith(preds ...predicate.ProvisioningStep) predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToProvisioningStepInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedHostToProvisioningStepTable, ProvisionedHostToProvisioningStepColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProvisionedHostToAgentStatus applies the HasEdge predicate on the "ProvisionedHostToAgentStatus" edge.
+func HasProvisionedHostToAgentStatus() predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToAgentStatusTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedHostToAgentStatusTable, ProvisionedHostToAgentStatusColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProvisionedHostToAgentStatusWith applies the HasEdge predicate on the "ProvisionedHostToAgentStatus" edge with a given conditions (other predicates).
+func HasProvisionedHostToAgentStatusWith(preds ...predicate.AgentStatus) predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToAgentStatusInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedHostToAgentStatusTable, ProvisionedHostToAgentStatusColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProvisionedHostToAgentTask applies the HasEdge predicate on the "ProvisionedHostToAgentTask" edge.
+func HasProvisionedHostToAgentTask() predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToAgentTaskTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedHostToAgentTaskTable, ProvisionedHostToAgentTaskColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProvisionedHostToAgentTaskWith applies the HasEdge predicate on the "ProvisionedHostToAgentTask" edge with a given conditions (other predicates).
+func HasProvisionedHostToAgentTaskWith(preds ...predicate.AgentTask) predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToAgentTaskInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ProvisionedHostToAgentTaskTable, ProvisionedHostToAgentTaskColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProvisionedHostToPlan applies the HasEdge predicate on the "ProvisionedHostToPlan" edge.
+func HasProvisionedHostToPlan() predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToPlanTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, ProvisionedHostToPlanTable, ProvisionedHostToPlanColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProvisionedHostToPlanWith applies the HasEdge predicate on the "ProvisionedHostToPlan" edge with a given conditions (other predicates).
+func HasProvisionedHostToPlanWith(preds ...predicate.Plan) predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToPlanInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, ProvisionedHostToPlanTable, ProvisionedHostToPlanColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProvisionedHostToGinFileMiddleware applies the HasEdge predicate on the "ProvisionedHostToGinFileMiddleware" edge.
+func HasProvisionedHostToGinFileMiddleware() predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToGinFileMiddlewareTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, ProvisionedHostToGinFileMiddlewareTable, ProvisionedHostToGinFileMiddlewareColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProvisionedHostToGinFileMiddlewareWith applies the HasEdge predicate on the "ProvisionedHostToGinFileMiddleware" edge with a given conditions (other predicates).
+func HasProvisionedHostToGinFileMiddlewareWith(preds ...predicate.GinFileMiddleware) predicate.ProvisionedHost {
+	return predicate.ProvisionedHost(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProvisionedHostToGinFileMiddlewareInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, ProvisionedHostToGinFileMiddlewareTable, ProvisionedHostToGinFileMiddlewareColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.ProvisionedHost) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -360,7 +563,7 @@ func And(predicates ...predicate.ProvisionedHost) predicate.ProvisionedHost {
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.ProvisionedHost) predicate.ProvisionedHost {
 	return predicate.ProvisionedHost(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+
+	"github.com/google/uuid"
 )
 
 const (
@@ -21,44 +23,46 @@ const (
 	FieldSeverity = "severity"
 	// FieldDifficulty holds the string denoting the difficulty field in the database.
 	FieldDifficulty = "difficulty"
-
-	// EdgeUser holds the string denoting the user edge name in mutations.
-	EdgeUser = "user"
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
-	// EdgeHost holds the string denoting the host edge name in mutations.
-	EdgeHost = "host"
-	// EdgeScript holds the string denoting the script edge name in mutations.
-	EdgeScript = "script"
-
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
+	// EdgeFindingToUser holds the string denoting the findingtouser edge name in mutations.
+	EdgeFindingToUser = "FindingToUser"
+	// EdgeFindingToHost holds the string denoting the findingtohost edge name in mutations.
+	EdgeFindingToHost = "FindingToHost"
+	// EdgeFindingToScript holds the string denoting the findingtoscript edge name in mutations.
+	EdgeFindingToScript = "FindingToScript"
+	// EdgeFindingToEnvironment holds the string denoting the findingtoenvironment edge name in mutations.
+	EdgeFindingToEnvironment = "FindingToEnvironment"
 	// Table holds the table name of the finding in the database.
 	Table = "findings"
-	// UserTable is the table the holds the user relation/edge.
-	UserTable = "users"
-	// UserInverseTable is the table name for the User entity.
+	// FindingToUserTable is the table that holds the FindingToUser relation/edge.
+	FindingToUserTable = "users"
+	// FindingToUserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UserInverseTable = "users"
-	// UserColumn is the table column denoting the user relation/edge.
-	UserColumn = "finding_user"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "finding_tag"
-	// HostTable is the table the holds the host relation/edge.
-	HostTable = "hosts"
-	// HostInverseTable is the table name for the Host entity.
+	FindingToUserInverseTable = "users"
+	// FindingToUserColumn is the table column denoting the FindingToUser relation/edge.
+	FindingToUserColumn = "finding_finding_to_user"
+	// FindingToHostTable is the table that holds the FindingToHost relation/edge.
+	FindingToHostTable = "findings"
+	// FindingToHostInverseTable is the table name for the Host entity.
 	// It exists in this package in order to avoid circular dependency with the "host" package.
-	HostInverseTable = "hosts"
-	// HostColumn is the table column denoting the host relation/edge.
-	HostColumn = "finding_host"
-	// ScriptTable is the table the holds the script relation/edge. The primary key declared below.
-	ScriptTable = "finding_script"
-	// ScriptInverseTable is the table name for the Script entity.
+	FindingToHostInverseTable = "hosts"
+	// FindingToHostColumn is the table column denoting the FindingToHost relation/edge.
+	FindingToHostColumn = "finding_finding_to_host"
+	// FindingToScriptTable is the table that holds the FindingToScript relation/edge.
+	FindingToScriptTable = "findings"
+	// FindingToScriptInverseTable is the table name for the Script entity.
 	// It exists in this package in order to avoid circular dependency with the "script" package.
-	ScriptInverseTable = "scripts"
+	FindingToScriptInverseTable = "scripts"
+	// FindingToScriptColumn is the table column denoting the FindingToScript relation/edge.
+	FindingToScriptColumn = "script_script_to_finding"
+	// FindingToEnvironmentTable is the table that holds the FindingToEnvironment relation/edge.
+	FindingToEnvironmentTable = "findings"
+	// FindingToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	FindingToEnvironmentInverseTable = "environments"
+	// FindingToEnvironmentColumn is the table column denoting the FindingToEnvironment relation/edge.
+	FindingToEnvironmentColumn = "environment_environment_to_finding"
 )
 
 // Columns holds all SQL columns for finding fields.
@@ -68,13 +72,16 @@ var Columns = []string{
 	FieldDescription,
 	FieldSeverity,
 	FieldDifficulty,
+	FieldTags,
 }
 
-var (
-	// ScriptPrimaryKey and ScriptColumn2 are the table columns denoting the
-	// primary key for the script relation (M2M).
-	ScriptPrimaryKey = []string{"finding_id", "script_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the "findings"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"environment_environment_to_finding",
+	"finding_finding_to_host",
+	"script_script_to_finding",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -83,10 +90,20 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
+			return true
+		}
+	}
 	return false
 }
 
-// Severity defines the type for the severity enum field.
+var (
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)
+
+// Severity defines the type for the "severity" enum field.
 type Severity string
 
 // Severity values.
@@ -113,7 +130,7 @@ func SeverityValidator(s Severity) error {
 	}
 }
 
-// Difficulty defines the type for the difficulty enum field.
+// Difficulty defines the type for the "difficulty" enum field.
 type Difficulty string
 
 // Difficulty values.

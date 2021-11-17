@@ -7,12 +7,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/script"
-	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/user"
+	"github.com/google/uuid"
 )
 
 // ScriptCreate is the builder for creating a Script entity.
@@ -22,121 +23,143 @@ type ScriptCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the name field.
+// SetHclID sets the "hcl_id" field.
+func (sc *ScriptCreate) SetHclID(s string) *ScriptCreate {
+	sc.mutation.SetHclID(s)
+	return sc
+}
+
+// SetName sets the "name" field.
 func (sc *ScriptCreate) SetName(s string) *ScriptCreate {
 	sc.mutation.SetName(s)
 	return sc
 }
 
-// SetLanguage sets the language field.
+// SetLanguage sets the "language" field.
 func (sc *ScriptCreate) SetLanguage(s string) *ScriptCreate {
 	sc.mutation.SetLanguage(s)
 	return sc
 }
 
-// SetDescription sets the description field.
+// SetDescription sets the "description" field.
 func (sc *ScriptCreate) SetDescription(s string) *ScriptCreate {
 	sc.mutation.SetDescription(s)
 	return sc
 }
 
-// SetSource sets the source field.
+// SetSource sets the "source" field.
 func (sc *ScriptCreate) SetSource(s string) *ScriptCreate {
 	sc.mutation.SetSource(s)
 	return sc
 }
 
-// SetSourceType sets the source_type field.
+// SetSourceType sets the "source_type" field.
 func (sc *ScriptCreate) SetSourceType(s string) *ScriptCreate {
 	sc.mutation.SetSourceType(s)
 	return sc
 }
 
-// SetCooldown sets the cooldown field.
+// SetCooldown sets the "cooldown" field.
 func (sc *ScriptCreate) SetCooldown(i int) *ScriptCreate {
 	sc.mutation.SetCooldown(i)
 	return sc
 }
 
-// SetTimeout sets the timeout field.
+// SetTimeout sets the "timeout" field.
 func (sc *ScriptCreate) SetTimeout(i int) *ScriptCreate {
 	sc.mutation.SetTimeout(i)
 	return sc
 }
 
-// SetIgnoreErrors sets the ignore_errors field.
+// SetIgnoreErrors sets the "ignore_errors" field.
 func (sc *ScriptCreate) SetIgnoreErrors(b bool) *ScriptCreate {
 	sc.mutation.SetIgnoreErrors(b)
 	return sc
 }
 
-// SetArgs sets the args field.
+// SetArgs sets the "args" field.
 func (sc *ScriptCreate) SetArgs(s []string) *ScriptCreate {
 	sc.mutation.SetArgs(s)
 	return sc
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (sc *ScriptCreate) SetDisabled(b bool) *ScriptCreate {
 	sc.mutation.SetDisabled(b)
 	return sc
 }
 
-// SetVars sets the vars field.
+// SetVars sets the "vars" field.
 func (sc *ScriptCreate) SetVars(m map[string]string) *ScriptCreate {
 	sc.mutation.SetVars(m)
 	return sc
 }
 
-// SetAbsPath sets the abs_path field.
+// SetAbsPath sets the "abs_path" field.
 func (sc *ScriptCreate) SetAbsPath(s string) *ScriptCreate {
 	sc.mutation.SetAbsPath(s)
 	return sc
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (sc *ScriptCreate) AddTagIDs(ids ...int) *ScriptCreate {
-	sc.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (sc *ScriptCreate) SetTags(m map[string]string) *ScriptCreate {
+	sc.mutation.SetTags(m)
 	return sc
 }
 
-// AddTag adds the tag edges to Tag.
-func (sc *ScriptCreate) AddTag(t ...*Tag) *ScriptCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return sc.AddTagIDs(ids...)
-}
-
-// AddMaintainerIDs adds the maintainer edge to User by ids.
-func (sc *ScriptCreate) AddMaintainerIDs(ids ...int) *ScriptCreate {
-	sc.mutation.AddMaintainerIDs(ids...)
+// SetID sets the "id" field.
+func (sc *ScriptCreate) SetID(u uuid.UUID) *ScriptCreate {
+	sc.mutation.SetID(u)
 	return sc
 }
 
-// AddMaintainer adds the maintainer edges to User.
-func (sc *ScriptCreate) AddMaintainer(u ...*User) *ScriptCreate {
-	ids := make([]int, len(u))
+// AddScriptToUserIDs adds the "ScriptToUser" edge to the User entity by IDs.
+func (sc *ScriptCreate) AddScriptToUserIDs(ids ...uuid.UUID) *ScriptCreate {
+	sc.mutation.AddScriptToUserIDs(ids...)
+	return sc
+}
+
+// AddScriptToUser adds the "ScriptToUser" edges to the User entity.
+func (sc *ScriptCreate) AddScriptToUser(u ...*User) *ScriptCreate {
+	ids := make([]uuid.UUID, len(u))
 	for i := range u {
 		ids[i] = u[i].ID
 	}
-	return sc.AddMaintainerIDs(ids...)
+	return sc.AddScriptToUserIDs(ids...)
 }
 
-// AddFindingIDs adds the finding edge to Finding by ids.
-func (sc *ScriptCreate) AddFindingIDs(ids ...int) *ScriptCreate {
-	sc.mutation.AddFindingIDs(ids...)
+// AddScriptToFindingIDs adds the "ScriptToFinding" edge to the Finding entity by IDs.
+func (sc *ScriptCreate) AddScriptToFindingIDs(ids ...uuid.UUID) *ScriptCreate {
+	sc.mutation.AddScriptToFindingIDs(ids...)
 	return sc
 }
 
-// AddFinding adds the finding edges to Finding.
-func (sc *ScriptCreate) AddFinding(f ...*Finding) *ScriptCreate {
-	ids := make([]int, len(f))
+// AddScriptToFinding adds the "ScriptToFinding" edges to the Finding entity.
+func (sc *ScriptCreate) AddScriptToFinding(f ...*Finding) *ScriptCreate {
+	ids := make([]uuid.UUID, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return sc.AddFindingIDs(ids...)
+	return sc.AddScriptToFindingIDs(ids...)
+}
+
+// SetScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by ID.
+func (sc *ScriptCreate) SetScriptToEnvironmentID(id uuid.UUID) *ScriptCreate {
+	sc.mutation.SetScriptToEnvironmentID(id)
+	return sc
+}
+
+// SetNillableScriptToEnvironmentID sets the "ScriptToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (sc *ScriptCreate) SetNillableScriptToEnvironmentID(id *uuid.UUID) *ScriptCreate {
+	if id != nil {
+		sc = sc.SetScriptToEnvironmentID(*id)
+	}
+	return sc
+}
+
+// SetScriptToEnvironment sets the "ScriptToEnvironment" edge to the Environment entity.
+func (sc *ScriptCreate) SetScriptToEnvironment(e *Environment) *ScriptCreate {
+	return sc.SetScriptToEnvironmentID(e.ID)
 }
 
 // Mutation returns the ScriptMutation object of the builder.
@@ -150,6 +173,7 @@ func (sc *ScriptCreate) Save(ctx context.Context) (*Script, error) {
 		err  error
 		node *Script
 	)
+	sc.defaults()
 	if len(sc.hooks) == 0 {
 		if err = sc.check(); err != nil {
 			return nil, err
@@ -165,11 +189,17 @@ func (sc *ScriptCreate) Save(ctx context.Context) (*Script, error) {
 				return nil, err
 			}
 			sc.mutation = mutation
-			node, err = sc.sqlSave(ctx)
+			if node, err = sc.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(sc.hooks) - 1; i >= 0; i-- {
+			if sc.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = sc.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, sc.mutation); err != nil {
@@ -188,43 +218,70 @@ func (sc *ScriptCreate) SaveX(ctx context.Context) *Script {
 	return v
 }
 
+// Exec executes the query.
+func (sc *ScriptCreate) Exec(ctx context.Context) error {
+	_, err := sc.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (sc *ScriptCreate) ExecX(ctx context.Context) {
+	if err := sc.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (sc *ScriptCreate) defaults() {
+	if _, ok := sc.mutation.ID(); !ok {
+		v := script.DefaultID()
+		sc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (sc *ScriptCreate) check() error {
+	if _, ok := sc.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New(`ent: missing required field "hcl_id"`)}
+	}
 	if _, ok := sc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New("ent: missing required field \"name\"")}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
 	}
 	if _, ok := sc.mutation.Language(); !ok {
-		return &ValidationError{Name: "language", err: errors.New("ent: missing required field \"language\"")}
+		return &ValidationError{Name: "language", err: errors.New(`ent: missing required field "language"`)}
 	}
 	if _, ok := sc.mutation.Description(); !ok {
-		return &ValidationError{Name: "description", err: errors.New("ent: missing required field \"description\"")}
+		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "description"`)}
 	}
 	if _, ok := sc.mutation.Source(); !ok {
-		return &ValidationError{Name: "source", err: errors.New("ent: missing required field \"source\"")}
+		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "source"`)}
 	}
 	if _, ok := sc.mutation.SourceType(); !ok {
-		return &ValidationError{Name: "source_type", err: errors.New("ent: missing required field \"source_type\"")}
+		return &ValidationError{Name: "source_type", err: errors.New(`ent: missing required field "source_type"`)}
 	}
 	if _, ok := sc.mutation.Cooldown(); !ok {
-		return &ValidationError{Name: "cooldown", err: errors.New("ent: missing required field \"cooldown\"")}
+		return &ValidationError{Name: "cooldown", err: errors.New(`ent: missing required field "cooldown"`)}
 	}
 	if _, ok := sc.mutation.Timeout(); !ok {
-		return &ValidationError{Name: "timeout", err: errors.New("ent: missing required field \"timeout\"")}
+		return &ValidationError{Name: "timeout", err: errors.New(`ent: missing required field "timeout"`)}
 	}
 	if _, ok := sc.mutation.IgnoreErrors(); !ok {
-		return &ValidationError{Name: "ignore_errors", err: errors.New("ent: missing required field \"ignore_errors\"")}
+		return &ValidationError{Name: "ignore_errors", err: errors.New(`ent: missing required field "ignore_errors"`)}
 	}
 	if _, ok := sc.mutation.Args(); !ok {
-		return &ValidationError{Name: "args", err: errors.New("ent: missing required field \"args\"")}
+		return &ValidationError{Name: "args", err: errors.New(`ent: missing required field "args"`)}
 	}
 	if _, ok := sc.mutation.Disabled(); !ok {
-		return &ValidationError{Name: "disabled", err: errors.New("ent: missing required field \"disabled\"")}
+		return &ValidationError{Name: "disabled", err: errors.New(`ent: missing required field "disabled"`)}
 	}
 	if _, ok := sc.mutation.Vars(); !ok {
-		return &ValidationError{Name: "vars", err: errors.New("ent: missing required field \"vars\"")}
+		return &ValidationError{Name: "vars", err: errors.New(`ent: missing required field "vars"`)}
 	}
 	if _, ok := sc.mutation.AbsPath(); !ok {
-		return &ValidationError{Name: "abs_path", err: errors.New("ent: missing required field \"abs_path\"")}
+		return &ValidationError{Name: "abs_path", err: errors.New(`ent: missing required field "abs_path"`)}
+	}
+	if _, ok := sc.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "tags"`)}
 	}
 	return nil
 }
@@ -232,13 +289,14 @@ func (sc *ScriptCreate) check() error {
 func (sc *ScriptCreate) sqlSave(ctx context.Context) (*Script, error) {
 	_node, _spec := sc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, sc.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
+	}
 	return _node, nil
 }
 
@@ -248,11 +306,23 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: script.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: script.FieldID,
 			},
 		}
 	)
+	if id, ok := sc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
+	if value, ok := sc.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: script.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := sc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -349,35 +419,24 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 		})
 		_node.AbsPath = value
 	}
-	if nodes := sc.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   script.TagTable,
-			Columns: []string{script.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
+	if value, ok := sc.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: script.FieldTags,
+		})
+		_node.Tags = value
 	}
-	if nodes := sc.mutation.MaintainerIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.ScriptToUserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   script.MaintainerTable,
-			Columns: []string{script.MaintainerColumn},
+			Table:   script.ScriptToUserTable,
+			Columns: []string{script.ScriptToUserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: user.FieldID,
 				},
 			},
@@ -387,16 +446,16 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sc.mutation.FindingIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.ScriptToFindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   script.FindingTable,
-			Columns: script.FindingPrimaryKey,
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   script.ScriptToFindingTable,
+			Columns: []string{script.ScriptToFindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: finding.FieldID,
 				},
 			},
@@ -406,10 +465,30 @@ func (sc *ScriptCreate) createSpec() (*Script, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := sc.mutation.ScriptToEnvironmentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   script.ScriptToEnvironmentTable,
+			Columns: []string{script.ScriptToEnvironmentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.environment_environment_to_script = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
-// ScriptCreateBulk is the builder for creating a bulk of Script entities.
+// ScriptCreateBulk is the builder for creating many Script entities in bulk.
 type ScriptCreateBulk struct {
 	config
 	builders []*ScriptCreate
@@ -423,6 +502,7 @@ func (scb *ScriptCreateBulk) Save(ctx context.Context) ([]*Script, error) {
 	for i := range scb.builders {
 		func(i int, root context.Context) {
 			builder := scb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ScriptMutation)
 				if !ok {
@@ -437,19 +517,19 @@ func (scb *ScriptCreateBulk) Save(ctx context.Context) ([]*Script, error) {
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, scb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, scb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, scb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -466,11 +546,24 @@ func (scb *ScriptCreateBulk) Save(ctx context.Context) ([]*Script, error) {
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (scb *ScriptCreateBulk) SaveX(ctx context.Context) []*Script {
 	v, err := scb.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (scb *ScriptCreateBulk) Exec(ctx context.Context) error {
+	_, err := scb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (scb *ScriptCreateBulk) ExecX(ctx context.Context) {
+	if err := scb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

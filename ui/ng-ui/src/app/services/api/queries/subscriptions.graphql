@@ -1,0 +1,38 @@
+subscription SubscribeUpdatedStatus {
+  updatedStatus {
+    ...StatusFields
+  }
+}
+
+subscription SubscribeUpdatedAgentStatus {
+  updatedAgentStatus {
+    ...AgentStatusFields
+  }
+}
+
+subscription SubscribeUpdatedServerTask {
+  updatedServerTask {
+    ...ServerTaskFields
+  }
+}
+
+subscription SubscribeUpdatedBuild {
+  updatedBuild {
+    id
+    BuildToLatestBuildCommit {
+      id
+    }
+  }
+}
+
+subscription SubscribeUpdatedBuildCommit {
+  updatedCommit {
+    ...BuildCommitFields
+  }
+}
+
+subscription SubscribeUpdatedAgentTask {
+  updatedAgentTask {
+    ...AgentTaskFields
+  }
+}

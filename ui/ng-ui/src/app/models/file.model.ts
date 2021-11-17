@@ -1,21 +1,27 @@
-import { ID, Tag, varsMap } from './common.model';
+import { ID, tagMap } from './common.model';
+import { Environment } from './environment.model';
 
 export interface FileDownload {
   id: ID;
-  sourceType: string;
   source: string;
+  sourceType: string;
   destination: string;
-  template: boolean;
-  mode: string;
   disabled: boolean;
-  md5: string;
-  absPath: string;
-  tags: Tag[];
+  tags: tagMap[];
+  hcl_id?: string;
+  template?: boolean;
+  perms?: string;
+  md5?: string;
+  absPath?: string;
+  FileDownloadToEnvironment?: Environment;
 }
 
 export interface FileDelete {
   id: ID;
+  hcl_id?: string;
   path: string;
+  tags?: tagMap[];
+  FileDeleteToEnvironment?: Environment;
 }
 
 export interface FileExtract {
@@ -23,19 +29,7 @@ export interface FileExtract {
   source: string;
   destination: string;
   type: string;
-}
-
-export interface RemoteFile {
-  id: ID;
-  sourceType: string;
-  sourec: string;
-  destination: string;
-  vars?: varsMap[];
-  template: boolean;
-  perms: string;
-  disabled: boolean;
-  md5: string;
-  absPath: string;
-  ext: string;
-  tags?: Tag[];
+  tags: tagMap[];
+  hcl_id?: string;
+  FileExtractToEnvironment?: Environment;
 }

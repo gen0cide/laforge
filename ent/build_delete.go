@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/build"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
@@ -20,9 +20,9 @@ type BuildDelete struct {
 	mutation *BuildMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where appends a list predicates to the BuildDelete builder.
 func (bd *BuildDelete) Where(ps ...predicate.Build) *BuildDelete {
-	bd.mutation.predicates = append(bd.mutation.predicates, ps...)
+	bd.mutation.Where(ps...)
 	return bd
 }
 
@@ -46,6 +46,9 @@ func (bd *BuildDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(bd.hooks) - 1; i >= 0; i-- {
+			if bd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = bd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, bd.mutation); err != nil {
@@ -69,7 +72,7 @@ func (bd *BuildDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: build.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: build.FieldID,
 			},
 		},

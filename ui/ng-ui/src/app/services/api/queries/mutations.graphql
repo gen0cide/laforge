@@ -1,0 +1,37 @@
+mutation Rebuild($rootPlans: [String]!) {
+  rebuild(rootPlans: $rootPlans)
+}
+
+mutation DeleteBuild($buildId: String!) {
+  deleteBuild(buildUUID: $buildId)
+}
+
+mutation ExecuteBuild($buildId: String!) {
+  executePlan(buildUUID: $buildId) {
+    id
+  }
+}
+
+mutation CreateBuild($envId: String!) {
+  createBuild(envUUID: $envId, renderFiles: true) {
+    id
+  }
+}
+
+mutation ModifyCurrentUser($firstName: String, $lastName: String, $email: String, $phone: String, $company: String, $occupation: String) {
+  modifySelfUserInfo(firstName: $firstName, lastName: $lastName, email: $email, phone: $phone, company: $company, occupation: $occupation) {
+    ...AuthUserFields
+  }
+}
+
+mutation CreateEnvironmentFromGit($repoURL: String!, $repoName: String!, $branchName: String!, $envFilePath: String!) {
+  createEnviromentFromRepo(repoURL: $repoURL, repoName: $repoName, branchName: $branchName, envFilePath: $envFilePath) {
+    id
+  }
+}
+
+mutation UpdateEnviromentViaPull($envId: String!) {
+  updateEnviromentViaPull(envUUID: $envId) {
+    id
+  }
+}

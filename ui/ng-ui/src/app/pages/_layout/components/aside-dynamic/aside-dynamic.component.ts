@@ -1,7 +1,9 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Location } from '@angular/common';
-import { LayoutService, DynamicAsideMenuService } from '../../../../_metronic/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+
 import { Subscription } from 'rxjs';
+
+import { LayoutService, DynamicAsideMenuService } from '../../../../_metronic/core';
 
 @Component({
   selector: 'app-aside-dynamic',

@@ -1,0 +1,24 @@
+::ng-deep mat-card-content {
+  margin-top: 1rem;
+}
+
+.user-form {
+  display: flex;
+  align-content: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+
+  ::ng-deep mat-form-field {
+    flex: 1 1 25%;
+    margin: 0.5rem auto;
+  }
+
+  .break {
+    flex-basis: 100%;
+    height: 0;
+  }
+
+  button {
+    margin-top: 0.5rem;
+  }
+}

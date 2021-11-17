@@ -7,10 +7,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/fileextract"
-	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/google/uuid"
 )
 
 // FileExtractCreate is the builder for creating a FileExtract entity.
@@ -20,37 +21,59 @@ type FileExtractCreate struct {
 	hooks    []Hook
 }
 
-// SetSource sets the source field.
+// SetHclID sets the "hcl_id" field.
+func (fec *FileExtractCreate) SetHclID(s string) *FileExtractCreate {
+	fec.mutation.SetHclID(s)
+	return fec
+}
+
+// SetSource sets the "source" field.
 func (fec *FileExtractCreate) SetSource(s string) *FileExtractCreate {
 	fec.mutation.SetSource(s)
 	return fec
 }
 
-// SetDestination sets the destination field.
+// SetDestination sets the "destination" field.
 func (fec *FileExtractCreate) SetDestination(s string) *FileExtractCreate {
 	fec.mutation.SetDestination(s)
 	return fec
 }
 
-// SetType sets the type field.
+// SetType sets the "type" field.
 func (fec *FileExtractCreate) SetType(s string) *FileExtractCreate {
 	fec.mutation.SetType(s)
 	return fec
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (fec *FileExtractCreate) AddTagIDs(ids ...int) *FileExtractCreate {
-	fec.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (fec *FileExtractCreate) SetTags(m map[string]string) *FileExtractCreate {
+	fec.mutation.SetTags(m)
 	return fec
 }
 
-// AddTag adds the tag edges to Tag.
-func (fec *FileExtractCreate) AddTag(t ...*Tag) *FileExtractCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetID sets the "id" field.
+func (fec *FileExtractCreate) SetID(u uuid.UUID) *FileExtractCreate {
+	fec.mutation.SetID(u)
+	return fec
+}
+
+// SetFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by ID.
+func (fec *FileExtractCreate) SetFileExtractToEnvironmentID(id uuid.UUID) *FileExtractCreate {
+	fec.mutation.SetFileExtractToEnvironmentID(id)
+	return fec
+}
+
+// SetNillableFileExtractToEnvironmentID sets the "FileExtractToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (fec *FileExtractCreate) SetNillableFileExtractToEnvironmentID(id *uuid.UUID) *FileExtractCreate {
+	if id != nil {
+		fec = fec.SetFileExtractToEnvironmentID(*id)
 	}
-	return fec.AddTagIDs(ids...)
+	return fec
+}
+
+// SetFileExtractToEnvironment sets the "FileExtractToEnvironment" edge to the Environment entity.
+func (fec *FileExtractCreate) SetFileExtractToEnvironment(e *Environment) *FileExtractCreate {
+	return fec.SetFileExtractToEnvironmentID(e.ID)
 }
 
 // Mutation returns the FileExtractMutation object of the builder.
@@ -64,6 +87,7 @@ func (fec *FileExtractCreate) Save(ctx context.Context) (*FileExtract, error) {
 		err  error
 		node *FileExtract
 	)
+	fec.defaults()
 	if len(fec.hooks) == 0 {
 		if err = fec.check(); err != nil {
 			return nil, err
@@ -79,11 +103,17 @@ func (fec *FileExtractCreate) Save(ctx context.Context) (*FileExtract, error) {
 				return nil, err
 			}
 			fec.mutation = mutation
-			node, err = fec.sqlSave(ctx)
+			if node, err = fec.sqlSave(ctx); err != nil {
+				return nil, err
+			}
+			mutation.id = &node.ID
 			mutation.done = true
 			return node, err
 		})
 		for i := len(fec.hooks) - 1; i >= 0; i-- {
+			if fec.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fec.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fec.mutation); err != nil {
@@ -102,16 +132,43 @@ func (fec *FileExtractCreate) SaveX(ctx context.Context) *FileExtract {
 	return v
 }
 
+// Exec executes the query.
+func (fec *FileExtractCreate) Exec(ctx context.Context) error {
+	_, err := fec.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (fec *FileExtractCreate) ExecX(ctx context.Context) {
+	if err := fec.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (fec *FileExtractCreate) defaults() {
+	if _, ok := fec.mutation.ID(); !ok {
+		v := fileextract.DefaultID()
+		fec.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (fec *FileExtractCreate) check() error {
+	if _, ok := fec.mutation.HclID(); !ok {
+		return &ValidationError{Name: "hcl_id", err: errors.New(`ent: missing required field "hcl_id"`)}
+	}
 	if _, ok := fec.mutation.Source(); !ok {
-		return &ValidationError{Name: "source", err: errors.New("ent: missing required field \"source\"")}
+		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "source"`)}
 	}
 	if _, ok := fec.mutation.Destination(); !ok {
-		return &ValidationError{Name: "destination", err: errors.New("ent: missing required field \"destination\"")}
+		return &ValidationError{Name: "destination", err: errors.New(`ent: missing required field "destination"`)}
 	}
 	if _, ok := fec.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New("ent: missing required field \"type\"")}
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "type"`)}
+	}
+	if _, ok := fec.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "tags"`)}
 	}
 	return nil
 }
@@ -119,13 +176,14 @@ func (fec *FileExtractCreate) check() error {
 func (fec *FileExtractCreate) sqlSave(ctx context.Context) (*FileExtract, error) {
 	_node, _spec := fec.createSpec()
 	if err := sqlgraph.CreateNode(ctx, fec.driver, _spec); err != nil {
-		if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		_node.ID = _spec.ID.Value.(uuid.UUID)
+	}
 	return _node, nil
 }
 
@@ -135,11 +193,23 @@ func (fec *FileExtractCreate) createSpec() (*FileExtract, *sqlgraph.CreateSpec) 
 		_spec = &sqlgraph.CreateSpec{
 			Table: fileextract.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: fileextract.FieldID,
 			},
 		}
 	)
+	if id, ok := fec.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
+	if value, ok := fec.mutation.HclID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: fileextract.FieldHclID,
+		})
+		_node.HclID = value
+	}
 	if value, ok := fec.mutation.Source(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -164,29 +234,38 @@ func (fec *FileExtractCreate) createSpec() (*FileExtract, *sqlgraph.CreateSpec) 
 		})
 		_node.Type = value
 	}
-	if nodes := fec.mutation.TagIDs(); len(nodes) > 0 {
+	if value, ok := fec.mutation.Tags(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: fileextract.FieldTags,
+		})
+		_node.Tags = value
+	}
+	if nodes := fec.mutation.FileExtractToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   fileextract.TagTable,
-			Columns: []string{fileextract.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   fileextract.FileExtractToEnvironmentTable,
+			Columns: []string{fileextract.FileExtractToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.environment_environment_to_file_extract = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
 
-// FileExtractCreateBulk is the builder for creating a bulk of FileExtract entities.
+// FileExtractCreateBulk is the builder for creating many FileExtract entities in bulk.
 type FileExtractCreateBulk struct {
 	config
 	builders []*FileExtractCreate
@@ -200,6 +279,7 @@ func (fecb *FileExtractCreateBulk) Save(ctx context.Context) ([]*FileExtract, er
 	for i := range fecb.builders {
 		func(i int, root context.Context) {
 			builder := fecb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*FileExtractMutation)
 				if !ok {
@@ -214,19 +294,19 @@ func (fecb *FileExtractCreateBulk) Save(ctx context.Context) ([]*FileExtract, er
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, fecb.builders[i+1].mutation)
 				} else {
+					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, fecb.driver, &sqlgraph.BatchCreateSpec{Nodes: specs}); err != nil {
-						if cerr, ok := isSQLConstraintError(err); ok {
-							err = cerr
+					if err = sqlgraph.BatchCreate(ctx, fecb.driver, spec); err != nil {
+						if sqlgraph.IsConstraintError(err) {
+							err = &ConstraintError{err.Error(), err}
 						}
 					}
 				}
-				mutation.done = true
 				if err != nil {
 					return nil, err
 				}
-				id := specs[i].ID.Value.(int64)
-				nodes[i].ID = int(id)
+				mutation.id = &nodes[i].ID
+				mutation.done = true
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
@@ -243,11 +323,24 @@ func (fecb *FileExtractCreateBulk) Save(ctx context.Context) ([]*FileExtract, er
 	return nodes, nil
 }
 
-// SaveX calls Save and panics if Save returns an error.
+// SaveX is like Save, but panics if an error occurs.
 func (fecb *FileExtractCreateBulk) SaveX(ctx context.Context) []*FileExtract {
 	v, err := fecb.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return v
+}
+
+// Exec executes the query.
+func (fecb *FileExtractCreateBulk) Exec(ctx context.Context) error {
+	_, err := fecb.Save(ctx)
+	return err
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (fecb *FileExtractCreateBulk) ExecX(ctx context.Context) {
+	if err := fecb.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

@@ -1,24 +1,28 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { LayoutService } from '../../../../_metronic/core';
-import { AuthService } from '../../../../modules/auth/_services/auth.service';
-import { UserModel } from '../../../../modules/auth/_models/user.model';
-import KTLayoutQuickSearch from '../../../../../assets/js/layout/extended/quick-search';
-import KTLayoutQuickNotifications from '../../../../../assets/js/layout/extended/quick-notifications';
+import { Component, OnInit, AfterViewInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { LaForgeAuthUser } from '@graphql';
+import { TaskService } from '@services/task/task.service';
+import { ThemeService } from '@services/theme/theme.service';
+import { Observable, Subscription } from 'rxjs';
+
+import { KTUtil } from '../../../../../assets/js/components/util';
+import KTLayoutHeaderTopbar from '../../../../../assets/js/layout/base/header-topbar';
 import KTLayoutQuickActions from '../../../../../assets/js/layout/extended/quick-actions';
 import KTLayoutQuickCartPanel from '../../../../../assets/js/layout/extended/quick-cart';
+import KTLayoutQuickNotifications from '../../../../../assets/js/layout/extended/quick-notifications';
 import KTLayoutQuickPanel from '../../../../../assets/js/layout/extended/quick-panel';
+import KTLayoutQuickSearch from '../../../../../assets/js/layout/extended/quick-search';
 import KTLayoutQuickUser from '../../../../../assets/js/layout/extended/quick-user';
-import KTLayoutHeaderTopbar from '../../../../../assets/js/layout/base/header-topbar';
-import { KTUtil } from '../../../../../assets/js/components/util';
+import { LayoutService } from '../../../../_metronic/core';
+import { AuthService } from '../../../../modules/auth/_services/auth.service';
 
 @Component({
   selector: 'app-topbar',
   templateUrl: './topbar.component.html',
   styleUrls: ['./topbar.component.scss']
 })
-export class TopbarComponent implements OnInit, AfterViewInit {
-  user$: Observable<UserModel>;
+export class TopbarComponent implements OnInit, AfterViewInit, OnDestroy {
+  private unsubscribe: Subscription[] = [];
+  user$: Observable<LaForgeAuthUser>;
   // tobbar extras
   extraSearchDisplay: boolean;
   extrasSearchLayout: 'offcanvas' | 'dropdown';
@@ -32,8 +36,15 @@ export class TopbarComponent implements OnInit, AfterViewInit {
   extrasLanguagesDisplay: boolean;
   extrasUserDisplay: boolean;
   extrasUserLayout: 'offcanvas' | 'dropdown';
+  public shouldNotifyUser = false;
 
-  constructor(private layout: LayoutService, private auth: AuthService) {
+  constructor(
+    private layout: LayoutService,
+    private auth: AuthService,
+    private taskService: TaskService,
+    private cdRef: ChangeDetectorRef,
+    public themeService: ThemeService
+  ) {
     this.user$ = this.auth.currentUserSubject.asObservable();
   }
 
@@ -51,6 +62,20 @@ export class TopbarComponent implements OnInit, AfterViewInit {
     this.extrasUserDisplay = this.layout.getProp('extras.user.display');
     this.extrasUserLayout = this.layout.getProp('extras.user.layout');
     this.extrasQuickPanelDisplay = this.layout.getProp('extras.quickPanel.display');
+
+    const sub = this.taskService
+      .getTaskNotification()
+      .asObservable()
+      .subscribe((notifyUser) => {
+        this.shouldNotifyUser = notifyUser;
+        this.cdRef.markForCheck();
+        // this.cdRef.detectChanges()
+      });
+    this.unsubscribe.push(sub);
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe.forEach((sub) => sub.unsubscribe());
   }
 
   ngAfterViewInit(): void {
@@ -89,5 +114,13 @@ export class TopbarComponent implements OnInit, AfterViewInit {
       // Init Header Topbar For Mobile Mode
       KTLayoutHeaderTopbar.init('kt_header_mobile_topbar_toggle');
     });
+  }
+
+  clearNotification(isOpen: boolean): void {
+    if (isOpen) this.taskService.clearUserNotification();
+  }
+
+  toggleTheme() {
+    this.themeService.setTheme(this.themeService.getTheme() === 'dark' ? 'light' : 'dark');
   }
 }

@@ -28,6 +28,14 @@
   .host-info:hover {
     background-color: #e5e5e5;
   }
+
+  .toggle-collapse {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .host.compact {
@@ -66,7 +74,8 @@
     border-radius: 1.25rem;
 
     .host-preview {
-      margin-right: 0.5rem;
+      // margin-right: 0.5rem;
+      width: calc(100% - 2.5rem);
     }
 
     .host-status-icon {

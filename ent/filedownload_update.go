@@ -6,12 +6,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/google/uuid"
 )
 
 // FileDownloadUpdate is the builder for updating FileDownload entities.
@@ -21,73 +22,89 @@ type FileDownloadUpdate struct {
 	mutation *FileDownloadMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where appends a list predicates to the FileDownloadUpdate builder.
 func (fdu *FileDownloadUpdate) Where(ps ...predicate.FileDownload) *FileDownloadUpdate {
-	fdu.mutation.predicates = append(fdu.mutation.predicates, ps...)
+	fdu.mutation.Where(ps...)
 	return fdu
 }
 
-// SetSourceType sets the source_type field.
+// SetHclID sets the "hcl_id" field.
+func (fdu *FileDownloadUpdate) SetHclID(s string) *FileDownloadUpdate {
+	fdu.mutation.SetHclID(s)
+	return fdu
+}
+
+// SetSourceType sets the "source_type" field.
 func (fdu *FileDownloadUpdate) SetSourceType(s string) *FileDownloadUpdate {
 	fdu.mutation.SetSourceType(s)
 	return fdu
 }
 
-// SetSource sets the source field.
+// SetSource sets the "source" field.
 func (fdu *FileDownloadUpdate) SetSource(s string) *FileDownloadUpdate {
 	fdu.mutation.SetSource(s)
 	return fdu
 }
 
-// SetDestination sets the destination field.
+// SetDestination sets the "destination" field.
 func (fdu *FileDownloadUpdate) SetDestination(s string) *FileDownloadUpdate {
 	fdu.mutation.SetDestination(s)
 	return fdu
 }
 
-// SetTemplate sets the template field.
+// SetTemplate sets the "template" field.
 func (fdu *FileDownloadUpdate) SetTemplate(b bool) *FileDownloadUpdate {
 	fdu.mutation.SetTemplate(b)
 	return fdu
 }
 
-// SetMode sets the mode field.
-func (fdu *FileDownloadUpdate) SetMode(s string) *FileDownloadUpdate {
-	fdu.mutation.SetMode(s)
+// SetPerms sets the "perms" field.
+func (fdu *FileDownloadUpdate) SetPerms(s string) *FileDownloadUpdate {
+	fdu.mutation.SetPerms(s)
 	return fdu
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (fdu *FileDownloadUpdate) SetDisabled(b bool) *FileDownloadUpdate {
 	fdu.mutation.SetDisabled(b)
 	return fdu
 }
 
-// SetMd5 sets the md5 field.
+// SetMd5 sets the "md5" field.
 func (fdu *FileDownloadUpdate) SetMd5(s string) *FileDownloadUpdate {
 	fdu.mutation.SetMd5(s)
 	return fdu
 }
 
-// SetAbsPath sets the abs_path field.
+// SetAbsPath sets the "abs_path" field.
 func (fdu *FileDownloadUpdate) SetAbsPath(s string) *FileDownloadUpdate {
 	fdu.mutation.SetAbsPath(s)
 	return fdu
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (fdu *FileDownloadUpdate) AddTagIDs(ids ...int) *FileDownloadUpdate {
-	fdu.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (fdu *FileDownloadUpdate) SetTags(m map[string]string) *FileDownloadUpdate {
+	fdu.mutation.SetTags(m)
 	return fdu
 }
 
-// AddTag adds the tag edges to Tag.
-func (fdu *FileDownloadUpdate) AddTag(t ...*Tag) *FileDownloadUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetFileDownloadToEnvironmentID sets the "FileDownloadToEnvironment" edge to the Environment entity by ID.
+func (fdu *FileDownloadUpdate) SetFileDownloadToEnvironmentID(id uuid.UUID) *FileDownloadUpdate {
+	fdu.mutation.SetFileDownloadToEnvironmentID(id)
+	return fdu
+}
+
+// SetNillableFileDownloadToEnvironmentID sets the "FileDownloadToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (fdu *FileDownloadUpdate) SetNillableFileDownloadToEnvironmentID(id *uuid.UUID) *FileDownloadUpdate {
+	if id != nil {
+		fdu = fdu.SetFileDownloadToEnvironmentID(*id)
 	}
-	return fdu.AddTagIDs(ids...)
+	return fdu
+}
+
+// SetFileDownloadToEnvironment sets the "FileDownloadToEnvironment" edge to the Environment entity.
+func (fdu *FileDownloadUpdate) SetFileDownloadToEnvironment(e *Environment) *FileDownloadUpdate {
+	return fdu.SetFileDownloadToEnvironmentID(e.ID)
 }
 
 // Mutation returns the FileDownloadMutation object of the builder.
@@ -95,25 +112,10 @@ func (fdu *FileDownloadUpdate) Mutation() *FileDownloadMutation {
 	return fdu.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (fdu *FileDownloadUpdate) ClearTag() *FileDownloadUpdate {
-	fdu.mutation.ClearTag()
+// ClearFileDownloadToEnvironment clears the "FileDownloadToEnvironment" edge to the Environment entity.
+func (fdu *FileDownloadUpdate) ClearFileDownloadToEnvironment() *FileDownloadUpdate {
+	fdu.mutation.ClearFileDownloadToEnvironment()
 	return fdu
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (fdu *FileDownloadUpdate) RemoveTagIDs(ids ...int) *FileDownloadUpdate {
-	fdu.mutation.RemoveTagIDs(ids...)
-	return fdu
-}
-
-// RemoveTag removes tag edges to Tag.
-func (fdu *FileDownloadUpdate) RemoveTag(t ...*Tag) *FileDownloadUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return fdu.RemoveTagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -136,6 +138,9 @@ func (fdu *FileDownloadUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(fdu.hooks) - 1; i >= 0; i-- {
+			if fdu.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fdu.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fdu.mutation); err != nil {
@@ -173,7 +178,7 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   filedownload.Table,
 			Columns: filedownload.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: filedownload.FieldID,
 			},
 		},
@@ -184,6 +189,13 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := fdu.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: filedownload.FieldHclID,
+		})
 	}
 	if value, ok := fdu.mutation.SourceType(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
@@ -213,11 +225,11 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: filedownload.FieldTemplate,
 		})
 	}
-	if value, ok := fdu.mutation.Mode(); ok {
+	if value, ok := fdu.mutation.Perms(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: filedownload.FieldMode,
+			Column: filedownload.FieldPerms,
 		})
 	}
 	if value, ok := fdu.mutation.Disabled(); ok {
@@ -241,52 +253,40 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: filedownload.FieldAbsPath,
 		})
 	}
-	if fdu.mutation.TagCleared() {
+	if value, ok := fdu.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: filedownload.FieldTags,
+		})
+	}
+	if fdu.mutation.FileDownloadToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filedownload.TagTable,
-			Columns: []string{filedownload.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   filedownload.FileDownloadToEnvironmentTable,
+			Columns: []string{filedownload.FileDownloadToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := fdu.mutation.RemovedTagIDs(); len(nodes) > 0 && !fdu.mutation.TagCleared() {
+	if nodes := fdu.mutation.FileDownloadToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filedownload.TagTable,
-			Columns: []string{filedownload.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   filedownload.FileDownloadToEnvironmentTable,
+			Columns: []string{filedownload.FileDownloadToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fdu.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filedownload.TagTable,
-			Columns: []string{filedownload.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -298,8 +298,8 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, fdu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{filedownload.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -309,71 +309,88 @@ func (fdu *FileDownloadUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // FileDownloadUpdateOne is the builder for updating a single FileDownload entity.
 type FileDownloadUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *FileDownloadMutation
 }
 
-// SetSourceType sets the source_type field.
+// SetHclID sets the "hcl_id" field.
+func (fduo *FileDownloadUpdateOne) SetHclID(s string) *FileDownloadUpdateOne {
+	fduo.mutation.SetHclID(s)
+	return fduo
+}
+
+// SetSourceType sets the "source_type" field.
 func (fduo *FileDownloadUpdateOne) SetSourceType(s string) *FileDownloadUpdateOne {
 	fduo.mutation.SetSourceType(s)
 	return fduo
 }
 
-// SetSource sets the source field.
+// SetSource sets the "source" field.
 func (fduo *FileDownloadUpdateOne) SetSource(s string) *FileDownloadUpdateOne {
 	fduo.mutation.SetSource(s)
 	return fduo
 }
 
-// SetDestination sets the destination field.
+// SetDestination sets the "destination" field.
 func (fduo *FileDownloadUpdateOne) SetDestination(s string) *FileDownloadUpdateOne {
 	fduo.mutation.SetDestination(s)
 	return fduo
 }
 
-// SetTemplate sets the template field.
+// SetTemplate sets the "template" field.
 func (fduo *FileDownloadUpdateOne) SetTemplate(b bool) *FileDownloadUpdateOne {
 	fduo.mutation.SetTemplate(b)
 	return fduo
 }
 
-// SetMode sets the mode field.
-func (fduo *FileDownloadUpdateOne) SetMode(s string) *FileDownloadUpdateOne {
-	fduo.mutation.SetMode(s)
+// SetPerms sets the "perms" field.
+func (fduo *FileDownloadUpdateOne) SetPerms(s string) *FileDownloadUpdateOne {
+	fduo.mutation.SetPerms(s)
 	return fduo
 }
 
-// SetDisabled sets the disabled field.
+// SetDisabled sets the "disabled" field.
 func (fduo *FileDownloadUpdateOne) SetDisabled(b bool) *FileDownloadUpdateOne {
 	fduo.mutation.SetDisabled(b)
 	return fduo
 }
 
-// SetMd5 sets the md5 field.
+// SetMd5 sets the "md5" field.
 func (fduo *FileDownloadUpdateOne) SetMd5(s string) *FileDownloadUpdateOne {
 	fduo.mutation.SetMd5(s)
 	return fduo
 }
 
-// SetAbsPath sets the abs_path field.
+// SetAbsPath sets the "abs_path" field.
 func (fduo *FileDownloadUpdateOne) SetAbsPath(s string) *FileDownloadUpdateOne {
 	fduo.mutation.SetAbsPath(s)
 	return fduo
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (fduo *FileDownloadUpdateOne) AddTagIDs(ids ...int) *FileDownloadUpdateOne {
-	fduo.mutation.AddTagIDs(ids...)
+// SetTags sets the "tags" field.
+func (fduo *FileDownloadUpdateOne) SetTags(m map[string]string) *FileDownloadUpdateOne {
+	fduo.mutation.SetTags(m)
 	return fduo
 }
 
-// AddTag adds the tag edges to Tag.
-func (fduo *FileDownloadUpdateOne) AddTag(t ...*Tag) *FileDownloadUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetFileDownloadToEnvironmentID sets the "FileDownloadToEnvironment" edge to the Environment entity by ID.
+func (fduo *FileDownloadUpdateOne) SetFileDownloadToEnvironmentID(id uuid.UUID) *FileDownloadUpdateOne {
+	fduo.mutation.SetFileDownloadToEnvironmentID(id)
+	return fduo
+}
+
+// SetNillableFileDownloadToEnvironmentID sets the "FileDownloadToEnvironment" edge to the Environment entity by ID if the given value is not nil.
+func (fduo *FileDownloadUpdateOne) SetNillableFileDownloadToEnvironmentID(id *uuid.UUID) *FileDownloadUpdateOne {
+	if id != nil {
+		fduo = fduo.SetFileDownloadToEnvironmentID(*id)
 	}
-	return fduo.AddTagIDs(ids...)
+	return fduo
+}
+
+// SetFileDownloadToEnvironment sets the "FileDownloadToEnvironment" edge to the Environment entity.
+func (fduo *FileDownloadUpdateOne) SetFileDownloadToEnvironment(e *Environment) *FileDownloadUpdateOne {
+	return fduo.SetFileDownloadToEnvironmentID(e.ID)
 }
 
 // Mutation returns the FileDownloadMutation object of the builder.
@@ -381,28 +398,20 @@ func (fduo *FileDownloadUpdateOne) Mutation() *FileDownloadMutation {
 	return fduo.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (fduo *FileDownloadUpdateOne) ClearTag() *FileDownloadUpdateOne {
-	fduo.mutation.ClearTag()
+// ClearFileDownloadToEnvironment clears the "FileDownloadToEnvironment" edge to the Environment entity.
+func (fduo *FileDownloadUpdateOne) ClearFileDownloadToEnvironment() *FileDownloadUpdateOne {
+	fduo.mutation.ClearFileDownloadToEnvironment()
 	return fduo
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (fduo *FileDownloadUpdateOne) RemoveTagIDs(ids ...int) *FileDownloadUpdateOne {
-	fduo.mutation.RemoveTagIDs(ids...)
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (fduo *FileDownloadUpdateOne) Select(field string, fields ...string) *FileDownloadUpdateOne {
+	fduo.fields = append([]string{field}, fields...)
 	return fduo
 }
 
-// RemoveTag removes tag edges to Tag.
-func (fduo *FileDownloadUpdateOne) RemoveTag(t ...*Tag) *FileDownloadUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return fduo.RemoveTagIDs(ids...)
-}
-
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated FileDownload entity.
 func (fduo *FileDownloadUpdateOne) Save(ctx context.Context) (*FileDownload, error) {
 	var (
 		err  error
@@ -422,6 +431,9 @@ func (fduo *FileDownloadUpdateOne) Save(ctx context.Context) (*FileDownload, err
 			return node, err
 		})
 		for i := len(fduo.hooks) - 1; i >= 0; i-- {
+			if fduo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fduo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fduo.mutation); err != nil {
@@ -459,7 +471,7 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 			Table:   filedownload.Table,
 			Columns: filedownload.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: filedownload.FieldID,
 			},
 		},
@@ -469,6 +481,32 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing FileDownload.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := fduo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, filedownload.FieldID)
+		for _, f := range fields {
+			if !filedownload.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != filedownload.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
+	if ps := fduo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
+	if value, ok := fduo.mutation.HclID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: filedownload.FieldHclID,
+		})
+	}
 	if value, ok := fduo.mutation.SourceType(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -497,11 +535,11 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 			Column: filedownload.FieldTemplate,
 		})
 	}
-	if value, ok := fduo.mutation.Mode(); ok {
+	if value, ok := fduo.mutation.Perms(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: filedownload.FieldMode,
+			Column: filedownload.FieldPerms,
 		})
 	}
 	if value, ok := fduo.mutation.Disabled(); ok {
@@ -525,52 +563,40 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 			Column: filedownload.FieldAbsPath,
 		})
 	}
-	if fduo.mutation.TagCleared() {
+	if value, ok := fduo.mutation.Tags(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: filedownload.FieldTags,
+		})
+	}
+	if fduo.mutation.FileDownloadToEnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filedownload.TagTable,
-			Columns: []string{filedownload.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   filedownload.FileDownloadToEnvironmentTable,
+			Columns: []string{filedownload.FileDownloadToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := fduo.mutation.RemovedTagIDs(); len(nodes) > 0 && !fduo.mutation.TagCleared() {
+	if nodes := fduo.mutation.FileDownloadToEnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filedownload.TagTable,
-			Columns: []string{filedownload.TagColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   filedownload.FileDownloadToEnvironmentTable,
+			Columns: []string{filedownload.FileDownloadToEnvironmentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fduo.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   filedownload.TagTable,
-			Columns: []string{filedownload.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: environment.FieldID,
 				},
 			},
 		}
@@ -581,12 +607,12 @@ func (fduo *FileDownloadUpdateOne) sqlSave(ctx context.Context) (_node *FileDown
 	}
 	_node = &FileDownload{config: fduo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, fduo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{filedownload.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

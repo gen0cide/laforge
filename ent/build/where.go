@@ -3,34 +3,35 @@
 package build
 
 import (
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/gen0cide/laforge/ent/predicate"
+	"github.com/google/uuid"
 )
 
-// ID filters vertices based on their identifier.
-func ID(id int) predicate.Build {
+// ID filters vertices based on their ID field.
+func ID(id uuid.UUID) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Build {
+func IDEQ(id uuid.UUID) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Build {
+func IDNEQ(id uuid.UUID) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldID), id))
 	})
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Build {
+func IDIn(ids ...uuid.UUID) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -47,7 +48,7 @@ func IDIn(ids ...int) predicate.Build {
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Build {
+func IDNotIn(ids ...uuid.UUID) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -64,28 +65,28 @@ func IDNotIn(ids ...int) predicate.Build {
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Build {
+func IDGT(id uuid.UUID) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldID), id))
 	})
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Build {
+func IDGTE(id uuid.UUID) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldID), id))
 	})
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Build {
+func IDLT(id uuid.UUID) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldID), id))
 	})
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Build {
+func IDLTE(id uuid.UUID) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
 	})
@@ -95,6 +96,20 @@ func IDLTE(id int) predicate.Build {
 func Revision(v int) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldRevision), v))
+	})
+}
+
+// EnvironmentRevision applies equality check predicate on the "environment_revision" field. It's identical to EnvironmentRevisionEQ.
+func EnvironmentRevision(v int) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldEnvironmentRevision), v))
+	})
+}
+
+// CompletedPlan applies equality check predicate on the "completed_plan" field. It's identical to CompletedPlanEQ.
+func CompletedPlan(v bool) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCompletedPlan), v))
 	})
 }
 
@@ -174,25 +189,115 @@ func RevisionLTE(v int) predicate.Build {
 	})
 }
 
-// HasMaintainer applies the HasEdge predicate on the "maintainer" edge.
-func HasMaintainer() predicate.Build {
+// EnvironmentRevisionEQ applies the EQ predicate on the "environment_revision" field.
+func EnvironmentRevisionEQ(v int) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldEnvironmentRevision), v))
+	})
+}
+
+// EnvironmentRevisionNEQ applies the NEQ predicate on the "environment_revision" field.
+func EnvironmentRevisionNEQ(v int) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldEnvironmentRevision), v))
+	})
+}
+
+// EnvironmentRevisionIn applies the In predicate on the "environment_revision" field.
+func EnvironmentRevisionIn(vs ...int) predicate.Build {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Build(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldEnvironmentRevision), v...))
+	})
+}
+
+// EnvironmentRevisionNotIn applies the NotIn predicate on the "environment_revision" field.
+func EnvironmentRevisionNotIn(vs ...int) predicate.Build {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Build(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldEnvironmentRevision), v...))
+	})
+}
+
+// EnvironmentRevisionGT applies the GT predicate on the "environment_revision" field.
+func EnvironmentRevisionGT(v int) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldEnvironmentRevision), v))
+	})
+}
+
+// EnvironmentRevisionGTE applies the GTE predicate on the "environment_revision" field.
+func EnvironmentRevisionGTE(v int) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldEnvironmentRevision), v))
+	})
+}
+
+// EnvironmentRevisionLT applies the LT predicate on the "environment_revision" field.
+func EnvironmentRevisionLT(v int) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldEnvironmentRevision), v))
+	})
+}
+
+// EnvironmentRevisionLTE applies the LTE predicate on the "environment_revision" field.
+func EnvironmentRevisionLTE(v int) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldEnvironmentRevision), v))
+	})
+}
+
+// CompletedPlanEQ applies the EQ predicate on the "completed_plan" field.
+func CompletedPlanEQ(v bool) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCompletedPlan), v))
+	})
+}
+
+// CompletedPlanNEQ applies the NEQ predicate on the "completed_plan" field.
+func CompletedPlanNEQ(v bool) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCompletedPlan), v))
+	})
+}
+
+// HasBuildToStatus applies the HasEdge predicate on the "BuildToStatus" edge.
+func HasBuildToStatus() predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(MaintainerTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, MaintainerTable, MaintainerColumn),
+			sqlgraph.To(BuildToStatusTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, BuildToStatusTable, BuildToStatusColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasMaintainerWith applies the HasEdge predicate on the "maintainer" edge with a given conditions (other predicates).
-func HasMaintainerWith(preds ...predicate.User) predicate.Build {
+// HasBuildToStatusWith applies the HasEdge predicate on the "BuildToStatus" edge with a given conditions (other predicates).
+func HasBuildToStatusWith(preds ...predicate.Status) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(MaintainerInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, MaintainerTable, MaintainerColumn),
+			sqlgraph.To(BuildToStatusInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, BuildToStatusTable, BuildToStatusColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -202,25 +307,25 @@ func HasMaintainerWith(preds ...predicate.User) predicate.Build {
 	})
 }
 
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.Build {
+// HasBuildToEnvironment applies the HasEdge predicate on the "BuildToEnvironment" edge.
+func HasBuildToEnvironment() predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(BuildToEnvironmentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, BuildToEnvironmentTable, BuildToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.Build {
+// HasBuildToEnvironmentWith applies the HasEdge predicate on the "BuildToEnvironment" edge with a given conditions (other predicates).
+func HasBuildToEnvironmentWith(preds ...predicate.Environment) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagTable, TagColumn),
+			sqlgraph.To(BuildToEnvironmentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, BuildToEnvironmentTable, BuildToEnvironmentColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -230,25 +335,25 @@ func HasTagWith(preds ...predicate.Tag) predicate.Build {
 	})
 }
 
-// HasTeam applies the HasEdge predicate on the "team" edge.
-func HasTeam() predicate.Build {
+// HasBuildToCompetition applies the HasEdge predicate on the "BuildToCompetition" edge.
+func HasBuildToCompetition() predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TeamTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, TeamTable, TeamPrimaryKey...),
+			sqlgraph.To(BuildToCompetitionTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, BuildToCompetitionTable, BuildToCompetitionColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTeamWith applies the HasEdge predicate on the "team" edge with a given conditions (other predicates).
-func HasTeamWith(preds ...predicate.Team) predicate.Build {
+// HasBuildToCompetitionWith applies the HasEdge predicate on the "BuildToCompetition" edge with a given conditions (other predicates).
+func HasBuildToCompetitionWith(preds ...predicate.Competition) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TeamInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, TeamTable, TeamPrimaryKey...),
+			sqlgraph.To(BuildToCompetitionInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, BuildToCompetitionTable, BuildToCompetitionColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -258,25 +363,25 @@ func HasTeamWith(preds ...predicate.Team) predicate.Build {
 	})
 }
 
-// HasProvisionedNetworkToBuild applies the HasEdge predicate on the "ProvisionedNetworkToBuild" edge.
-func HasProvisionedNetworkToBuild() predicate.Build {
+// HasBuildToLatestBuildCommit applies the HasEdge predicate on the "BuildToLatestBuildCommit" edge.
+func HasBuildToLatestBuildCommit() predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ProvisionedNetworkToBuildTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, ProvisionedNetworkToBuildTable, ProvisionedNetworkToBuildPrimaryKey...),
+			sqlgraph.To(BuildToLatestBuildCommitTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, BuildToLatestBuildCommitTable, BuildToLatestBuildCommitColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasProvisionedNetworkToBuildWith applies the HasEdge predicate on the "ProvisionedNetworkToBuild" edge with a given conditions (other predicates).
-func HasProvisionedNetworkToBuildWith(preds ...predicate.ProvisionedNetwork) predicate.Build {
+// HasBuildToLatestBuildCommitWith applies the HasEdge predicate on the "BuildToLatestBuildCommit" edge with a given conditions (other predicates).
+func HasBuildToLatestBuildCommitWith(preds ...predicate.BuildCommit) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ProvisionedNetworkToBuildInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, ProvisionedNetworkToBuildTable, ProvisionedNetworkToBuildPrimaryKey...),
+			sqlgraph.To(BuildToLatestBuildCommitInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, BuildToLatestBuildCommitTable, BuildToLatestBuildCommitColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -286,7 +391,147 @@ func HasProvisionedNetworkToBuildWith(preds ...predicate.ProvisionedNetwork) pre
 	})
 }
 
-// And groups list of predicates with the AND operator between them.
+// HasBuildToProvisionedNetwork applies the HasEdge predicate on the "BuildToProvisionedNetwork" edge.
+func HasBuildToProvisionedNetwork() predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToProvisionedNetworkTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, BuildToProvisionedNetworkTable, BuildToProvisionedNetworkColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBuildToProvisionedNetworkWith applies the HasEdge predicate on the "BuildToProvisionedNetwork" edge with a given conditions (other predicates).
+func HasBuildToProvisionedNetworkWith(preds ...predicate.ProvisionedNetwork) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToProvisionedNetworkInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, BuildToProvisionedNetworkTable, BuildToProvisionedNetworkColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasBuildToTeam applies the HasEdge predicate on the "BuildToTeam" edge.
+func HasBuildToTeam() predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToTeamTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, BuildToTeamTable, BuildToTeamColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBuildToTeamWith applies the HasEdge predicate on the "BuildToTeam" edge with a given conditions (other predicates).
+func HasBuildToTeamWith(preds ...predicate.Team) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToTeamInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, BuildToTeamTable, BuildToTeamColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasBuildToPlan applies the HasEdge predicate on the "BuildToPlan" edge.
+func HasBuildToPlan() predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToPlanTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, BuildToPlanTable, BuildToPlanColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBuildToPlanWith applies the HasEdge predicate on the "BuildToPlan" edge with a given conditions (other predicates).
+func HasBuildToPlanWith(preds ...predicate.Plan) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToPlanInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, BuildToPlanTable, BuildToPlanColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasBuildToBuildCommits applies the HasEdge predicate on the "BuildToBuildCommits" edge.
+func HasBuildToBuildCommits() predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToBuildCommitsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, BuildToBuildCommitsTable, BuildToBuildCommitsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBuildToBuildCommitsWith applies the HasEdge predicate on the "BuildToBuildCommits" edge with a given conditions (other predicates).
+func HasBuildToBuildCommitsWith(preds ...predicate.BuildCommit) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToBuildCommitsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, BuildToBuildCommitsTable, BuildToBuildCommitsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasBuildToAdhocPlans applies the HasEdge predicate on the "BuildToAdhocPlans" edge.
+func HasBuildToAdhocPlans() predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToAdhocPlansTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, BuildToAdhocPlansTable, BuildToAdhocPlansColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBuildToAdhocPlansWith applies the HasEdge predicate on the "BuildToAdhocPlans" edge with a given conditions (other predicates).
+func HasBuildToAdhocPlansWith(preds ...predicate.AdhocPlan) predicate.Build {
+	return predicate.Build(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BuildToAdhocPlansInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, BuildToAdhocPlansTable, BuildToAdhocPlansColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Build) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)
@@ -297,7 +542,7 @@ func And(predicates ...predicate.Build) predicate.Build {
 	})
 }
 
-// Or groups list of predicates with the OR operator between them.
+// Or groups predicates with the OR operator between them.
 func Or(predicates ...predicate.Build) predicate.Build {
 	return predicate.Build(func(s *sql.Selector) {
 		s1 := s.Clone().SetP(nil)

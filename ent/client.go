@@ -8,9 +8,14 @@ import (
 	"log"
 
 	"github.com/gen0cide/laforge/ent/migrate"
+	"github.com/google/uuid"
 
+	"github.com/gen0cide/laforge/ent/adhocplan"
 	"github.com/gen0cide/laforge/ent/agentstatus"
+	"github.com/gen0cide/laforge/ent/agenttask"
+	"github.com/gen0cide/laforge/ent/authuser"
 	"github.com/gen0cide/laforge/ent/build"
+	"github.com/gen0cide/laforge/ent/buildcommit"
 	"github.com/gen0cide/laforge/ent/command"
 	"github.com/gen0cide/laforge/ent/competition"
 	"github.com/gen0cide/laforge/ent/disk"
@@ -21,22 +26,29 @@ import (
 	"github.com/gen0cide/laforge/ent/filedownload"
 	"github.com/gen0cide/laforge/ent/fileextract"
 	"github.com/gen0cide/laforge/ent/finding"
+	"github.com/gen0cide/laforge/ent/ginfilemiddleware"
 	"github.com/gen0cide/laforge/ent/host"
+	"github.com/gen0cide/laforge/ent/hostdependency"
+	"github.com/gen0cide/laforge/ent/identity"
 	"github.com/gen0cide/laforge/ent/includednetwork"
 	"github.com/gen0cide/laforge/ent/network"
+	"github.com/gen0cide/laforge/ent/plan"
+	"github.com/gen0cide/laforge/ent/plandiff"
 	"github.com/gen0cide/laforge/ent/provisionedhost"
 	"github.com/gen0cide/laforge/ent/provisionednetwork"
 	"github.com/gen0cide/laforge/ent/provisioningstep"
-	"github.com/gen0cide/laforge/ent/remotefile"
+	"github.com/gen0cide/laforge/ent/repository"
 	"github.com/gen0cide/laforge/ent/script"
+	"github.com/gen0cide/laforge/ent/servertask"
 	"github.com/gen0cide/laforge/ent/status"
 	"github.com/gen0cide/laforge/ent/tag"
 	"github.com/gen0cide/laforge/ent/team"
+	"github.com/gen0cide/laforge/ent/token"
 	"github.com/gen0cide/laforge/ent/user"
 
-	"github.com/facebook/ent/dialect"
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // Client is the client that holds all ent builders.
@@ -44,10 +56,18 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// AdhocPlan is the client for interacting with the AdhocPlan builders.
+	AdhocPlan *AdhocPlanClient
 	// AgentStatus is the client for interacting with the AgentStatus builders.
 	AgentStatus *AgentStatusClient
+	// AgentTask is the client for interacting with the AgentTask builders.
+	AgentTask *AgentTaskClient
+	// AuthUser is the client for interacting with the AuthUser builders.
+	AuthUser *AuthUserClient
 	// Build is the client for interacting with the Build builders.
 	Build *BuildClient
+	// BuildCommit is the client for interacting with the BuildCommit builders.
+	BuildCommit *BuildCommitClient
 	// Command is the client for interacting with the Command builders.
 	Command *CommandClient
 	// Competition is the client for interacting with the Competition builders.
@@ -68,32 +88,44 @@ type Client struct {
 	FileExtract *FileExtractClient
 	// Finding is the client for interacting with the Finding builders.
 	Finding *FindingClient
+	// GinFileMiddleware is the client for interacting with the GinFileMiddleware builders.
+	GinFileMiddleware *GinFileMiddlewareClient
 	// Host is the client for interacting with the Host builders.
 	Host *HostClient
+	// HostDependency is the client for interacting with the HostDependency builders.
+	HostDependency *HostDependencyClient
+	// Identity is the client for interacting with the Identity builders.
+	Identity *IdentityClient
 	// IncludedNetwork is the client for interacting with the IncludedNetwork builders.
 	IncludedNetwork *IncludedNetworkClient
 	// Network is the client for interacting with the Network builders.
 	Network *NetworkClient
+	// Plan is the client for interacting with the Plan builders.
+	Plan *PlanClient
+	// PlanDiff is the client for interacting with the PlanDiff builders.
+	PlanDiff *PlanDiffClient
 	// ProvisionedHost is the client for interacting with the ProvisionedHost builders.
 	ProvisionedHost *ProvisionedHostClient
 	// ProvisionedNetwork is the client for interacting with the ProvisionedNetwork builders.
 	ProvisionedNetwork *ProvisionedNetworkClient
 	// ProvisioningStep is the client for interacting with the ProvisioningStep builders.
 	ProvisioningStep *ProvisioningStepClient
-	// RemoteFile is the client for interacting with the RemoteFile builders.
-	RemoteFile *RemoteFileClient
+	// Repository is the client for interacting with the Repository builders.
+	Repository *RepositoryClient
 	// Script is the client for interacting with the Script builders.
 	Script *ScriptClient
+	// ServerTask is the client for interacting with the ServerTask builders.
+	ServerTask *ServerTaskClient
 	// Status is the client for interacting with the Status builders.
 	Status *StatusClient
 	// Tag is the client for interacting with the Tag builders.
 	Tag *TagClient
 	// Team is the client for interacting with the Team builders.
 	Team *TeamClient
+	// Token is the client for interacting with the Token builders.
+	Token *TokenClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
-	// additional fields for node api
-	tables tables
 }
 
 // NewClient creates a new client configured with the given options.
@@ -107,8 +139,12 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.AdhocPlan = NewAdhocPlanClient(c.config)
 	c.AgentStatus = NewAgentStatusClient(c.config)
+	c.AgentTask = NewAgentTaskClient(c.config)
+	c.AuthUser = NewAuthUserClient(c.config)
 	c.Build = NewBuildClient(c.config)
+	c.BuildCommit = NewBuildCommitClient(c.config)
 	c.Command = NewCommandClient(c.config)
 	c.Competition = NewCompetitionClient(c.config)
 	c.DNS = NewDNSClient(c.config)
@@ -119,17 +155,24 @@ func (c *Client) init() {
 	c.FileDownload = NewFileDownloadClient(c.config)
 	c.FileExtract = NewFileExtractClient(c.config)
 	c.Finding = NewFindingClient(c.config)
+	c.GinFileMiddleware = NewGinFileMiddlewareClient(c.config)
 	c.Host = NewHostClient(c.config)
+	c.HostDependency = NewHostDependencyClient(c.config)
+	c.Identity = NewIdentityClient(c.config)
 	c.IncludedNetwork = NewIncludedNetworkClient(c.config)
 	c.Network = NewNetworkClient(c.config)
+	c.Plan = NewPlanClient(c.config)
+	c.PlanDiff = NewPlanDiffClient(c.config)
 	c.ProvisionedHost = NewProvisionedHostClient(c.config)
 	c.ProvisionedNetwork = NewProvisionedNetworkClient(c.config)
 	c.ProvisioningStep = NewProvisioningStepClient(c.config)
-	c.RemoteFile = NewRemoteFileClient(c.config)
+	c.Repository = NewRepositoryClient(c.config)
 	c.Script = NewScriptClient(c.config)
+	c.ServerTask = NewServerTaskClient(c.config)
 	c.Status = NewStatusClient(c.config)
 	c.Tag = NewTagClient(c.config)
 	c.Team = NewTeamClient(c.config)
+	c.Token = NewTokenClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -157,14 +200,19 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	}
 	tx, err := newTx(ctx, c.driver)
 	if err != nil {
-		return nil, fmt.Errorf("ent: starting a transaction: %v", err)
+		return nil, fmt.Errorf("ent: starting a transaction: %w", err)
 	}
-	cfg := config{driver: tx, log: c.log, debug: c.debug, hooks: c.hooks}
+	cfg := c.config
+	cfg.driver = tx
 	return &Tx{
 		ctx:                ctx,
 		config:             cfg,
+		AdhocPlan:          NewAdhocPlanClient(cfg),
 		AgentStatus:        NewAgentStatusClient(cfg),
+		AgentTask:          NewAgentTaskClient(cfg),
+		AuthUser:           NewAuthUserClient(cfg),
 		Build:              NewBuildClient(cfg),
+		BuildCommit:        NewBuildCommitClient(cfg),
 		Command:            NewCommandClient(cfg),
 		Competition:        NewCompetitionClient(cfg),
 		DNS:                NewDNSClient(cfg),
@@ -175,35 +223,49 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		FileDownload:       NewFileDownloadClient(cfg),
 		FileExtract:        NewFileExtractClient(cfg),
 		Finding:            NewFindingClient(cfg),
+		GinFileMiddleware:  NewGinFileMiddlewareClient(cfg),
 		Host:               NewHostClient(cfg),
+		HostDependency:     NewHostDependencyClient(cfg),
+		Identity:           NewIdentityClient(cfg),
 		IncludedNetwork:    NewIncludedNetworkClient(cfg),
 		Network:            NewNetworkClient(cfg),
+		Plan:               NewPlanClient(cfg),
+		PlanDiff:           NewPlanDiffClient(cfg),
 		ProvisionedHost:    NewProvisionedHostClient(cfg),
 		ProvisionedNetwork: NewProvisionedNetworkClient(cfg),
 		ProvisioningStep:   NewProvisioningStepClient(cfg),
-		RemoteFile:         NewRemoteFileClient(cfg),
+		Repository:         NewRepositoryClient(cfg),
 		Script:             NewScriptClient(cfg),
+		ServerTask:         NewServerTaskClient(cfg),
 		Status:             NewStatusClient(cfg),
 		Tag:                NewTagClient(cfg),
 		Team:               NewTeamClient(cfg),
+		Token:              NewTokenClient(cfg),
 		User:               NewUserClient(cfg),
 	}, nil
 }
 
-// BeginTx returns a transactional client with options.
+// BeginTx returns a transactional client with specified options.
 func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
 	if _, ok := c.driver.(*txDriver); ok {
 		return nil, fmt.Errorf("ent: cannot start a transaction within a transaction")
 	}
-	tx, err := c.driver.(*sql.Driver).BeginTx(ctx, opts)
+	tx, err := c.driver.(interface {
+		BeginTx(context.Context, *sql.TxOptions) (dialect.Tx, error)
+	}).BeginTx(ctx, opts)
 	if err != nil {
-		return nil, fmt.Errorf("ent: starting a transaction: %v", err)
+		return nil, fmt.Errorf("ent: starting a transaction: %w", err)
 	}
-	cfg := config{driver: &txDriver{tx: tx, drv: c.driver}, log: c.log, debug: c.debug, hooks: c.hooks}
+	cfg := c.config
+	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
 		config:             cfg,
+		AdhocPlan:          NewAdhocPlanClient(cfg),
 		AgentStatus:        NewAgentStatusClient(cfg),
+		AgentTask:          NewAgentTaskClient(cfg),
+		AuthUser:           NewAuthUserClient(cfg),
 		Build:              NewBuildClient(cfg),
+		BuildCommit:        NewBuildCommitClient(cfg),
 		Command:            NewCommandClient(cfg),
 		Competition:        NewCompetitionClient(cfg),
 		DNS:                NewDNSClient(cfg),
@@ -214,17 +276,24 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		FileDownload:       NewFileDownloadClient(cfg),
 		FileExtract:        NewFileExtractClient(cfg),
 		Finding:            NewFindingClient(cfg),
+		GinFileMiddleware:  NewGinFileMiddlewareClient(cfg),
 		Host:               NewHostClient(cfg),
+		HostDependency:     NewHostDependencyClient(cfg),
+		Identity:           NewIdentityClient(cfg),
 		IncludedNetwork:    NewIncludedNetworkClient(cfg),
 		Network:            NewNetworkClient(cfg),
+		Plan:               NewPlanClient(cfg),
+		PlanDiff:           NewPlanDiffClient(cfg),
 		ProvisionedHost:    NewProvisionedHostClient(cfg),
 		ProvisionedNetwork: NewProvisionedNetworkClient(cfg),
 		ProvisioningStep:   NewProvisioningStepClient(cfg),
-		RemoteFile:         NewRemoteFileClient(cfg),
+		Repository:         NewRepositoryClient(cfg),
 		Script:             NewScriptClient(cfg),
+		ServerTask:         NewServerTaskClient(cfg),
 		Status:             NewStatusClient(cfg),
 		Tag:                NewTagClient(cfg),
 		Team:               NewTeamClient(cfg),
+		Token:              NewTokenClient(cfg),
 		User:               NewUserClient(cfg),
 	}, nil
 }
@@ -232,7 +301,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		AgentStatus.
+//		AdhocPlan.
 //		Query().
 //		Count(ctx)
 //
@@ -240,7 +309,8 @@ func (c *Client) Debug() *Client {
 	if c.debug {
 		return c
 	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks}
+	cfg := c.config
+	cfg.driver = dialect.Debug(c.driver, c.log)
 	client := &Client{config: cfg}
 	client.init()
 	return client
@@ -254,8 +324,12 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.AdhocPlan.Use(hooks...)
 	c.AgentStatus.Use(hooks...)
+	c.AgentTask.Use(hooks...)
+	c.AuthUser.Use(hooks...)
 	c.Build.Use(hooks...)
+	c.BuildCommit.Use(hooks...)
 	c.Command.Use(hooks...)
 	c.Competition.Use(hooks...)
 	c.DNS.Use(hooks...)
@@ -266,18 +340,195 @@ func (c *Client) Use(hooks ...Hook) {
 	c.FileDownload.Use(hooks...)
 	c.FileExtract.Use(hooks...)
 	c.Finding.Use(hooks...)
+	c.GinFileMiddleware.Use(hooks...)
 	c.Host.Use(hooks...)
+	c.HostDependency.Use(hooks...)
+	c.Identity.Use(hooks...)
 	c.IncludedNetwork.Use(hooks...)
 	c.Network.Use(hooks...)
+	c.Plan.Use(hooks...)
+	c.PlanDiff.Use(hooks...)
 	c.ProvisionedHost.Use(hooks...)
 	c.ProvisionedNetwork.Use(hooks...)
 	c.ProvisioningStep.Use(hooks...)
-	c.RemoteFile.Use(hooks...)
+	c.Repository.Use(hooks...)
 	c.Script.Use(hooks...)
+	c.ServerTask.Use(hooks...)
 	c.Status.Use(hooks...)
 	c.Tag.Use(hooks...)
 	c.Team.Use(hooks...)
+	c.Token.Use(hooks...)
 	c.User.Use(hooks...)
+}
+
+// AdhocPlanClient is a client for the AdhocPlan schema.
+type AdhocPlanClient struct {
+	config
+}
+
+// NewAdhocPlanClient returns a client for the AdhocPlan from the given config.
+func NewAdhocPlanClient(c config) *AdhocPlanClient {
+	return &AdhocPlanClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `adhocplan.Hooks(f(g(h())))`.
+func (c *AdhocPlanClient) Use(hooks ...Hook) {
+	c.hooks.AdhocPlan = append(c.hooks.AdhocPlan, hooks...)
+}
+
+// Create returns a create builder for AdhocPlan.
+func (c *AdhocPlanClient) Create() *AdhocPlanCreate {
+	mutation := newAdhocPlanMutation(c.config, OpCreate)
+	return &AdhocPlanCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AdhocPlan entities.
+func (c *AdhocPlanClient) CreateBulk(builders ...*AdhocPlanCreate) *AdhocPlanCreateBulk {
+	return &AdhocPlanCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AdhocPlan.
+func (c *AdhocPlanClient) Update() *AdhocPlanUpdate {
+	mutation := newAdhocPlanMutation(c.config, OpUpdate)
+	return &AdhocPlanUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AdhocPlanClient) UpdateOne(ap *AdhocPlan) *AdhocPlanUpdateOne {
+	mutation := newAdhocPlanMutation(c.config, OpUpdateOne, withAdhocPlan(ap))
+	return &AdhocPlanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AdhocPlanClient) UpdateOneID(id uuid.UUID) *AdhocPlanUpdateOne {
+	mutation := newAdhocPlanMutation(c.config, OpUpdateOne, withAdhocPlanID(id))
+	return &AdhocPlanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AdhocPlan.
+func (c *AdhocPlanClient) Delete() *AdhocPlanDelete {
+	mutation := newAdhocPlanMutation(c.config, OpDelete)
+	return &AdhocPlanDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *AdhocPlanClient) DeleteOne(ap *AdhocPlan) *AdhocPlanDeleteOne {
+	return c.DeleteOneID(ap.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *AdhocPlanClient) DeleteOneID(id uuid.UUID) *AdhocPlanDeleteOne {
+	builder := c.Delete().Where(adhocplan.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AdhocPlanDeleteOne{builder}
+}
+
+// Query returns a query builder for AdhocPlan.
+func (c *AdhocPlanClient) Query() *AdhocPlanQuery {
+	return &AdhocPlanQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a AdhocPlan entity by its id.
+func (c *AdhocPlanClient) Get(ctx context.Context, id uuid.UUID) (*AdhocPlan, error) {
+	return c.Query().Where(adhocplan.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AdhocPlanClient) GetX(ctx context.Context, id uuid.UUID) *AdhocPlan {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryPrevAdhocPlan queries the PrevAdhocPlan edge of a AdhocPlan.
+func (c *AdhocPlanClient) QueryPrevAdhocPlan(ap *AdhocPlan) *AdhocPlanQuery {
+	query := &AdhocPlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ap.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(adhocplan.Table, adhocplan.FieldID, id),
+			sqlgraph.To(adhocplan.Table, adhocplan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, adhocplan.PrevAdhocPlanTable, adhocplan.PrevAdhocPlanPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ap.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNextAdhocPlan queries the NextAdhocPlan edge of a AdhocPlan.
+func (c *AdhocPlanClient) QueryNextAdhocPlan(ap *AdhocPlan) *AdhocPlanQuery {
+	query := &AdhocPlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ap.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(adhocplan.Table, adhocplan.FieldID, id),
+			sqlgraph.To(adhocplan.Table, adhocplan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, adhocplan.NextAdhocPlanTable, adhocplan.NextAdhocPlanPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ap.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAdhocPlanToBuild queries the AdhocPlanToBuild edge of a AdhocPlan.
+func (c *AdhocPlanClient) QueryAdhocPlanToBuild(ap *AdhocPlan) *BuildQuery {
+	query := &BuildQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ap.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(adhocplan.Table, adhocplan.FieldID, id),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, adhocplan.AdhocPlanToBuildTable, adhocplan.AdhocPlanToBuildColumn),
+		)
+		fromV = sqlgraph.Neighbors(ap.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAdhocPlanToStatus queries the AdhocPlanToStatus edge of a AdhocPlan.
+func (c *AdhocPlanClient) QueryAdhocPlanToStatus(ap *AdhocPlan) *StatusQuery {
+	query := &StatusQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ap.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(adhocplan.Table, adhocplan.FieldID, id),
+			sqlgraph.To(status.Table, status.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, adhocplan.AdhocPlanToStatusTable, adhocplan.AdhocPlanToStatusColumn),
+		)
+		fromV = sqlgraph.Neighbors(ap.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAdhocPlanToAgentTask queries the AdhocPlanToAgentTask edge of a AdhocPlan.
+func (c *AdhocPlanClient) QueryAdhocPlanToAgentTask(ap *AdhocPlan) *AgentTaskQuery {
+	query := &AgentTaskQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ap.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(adhocplan.Table, adhocplan.FieldID, id),
+			sqlgraph.To(agenttask.Table, agenttask.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, adhocplan.AdhocPlanToAgentTaskTable, adhocplan.AdhocPlanToAgentTaskColumn),
+		)
+		fromV = sqlgraph.Neighbors(ap.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AdhocPlanClient) Hooks() []Hook {
+	return c.hooks.AdhocPlan
 }
 
 // AgentStatusClient is a client for the AgentStatus schema.
@@ -320,7 +571,7 @@ func (c *AgentStatusClient) UpdateOne(as *AgentStatus) *AgentStatusUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *AgentStatusClient) UpdateOneID(id int) *AgentStatusUpdateOne {
+func (c *AgentStatusClient) UpdateOneID(id uuid.UUID) *AgentStatusUpdateOne {
 	mutation := newAgentStatusMutation(c.config, OpUpdateOne, withAgentStatusID(id))
 	return &AgentStatusUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -337,7 +588,7 @@ func (c *AgentStatusClient) DeleteOne(as *AgentStatus) *AgentStatusDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *AgentStatusClient) DeleteOneID(id int) *AgentStatusDeleteOne {
+func (c *AgentStatusClient) DeleteOneID(id uuid.UUID) *AgentStatusDeleteOne {
 	builder := c.Delete().Where(agentstatus.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -346,16 +597,18 @@ func (c *AgentStatusClient) DeleteOneID(id int) *AgentStatusDeleteOne {
 
 // Query returns a query builder for AgentStatus.
 func (c *AgentStatusClient) Query() *AgentStatusQuery {
-	return &AgentStatusQuery{config: c.config}
+	return &AgentStatusQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a AgentStatus entity by its id.
-func (c *AgentStatusClient) Get(ctx context.Context, id int) (*AgentStatus, error) {
+func (c *AgentStatusClient) Get(ctx context.Context, id uuid.UUID) (*AgentStatus, error) {
 	return c.Query().Where(agentstatus.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *AgentStatusClient) GetX(ctx context.Context, id int) *AgentStatus {
+func (c *AgentStatusClient) GetX(ctx context.Context, id uuid.UUID) *AgentStatus {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -363,15 +616,47 @@ func (c *AgentStatusClient) GetX(ctx context.Context, id int) *AgentStatus {
 	return obj
 }
 
-// QueryHost queries the host edge of a AgentStatus.
-func (c *AgentStatusClient) QueryHost(as *AgentStatus) *ProvisionedHostQuery {
+// QueryAgentStatusToProvisionedHost queries the AgentStatusToProvisionedHost edge of a AgentStatus.
+func (c *AgentStatusClient) QueryAgentStatusToProvisionedHost(as *AgentStatus) *ProvisionedHostQuery {
 	query := &ProvisionedHostQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := as.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, id),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, agentstatus.HostTable, agentstatus.HostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentstatus.AgentStatusToProvisionedHostTable, agentstatus.AgentStatusToProvisionedHostColumn),
+		)
+		fromV = sqlgraph.Neighbors(as.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentStatusToProvisionedNetwork queries the AgentStatusToProvisionedNetwork edge of a AgentStatus.
+func (c *AgentStatusClient) QueryAgentStatusToProvisionedNetwork(as *AgentStatus) *ProvisionedNetworkQuery {
+	query := &ProvisionedNetworkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := as.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, id),
+			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentstatus.AgentStatusToProvisionedNetworkTable, agentstatus.AgentStatusToProvisionedNetworkColumn),
+		)
+		fromV = sqlgraph.Neighbors(as.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentStatusToBuild queries the AgentStatusToBuild edge of a AgentStatus.
+func (c *AgentStatusClient) QueryAgentStatusToBuild(as *AgentStatus) *BuildQuery {
+	query := &BuildQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := as.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentstatus.Table, agentstatus.FieldID, id),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentstatus.AgentStatusToBuildTable, agentstatus.AgentStatusToBuildColumn),
 		)
 		fromV = sqlgraph.Neighbors(as.driver.Dialect(), step)
 		return fromV, nil
@@ -382,6 +667,266 @@ func (c *AgentStatusClient) QueryHost(as *AgentStatus) *ProvisionedHostQuery {
 // Hooks returns the client hooks.
 func (c *AgentStatusClient) Hooks() []Hook {
 	return c.hooks.AgentStatus
+}
+
+// AgentTaskClient is a client for the AgentTask schema.
+type AgentTaskClient struct {
+	config
+}
+
+// NewAgentTaskClient returns a client for the AgentTask from the given config.
+func NewAgentTaskClient(c config) *AgentTaskClient {
+	return &AgentTaskClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `agenttask.Hooks(f(g(h())))`.
+func (c *AgentTaskClient) Use(hooks ...Hook) {
+	c.hooks.AgentTask = append(c.hooks.AgentTask, hooks...)
+}
+
+// Create returns a create builder for AgentTask.
+func (c *AgentTaskClient) Create() *AgentTaskCreate {
+	mutation := newAgentTaskMutation(c.config, OpCreate)
+	return &AgentTaskCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AgentTask entities.
+func (c *AgentTaskClient) CreateBulk(builders ...*AgentTaskCreate) *AgentTaskCreateBulk {
+	return &AgentTaskCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AgentTask.
+func (c *AgentTaskClient) Update() *AgentTaskUpdate {
+	mutation := newAgentTaskMutation(c.config, OpUpdate)
+	return &AgentTaskUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AgentTaskClient) UpdateOne(at *AgentTask) *AgentTaskUpdateOne {
+	mutation := newAgentTaskMutation(c.config, OpUpdateOne, withAgentTask(at))
+	return &AgentTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AgentTaskClient) UpdateOneID(id uuid.UUID) *AgentTaskUpdateOne {
+	mutation := newAgentTaskMutation(c.config, OpUpdateOne, withAgentTaskID(id))
+	return &AgentTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AgentTask.
+func (c *AgentTaskClient) Delete() *AgentTaskDelete {
+	mutation := newAgentTaskMutation(c.config, OpDelete)
+	return &AgentTaskDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *AgentTaskClient) DeleteOne(at *AgentTask) *AgentTaskDeleteOne {
+	return c.DeleteOneID(at.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *AgentTaskClient) DeleteOneID(id uuid.UUID) *AgentTaskDeleteOne {
+	builder := c.Delete().Where(agenttask.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AgentTaskDeleteOne{builder}
+}
+
+// Query returns a query builder for AgentTask.
+func (c *AgentTaskClient) Query() *AgentTaskQuery {
+	return &AgentTaskQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a AgentTask entity by its id.
+func (c *AgentTaskClient) Get(ctx context.Context, id uuid.UUID) (*AgentTask, error) {
+	return c.Query().Where(agenttask.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AgentTaskClient) GetX(ctx context.Context, id uuid.UUID) *AgentTask {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAgentTaskToProvisioningStep queries the AgentTaskToProvisioningStep edge of a AgentTask.
+func (c *AgentTaskClient) QueryAgentTaskToProvisioningStep(at *AgentTask) *ProvisioningStepQuery {
+	query := &ProvisioningStepQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := at.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agenttask.Table, agenttask.FieldID, id),
+			sqlgraph.To(provisioningstep.Table, provisioningstep.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agenttask.AgentTaskToProvisioningStepTable, agenttask.AgentTaskToProvisioningStepColumn),
+		)
+		fromV = sqlgraph.Neighbors(at.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentTaskToProvisionedHost queries the AgentTaskToProvisionedHost edge of a AgentTask.
+func (c *AgentTaskClient) QueryAgentTaskToProvisionedHost(at *AgentTask) *ProvisionedHostQuery {
+	query := &ProvisionedHostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := at.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agenttask.Table, agenttask.FieldID, id),
+			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agenttask.AgentTaskToProvisionedHostTable, agenttask.AgentTaskToProvisionedHostColumn),
+		)
+		fromV = sqlgraph.Neighbors(at.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentTaskToAdhocPlan queries the AgentTaskToAdhocPlan edge of a AgentTask.
+func (c *AgentTaskClient) QueryAgentTaskToAdhocPlan(at *AgentTask) *AdhocPlanQuery {
+	query := &AdhocPlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := at.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agenttask.Table, agenttask.FieldID, id),
+			sqlgraph.To(adhocplan.Table, adhocplan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, agenttask.AgentTaskToAdhocPlanTable, agenttask.AgentTaskToAdhocPlanColumn),
+		)
+		fromV = sqlgraph.Neighbors(at.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AgentTaskClient) Hooks() []Hook {
+	return c.hooks.AgentTask
+}
+
+// AuthUserClient is a client for the AuthUser schema.
+type AuthUserClient struct {
+	config
+}
+
+// NewAuthUserClient returns a client for the AuthUser from the given config.
+func NewAuthUserClient(c config) *AuthUserClient {
+	return &AuthUserClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `authuser.Hooks(f(g(h())))`.
+func (c *AuthUserClient) Use(hooks ...Hook) {
+	c.hooks.AuthUser = append(c.hooks.AuthUser, hooks...)
+}
+
+// Create returns a create builder for AuthUser.
+func (c *AuthUserClient) Create() *AuthUserCreate {
+	mutation := newAuthUserMutation(c.config, OpCreate)
+	return &AuthUserCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AuthUser entities.
+func (c *AuthUserClient) CreateBulk(builders ...*AuthUserCreate) *AuthUserCreateBulk {
+	return &AuthUserCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AuthUser.
+func (c *AuthUserClient) Update() *AuthUserUpdate {
+	mutation := newAuthUserMutation(c.config, OpUpdate)
+	return &AuthUserUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AuthUserClient) UpdateOne(au *AuthUser) *AuthUserUpdateOne {
+	mutation := newAuthUserMutation(c.config, OpUpdateOne, withAuthUser(au))
+	return &AuthUserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AuthUserClient) UpdateOneID(id uuid.UUID) *AuthUserUpdateOne {
+	mutation := newAuthUserMutation(c.config, OpUpdateOne, withAuthUserID(id))
+	return &AuthUserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AuthUser.
+func (c *AuthUserClient) Delete() *AuthUserDelete {
+	mutation := newAuthUserMutation(c.config, OpDelete)
+	return &AuthUserDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *AuthUserClient) DeleteOne(au *AuthUser) *AuthUserDeleteOne {
+	return c.DeleteOneID(au.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *AuthUserClient) DeleteOneID(id uuid.UUID) *AuthUserDeleteOne {
+	builder := c.Delete().Where(authuser.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AuthUserDeleteOne{builder}
+}
+
+// Query returns a query builder for AuthUser.
+func (c *AuthUserClient) Query() *AuthUserQuery {
+	return &AuthUserQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a AuthUser entity by its id.
+func (c *AuthUserClient) Get(ctx context.Context, id uuid.UUID) (*AuthUser, error) {
+	return c.Query().Where(authuser.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AuthUserClient) GetX(ctx context.Context, id uuid.UUID) *AuthUser {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAuthUserToToken queries the AuthUserToToken edge of a AuthUser.
+func (c *AuthUserClient) QueryAuthUserToToken(au *AuthUser) *TokenQuery {
+	query := &TokenQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := au.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(authuser.Table, authuser.FieldID, id),
+			sqlgraph.To(token.Table, token.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, authuser.AuthUserToTokenTable, authuser.AuthUserToTokenColumn),
+		)
+		fromV = sqlgraph.Neighbors(au.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAuthUserToServerTasks queries the AuthUserToServerTasks edge of a AuthUser.
+func (c *AuthUserClient) QueryAuthUserToServerTasks(au *AuthUser) *ServerTaskQuery {
+	query := &ServerTaskQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := au.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(authuser.Table, authuser.FieldID, id),
+			sqlgraph.To(servertask.Table, servertask.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, authuser.AuthUserToServerTasksTable, authuser.AuthUserToServerTasksColumn),
+		)
+		fromV = sqlgraph.Neighbors(au.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AuthUserClient) Hooks() []Hook {
+	return c.hooks.AuthUser
 }
 
 // BuildClient is a client for the Build schema.
@@ -424,7 +969,7 @@ func (c *BuildClient) UpdateOne(b *Build) *BuildUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *BuildClient) UpdateOneID(id int) *BuildUpdateOne {
+func (c *BuildClient) UpdateOneID(id uuid.UUID) *BuildUpdateOne {
 	mutation := newBuildMutation(c.config, OpUpdateOne, withBuildID(id))
 	return &BuildUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -441,7 +986,7 @@ func (c *BuildClient) DeleteOne(b *Build) *BuildDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *BuildClient) DeleteOneID(id int) *BuildDeleteOne {
+func (c *BuildClient) DeleteOneID(id uuid.UUID) *BuildDeleteOne {
 	builder := c.Delete().Where(build.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -450,16 +995,18 @@ func (c *BuildClient) DeleteOneID(id int) *BuildDeleteOne {
 
 // Query returns a query builder for Build.
 func (c *BuildClient) Query() *BuildQuery {
-	return &BuildQuery{config: c.config}
+	return &BuildQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Build entity by its id.
-func (c *BuildClient) Get(ctx context.Context, id int) (*Build, error) {
+func (c *BuildClient) Get(ctx context.Context, id uuid.UUID) (*Build, error) {
 	return c.Query().Where(build.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *BuildClient) GetX(ctx context.Context, id int) *Build {
+func (c *BuildClient) GetX(ctx context.Context, id uuid.UUID) *Build {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -467,15 +1014,15 @@ func (c *BuildClient) GetX(ctx context.Context, id int) *Build {
 	return obj
 }
 
-// QueryMaintainer queries the maintainer edge of a Build.
-func (c *BuildClient) QueryMaintainer(b *Build) *UserQuery {
-	query := &UserQuery{config: c.config}
+// QueryBuildToStatus queries the BuildToStatus edge of a Build.
+func (c *BuildClient) QueryBuildToStatus(b *Build) *StatusQuery {
+	query := &StatusQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := b.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(build.Table, build.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, build.MaintainerTable, build.MaintainerColumn),
+			sqlgraph.To(status.Table, status.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, build.BuildToStatusTable, build.BuildToStatusColumn),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -483,15 +1030,15 @@ func (c *BuildClient) QueryMaintainer(b *Build) *UserQuery {
 	return query
 }
 
-// QueryTag queries the tag edge of a Build.
-func (c *BuildClient) QueryTag(b *Build) *TagQuery {
-	query := &TagQuery{config: c.config}
+// QueryBuildToEnvironment queries the BuildToEnvironment edge of a Build.
+func (c *BuildClient) QueryBuildToEnvironment(b *Build) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := b.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(build.Table, build.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, build.TagTable, build.TagColumn),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, build.BuildToEnvironmentTable, build.BuildToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -499,15 +1046,15 @@ func (c *BuildClient) QueryTag(b *Build) *TagQuery {
 	return query
 }
 
-// QueryTeam queries the team edge of a Build.
-func (c *BuildClient) QueryTeam(b *Build) *TeamQuery {
-	query := &TeamQuery{config: c.config}
+// QueryBuildToCompetition queries the BuildToCompetition edge of a Build.
+func (c *BuildClient) QueryBuildToCompetition(b *Build) *CompetitionQuery {
+	query := &CompetitionQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := b.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(build.Table, build.FieldID, id),
-			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, build.TeamTable, build.TeamPrimaryKey...),
+			sqlgraph.To(competition.Table, competition.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, build.BuildToCompetitionTable, build.BuildToCompetitionColumn),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -515,15 +1062,95 @@ func (c *BuildClient) QueryTeam(b *Build) *TeamQuery {
 	return query
 }
 
-// QueryProvisionedNetworkToBuild queries the ProvisionedNetworkToBuild edge of a Build.
-func (c *BuildClient) QueryProvisionedNetworkToBuild(b *Build) *ProvisionedNetworkQuery {
+// QueryBuildToLatestBuildCommit queries the BuildToLatestBuildCommit edge of a Build.
+func (c *BuildClient) QueryBuildToLatestBuildCommit(b *Build) *BuildCommitQuery {
+	query := &BuildCommitQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, id),
+			sqlgraph.To(buildcommit.Table, buildcommit.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, build.BuildToLatestBuildCommitTable, build.BuildToLatestBuildCommitColumn),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBuildToProvisionedNetwork queries the BuildToProvisionedNetwork edge of a Build.
+func (c *BuildClient) QueryBuildToProvisionedNetwork(b *Build) *ProvisionedNetworkQuery {
 	query := &ProvisionedNetworkQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := b.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(build.Table, build.FieldID, id),
 			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, build.ProvisionedNetworkToBuildTable, build.ProvisionedNetworkToBuildPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, build.BuildToProvisionedNetworkTable, build.BuildToProvisionedNetworkColumn),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBuildToTeam queries the BuildToTeam edge of a Build.
+func (c *BuildClient) QueryBuildToTeam(b *Build) *TeamQuery {
+	query := &TeamQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, id),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, build.BuildToTeamTable, build.BuildToTeamColumn),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBuildToPlan queries the BuildToPlan edge of a Build.
+func (c *BuildClient) QueryBuildToPlan(b *Build) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, build.BuildToPlanTable, build.BuildToPlanColumn),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBuildToBuildCommits queries the BuildToBuildCommits edge of a Build.
+func (c *BuildClient) QueryBuildToBuildCommits(b *Build) *BuildCommitQuery {
+	query := &BuildCommitQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, id),
+			sqlgraph.To(buildcommit.Table, buildcommit.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, build.BuildToBuildCommitsTable, build.BuildToBuildCommitsColumn),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBuildToAdhocPlans queries the BuildToAdhocPlans edge of a Build.
+func (c *BuildClient) QueryBuildToAdhocPlans(b *Build) *AdhocPlanQuery {
+	query := &AdhocPlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, id),
+			sqlgraph.To(adhocplan.Table, adhocplan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, build.BuildToAdhocPlansTable, build.BuildToAdhocPlansColumn),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -534,6 +1161,128 @@ func (c *BuildClient) QueryProvisionedNetworkToBuild(b *Build) *ProvisionedNetwo
 // Hooks returns the client hooks.
 func (c *BuildClient) Hooks() []Hook {
 	return c.hooks.Build
+}
+
+// BuildCommitClient is a client for the BuildCommit schema.
+type BuildCommitClient struct {
+	config
+}
+
+// NewBuildCommitClient returns a client for the BuildCommit from the given config.
+func NewBuildCommitClient(c config) *BuildCommitClient {
+	return &BuildCommitClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `buildcommit.Hooks(f(g(h())))`.
+func (c *BuildCommitClient) Use(hooks ...Hook) {
+	c.hooks.BuildCommit = append(c.hooks.BuildCommit, hooks...)
+}
+
+// Create returns a create builder for BuildCommit.
+func (c *BuildCommitClient) Create() *BuildCommitCreate {
+	mutation := newBuildCommitMutation(c.config, OpCreate)
+	return &BuildCommitCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of BuildCommit entities.
+func (c *BuildCommitClient) CreateBulk(builders ...*BuildCommitCreate) *BuildCommitCreateBulk {
+	return &BuildCommitCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for BuildCommit.
+func (c *BuildCommitClient) Update() *BuildCommitUpdate {
+	mutation := newBuildCommitMutation(c.config, OpUpdate)
+	return &BuildCommitUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *BuildCommitClient) UpdateOne(bc *BuildCommit) *BuildCommitUpdateOne {
+	mutation := newBuildCommitMutation(c.config, OpUpdateOne, withBuildCommit(bc))
+	return &BuildCommitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *BuildCommitClient) UpdateOneID(id uuid.UUID) *BuildCommitUpdateOne {
+	mutation := newBuildCommitMutation(c.config, OpUpdateOne, withBuildCommitID(id))
+	return &BuildCommitUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for BuildCommit.
+func (c *BuildCommitClient) Delete() *BuildCommitDelete {
+	mutation := newBuildCommitMutation(c.config, OpDelete)
+	return &BuildCommitDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *BuildCommitClient) DeleteOne(bc *BuildCommit) *BuildCommitDeleteOne {
+	return c.DeleteOneID(bc.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *BuildCommitClient) DeleteOneID(id uuid.UUID) *BuildCommitDeleteOne {
+	builder := c.Delete().Where(buildcommit.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &BuildCommitDeleteOne{builder}
+}
+
+// Query returns a query builder for BuildCommit.
+func (c *BuildCommitClient) Query() *BuildCommitQuery {
+	return &BuildCommitQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a BuildCommit entity by its id.
+func (c *BuildCommitClient) Get(ctx context.Context, id uuid.UUID) (*BuildCommit, error) {
+	return c.Query().Where(buildcommit.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *BuildCommitClient) GetX(ctx context.Context, id uuid.UUID) *BuildCommit {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryBuildCommitToBuild queries the BuildCommitToBuild edge of a BuildCommit.
+func (c *BuildCommitClient) QueryBuildCommitToBuild(bc *BuildCommit) *BuildQuery {
+	query := &BuildQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := bc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(buildcommit.Table, buildcommit.FieldID, id),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, buildcommit.BuildCommitToBuildTable, buildcommit.BuildCommitToBuildColumn),
+		)
+		fromV = sqlgraph.Neighbors(bc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBuildCommitToPlanDiffs queries the BuildCommitToPlanDiffs edge of a BuildCommit.
+func (c *BuildCommitClient) QueryBuildCommitToPlanDiffs(bc *BuildCommit) *PlanDiffQuery {
+	query := &PlanDiffQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := bc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(buildcommit.Table, buildcommit.FieldID, id),
+			sqlgraph.To(plandiff.Table, plandiff.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, buildcommit.BuildCommitToPlanDiffsTable, buildcommit.BuildCommitToPlanDiffsColumn),
+		)
+		fromV = sqlgraph.Neighbors(bc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *BuildCommitClient) Hooks() []Hook {
+	return c.hooks.BuildCommit
 }
 
 // CommandClient is a client for the Command schema.
@@ -576,7 +1325,7 @@ func (c *CommandClient) UpdateOne(co *Command) *CommandUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *CommandClient) UpdateOneID(id int) *CommandUpdateOne {
+func (c *CommandClient) UpdateOneID(id uuid.UUID) *CommandUpdateOne {
 	mutation := newCommandMutation(c.config, OpUpdateOne, withCommandID(id))
 	return &CommandUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -593,7 +1342,7 @@ func (c *CommandClient) DeleteOne(co *Command) *CommandDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *CommandClient) DeleteOneID(id int) *CommandDeleteOne {
+func (c *CommandClient) DeleteOneID(id uuid.UUID) *CommandDeleteOne {
 	builder := c.Delete().Where(command.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -602,16 +1351,18 @@ func (c *CommandClient) DeleteOneID(id int) *CommandDeleteOne {
 
 // Query returns a query builder for Command.
 func (c *CommandClient) Query() *CommandQuery {
-	return &CommandQuery{config: c.config}
+	return &CommandQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Command entity by its id.
-func (c *CommandClient) Get(ctx context.Context, id int) (*Command, error) {
+func (c *CommandClient) Get(ctx context.Context, id uuid.UUID) (*Command, error) {
 	return c.Query().Where(command.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *CommandClient) GetX(ctx context.Context, id int) *Command {
+func (c *CommandClient) GetX(ctx context.Context, id uuid.UUID) *Command {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -619,15 +1370,15 @@ func (c *CommandClient) GetX(ctx context.Context, id int) *Command {
 	return obj
 }
 
-// QueryUser queries the user edge of a Command.
-func (c *CommandClient) QueryUser(co *Command) *UserQuery {
+// QueryCommandToUser queries the CommandToUser edge of a Command.
+func (c *CommandClient) QueryCommandToUser(co *Command) *UserQuery {
 	query := &UserQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := co.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(command.Table, command.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, command.UserTable, command.UserColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, command.CommandToUserTable, command.CommandToUserColumn),
 		)
 		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
 		return fromV, nil
@@ -635,15 +1386,15 @@ func (c *CommandClient) QueryUser(co *Command) *UserQuery {
 	return query
 }
 
-// QueryTag queries the tag edge of a Command.
-func (c *CommandClient) QueryTag(co *Command) *TagQuery {
-	query := &TagQuery{config: c.config}
+// QueryCommandToEnvironment queries the CommandToEnvironment edge of a Command.
+func (c *CommandClient) QueryCommandToEnvironment(co *Command) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := co.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(command.Table, command.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, command.TagTable, command.TagColumn),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, command.CommandToEnvironmentTable, command.CommandToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
 		return fromV, nil
@@ -696,7 +1447,7 @@ func (c *CompetitionClient) UpdateOne(co *Competition) *CompetitionUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *CompetitionClient) UpdateOneID(id int) *CompetitionUpdateOne {
+func (c *CompetitionClient) UpdateOneID(id uuid.UUID) *CompetitionUpdateOne {
 	mutation := newCompetitionMutation(c.config, OpUpdateOne, withCompetitionID(id))
 	return &CompetitionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -713,7 +1464,7 @@ func (c *CompetitionClient) DeleteOne(co *Competition) *CompetitionDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *CompetitionClient) DeleteOneID(id int) *CompetitionDeleteOne {
+func (c *CompetitionClient) DeleteOneID(id uuid.UUID) *CompetitionDeleteOne {
 	builder := c.Delete().Where(competition.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -722,16 +1473,18 @@ func (c *CompetitionClient) DeleteOneID(id int) *CompetitionDeleteOne {
 
 // Query returns a query builder for Competition.
 func (c *CompetitionClient) Query() *CompetitionQuery {
-	return &CompetitionQuery{config: c.config}
+	return &CompetitionQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Competition entity by its id.
-func (c *CompetitionClient) Get(ctx context.Context, id int) (*Competition, error) {
+func (c *CompetitionClient) Get(ctx context.Context, id uuid.UUID) (*Competition, error) {
 	return c.Query().Where(competition.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *CompetitionClient) GetX(ctx context.Context, id int) *Competition {
+func (c *CompetitionClient) GetX(ctx context.Context, id uuid.UUID) *Competition {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -739,15 +1492,47 @@ func (c *CompetitionClient) GetX(ctx context.Context, id int) *Competition {
 	return obj
 }
 
-// QueryDNS queries the dns edge of a Competition.
-func (c *CompetitionClient) QueryDNS(co *Competition) *DNSQuery {
+// QueryCompetitionToDNS queries the CompetitionToDNS edge of a Competition.
+func (c *CompetitionClient) QueryCompetitionToDNS(co *Competition) *DNSQuery {
 	query := &DNSQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := co.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(competition.Table, competition.FieldID, id),
 			sqlgraph.To(dns.Table, dns.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, competition.DNSTable, competition.DNSColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, competition.CompetitionToDNSTable, competition.CompetitionToDNSPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCompetitionToEnvironment queries the CompetitionToEnvironment edge of a Competition.
+func (c *CompetitionClient) QueryCompetitionToEnvironment(co *Competition) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := co.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(competition.Table, competition.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, competition.CompetitionToEnvironmentTable, competition.CompetitionToEnvironmentColumn),
+		)
+		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCompetitionToBuild queries the CompetitionToBuild edge of a Competition.
+func (c *CompetitionClient) QueryCompetitionToBuild(co *Competition) *BuildQuery {
+	query := &BuildQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := co.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(competition.Table, competition.FieldID, id),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, competition.CompetitionToBuildTable, competition.CompetitionToBuildColumn),
 		)
 		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
 		return fromV, nil
@@ -800,7 +1585,7 @@ func (c *DNSClient) UpdateOne(d *DNS) *DNSUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *DNSClient) UpdateOneID(id int) *DNSUpdateOne {
+func (c *DNSClient) UpdateOneID(id uuid.UUID) *DNSUpdateOne {
 	mutation := newDNSMutation(c.config, OpUpdateOne, withDNSID(id))
 	return &DNSUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -817,7 +1602,7 @@ func (c *DNSClient) DeleteOne(d *DNS) *DNSDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *DNSClient) DeleteOneID(id int) *DNSDeleteOne {
+func (c *DNSClient) DeleteOneID(id uuid.UUID) *DNSDeleteOne {
 	builder := c.Delete().Where(dns.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -826,21 +1611,55 @@ func (c *DNSClient) DeleteOneID(id int) *DNSDeleteOne {
 
 // Query returns a query builder for DNS.
 func (c *DNSClient) Query() *DNSQuery {
-	return &DNSQuery{config: c.config}
+	return &DNSQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a DNS entity by its id.
-func (c *DNSClient) Get(ctx context.Context, id int) (*DNS, error) {
+func (c *DNSClient) Get(ctx context.Context, id uuid.UUID) (*DNS, error) {
 	return c.Query().Where(dns.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *DNSClient) GetX(ctx context.Context, id int) *DNS {
+func (c *DNSClient) GetX(ctx context.Context, id uuid.UUID) *DNS {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryDNSToEnvironment queries the DNSToEnvironment edge of a DNS.
+func (c *DNSClient) QueryDNSToEnvironment(d *DNS) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dns.Table, dns.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, dns.DNSToEnvironmentTable, dns.DNSToEnvironmentPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDNSToCompetition queries the DNSToCompetition edge of a DNS.
+func (c *DNSClient) QueryDNSToCompetition(d *DNS) *CompetitionQuery {
+	query := &CompetitionQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dns.Table, dns.FieldID, id),
+			sqlgraph.To(competition.Table, competition.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, dns.DNSToCompetitionTable, dns.DNSToCompetitionPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -888,7 +1707,7 @@ func (c *DNSRecordClient) UpdateOne(dr *DNSRecord) *DNSRecordUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *DNSRecordClient) UpdateOneID(id int) *DNSRecordUpdateOne {
+func (c *DNSRecordClient) UpdateOneID(id uuid.UUID) *DNSRecordUpdateOne {
 	mutation := newDNSRecordMutation(c.config, OpUpdateOne, withDNSRecordID(id))
 	return &DNSRecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -905,7 +1724,7 @@ func (c *DNSRecordClient) DeleteOne(dr *DNSRecord) *DNSRecordDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *DNSRecordClient) DeleteOneID(id int) *DNSRecordDeleteOne {
+func (c *DNSRecordClient) DeleteOneID(id uuid.UUID) *DNSRecordDeleteOne {
 	builder := c.Delete().Where(dnsrecord.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -914,16 +1733,18 @@ func (c *DNSRecordClient) DeleteOneID(id int) *DNSRecordDeleteOne {
 
 // Query returns a query builder for DNSRecord.
 func (c *DNSRecordClient) Query() *DNSRecordQuery {
-	return &DNSRecordQuery{config: c.config}
+	return &DNSRecordQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a DNSRecord entity by its id.
-func (c *DNSRecordClient) Get(ctx context.Context, id int) (*DNSRecord, error) {
+func (c *DNSRecordClient) Get(ctx context.Context, id uuid.UUID) (*DNSRecord, error) {
 	return c.Query().Where(dnsrecord.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *DNSRecordClient) GetX(ctx context.Context, id int) *DNSRecord {
+func (c *DNSRecordClient) GetX(ctx context.Context, id uuid.UUID) *DNSRecord {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -931,15 +1752,15 @@ func (c *DNSRecordClient) GetX(ctx context.Context, id int) *DNSRecord {
 	return obj
 }
 
-// QueryTag queries the tag edge of a DNSRecord.
-func (c *DNSRecordClient) QueryTag(dr *DNSRecord) *TagQuery {
-	query := &TagQuery{config: c.config}
+// QueryDNSRecordToEnvironment queries the DNSRecordToEnvironment edge of a DNSRecord.
+func (c *DNSRecordClient) QueryDNSRecordToEnvironment(dr *DNSRecord) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := dr.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(dnsrecord.Table, dnsrecord.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, dnsrecord.TagTable, dnsrecord.TagColumn),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, dnsrecord.DNSRecordToEnvironmentTable, dnsrecord.DNSRecordToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(dr.driver.Dialect(), step)
 		return fromV, nil
@@ -992,7 +1813,7 @@ func (c *DiskClient) UpdateOne(d *Disk) *DiskUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *DiskClient) UpdateOneID(id int) *DiskUpdateOne {
+func (c *DiskClient) UpdateOneID(id uuid.UUID) *DiskUpdateOne {
 	mutation := newDiskMutation(c.config, OpUpdateOne, withDiskID(id))
 	return &DiskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1009,7 +1830,7 @@ func (c *DiskClient) DeleteOne(d *Disk) *DiskDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *DiskClient) DeleteOneID(id int) *DiskDeleteOne {
+func (c *DiskClient) DeleteOneID(id uuid.UUID) *DiskDeleteOne {
 	builder := c.Delete().Where(disk.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1018,16 +1839,18 @@ func (c *DiskClient) DeleteOneID(id int) *DiskDeleteOne {
 
 // Query returns a query builder for Disk.
 func (c *DiskClient) Query() *DiskQuery {
-	return &DiskQuery{config: c.config}
+	return &DiskQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Disk entity by its id.
-func (c *DiskClient) Get(ctx context.Context, id int) (*Disk, error) {
+func (c *DiskClient) Get(ctx context.Context, id uuid.UUID) (*Disk, error) {
 	return c.Query().Where(disk.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *DiskClient) GetX(ctx context.Context, id int) *Disk {
+func (c *DiskClient) GetX(ctx context.Context, id uuid.UUID) *Disk {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1035,15 +1858,15 @@ func (c *DiskClient) GetX(ctx context.Context, id int) *Disk {
 	return obj
 }
 
-// QueryTag queries the tag edge of a Disk.
-func (c *DiskClient) QueryTag(d *Disk) *TagQuery {
-	query := &TagQuery{config: c.config}
+// QueryDiskToHost queries the DiskToHost edge of a Disk.
+func (c *DiskClient) QueryDiskToHost(d *Disk) *HostQuery {
+	query := &HostQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := d.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(disk.Table, disk.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, disk.TagTable, disk.TagColumn),
+			sqlgraph.To(host.Table, host.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, disk.DiskToHostTable, disk.DiskToHostColumn),
 		)
 		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
 		return fromV, nil
@@ -1096,7 +1919,7 @@ func (c *EnvironmentClient) UpdateOne(e *Environment) *EnvironmentUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *EnvironmentClient) UpdateOneID(id int) *EnvironmentUpdateOne {
+func (c *EnvironmentClient) UpdateOneID(id uuid.UUID) *EnvironmentUpdateOne {
 	mutation := newEnvironmentMutation(c.config, OpUpdateOne, withEnvironmentID(id))
 	return &EnvironmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1113,7 +1936,7 @@ func (c *EnvironmentClient) DeleteOne(e *Environment) *EnvironmentDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *EnvironmentClient) DeleteOneID(id int) *EnvironmentDeleteOne {
+func (c *EnvironmentClient) DeleteOneID(id uuid.UUID) *EnvironmentDeleteOne {
 	builder := c.Delete().Where(environment.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1122,16 +1945,18 @@ func (c *EnvironmentClient) DeleteOneID(id int) *EnvironmentDeleteOne {
 
 // Query returns a query builder for Environment.
 func (c *EnvironmentClient) Query() *EnvironmentQuery {
-	return &EnvironmentQuery{config: c.config}
+	return &EnvironmentQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Environment entity by its id.
-func (c *EnvironmentClient) Get(ctx context.Context, id int) (*Environment, error) {
+func (c *EnvironmentClient) Get(ctx context.Context, id uuid.UUID) (*Environment, error) {
 	return c.Query().Where(environment.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *EnvironmentClient) GetX(ctx context.Context, id int) *Environment {
+func (c *EnvironmentClient) GetX(ctx context.Context, id uuid.UUID) *Environment {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1139,31 +1964,15 @@ func (c *EnvironmentClient) GetX(ctx context.Context, id int) *Environment {
 	return obj
 }
 
-// QueryTag queries the tag edge of a Environment.
-func (c *EnvironmentClient) QueryTag(e *Environment) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := e.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(environment.Table, environment.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, environment.TagTable, environment.TagColumn),
-		)
-		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryUser queries the user edge of a Environment.
-func (c *EnvironmentClient) QueryUser(e *Environment) *UserQuery {
+// QueryEnvironmentToUser queries the EnvironmentToUser edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToUser(e *Environment) *UserQuery {
 	query := &UserQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := e.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, environment.UserTable, environment.UserColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToUserTable, environment.EnvironmentToUserPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1171,15 +1980,15 @@ func (c *EnvironmentClient) QueryUser(e *Environment) *UserQuery {
 	return query
 }
 
-// QueryHost queries the host edge of a Environment.
-func (c *EnvironmentClient) QueryHost(e *Environment) *HostQuery {
+// QueryEnvironmentToHost queries the EnvironmentToHost edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToHost(e *Environment) *HostQuery {
 	query := &HostQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := e.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(host.Table, host.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, environment.HostTable, environment.HostColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToHostTable, environment.EnvironmentToHostColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1187,15 +1996,15 @@ func (c *EnvironmentClient) QueryHost(e *Environment) *HostQuery {
 	return query
 }
 
-// QueryCompetition queries the competition edge of a Environment.
-func (c *EnvironmentClient) QueryCompetition(e *Environment) *CompetitionQuery {
+// QueryEnvironmentToCompetition queries the EnvironmentToCompetition edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToCompetition(e *Environment) *CompetitionQuery {
 	query := &CompetitionQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := e.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(competition.Table, competition.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, environment.CompetitionTable, environment.CompetitionColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToCompetitionTable, environment.EnvironmentToCompetitionColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1203,15 +2012,15 @@ func (c *EnvironmentClient) QueryCompetition(e *Environment) *CompetitionQuery {
 	return query
 }
 
-// QueryBuild queries the build edge of a Environment.
-func (c *EnvironmentClient) QueryBuild(e *Environment) *BuildQuery {
-	query := &BuildQuery{config: c.config}
+// QueryEnvironmentToIdentity queries the EnvironmentToIdentity edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToIdentity(e *Environment) *IdentityQuery {
+	query := &IdentityQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := e.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
-			sqlgraph.To(build.Table, build.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, environment.BuildTable, environment.BuildColumn),
+			sqlgraph.To(identity.Table, identity.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToIdentityTable, environment.EnvironmentToIdentityColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1219,15 +2028,95 @@ func (c *EnvironmentClient) QueryBuild(e *Environment) *BuildQuery {
 	return query
 }
 
-// QueryIncludedNetwork queries the included_network edge of a Environment.
-func (c *EnvironmentClient) QueryIncludedNetwork(e *Environment) *IncludedNetworkQuery {
+// QueryEnvironmentToCommand queries the EnvironmentToCommand edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToCommand(e *Environment) *CommandQuery {
+	query := &CommandQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(command.Table, command.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToCommandTable, environment.EnvironmentToCommandColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToScript queries the EnvironmentToScript edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToScript(e *Environment) *ScriptQuery {
+	query := &ScriptQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(script.Table, script.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToScriptTable, environment.EnvironmentToScriptColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToFileDownload queries the EnvironmentToFileDownload edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToFileDownload(e *Environment) *FileDownloadQuery {
+	query := &FileDownloadQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(filedownload.Table, filedownload.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToFileDownloadTable, environment.EnvironmentToFileDownloadColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToFileDelete queries the EnvironmentToFileDelete edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToFileDelete(e *Environment) *FileDeleteQuery {
+	query := &FileDeleteQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(filedelete.Table, filedelete.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToFileDeleteTable, environment.EnvironmentToFileDeleteColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToFileExtract queries the EnvironmentToFileExtract edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToFileExtract(e *Environment) *FileExtractQuery {
+	query := &FileExtractQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(fileextract.Table, fileextract.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToFileExtractTable, environment.EnvironmentToFileExtractColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToIncludedNetwork queries the EnvironmentToIncludedNetwork edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToIncludedNetwork(e *Environment) *IncludedNetworkQuery {
 	query := &IncludedNetworkQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := e.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(includednetwork.Table, includednetwork.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, environment.IncludedNetworkTable, environment.IncludedNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToIncludedNetworkTable, environment.EnvironmentToIncludedNetworkPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1235,15 +2124,63 @@ func (c *EnvironmentClient) QueryIncludedNetwork(e *Environment) *IncludedNetwor
 	return query
 }
 
-// QueryNetwork queries the network edge of a Environment.
-func (c *EnvironmentClient) QueryNetwork(e *Environment) *NetworkQuery {
+// QueryEnvironmentToFinding queries the EnvironmentToFinding edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToFinding(e *Environment) *FindingQuery {
+	query := &FindingQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(finding.Table, finding.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToFindingTable, environment.EnvironmentToFindingColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToDNSRecord queries the EnvironmentToDNSRecord edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToDNSRecord(e *Environment) *DNSRecordQuery {
+	query := &DNSRecordQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(dnsrecord.Table, dnsrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToDNSRecordTable, environment.EnvironmentToDNSRecordColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToDNS queries the EnvironmentToDNS edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToDNS(e *Environment) *DNSQuery {
+	query := &DNSQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(dns.Table, dns.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, environment.EnvironmentToDNSTable, environment.EnvironmentToDNSPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToNetwork queries the EnvironmentToNetwork edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToNetwork(e *Environment) *NetworkQuery {
 	query := &NetworkQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := e.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
 			sqlgraph.To(network.Table, network.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, environment.NetworkTable, environment.NetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToNetworkTable, environment.EnvironmentToNetworkColumn),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1251,15 +2188,47 @@ func (c *EnvironmentClient) QueryNetwork(e *Environment) *NetworkQuery {
 	return query
 }
 
-// QueryTeam queries the team edge of a Environment.
-func (c *EnvironmentClient) QueryTeam(e *Environment) *TeamQuery {
-	query := &TeamQuery{config: c.config}
+// QueryEnvironmentToHostDependency queries the EnvironmentToHostDependency edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToHostDependency(e *Environment) *HostDependencyQuery {
+	query := &HostDependencyQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := e.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(environment.Table, environment.FieldID, id),
-			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, environment.TeamTable, environment.TeamPrimaryKey...),
+			sqlgraph.To(hostdependency.Table, hostdependency.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, environment.EnvironmentToHostDependencyTable, environment.EnvironmentToHostDependencyColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToBuild queries the EnvironmentToBuild edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToBuild(e *Environment) *BuildQuery {
+	query := &BuildQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, environment.EnvironmentToBuildTable, environment.EnvironmentToBuildColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEnvironmentToRepository queries the EnvironmentToRepository edge of a Environment.
+func (c *EnvironmentClient) QueryEnvironmentToRepository(e *Environment) *RepositoryQuery {
+	query := &RepositoryQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(environment.Table, environment.FieldID, id),
+			sqlgraph.To(repository.Table, repository.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, environment.EnvironmentToRepositoryTable, environment.EnvironmentToRepositoryPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
 		return fromV, nil
@@ -1312,7 +2281,7 @@ func (c *FileDeleteClient) UpdateOne(fd *FileDelete) *FileDeleteUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *FileDeleteClient) UpdateOneID(id int) *FileDeleteUpdateOne {
+func (c *FileDeleteClient) UpdateOneID(id uuid.UUID) *FileDeleteUpdateOne {
 	mutation := newFileDeleteMutation(c.config, OpUpdateOne, withFileDeleteID(id))
 	return &FileDeleteUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1329,7 +2298,7 @@ func (c *FileDeleteClient) DeleteOne(fd *FileDelete) *FileDeleteDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *FileDeleteClient) DeleteOneID(id int) *FileDeleteDeleteOne {
+func (c *FileDeleteClient) DeleteOneID(id uuid.UUID) *FileDeleteDeleteOne {
 	builder := c.Delete().Where(filedelete.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1338,16 +2307,18 @@ func (c *FileDeleteClient) DeleteOneID(id int) *FileDeleteDeleteOne {
 
 // Query returns a query builder for FileDelete.
 func (c *FileDeleteClient) Query() *FileDeleteQuery {
-	return &FileDeleteQuery{config: c.config}
+	return &FileDeleteQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a FileDelete entity by its id.
-func (c *FileDeleteClient) Get(ctx context.Context, id int) (*FileDelete, error) {
+func (c *FileDeleteClient) Get(ctx context.Context, id uuid.UUID) (*FileDelete, error) {
 	return c.Query().Where(filedelete.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *FileDeleteClient) GetX(ctx context.Context, id int) *FileDelete {
+func (c *FileDeleteClient) GetX(ctx context.Context, id uuid.UUID) *FileDelete {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1355,15 +2326,15 @@ func (c *FileDeleteClient) GetX(ctx context.Context, id int) *FileDelete {
 	return obj
 }
 
-// QueryTag queries the tag edge of a FileDelete.
-func (c *FileDeleteClient) QueryTag(fd *FileDelete) *TagQuery {
-	query := &TagQuery{config: c.config}
+// QueryFileDeleteToEnvironment queries the FileDeleteToEnvironment edge of a FileDelete.
+func (c *FileDeleteClient) QueryFileDeleteToEnvironment(fd *FileDelete) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := fd.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(filedelete.Table, filedelete.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, filedelete.TagTable, filedelete.TagColumn),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, filedelete.FileDeleteToEnvironmentTable, filedelete.FileDeleteToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(fd.driver.Dialect(), step)
 		return fromV, nil
@@ -1416,7 +2387,7 @@ func (c *FileDownloadClient) UpdateOne(fd *FileDownload) *FileDownloadUpdateOne 
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *FileDownloadClient) UpdateOneID(id int) *FileDownloadUpdateOne {
+func (c *FileDownloadClient) UpdateOneID(id uuid.UUID) *FileDownloadUpdateOne {
 	mutation := newFileDownloadMutation(c.config, OpUpdateOne, withFileDownloadID(id))
 	return &FileDownloadUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1433,7 +2404,7 @@ func (c *FileDownloadClient) DeleteOne(fd *FileDownload) *FileDownloadDeleteOne 
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *FileDownloadClient) DeleteOneID(id int) *FileDownloadDeleteOne {
+func (c *FileDownloadClient) DeleteOneID(id uuid.UUID) *FileDownloadDeleteOne {
 	builder := c.Delete().Where(filedownload.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1442,16 +2413,18 @@ func (c *FileDownloadClient) DeleteOneID(id int) *FileDownloadDeleteOne {
 
 // Query returns a query builder for FileDownload.
 func (c *FileDownloadClient) Query() *FileDownloadQuery {
-	return &FileDownloadQuery{config: c.config}
+	return &FileDownloadQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a FileDownload entity by its id.
-func (c *FileDownloadClient) Get(ctx context.Context, id int) (*FileDownload, error) {
+func (c *FileDownloadClient) Get(ctx context.Context, id uuid.UUID) (*FileDownload, error) {
 	return c.Query().Where(filedownload.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *FileDownloadClient) GetX(ctx context.Context, id int) *FileDownload {
+func (c *FileDownloadClient) GetX(ctx context.Context, id uuid.UUID) *FileDownload {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1459,15 +2432,15 @@ func (c *FileDownloadClient) GetX(ctx context.Context, id int) *FileDownload {
 	return obj
 }
 
-// QueryTag queries the tag edge of a FileDownload.
-func (c *FileDownloadClient) QueryTag(fd *FileDownload) *TagQuery {
-	query := &TagQuery{config: c.config}
+// QueryFileDownloadToEnvironment queries the FileDownloadToEnvironment edge of a FileDownload.
+func (c *FileDownloadClient) QueryFileDownloadToEnvironment(fd *FileDownload) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := fd.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(filedownload.Table, filedownload.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, filedownload.TagTable, filedownload.TagColumn),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, filedownload.FileDownloadToEnvironmentTable, filedownload.FileDownloadToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(fd.driver.Dialect(), step)
 		return fromV, nil
@@ -1520,7 +2493,7 @@ func (c *FileExtractClient) UpdateOne(fe *FileExtract) *FileExtractUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *FileExtractClient) UpdateOneID(id int) *FileExtractUpdateOne {
+func (c *FileExtractClient) UpdateOneID(id uuid.UUID) *FileExtractUpdateOne {
 	mutation := newFileExtractMutation(c.config, OpUpdateOne, withFileExtractID(id))
 	return &FileExtractUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1537,7 +2510,7 @@ func (c *FileExtractClient) DeleteOne(fe *FileExtract) *FileExtractDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *FileExtractClient) DeleteOneID(id int) *FileExtractDeleteOne {
+func (c *FileExtractClient) DeleteOneID(id uuid.UUID) *FileExtractDeleteOne {
 	builder := c.Delete().Where(fileextract.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1546,16 +2519,18 @@ func (c *FileExtractClient) DeleteOneID(id int) *FileExtractDeleteOne {
 
 // Query returns a query builder for FileExtract.
 func (c *FileExtractClient) Query() *FileExtractQuery {
-	return &FileExtractQuery{config: c.config}
+	return &FileExtractQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a FileExtract entity by its id.
-func (c *FileExtractClient) Get(ctx context.Context, id int) (*FileExtract, error) {
+func (c *FileExtractClient) Get(ctx context.Context, id uuid.UUID) (*FileExtract, error) {
 	return c.Query().Where(fileextract.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *FileExtractClient) GetX(ctx context.Context, id int) *FileExtract {
+func (c *FileExtractClient) GetX(ctx context.Context, id uuid.UUID) *FileExtract {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1563,15 +2538,15 @@ func (c *FileExtractClient) GetX(ctx context.Context, id int) *FileExtract {
 	return obj
 }
 
-// QueryTag queries the tag edge of a FileExtract.
-func (c *FileExtractClient) QueryTag(fe *FileExtract) *TagQuery {
-	query := &TagQuery{config: c.config}
+// QueryFileExtractToEnvironment queries the FileExtractToEnvironment edge of a FileExtract.
+func (c *FileExtractClient) QueryFileExtractToEnvironment(fe *FileExtract) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := fe.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(fileextract.Table, fileextract.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, fileextract.TagTable, fileextract.TagColumn),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, fileextract.FileExtractToEnvironmentTable, fileextract.FileExtractToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(fe.driver.Dialect(), step)
 		return fromV, nil
@@ -1624,7 +2599,7 @@ func (c *FindingClient) UpdateOne(f *Finding) *FindingUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *FindingClient) UpdateOneID(id int) *FindingUpdateOne {
+func (c *FindingClient) UpdateOneID(id uuid.UUID) *FindingUpdateOne {
 	mutation := newFindingMutation(c.config, OpUpdateOne, withFindingID(id))
 	return &FindingUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1641,7 +2616,7 @@ func (c *FindingClient) DeleteOne(f *Finding) *FindingDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *FindingClient) DeleteOneID(id int) *FindingDeleteOne {
+func (c *FindingClient) DeleteOneID(id uuid.UUID) *FindingDeleteOne {
 	builder := c.Delete().Where(finding.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1650,16 +2625,18 @@ func (c *FindingClient) DeleteOneID(id int) *FindingDeleteOne {
 
 // Query returns a query builder for Finding.
 func (c *FindingClient) Query() *FindingQuery {
-	return &FindingQuery{config: c.config}
+	return &FindingQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Finding entity by its id.
-func (c *FindingClient) Get(ctx context.Context, id int) (*Finding, error) {
+func (c *FindingClient) Get(ctx context.Context, id uuid.UUID) (*Finding, error) {
 	return c.Query().Where(finding.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *FindingClient) GetX(ctx context.Context, id int) *Finding {
+func (c *FindingClient) GetX(ctx context.Context, id uuid.UUID) *Finding {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1667,15 +2644,15 @@ func (c *FindingClient) GetX(ctx context.Context, id int) *Finding {
 	return obj
 }
 
-// QueryUser queries the user edge of a Finding.
-func (c *FindingClient) QueryUser(f *Finding) *UserQuery {
+// QueryFindingToUser queries the FindingToUser edge of a Finding.
+func (c *FindingClient) QueryFindingToUser(f *Finding) *UserQuery {
 	query := &UserQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := f.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, finding.UserTable, finding.UserColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, finding.FindingToUserTable, finding.FindingToUserColumn),
 		)
 		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
 		return fromV, nil
@@ -1683,31 +2660,15 @@ func (c *FindingClient) QueryUser(f *Finding) *UserQuery {
 	return query
 }
 
-// QueryTag queries the tag edge of a Finding.
-func (c *FindingClient) QueryTag(f *Finding) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := f.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(finding.Table, finding.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, finding.TagTable, finding.TagColumn),
-		)
-		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryHost queries the host edge of a Finding.
-func (c *FindingClient) QueryHost(f *Finding) *HostQuery {
+// QueryFindingToHost queries the FindingToHost edge of a Finding.
+func (c *FindingClient) QueryFindingToHost(f *Finding) *HostQuery {
 	query := &HostQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := f.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, id),
 			sqlgraph.To(host.Table, host.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, finding.HostTable, finding.HostColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, finding.FindingToHostTable, finding.FindingToHostColumn),
 		)
 		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
 		return fromV, nil
@@ -1715,15 +2676,31 @@ func (c *FindingClient) QueryHost(f *Finding) *HostQuery {
 	return query
 }
 
-// QueryScript queries the script edge of a Finding.
-func (c *FindingClient) QueryScript(f *Finding) *ScriptQuery {
+// QueryFindingToScript queries the FindingToScript edge of a Finding.
+func (c *FindingClient) QueryFindingToScript(f *Finding) *ScriptQuery {
 	query := &ScriptQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := f.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(finding.Table, finding.FieldID, id),
 			sqlgraph.To(script.Table, script.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, finding.ScriptTable, finding.ScriptPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, finding.FindingToScriptTable, finding.FindingToScriptColumn),
+		)
+		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFindingToEnvironment queries the FindingToEnvironment edge of a Finding.
+func (c *FindingClient) QueryFindingToEnvironment(f *Finding) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := f.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(finding.Table, finding.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, finding.FindingToEnvironmentTable, finding.FindingToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
 		return fromV, nil
@@ -1734,6 +2711,128 @@ func (c *FindingClient) QueryScript(f *Finding) *ScriptQuery {
 // Hooks returns the client hooks.
 func (c *FindingClient) Hooks() []Hook {
 	return c.hooks.Finding
+}
+
+// GinFileMiddlewareClient is a client for the GinFileMiddleware schema.
+type GinFileMiddlewareClient struct {
+	config
+}
+
+// NewGinFileMiddlewareClient returns a client for the GinFileMiddleware from the given config.
+func NewGinFileMiddlewareClient(c config) *GinFileMiddlewareClient {
+	return &GinFileMiddlewareClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `ginfilemiddleware.Hooks(f(g(h())))`.
+func (c *GinFileMiddlewareClient) Use(hooks ...Hook) {
+	c.hooks.GinFileMiddleware = append(c.hooks.GinFileMiddleware, hooks...)
+}
+
+// Create returns a create builder for GinFileMiddleware.
+func (c *GinFileMiddlewareClient) Create() *GinFileMiddlewareCreate {
+	mutation := newGinFileMiddlewareMutation(c.config, OpCreate)
+	return &GinFileMiddlewareCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GinFileMiddleware entities.
+func (c *GinFileMiddlewareClient) CreateBulk(builders ...*GinFileMiddlewareCreate) *GinFileMiddlewareCreateBulk {
+	return &GinFileMiddlewareCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GinFileMiddleware.
+func (c *GinFileMiddlewareClient) Update() *GinFileMiddlewareUpdate {
+	mutation := newGinFileMiddlewareMutation(c.config, OpUpdate)
+	return &GinFileMiddlewareUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GinFileMiddlewareClient) UpdateOne(gfm *GinFileMiddleware) *GinFileMiddlewareUpdateOne {
+	mutation := newGinFileMiddlewareMutation(c.config, OpUpdateOne, withGinFileMiddleware(gfm))
+	return &GinFileMiddlewareUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GinFileMiddlewareClient) UpdateOneID(id uuid.UUID) *GinFileMiddlewareUpdateOne {
+	mutation := newGinFileMiddlewareMutation(c.config, OpUpdateOne, withGinFileMiddlewareID(id))
+	return &GinFileMiddlewareUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GinFileMiddleware.
+func (c *GinFileMiddlewareClient) Delete() *GinFileMiddlewareDelete {
+	mutation := newGinFileMiddlewareMutation(c.config, OpDelete)
+	return &GinFileMiddlewareDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *GinFileMiddlewareClient) DeleteOne(gfm *GinFileMiddleware) *GinFileMiddlewareDeleteOne {
+	return c.DeleteOneID(gfm.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *GinFileMiddlewareClient) DeleteOneID(id uuid.UUID) *GinFileMiddlewareDeleteOne {
+	builder := c.Delete().Where(ginfilemiddleware.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GinFileMiddlewareDeleteOne{builder}
+}
+
+// Query returns a query builder for GinFileMiddleware.
+func (c *GinFileMiddlewareClient) Query() *GinFileMiddlewareQuery {
+	return &GinFileMiddlewareQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a GinFileMiddleware entity by its id.
+func (c *GinFileMiddlewareClient) Get(ctx context.Context, id uuid.UUID) (*GinFileMiddleware, error) {
+	return c.Query().Where(ginfilemiddleware.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GinFileMiddlewareClient) GetX(ctx context.Context, id uuid.UUID) *GinFileMiddleware {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryGinFileMiddlewareToProvisionedHost queries the GinFileMiddlewareToProvisionedHost edge of a GinFileMiddleware.
+func (c *GinFileMiddlewareClient) QueryGinFileMiddlewareToProvisionedHost(gfm *GinFileMiddleware) *ProvisionedHostQuery {
+	query := &ProvisionedHostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := gfm.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(ginfilemiddleware.Table, ginfilemiddleware.FieldID, id),
+			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, ginfilemiddleware.GinFileMiddlewareToProvisionedHostTable, ginfilemiddleware.GinFileMiddlewareToProvisionedHostColumn),
+		)
+		fromV = sqlgraph.Neighbors(gfm.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGinFileMiddlewareToProvisioningStep queries the GinFileMiddlewareToProvisioningStep edge of a GinFileMiddleware.
+func (c *GinFileMiddlewareClient) QueryGinFileMiddlewareToProvisioningStep(gfm *GinFileMiddleware) *ProvisioningStepQuery {
+	query := &ProvisioningStepQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := gfm.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(ginfilemiddleware.Table, ginfilemiddleware.FieldID, id),
+			sqlgraph.To(provisioningstep.Table, provisioningstep.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, ginfilemiddleware.GinFileMiddlewareToProvisioningStepTable, ginfilemiddleware.GinFileMiddlewareToProvisioningStepColumn),
+		)
+		fromV = sqlgraph.Neighbors(gfm.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *GinFileMiddlewareClient) Hooks() []Hook {
+	return c.hooks.GinFileMiddleware
 }
 
 // HostClient is a client for the Host schema.
@@ -1776,7 +2875,7 @@ func (c *HostClient) UpdateOne(h *Host) *HostUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *HostClient) UpdateOneID(id int) *HostUpdateOne {
+func (c *HostClient) UpdateOneID(id uuid.UUID) *HostUpdateOne {
 	mutation := newHostMutation(c.config, OpUpdateOne, withHostID(id))
 	return &HostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1793,7 +2892,7 @@ func (c *HostClient) DeleteOne(h *Host) *HostDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *HostClient) DeleteOneID(id int) *HostDeleteOne {
+func (c *HostClient) DeleteOneID(id uuid.UUID) *HostDeleteOne {
 	builder := c.Delete().Where(host.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1802,16 +2901,18 @@ func (c *HostClient) DeleteOneID(id int) *HostDeleteOne {
 
 // Query returns a query builder for Host.
 func (c *HostClient) Query() *HostQuery {
-	return &HostQuery{config: c.config}
+	return &HostQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Host entity by its id.
-func (c *HostClient) Get(ctx context.Context, id int) (*Host, error) {
+func (c *HostClient) Get(ctx context.Context, id uuid.UUID) (*Host, error) {
 	return c.Query().Where(host.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *HostClient) GetX(ctx context.Context, id int) *Host {
+func (c *HostClient) GetX(ctx context.Context, id uuid.UUID) *Host {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1819,15 +2920,15 @@ func (c *HostClient) GetX(ctx context.Context, id int) *Host {
 	return obj
 }
 
-// QueryDisk queries the disk edge of a Host.
-func (c *HostClient) QueryDisk(h *Host) *DiskQuery {
+// QueryHostToDisk queries the HostToDisk edge of a Host.
+func (c *HostClient) QueryHostToDisk(h *Host) *DiskQuery {
 	query := &DiskQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := h.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(host.Table, host.FieldID, id),
 			sqlgraph.To(disk.Table, disk.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, host.DiskTable, host.DiskColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, host.HostToDiskTable, host.HostToDiskColumn),
 		)
 		fromV = sqlgraph.Neighbors(h.driver.Dialect(), step)
 		return fromV, nil
@@ -1835,15 +2936,15 @@ func (c *HostClient) QueryDisk(h *Host) *DiskQuery {
 	return query
 }
 
-// QueryMaintainer queries the maintainer edge of a Host.
-func (c *HostClient) QueryMaintainer(h *Host) *UserQuery {
+// QueryHostToUser queries the HostToUser edge of a Host.
+func (c *HostClient) QueryHostToUser(h *Host) *UserQuery {
 	query := &UserQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := h.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(host.Table, host.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, host.MaintainerTable, host.MaintainerColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, host.HostToUserTable, host.HostToUserColumn),
 		)
 		fromV = sqlgraph.Neighbors(h.driver.Dialect(), step)
 		return fromV, nil
@@ -1851,15 +2952,63 @@ func (c *HostClient) QueryMaintainer(h *Host) *UserQuery {
 	return query
 }
 
-// QueryTag queries the tag edge of a Host.
-func (c *HostClient) QueryTag(h *Host) *TagQuery {
-	query := &TagQuery{config: c.config}
+// QueryHostToEnvironment queries the HostToEnvironment edge of a Host.
+func (c *HostClient) QueryHostToEnvironment(h *Host) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := h.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(host.Table, host.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, host.TagTable, host.TagColumn),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, host.HostToEnvironmentTable, host.HostToEnvironmentColumn),
+		)
+		fromV = sqlgraph.Neighbors(h.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryHostToIncludedNetwork queries the HostToIncludedNetwork edge of a Host.
+func (c *HostClient) QueryHostToIncludedNetwork(h *Host) *IncludedNetworkQuery {
+	query := &IncludedNetworkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := h.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(host.Table, host.FieldID, id),
+			sqlgraph.To(includednetwork.Table, includednetwork.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, host.HostToIncludedNetworkTable, host.HostToIncludedNetworkPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(h.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDependOnHostToHostDependency queries the DependOnHostToHostDependency edge of a Host.
+func (c *HostClient) QueryDependOnHostToHostDependency(h *Host) *HostDependencyQuery {
+	query := &HostDependencyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := h.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(host.Table, host.FieldID, id),
+			sqlgraph.To(hostdependency.Table, hostdependency.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, host.DependOnHostToHostDependencyTable, host.DependOnHostToHostDependencyColumn),
+		)
+		fromV = sqlgraph.Neighbors(h.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDependByHostToHostDependency queries the DependByHostToHostDependency edge of a Host.
+func (c *HostClient) QueryDependByHostToHostDependency(h *Host) *HostDependencyQuery {
+	query := &HostDependencyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := h.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(host.Table, host.FieldID, id),
+			sqlgraph.To(hostdependency.Table, hostdependency.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, host.DependByHostToHostDependencyTable, host.DependByHostToHostDependencyColumn),
 		)
 		fromV = sqlgraph.Neighbors(h.driver.Dialect(), step)
 		return fromV, nil
@@ -1870,6 +3019,266 @@ func (c *HostClient) QueryTag(h *Host) *TagQuery {
 // Hooks returns the client hooks.
 func (c *HostClient) Hooks() []Hook {
 	return c.hooks.Host
+}
+
+// HostDependencyClient is a client for the HostDependency schema.
+type HostDependencyClient struct {
+	config
+}
+
+// NewHostDependencyClient returns a client for the HostDependency from the given config.
+func NewHostDependencyClient(c config) *HostDependencyClient {
+	return &HostDependencyClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `hostdependency.Hooks(f(g(h())))`.
+func (c *HostDependencyClient) Use(hooks ...Hook) {
+	c.hooks.HostDependency = append(c.hooks.HostDependency, hooks...)
+}
+
+// Create returns a create builder for HostDependency.
+func (c *HostDependencyClient) Create() *HostDependencyCreate {
+	mutation := newHostDependencyMutation(c.config, OpCreate)
+	return &HostDependencyCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of HostDependency entities.
+func (c *HostDependencyClient) CreateBulk(builders ...*HostDependencyCreate) *HostDependencyCreateBulk {
+	return &HostDependencyCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for HostDependency.
+func (c *HostDependencyClient) Update() *HostDependencyUpdate {
+	mutation := newHostDependencyMutation(c.config, OpUpdate)
+	return &HostDependencyUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *HostDependencyClient) UpdateOne(hd *HostDependency) *HostDependencyUpdateOne {
+	mutation := newHostDependencyMutation(c.config, OpUpdateOne, withHostDependency(hd))
+	return &HostDependencyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *HostDependencyClient) UpdateOneID(id uuid.UUID) *HostDependencyUpdateOne {
+	mutation := newHostDependencyMutation(c.config, OpUpdateOne, withHostDependencyID(id))
+	return &HostDependencyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for HostDependency.
+func (c *HostDependencyClient) Delete() *HostDependencyDelete {
+	mutation := newHostDependencyMutation(c.config, OpDelete)
+	return &HostDependencyDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *HostDependencyClient) DeleteOne(hd *HostDependency) *HostDependencyDeleteOne {
+	return c.DeleteOneID(hd.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *HostDependencyClient) DeleteOneID(id uuid.UUID) *HostDependencyDeleteOne {
+	builder := c.Delete().Where(hostdependency.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &HostDependencyDeleteOne{builder}
+}
+
+// Query returns a query builder for HostDependency.
+func (c *HostDependencyClient) Query() *HostDependencyQuery {
+	return &HostDependencyQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a HostDependency entity by its id.
+func (c *HostDependencyClient) Get(ctx context.Context, id uuid.UUID) (*HostDependency, error) {
+	return c.Query().Where(hostdependency.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *HostDependencyClient) GetX(ctx context.Context, id uuid.UUID) *HostDependency {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryHostDependencyToDependOnHost queries the HostDependencyToDependOnHost edge of a HostDependency.
+func (c *HostDependencyClient) QueryHostDependencyToDependOnHost(hd *HostDependency) *HostQuery {
+	query := &HostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := hd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(hostdependency.Table, hostdependency.FieldID, id),
+			sqlgraph.To(host.Table, host.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, hostdependency.HostDependencyToDependOnHostTable, hostdependency.HostDependencyToDependOnHostColumn),
+		)
+		fromV = sqlgraph.Neighbors(hd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryHostDependencyToDependByHost queries the HostDependencyToDependByHost edge of a HostDependency.
+func (c *HostDependencyClient) QueryHostDependencyToDependByHost(hd *HostDependency) *HostQuery {
+	query := &HostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := hd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(hostdependency.Table, hostdependency.FieldID, id),
+			sqlgraph.To(host.Table, host.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, hostdependency.HostDependencyToDependByHostTable, hostdependency.HostDependencyToDependByHostColumn),
+		)
+		fromV = sqlgraph.Neighbors(hd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryHostDependencyToNetwork queries the HostDependencyToNetwork edge of a HostDependency.
+func (c *HostDependencyClient) QueryHostDependencyToNetwork(hd *HostDependency) *NetworkQuery {
+	query := &NetworkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := hd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(hostdependency.Table, hostdependency.FieldID, id),
+			sqlgraph.To(network.Table, network.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, hostdependency.HostDependencyToNetworkTable, hostdependency.HostDependencyToNetworkColumn),
+		)
+		fromV = sqlgraph.Neighbors(hd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryHostDependencyToEnvironment queries the HostDependencyToEnvironment edge of a HostDependency.
+func (c *HostDependencyClient) QueryHostDependencyToEnvironment(hd *HostDependency) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := hd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(hostdependency.Table, hostdependency.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, hostdependency.HostDependencyToEnvironmentTable, hostdependency.HostDependencyToEnvironmentColumn),
+		)
+		fromV = sqlgraph.Neighbors(hd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *HostDependencyClient) Hooks() []Hook {
+	return c.hooks.HostDependency
+}
+
+// IdentityClient is a client for the Identity schema.
+type IdentityClient struct {
+	config
+}
+
+// NewIdentityClient returns a client for the Identity from the given config.
+func NewIdentityClient(c config) *IdentityClient {
+	return &IdentityClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `identity.Hooks(f(g(h())))`.
+func (c *IdentityClient) Use(hooks ...Hook) {
+	c.hooks.Identity = append(c.hooks.Identity, hooks...)
+}
+
+// Create returns a create builder for Identity.
+func (c *IdentityClient) Create() *IdentityCreate {
+	mutation := newIdentityMutation(c.config, OpCreate)
+	return &IdentityCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Identity entities.
+func (c *IdentityClient) CreateBulk(builders ...*IdentityCreate) *IdentityCreateBulk {
+	return &IdentityCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Identity.
+func (c *IdentityClient) Update() *IdentityUpdate {
+	mutation := newIdentityMutation(c.config, OpUpdate)
+	return &IdentityUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IdentityClient) UpdateOne(i *Identity) *IdentityUpdateOne {
+	mutation := newIdentityMutation(c.config, OpUpdateOne, withIdentity(i))
+	return &IdentityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IdentityClient) UpdateOneID(id uuid.UUID) *IdentityUpdateOne {
+	mutation := newIdentityMutation(c.config, OpUpdateOne, withIdentityID(id))
+	return &IdentityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Identity.
+func (c *IdentityClient) Delete() *IdentityDelete {
+	mutation := newIdentityMutation(c.config, OpDelete)
+	return &IdentityDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *IdentityClient) DeleteOne(i *Identity) *IdentityDeleteOne {
+	return c.DeleteOneID(i.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *IdentityClient) DeleteOneID(id uuid.UUID) *IdentityDeleteOne {
+	builder := c.Delete().Where(identity.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IdentityDeleteOne{builder}
+}
+
+// Query returns a query builder for Identity.
+func (c *IdentityClient) Query() *IdentityQuery {
+	return &IdentityQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Identity entity by its id.
+func (c *IdentityClient) Get(ctx context.Context, id uuid.UUID) (*Identity, error) {
+	return c.Query().Where(identity.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IdentityClient) GetX(ctx context.Context, id uuid.UUID) *Identity {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryIdentityToEnvironment queries the IdentityToEnvironment edge of a Identity.
+func (c *IdentityClient) QueryIdentityToEnvironment(i *Identity) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(identity.Table, identity.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, identity.IdentityToEnvironmentTable, identity.IdentityToEnvironmentColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IdentityClient) Hooks() []Hook {
+	return c.hooks.Identity
 }
 
 // IncludedNetworkClient is a client for the IncludedNetwork schema.
@@ -1912,7 +3321,7 @@ func (c *IncludedNetworkClient) UpdateOne(in *IncludedNetwork) *IncludedNetworkU
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *IncludedNetworkClient) UpdateOneID(id int) *IncludedNetworkUpdateOne {
+func (c *IncludedNetworkClient) UpdateOneID(id uuid.UUID) *IncludedNetworkUpdateOne {
 	mutation := newIncludedNetworkMutation(c.config, OpUpdateOne, withIncludedNetworkID(id))
 	return &IncludedNetworkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -1929,7 +3338,7 @@ func (c *IncludedNetworkClient) DeleteOne(in *IncludedNetwork) *IncludedNetworkD
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *IncludedNetworkClient) DeleteOneID(id int) *IncludedNetworkDeleteOne {
+func (c *IncludedNetworkClient) DeleteOneID(id uuid.UUID) *IncludedNetworkDeleteOne {
 	builder := c.Delete().Where(includednetwork.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -1938,16 +3347,18 @@ func (c *IncludedNetworkClient) DeleteOneID(id int) *IncludedNetworkDeleteOne {
 
 // Query returns a query builder for IncludedNetwork.
 func (c *IncludedNetworkClient) Query() *IncludedNetworkQuery {
-	return &IncludedNetworkQuery{config: c.config}
+	return &IncludedNetworkQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a IncludedNetwork entity by its id.
-func (c *IncludedNetworkClient) Get(ctx context.Context, id int) (*IncludedNetwork, error) {
+func (c *IncludedNetworkClient) Get(ctx context.Context, id uuid.UUID) (*IncludedNetwork, error) {
 	return c.Query().Where(includednetwork.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *IncludedNetworkClient) GetX(ctx context.Context, id int) *IncludedNetwork {
+func (c *IncludedNetworkClient) GetX(ctx context.Context, id uuid.UUID) *IncludedNetwork {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1955,15 +3366,47 @@ func (c *IncludedNetworkClient) GetX(ctx context.Context, id int) *IncludedNetwo
 	return obj
 }
 
-// QueryTag queries the tag edge of a IncludedNetwork.
-func (c *IncludedNetworkClient) QueryTag(in *IncludedNetwork) *TagQuery {
+// QueryIncludedNetworkToTag queries the IncludedNetworkToTag edge of a IncludedNetwork.
+func (c *IncludedNetworkClient) QueryIncludedNetworkToTag(in *IncludedNetwork) *TagQuery {
 	query := &TagQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := in.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(includednetwork.Table, includednetwork.FieldID, id),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, includednetwork.TagTable, includednetwork.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, includednetwork.IncludedNetworkToTagTable, includednetwork.IncludedNetworkToTagColumn),
+		)
+		fromV = sqlgraph.Neighbors(in.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIncludedNetworkToHost queries the IncludedNetworkToHost edge of a IncludedNetwork.
+func (c *IncludedNetworkClient) QueryIncludedNetworkToHost(in *IncludedNetwork) *HostQuery {
+	query := &HostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := in.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(includednetwork.Table, includednetwork.FieldID, id),
+			sqlgraph.To(host.Table, host.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, includednetwork.IncludedNetworkToHostTable, includednetwork.IncludedNetworkToHostPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(in.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIncludedNetworkToNetwork queries the IncludedNetworkToNetwork edge of a IncludedNetwork.
+func (c *IncludedNetworkClient) QueryIncludedNetworkToNetwork(in *IncludedNetwork) *NetworkQuery {
+	query := &NetworkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := in.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(includednetwork.Table, includednetwork.FieldID, id),
+			sqlgraph.To(network.Table, network.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, includednetwork.IncludedNetworkToNetworkTable, includednetwork.IncludedNetworkToNetworkColumn),
 		)
 		fromV = sqlgraph.Neighbors(in.driver.Dialect(), step)
 		return fromV, nil
@@ -1979,7 +3422,7 @@ func (c *IncludedNetworkClient) QueryIncludedNetworkToEnvironment(in *IncludedNe
 		step := sqlgraph.NewStep(
 			sqlgraph.From(includednetwork.Table, includednetwork.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, includednetwork.IncludedNetworkToEnvironmentTable, includednetwork.IncludedNetworkToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, includednetwork.IncludedNetworkToEnvironmentTable, includednetwork.IncludedNetworkToEnvironmentPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(in.driver.Dialect(), step)
 		return fromV, nil
@@ -2032,7 +3475,7 @@ func (c *NetworkClient) UpdateOne(n *Network) *NetworkUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *NetworkClient) UpdateOneID(id int) *NetworkUpdateOne {
+func (c *NetworkClient) UpdateOneID(id uuid.UUID) *NetworkUpdateOne {
 	mutation := newNetworkMutation(c.config, OpUpdateOne, withNetworkID(id))
 	return &NetworkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -2049,7 +3492,7 @@ func (c *NetworkClient) DeleteOne(n *Network) *NetworkDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *NetworkClient) DeleteOneID(id int) *NetworkDeleteOne {
+func (c *NetworkClient) DeleteOneID(id uuid.UUID) *NetworkDeleteOne {
 	builder := c.Delete().Where(network.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -2058,37 +3501,23 @@ func (c *NetworkClient) DeleteOneID(id int) *NetworkDeleteOne {
 
 // Query returns a query builder for Network.
 func (c *NetworkClient) Query() *NetworkQuery {
-	return &NetworkQuery{config: c.config}
+	return &NetworkQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Network entity by its id.
-func (c *NetworkClient) Get(ctx context.Context, id int) (*Network, error) {
+func (c *NetworkClient) Get(ctx context.Context, id uuid.UUID) (*Network, error) {
 	return c.Query().Where(network.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *NetworkClient) GetX(ctx context.Context, id int) *Network {
+func (c *NetworkClient) GetX(ctx context.Context, id uuid.UUID) *Network {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
 	}
 	return obj
-}
-
-// QueryTag queries the tag edge of a Network.
-func (c *NetworkClient) QueryTag(n *Network) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := n.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(network.Table, network.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, network.TagTable, network.TagColumn),
-		)
-		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // QueryNetworkToEnvironment queries the NetworkToEnvironment edge of a Network.
@@ -2099,7 +3528,39 @@ func (c *NetworkClient) QueryNetworkToEnvironment(n *Network) *EnvironmentQuery 
 		step := sqlgraph.NewStep(
 			sqlgraph.From(network.Table, network.FieldID, id),
 			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, network.NetworkToEnvironmentTable, network.NetworkToEnvironmentPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, network.NetworkToEnvironmentTable, network.NetworkToEnvironmentColumn),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNetworkToHostDependency queries the NetworkToHostDependency edge of a Network.
+func (c *NetworkClient) QueryNetworkToHostDependency(n *Network) *HostDependencyQuery {
+	query := &HostDependencyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(network.Table, network.FieldID, id),
+			sqlgraph.To(hostdependency.Table, hostdependency.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, network.NetworkToHostDependencyTable, network.NetworkToHostDependencyColumn),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNetworkToIncludedNetwork queries the NetworkToIncludedNetwork edge of a Network.
+func (c *NetworkClient) QueryNetworkToIncludedNetwork(n *Network) *IncludedNetworkQuery {
+	query := &IncludedNetworkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(network.Table, network.FieldID, id),
+			sqlgraph.To(includednetwork.Table, includednetwork.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, network.NetworkToIncludedNetworkTable, network.NetworkToIncludedNetworkColumn),
 		)
 		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
 		return fromV, nil
@@ -2110,6 +3571,362 @@ func (c *NetworkClient) QueryNetworkToEnvironment(n *Network) *EnvironmentQuery 
 // Hooks returns the client hooks.
 func (c *NetworkClient) Hooks() []Hook {
 	return c.hooks.Network
+}
+
+// PlanClient is a client for the Plan schema.
+type PlanClient struct {
+	config
+}
+
+// NewPlanClient returns a client for the Plan from the given config.
+func NewPlanClient(c config) *PlanClient {
+	return &PlanClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `plan.Hooks(f(g(h())))`.
+func (c *PlanClient) Use(hooks ...Hook) {
+	c.hooks.Plan = append(c.hooks.Plan, hooks...)
+}
+
+// Create returns a create builder for Plan.
+func (c *PlanClient) Create() *PlanCreate {
+	mutation := newPlanMutation(c.config, OpCreate)
+	return &PlanCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Plan entities.
+func (c *PlanClient) CreateBulk(builders ...*PlanCreate) *PlanCreateBulk {
+	return &PlanCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Plan.
+func (c *PlanClient) Update() *PlanUpdate {
+	mutation := newPlanMutation(c.config, OpUpdate)
+	return &PlanUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PlanClient) UpdateOne(pl *Plan) *PlanUpdateOne {
+	mutation := newPlanMutation(c.config, OpUpdateOne, withPlan(pl))
+	return &PlanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PlanClient) UpdateOneID(id uuid.UUID) *PlanUpdateOne {
+	mutation := newPlanMutation(c.config, OpUpdateOne, withPlanID(id))
+	return &PlanUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Plan.
+func (c *PlanClient) Delete() *PlanDelete {
+	mutation := newPlanMutation(c.config, OpDelete)
+	return &PlanDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *PlanClient) DeleteOne(pl *Plan) *PlanDeleteOne {
+	return c.DeleteOneID(pl.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *PlanClient) DeleteOneID(id uuid.UUID) *PlanDeleteOne {
+	builder := c.Delete().Where(plan.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PlanDeleteOne{builder}
+}
+
+// Query returns a query builder for Plan.
+func (c *PlanClient) Query() *PlanQuery {
+	return &PlanQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Plan entity by its id.
+func (c *PlanClient) Get(ctx context.Context, id uuid.UUID) (*Plan, error) {
+	return c.Query().Where(plan.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PlanClient) GetX(ctx context.Context, id uuid.UUID) *Plan {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryPrevPlan queries the PrevPlan edge of a Plan.
+func (c *PlanClient) QueryPrevPlan(pl *Plan) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, plan.PrevPlanTable, plan.PrevPlanPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNextPlan queries the NextPlan edge of a Plan.
+func (c *PlanClient) QueryNextPlan(pl *Plan) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, plan.NextPlanTable, plan.NextPlanPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPlanToBuild queries the PlanToBuild edge of a Plan.
+func (c *PlanClient) QueryPlanToBuild(pl *Plan) *BuildQuery {
+	query := &BuildQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, plan.PlanToBuildTable, plan.PlanToBuildColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPlanToTeam queries the PlanToTeam edge of a Plan.
+func (c *PlanClient) QueryPlanToTeam(pl *Plan) *TeamQuery {
+	query := &TeamQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, plan.PlanToTeamTable, plan.PlanToTeamColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPlanToProvisionedNetwork queries the PlanToProvisionedNetwork edge of a Plan.
+func (c *PlanClient) QueryPlanToProvisionedNetwork(pl *Plan) *ProvisionedNetworkQuery {
+	query := &ProvisionedNetworkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, plan.PlanToProvisionedNetworkTable, plan.PlanToProvisionedNetworkColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPlanToProvisionedHost queries the PlanToProvisionedHost edge of a Plan.
+func (c *PlanClient) QueryPlanToProvisionedHost(pl *Plan) *ProvisionedHostQuery {
+	query := &ProvisionedHostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, plan.PlanToProvisionedHostTable, plan.PlanToProvisionedHostColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPlanToProvisioningStep queries the PlanToProvisioningStep edge of a Plan.
+func (c *PlanClient) QueryPlanToProvisioningStep(pl *Plan) *ProvisioningStepQuery {
+	query := &ProvisioningStepQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(provisioningstep.Table, provisioningstep.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, plan.PlanToProvisioningStepTable, plan.PlanToProvisioningStepColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPlanToStatus queries the PlanToStatus edge of a Plan.
+func (c *PlanClient) QueryPlanToStatus(pl *Plan) *StatusQuery {
+	query := &StatusQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(status.Table, status.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, plan.PlanToStatusTable, plan.PlanToStatusColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPlanToPlanDiffs queries the PlanToPlanDiffs edge of a Plan.
+func (c *PlanClient) QueryPlanToPlanDiffs(pl *Plan) *PlanDiffQuery {
+	query := &PlanDiffQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plan.Table, plan.FieldID, id),
+			sqlgraph.To(plandiff.Table, plandiff.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, plan.PlanToPlanDiffsTable, plan.PlanToPlanDiffsColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *PlanClient) Hooks() []Hook {
+	return c.hooks.Plan
+}
+
+// PlanDiffClient is a client for the PlanDiff schema.
+type PlanDiffClient struct {
+	config
+}
+
+// NewPlanDiffClient returns a client for the PlanDiff from the given config.
+func NewPlanDiffClient(c config) *PlanDiffClient {
+	return &PlanDiffClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `plandiff.Hooks(f(g(h())))`.
+func (c *PlanDiffClient) Use(hooks ...Hook) {
+	c.hooks.PlanDiff = append(c.hooks.PlanDiff, hooks...)
+}
+
+// Create returns a create builder for PlanDiff.
+func (c *PlanDiffClient) Create() *PlanDiffCreate {
+	mutation := newPlanDiffMutation(c.config, OpCreate)
+	return &PlanDiffCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PlanDiff entities.
+func (c *PlanDiffClient) CreateBulk(builders ...*PlanDiffCreate) *PlanDiffCreateBulk {
+	return &PlanDiffCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PlanDiff.
+func (c *PlanDiffClient) Update() *PlanDiffUpdate {
+	mutation := newPlanDiffMutation(c.config, OpUpdate)
+	return &PlanDiffUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PlanDiffClient) UpdateOne(pd *PlanDiff) *PlanDiffUpdateOne {
+	mutation := newPlanDiffMutation(c.config, OpUpdateOne, withPlanDiff(pd))
+	return &PlanDiffUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PlanDiffClient) UpdateOneID(id uuid.UUID) *PlanDiffUpdateOne {
+	mutation := newPlanDiffMutation(c.config, OpUpdateOne, withPlanDiffID(id))
+	return &PlanDiffUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PlanDiff.
+func (c *PlanDiffClient) Delete() *PlanDiffDelete {
+	mutation := newPlanDiffMutation(c.config, OpDelete)
+	return &PlanDiffDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *PlanDiffClient) DeleteOne(pd *PlanDiff) *PlanDiffDeleteOne {
+	return c.DeleteOneID(pd.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *PlanDiffClient) DeleteOneID(id uuid.UUID) *PlanDiffDeleteOne {
+	builder := c.Delete().Where(plandiff.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PlanDiffDeleteOne{builder}
+}
+
+// Query returns a query builder for PlanDiff.
+func (c *PlanDiffClient) Query() *PlanDiffQuery {
+	return &PlanDiffQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a PlanDiff entity by its id.
+func (c *PlanDiffClient) Get(ctx context.Context, id uuid.UUID) (*PlanDiff, error) {
+	return c.Query().Where(plandiff.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PlanDiffClient) GetX(ctx context.Context, id uuid.UUID) *PlanDiff {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryPlanDiffToBuildCommit queries the PlanDiffToBuildCommit edge of a PlanDiff.
+func (c *PlanDiffClient) QueryPlanDiffToBuildCommit(pd *PlanDiff) *BuildCommitQuery {
+	query := &BuildCommitQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plandiff.Table, plandiff.FieldID, id),
+			sqlgraph.To(buildcommit.Table, buildcommit.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, plandiff.PlanDiffToBuildCommitTable, plandiff.PlanDiffToBuildCommitColumn),
+		)
+		fromV = sqlgraph.Neighbors(pd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPlanDiffToPlan queries the PlanDiffToPlan edge of a PlanDiff.
+func (c *PlanDiffClient) QueryPlanDiffToPlan(pd *PlanDiff) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(plandiff.Table, plandiff.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, plandiff.PlanDiffToPlanTable, plandiff.PlanDiffToPlanColumn),
+		)
+		fromV = sqlgraph.Neighbors(pd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *PlanDiffClient) Hooks() []Hook {
+	return c.hooks.PlanDiff
 }
 
 // ProvisionedHostClient is a client for the ProvisionedHost schema.
@@ -2152,7 +3969,7 @@ func (c *ProvisionedHostClient) UpdateOne(ph *ProvisionedHost) *ProvisionedHostU
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ProvisionedHostClient) UpdateOneID(id int) *ProvisionedHostUpdateOne {
+func (c *ProvisionedHostClient) UpdateOneID(id uuid.UUID) *ProvisionedHostUpdateOne {
 	mutation := newProvisionedHostMutation(c.config, OpUpdateOne, withProvisionedHostID(id))
 	return &ProvisionedHostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -2169,7 +3986,7 @@ func (c *ProvisionedHostClient) DeleteOne(ph *ProvisionedHost) *ProvisionedHostD
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *ProvisionedHostClient) DeleteOneID(id int) *ProvisionedHostDeleteOne {
+func (c *ProvisionedHostClient) DeleteOneID(id uuid.UUID) *ProvisionedHostDeleteOne {
 	builder := c.Delete().Where(provisionedhost.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -2178,16 +3995,18 @@ func (c *ProvisionedHostClient) DeleteOneID(id int) *ProvisionedHostDeleteOne {
 
 // Query returns a query builder for ProvisionedHost.
 func (c *ProvisionedHostClient) Query() *ProvisionedHostQuery {
-	return &ProvisionedHostQuery{config: c.config}
+	return &ProvisionedHostQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a ProvisionedHost entity by its id.
-func (c *ProvisionedHostClient) Get(ctx context.Context, id int) (*ProvisionedHost, error) {
+func (c *ProvisionedHostClient) Get(ctx context.Context, id uuid.UUID) (*ProvisionedHost, error) {
 	return c.Query().Where(provisionedhost.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ProvisionedHostClient) GetX(ctx context.Context, id int) *ProvisionedHost {
+func (c *ProvisionedHostClient) GetX(ctx context.Context, id uuid.UUID) *ProvisionedHost {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -2195,15 +4014,15 @@ func (c *ProvisionedHostClient) GetX(ctx context.Context, id int) *ProvisionedHo
 	return obj
 }
 
-// QueryStatus queries the status edge of a ProvisionedHost.
-func (c *ProvisionedHostClient) QueryStatus(ph *ProvisionedHost) *StatusQuery {
+// QueryProvisionedHostToStatus queries the ProvisionedHostToStatus edge of a ProvisionedHost.
+func (c *ProvisionedHostClient) QueryProvisionedHostToStatus(ph *ProvisionedHost) *StatusQuery {
 	query := &StatusQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := ph.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
 			sqlgraph.To(status.Table, status.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisionedhost.StatusTable, provisionedhost.StatusColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, provisionedhost.ProvisionedHostToStatusTable, provisionedhost.ProvisionedHostToStatusColumn),
 		)
 		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
 		return fromV, nil
@@ -2211,15 +4030,15 @@ func (c *ProvisionedHostClient) QueryStatus(ph *ProvisionedHost) *StatusQuery {
 	return query
 }
 
-// QueryProvisionedNetwork queries the provisioned_network edge of a ProvisionedHost.
-func (c *ProvisionedHostClient) QueryProvisionedNetwork(ph *ProvisionedHost) *ProvisionedNetworkQuery {
+// QueryProvisionedHostToProvisionedNetwork queries the ProvisionedHostToProvisionedNetwork edge of a ProvisionedHost.
+func (c *ProvisionedHostClient) QueryProvisionedHostToProvisionedNetwork(ph *ProvisionedHost) *ProvisionedNetworkQuery {
 	query := &ProvisionedNetworkQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := ph.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
 			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, provisionedhost.ProvisionedNetworkTable, provisionedhost.ProvisionedNetworkPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisionedhost.ProvisionedHostToProvisionedNetworkTable, provisionedhost.ProvisionedHostToProvisionedNetworkColumn),
 		)
 		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
 		return fromV, nil
@@ -2227,15 +4046,15 @@ func (c *ProvisionedHostClient) QueryProvisionedNetwork(ph *ProvisionedHost) *Pr
 	return query
 }
 
-// QueryHost queries the host edge of a ProvisionedHost.
-func (c *ProvisionedHostClient) QueryHost(ph *ProvisionedHost) *HostQuery {
+// QueryProvisionedHostToHost queries the ProvisionedHostToHost edge of a ProvisionedHost.
+func (c *ProvisionedHostClient) QueryProvisionedHostToHost(ph *ProvisionedHost) *HostQuery {
 	query := &HostQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := ph.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
 			sqlgraph.To(host.Table, host.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisionedhost.HostTable, provisionedhost.HostColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisionedhost.ProvisionedHostToHostTable, provisionedhost.ProvisionedHostToHostColumn),
 		)
 		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
 		return fromV, nil
@@ -2243,15 +4062,47 @@ func (c *ProvisionedHostClient) QueryHost(ph *ProvisionedHost) *HostQuery {
 	return query
 }
 
-// QueryProvisionedSteps queries the provisioned_steps edge of a ProvisionedHost.
-func (c *ProvisionedHostClient) QueryProvisionedSteps(ph *ProvisionedHost) *ProvisioningStepQuery {
+// QueryProvisionedHostToEndStepPlan queries the ProvisionedHostToEndStepPlan edge of a ProvisionedHost.
+func (c *ProvisionedHostClient) QueryProvisionedHostToEndStepPlan(ph *ProvisionedHost) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ph.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisionedhost.ProvisionedHostToEndStepPlanTable, provisionedhost.ProvisionedHostToEndStepPlanColumn),
+		)
+		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisionedHostToBuild queries the ProvisionedHostToBuild edge of a ProvisionedHost.
+func (c *ProvisionedHostClient) QueryProvisionedHostToBuild(ph *ProvisionedHost) *BuildQuery {
+	query := &BuildQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ph.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisionedhost.ProvisionedHostToBuildTable, provisionedhost.ProvisionedHostToBuildColumn),
+		)
+		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisionedHostToProvisioningStep queries the ProvisionedHostToProvisioningStep edge of a ProvisionedHost.
+func (c *ProvisionedHostClient) QueryProvisionedHostToProvisioningStep(ph *ProvisionedHost) *ProvisioningStepQuery {
 	query := &ProvisioningStepQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := ph.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
 			sqlgraph.To(provisioningstep.Table, provisioningstep.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, provisionedhost.ProvisionedStepsTable, provisionedhost.ProvisionedStepsPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, provisionedhost.ProvisionedHostToProvisioningStepTable, provisionedhost.ProvisionedHostToProvisioningStepColumn),
 		)
 		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
 		return fromV, nil
@@ -2259,15 +4110,63 @@ func (c *ProvisionedHostClient) QueryProvisionedSteps(ph *ProvisionedHost) *Prov
 	return query
 }
 
-// QueryAgentStatus queries the agent_status edge of a ProvisionedHost.
-func (c *ProvisionedHostClient) QueryAgentStatus(ph *ProvisionedHost) *AgentStatusQuery {
+// QueryProvisionedHostToAgentStatus queries the ProvisionedHostToAgentStatus edge of a ProvisionedHost.
+func (c *ProvisionedHostClient) QueryProvisionedHostToAgentStatus(ph *ProvisionedHost) *AgentStatusQuery {
 	query := &AgentStatusQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := ph.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
 			sqlgraph.To(agentstatus.Table, agentstatus.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, provisionedhost.AgentStatusTable, provisionedhost.AgentStatusPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, provisionedhost.ProvisionedHostToAgentStatusTable, provisionedhost.ProvisionedHostToAgentStatusColumn),
+		)
+		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisionedHostToAgentTask queries the ProvisionedHostToAgentTask edge of a ProvisionedHost.
+func (c *ProvisionedHostClient) QueryProvisionedHostToAgentTask(ph *ProvisionedHost) *AgentTaskQuery {
+	query := &AgentTaskQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ph.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
+			sqlgraph.To(agenttask.Table, agenttask.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, provisionedhost.ProvisionedHostToAgentTaskTable, provisionedhost.ProvisionedHostToAgentTaskColumn),
+		)
+		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisionedHostToPlan queries the ProvisionedHostToPlan edge of a ProvisionedHost.
+func (c *ProvisionedHostClient) QueryProvisionedHostToPlan(ph *ProvisionedHost) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ph.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, provisionedhost.ProvisionedHostToPlanTable, provisionedhost.ProvisionedHostToPlanColumn),
+		)
+		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisionedHostToGinFileMiddleware queries the ProvisionedHostToGinFileMiddleware edge of a ProvisionedHost.
+func (c *ProvisionedHostClient) QueryProvisionedHostToGinFileMiddleware(ph *ProvisionedHost) *GinFileMiddlewareQuery {
+	query := &GinFileMiddlewareQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ph.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionedhost.Table, provisionedhost.FieldID, id),
+			sqlgraph.To(ginfilemiddleware.Table, ginfilemiddleware.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, provisionedhost.ProvisionedHostToGinFileMiddlewareTable, provisionedhost.ProvisionedHostToGinFileMiddlewareColumn),
 		)
 		fromV = sqlgraph.Neighbors(ph.driver.Dialect(), step)
 		return fromV, nil
@@ -2320,7 +4219,7 @@ func (c *ProvisionedNetworkClient) UpdateOne(pn *ProvisionedNetwork) *Provisione
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ProvisionedNetworkClient) UpdateOneID(id int) *ProvisionedNetworkUpdateOne {
+func (c *ProvisionedNetworkClient) UpdateOneID(id uuid.UUID) *ProvisionedNetworkUpdateOne {
 	mutation := newProvisionedNetworkMutation(c.config, OpUpdateOne, withProvisionedNetworkID(id))
 	return &ProvisionedNetworkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -2337,7 +4236,7 @@ func (c *ProvisionedNetworkClient) DeleteOne(pn *ProvisionedNetwork) *Provisione
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *ProvisionedNetworkClient) DeleteOneID(id int) *ProvisionedNetworkDeleteOne {
+func (c *ProvisionedNetworkClient) DeleteOneID(id uuid.UUID) *ProvisionedNetworkDeleteOne {
 	builder := c.Delete().Where(provisionednetwork.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -2346,16 +4245,18 @@ func (c *ProvisionedNetworkClient) DeleteOneID(id int) *ProvisionedNetworkDelete
 
 // Query returns a query builder for ProvisionedNetwork.
 func (c *ProvisionedNetworkClient) Query() *ProvisionedNetworkQuery {
-	return &ProvisionedNetworkQuery{config: c.config}
+	return &ProvisionedNetworkQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a ProvisionedNetwork entity by its id.
-func (c *ProvisionedNetworkClient) Get(ctx context.Context, id int) (*ProvisionedNetwork, error) {
+func (c *ProvisionedNetworkClient) Get(ctx context.Context, id uuid.UUID) (*ProvisionedNetwork, error) {
 	return c.Query().Where(provisionednetwork.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ProvisionedNetworkClient) GetX(ctx context.Context, id int) *ProvisionedNetwork {
+func (c *ProvisionedNetworkClient) GetX(ctx context.Context, id uuid.UUID) *ProvisionedNetwork {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -2363,15 +4264,15 @@ func (c *ProvisionedNetworkClient) GetX(ctx context.Context, id int) *Provisione
 	return obj
 }
 
-// QueryStatus queries the status edge of a ProvisionedNetwork.
-func (c *ProvisionedNetworkClient) QueryStatus(pn *ProvisionedNetwork) *StatusQuery {
+// QueryProvisionedNetworkToStatus queries the ProvisionedNetworkToStatus edge of a ProvisionedNetwork.
+func (c *ProvisionedNetworkClient) QueryProvisionedNetworkToStatus(pn *ProvisionedNetwork) *StatusQuery {
 	query := &StatusQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := pn.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, id),
 			sqlgraph.To(status.Table, status.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisionednetwork.StatusTable, provisionednetwork.StatusColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, provisionednetwork.ProvisionedNetworkToStatusTable, provisionednetwork.ProvisionedNetworkToStatusColumn),
 		)
 		fromV = sqlgraph.Neighbors(pn.driver.Dialect(), step)
 		return fromV, nil
@@ -2379,15 +4280,15 @@ func (c *ProvisionedNetworkClient) QueryStatus(pn *ProvisionedNetwork) *StatusQu
 	return query
 }
 
-// QueryNetwork queries the network edge of a ProvisionedNetwork.
-func (c *ProvisionedNetworkClient) QueryNetwork(pn *ProvisionedNetwork) *NetworkQuery {
+// QueryProvisionedNetworkToNetwork queries the ProvisionedNetworkToNetwork edge of a ProvisionedNetwork.
+func (c *ProvisionedNetworkClient) QueryProvisionedNetworkToNetwork(pn *ProvisionedNetwork) *NetworkQuery {
 	query := &NetworkQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := pn.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, id),
 			sqlgraph.To(network.Table, network.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisionednetwork.NetworkTable, provisionednetwork.NetworkColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisionednetwork.ProvisionedNetworkToNetworkTable, provisionednetwork.ProvisionedNetworkToNetworkColumn),
 		)
 		fromV = sqlgraph.Neighbors(pn.driver.Dialect(), step)
 		return fromV, nil
@@ -2395,15 +4296,15 @@ func (c *ProvisionedNetworkClient) QueryNetwork(pn *ProvisionedNetwork) *Network
 	return query
 }
 
-// QueryBuild queries the build edge of a ProvisionedNetwork.
-func (c *ProvisionedNetworkClient) QueryBuild(pn *ProvisionedNetwork) *BuildQuery {
+// QueryProvisionedNetworkToBuild queries the ProvisionedNetworkToBuild edge of a ProvisionedNetwork.
+func (c *ProvisionedNetworkClient) QueryProvisionedNetworkToBuild(pn *ProvisionedNetwork) *BuildQuery {
 	query := &BuildQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := pn.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, id),
 			sqlgraph.To(build.Table, build.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, provisionednetwork.BuildTable, provisionednetwork.BuildPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisionednetwork.ProvisionedNetworkToBuildTable, provisionednetwork.ProvisionedNetworkToBuildColumn),
 		)
 		fromV = sqlgraph.Neighbors(pn.driver.Dialect(), step)
 		return fromV, nil
@@ -2419,7 +4320,7 @@ func (c *ProvisionedNetworkClient) QueryProvisionedNetworkToTeam(pn *Provisioned
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, id),
 			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, provisionednetwork.ProvisionedNetworkToTeamTable, provisionednetwork.ProvisionedNetworkToTeamPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisionednetwork.ProvisionedNetworkToTeamTable, provisionednetwork.ProvisionedNetworkToTeamColumn),
 		)
 		fromV = sqlgraph.Neighbors(pn.driver.Dialect(), step)
 		return fromV, nil
@@ -2427,15 +4328,31 @@ func (c *ProvisionedNetworkClient) QueryProvisionedNetworkToTeam(pn *Provisioned
 	return query
 }
 
-// QueryProvisionedHosts queries the provisioned_hosts edge of a ProvisionedNetwork.
-func (c *ProvisionedNetworkClient) QueryProvisionedHosts(pn *ProvisionedNetwork) *ProvisionedHostQuery {
+// QueryProvisionedNetworkToProvisionedHost queries the ProvisionedNetworkToProvisionedHost edge of a ProvisionedNetwork.
+func (c *ProvisionedNetworkClient) QueryProvisionedNetworkToProvisionedHost(pn *ProvisionedNetwork) *ProvisionedHostQuery {
 	query := &ProvisionedHostQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := pn.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, id),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, provisionednetwork.ProvisionedHostsTable, provisionednetwork.ProvisionedHostsPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, provisionednetwork.ProvisionedNetworkToProvisionedHostTable, provisionednetwork.ProvisionedNetworkToProvisionedHostColumn),
+		)
+		fromV = sqlgraph.Neighbors(pn.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisionedNetworkToPlan queries the ProvisionedNetworkToPlan edge of a ProvisionedNetwork.
+func (c *ProvisionedNetworkClient) QueryProvisionedNetworkToPlan(pn *ProvisionedNetwork) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pn.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisionednetwork.Table, provisionednetwork.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, provisionednetwork.ProvisionedNetworkToPlanTable, provisionednetwork.ProvisionedNetworkToPlanColumn),
 		)
 		fromV = sqlgraph.Neighbors(pn.driver.Dialect(), step)
 		return fromV, nil
@@ -2488,7 +4405,7 @@ func (c *ProvisioningStepClient) UpdateOne(ps *ProvisioningStep) *ProvisioningSt
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ProvisioningStepClient) UpdateOneID(id int) *ProvisioningStepUpdateOne {
+func (c *ProvisioningStepClient) UpdateOneID(id uuid.UUID) *ProvisioningStepUpdateOne {
 	mutation := newProvisioningStepMutation(c.config, OpUpdateOne, withProvisioningStepID(id))
 	return &ProvisioningStepUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -2505,7 +4422,7 @@ func (c *ProvisioningStepClient) DeleteOne(ps *ProvisioningStep) *ProvisioningSt
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *ProvisioningStepClient) DeleteOneID(id int) *ProvisioningStepDeleteOne {
+func (c *ProvisioningStepClient) DeleteOneID(id uuid.UUID) *ProvisioningStepDeleteOne {
 	builder := c.Delete().Where(provisioningstep.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -2514,16 +4431,18 @@ func (c *ProvisioningStepClient) DeleteOneID(id int) *ProvisioningStepDeleteOne 
 
 // Query returns a query builder for ProvisioningStep.
 func (c *ProvisioningStepClient) Query() *ProvisioningStepQuery {
-	return &ProvisioningStepQuery{config: c.config}
+	return &ProvisioningStepQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a ProvisioningStep entity by its id.
-func (c *ProvisioningStepClient) Get(ctx context.Context, id int) (*ProvisioningStep, error) {
+func (c *ProvisioningStepClient) Get(ctx context.Context, id uuid.UUID) (*ProvisioningStep, error) {
 	return c.Query().Where(provisioningstep.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ProvisioningStepClient) GetX(ctx context.Context, id int) *ProvisioningStep {
+func (c *ProvisioningStepClient) GetX(ctx context.Context, id uuid.UUID) *ProvisioningStep {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -2531,15 +4450,15 @@ func (c *ProvisioningStepClient) GetX(ctx context.Context, id int) *Provisioning
 	return obj
 }
 
-// QueryStatus queries the status edge of a ProvisioningStep.
-func (c *ProvisioningStepClient) QueryStatus(ps *ProvisioningStep) *StatusQuery {
+// QueryProvisioningStepToStatus queries the ProvisioningStepToStatus edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToStatus(ps *ProvisioningStep) *StatusQuery {
 	query := &StatusQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := ps.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
 			sqlgraph.To(status.Table, status.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.StatusTable, provisioningstep.StatusColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, provisioningstep.ProvisioningStepToStatusTable, provisioningstep.ProvisioningStepToStatusColumn),
 		)
 		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
 		return fromV, nil
@@ -2547,15 +4466,15 @@ func (c *ProvisioningStepClient) QueryStatus(ps *ProvisioningStep) *StatusQuery 
 	return query
 }
 
-// QueryProvisionedHost queries the provisioned_host edge of a ProvisioningStep.
-func (c *ProvisioningStepClient) QueryProvisionedHost(ps *ProvisioningStep) *ProvisionedHostQuery {
+// QueryProvisioningStepToProvisionedHost queries the ProvisioningStepToProvisionedHost edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToProvisionedHost(ps *ProvisioningStep) *ProvisionedHostQuery {
 	query := &ProvisionedHostQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := ps.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
 			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, provisioningstep.ProvisionedHostTable, provisioningstep.ProvisionedHostPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisioningstep.ProvisioningStepToProvisionedHostTable, provisioningstep.ProvisioningStepToProvisionedHostColumn),
 		)
 		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
 		return fromV, nil
@@ -2563,15 +4482,15 @@ func (c *ProvisioningStepClient) QueryProvisionedHost(ps *ProvisioningStep) *Pro
 	return query
 }
 
-// QueryScript queries the script edge of a ProvisioningStep.
-func (c *ProvisioningStepClient) QueryScript(ps *ProvisioningStep) *ScriptQuery {
+// QueryProvisioningStepToScript queries the ProvisioningStepToScript edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToScript(ps *ProvisioningStep) *ScriptQuery {
 	query := &ScriptQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := ps.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
 			sqlgraph.To(script.Table, script.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.ScriptTable, provisioningstep.ScriptColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisioningstep.ProvisioningStepToScriptTable, provisioningstep.ProvisioningStepToScriptColumn),
 		)
 		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
 		return fromV, nil
@@ -2579,15 +4498,15 @@ func (c *ProvisioningStepClient) QueryScript(ps *ProvisioningStep) *ScriptQuery 
 	return query
 }
 
-// QueryCommand queries the command edge of a ProvisioningStep.
-func (c *ProvisioningStepClient) QueryCommand(ps *ProvisioningStep) *CommandQuery {
+// QueryProvisioningStepToCommand queries the ProvisioningStepToCommand edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToCommand(ps *ProvisioningStep) *CommandQuery {
 	query := &CommandQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := ps.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
 			sqlgraph.To(command.Table, command.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.CommandTable, provisioningstep.CommandColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisioningstep.ProvisioningStepToCommandTable, provisioningstep.ProvisioningStepToCommandColumn),
 		)
 		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
 		return fromV, nil
@@ -2595,15 +4514,15 @@ func (c *ProvisioningStepClient) QueryCommand(ps *ProvisioningStep) *CommandQuer
 	return query
 }
 
-// QueryDNSRecord queries the dns_record edge of a ProvisioningStep.
-func (c *ProvisioningStepClient) QueryDNSRecord(ps *ProvisioningStep) *DNSRecordQuery {
+// QueryProvisioningStepToDNSRecord queries the ProvisioningStepToDNSRecord edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToDNSRecord(ps *ProvisioningStep) *DNSRecordQuery {
 	query := &DNSRecordQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := ps.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
 			sqlgraph.To(dnsrecord.Table, dnsrecord.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.DNSRecordTable, provisioningstep.DNSRecordColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisioningstep.ProvisioningStepToDNSRecordTable, provisioningstep.ProvisioningStepToDNSRecordColumn),
 		)
 		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
 		return fromV, nil
@@ -2611,15 +4530,95 @@ func (c *ProvisioningStepClient) QueryDNSRecord(ps *ProvisioningStep) *DNSRecord
 	return query
 }
 
-// QueryRemoteFile queries the remote_file edge of a ProvisioningStep.
-func (c *ProvisioningStepClient) QueryRemoteFile(ps *ProvisioningStep) *RemoteFileQuery {
-	query := &RemoteFileQuery{config: c.config}
+// QueryProvisioningStepToFileDelete queries the ProvisioningStepToFileDelete edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToFileDelete(ps *ProvisioningStep) *FileDeleteQuery {
+	query := &FileDeleteQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := ps.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
-			sqlgraph.To(remotefile.Table, remotefile.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, provisioningstep.RemoteFileTable, provisioningstep.RemoteFileColumn),
+			sqlgraph.To(filedelete.Table, filedelete.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisioningstep.ProvisioningStepToFileDeleteTable, provisioningstep.ProvisioningStepToFileDeleteColumn),
+		)
+		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisioningStepToFileDownload queries the ProvisioningStepToFileDownload edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToFileDownload(ps *ProvisioningStep) *FileDownloadQuery {
+	query := &FileDownloadQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ps.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
+			sqlgraph.To(filedownload.Table, filedownload.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisioningstep.ProvisioningStepToFileDownloadTable, provisioningstep.ProvisioningStepToFileDownloadColumn),
+		)
+		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisioningStepToFileExtract queries the ProvisioningStepToFileExtract edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToFileExtract(ps *ProvisioningStep) *FileExtractQuery {
+	query := &FileExtractQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ps.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
+			sqlgraph.To(fileextract.Table, fileextract.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, provisioningstep.ProvisioningStepToFileExtractTable, provisioningstep.ProvisioningStepToFileExtractColumn),
+		)
+		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisioningStepToPlan queries the ProvisioningStepToPlan edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToPlan(ps *ProvisioningStep) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ps.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, provisioningstep.ProvisioningStepToPlanTable, provisioningstep.ProvisioningStepToPlanColumn),
+		)
+		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisioningStepToAgentTask queries the ProvisioningStepToAgentTask edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToAgentTask(ps *ProvisioningStep) *AgentTaskQuery {
+	query := &AgentTaskQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ps.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
+			sqlgraph.To(agenttask.Table, agenttask.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, provisioningstep.ProvisioningStepToAgentTaskTable, provisioningstep.ProvisioningStepToAgentTaskColumn),
+		)
+		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProvisioningStepToGinFileMiddleware queries the ProvisioningStepToGinFileMiddleware edge of a ProvisioningStep.
+func (c *ProvisioningStepClient) QueryProvisioningStepToGinFileMiddleware(ps *ProvisioningStep) *GinFileMiddlewareQuery {
+	query := &GinFileMiddlewareQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ps.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(provisioningstep.Table, provisioningstep.FieldID, id),
+			sqlgraph.To(ginfilemiddleware.Table, ginfilemiddleware.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, provisioningstep.ProvisioningStepToGinFileMiddlewareTable, provisioningstep.ProvisioningStepToGinFileMiddlewareColumn),
 		)
 		fromV = sqlgraph.Neighbors(ps.driver.Dialect(), step)
 		return fromV, nil
@@ -2632,82 +4631,84 @@ func (c *ProvisioningStepClient) Hooks() []Hook {
 	return c.hooks.ProvisioningStep
 }
 
-// RemoteFileClient is a client for the RemoteFile schema.
-type RemoteFileClient struct {
+// RepositoryClient is a client for the Repository schema.
+type RepositoryClient struct {
 	config
 }
 
-// NewRemoteFileClient returns a client for the RemoteFile from the given config.
-func NewRemoteFileClient(c config) *RemoteFileClient {
-	return &RemoteFileClient{config: c}
+// NewRepositoryClient returns a client for the Repository from the given config.
+func NewRepositoryClient(c config) *RepositoryClient {
+	return &RepositoryClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `remotefile.Hooks(f(g(h())))`.
-func (c *RemoteFileClient) Use(hooks ...Hook) {
-	c.hooks.RemoteFile = append(c.hooks.RemoteFile, hooks...)
+// A call to `Use(f, g, h)` equals to `repository.Hooks(f(g(h())))`.
+func (c *RepositoryClient) Use(hooks ...Hook) {
+	c.hooks.Repository = append(c.hooks.Repository, hooks...)
 }
 
-// Create returns a create builder for RemoteFile.
-func (c *RemoteFileClient) Create() *RemoteFileCreate {
-	mutation := newRemoteFileMutation(c.config, OpCreate)
-	return &RemoteFileCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a create builder for Repository.
+func (c *RepositoryClient) Create() *RepositoryCreate {
+	mutation := newRepositoryMutation(c.config, OpCreate)
+	return &RepositoryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of RemoteFile entities.
-func (c *RemoteFileClient) CreateBulk(builders ...*RemoteFileCreate) *RemoteFileCreateBulk {
-	return &RemoteFileCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Repository entities.
+func (c *RepositoryClient) CreateBulk(builders ...*RepositoryCreate) *RepositoryCreateBulk {
+	return &RepositoryCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for RemoteFile.
-func (c *RemoteFileClient) Update() *RemoteFileUpdate {
-	mutation := newRemoteFileMutation(c.config, OpUpdate)
-	return &RemoteFileUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Repository.
+func (c *RepositoryClient) Update() *RepositoryUpdate {
+	mutation := newRepositoryMutation(c.config, OpUpdate)
+	return &RepositoryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *RemoteFileClient) UpdateOne(rf *RemoteFile) *RemoteFileUpdateOne {
-	mutation := newRemoteFileMutation(c.config, OpUpdateOne, withRemoteFile(rf))
-	return &RemoteFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *RepositoryClient) UpdateOne(r *Repository) *RepositoryUpdateOne {
+	mutation := newRepositoryMutation(c.config, OpUpdateOne, withRepository(r))
+	return &RepositoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *RemoteFileClient) UpdateOneID(id int) *RemoteFileUpdateOne {
-	mutation := newRemoteFileMutation(c.config, OpUpdateOne, withRemoteFileID(id))
-	return &RemoteFileUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *RepositoryClient) UpdateOneID(id uuid.UUID) *RepositoryUpdateOne {
+	mutation := newRepositoryMutation(c.config, OpUpdateOne, withRepositoryID(id))
+	return &RepositoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for RemoteFile.
-func (c *RemoteFileClient) Delete() *RemoteFileDelete {
-	mutation := newRemoteFileMutation(c.config, OpDelete)
-	return &RemoteFileDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Repository.
+func (c *RepositoryClient) Delete() *RepositoryDelete {
+	mutation := newRepositoryMutation(c.config, OpDelete)
+	return &RepositoryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a delete builder for the given entity.
-func (c *RemoteFileClient) DeleteOne(rf *RemoteFile) *RemoteFileDeleteOne {
-	return c.DeleteOneID(rf.ID)
+func (c *RepositoryClient) DeleteOne(r *Repository) *RepositoryDeleteOne {
+	return c.DeleteOneID(r.ID)
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *RemoteFileClient) DeleteOneID(id int) *RemoteFileDeleteOne {
-	builder := c.Delete().Where(remotefile.ID(id))
+func (c *RepositoryClient) DeleteOneID(id uuid.UUID) *RepositoryDeleteOne {
+	builder := c.Delete().Where(repository.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &RemoteFileDeleteOne{builder}
+	return &RepositoryDeleteOne{builder}
 }
 
-// Query returns a query builder for RemoteFile.
-func (c *RemoteFileClient) Query() *RemoteFileQuery {
-	return &RemoteFileQuery{config: c.config}
+// Query returns a query builder for Repository.
+func (c *RepositoryClient) Query() *RepositoryQuery {
+	return &RepositoryQuery{
+		config: c.config,
+	}
 }
 
-// Get returns a RemoteFile entity by its id.
-func (c *RemoteFileClient) Get(ctx context.Context, id int) (*RemoteFile, error) {
-	return c.Query().Where(remotefile.ID(id)).Only(ctx)
+// Get returns a Repository entity by its id.
+func (c *RepositoryClient) Get(ctx context.Context, id uuid.UUID) (*Repository, error) {
+	return c.Query().Where(repository.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *RemoteFileClient) GetX(ctx context.Context, id int) *RemoteFile {
+func (c *RepositoryClient) GetX(ctx context.Context, id uuid.UUID) *Repository {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -2715,25 +4716,25 @@ func (c *RemoteFileClient) GetX(ctx context.Context, id int) *RemoteFile {
 	return obj
 }
 
-// QueryTag queries the tag edge of a RemoteFile.
-func (c *RemoteFileClient) QueryTag(rf *RemoteFile) *TagQuery {
-	query := &TagQuery{config: c.config}
+// QueryRepositoryToEnvironment queries the RepositoryToEnvironment edge of a Repository.
+func (c *RepositoryClient) QueryRepositoryToEnvironment(r *Repository) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := rf.ID
+		id := r.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(remotefile.Table, remotefile.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, remotefile.TagTable, remotefile.TagColumn),
+			sqlgraph.From(repository.Table, repository.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, repository.RepositoryToEnvironmentTable, repository.RepositoryToEnvironmentPrimaryKey...),
 		)
-		fromV = sqlgraph.Neighbors(rf.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *RemoteFileClient) Hooks() []Hook {
-	return c.hooks.RemoteFile
+func (c *RepositoryClient) Hooks() []Hook {
+	return c.hooks.Repository
 }
 
 // ScriptClient is a client for the Script schema.
@@ -2776,7 +4777,7 @@ func (c *ScriptClient) UpdateOne(s *Script) *ScriptUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ScriptClient) UpdateOneID(id int) *ScriptUpdateOne {
+func (c *ScriptClient) UpdateOneID(id uuid.UUID) *ScriptUpdateOne {
 	mutation := newScriptMutation(c.config, OpUpdateOne, withScriptID(id))
 	return &ScriptUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -2793,7 +4794,7 @@ func (c *ScriptClient) DeleteOne(s *Script) *ScriptDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *ScriptClient) DeleteOneID(id int) *ScriptDeleteOne {
+func (c *ScriptClient) DeleteOneID(id uuid.UUID) *ScriptDeleteOne {
 	builder := c.Delete().Where(script.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -2802,16 +4803,18 @@ func (c *ScriptClient) DeleteOneID(id int) *ScriptDeleteOne {
 
 // Query returns a query builder for Script.
 func (c *ScriptClient) Query() *ScriptQuery {
-	return &ScriptQuery{config: c.config}
+	return &ScriptQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Script entity by its id.
-func (c *ScriptClient) Get(ctx context.Context, id int) (*Script, error) {
+func (c *ScriptClient) Get(ctx context.Context, id uuid.UUID) (*Script, error) {
 	return c.Query().Where(script.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ScriptClient) GetX(ctx context.Context, id int) *Script {
+func (c *ScriptClient) GetX(ctx context.Context, id uuid.UUID) *Script {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -2819,31 +4822,15 @@ func (c *ScriptClient) GetX(ctx context.Context, id int) *Script {
 	return obj
 }
 
-// QueryTag queries the tag edge of a Script.
-func (c *ScriptClient) QueryTag(s *Script) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := s.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(script.Table, script.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, script.TagTable, script.TagColumn),
-		)
-		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryMaintainer queries the maintainer edge of a Script.
-func (c *ScriptClient) QueryMaintainer(s *Script) *UserQuery {
+// QueryScriptToUser queries the ScriptToUser edge of a Script.
+func (c *ScriptClient) QueryScriptToUser(s *Script) *UserQuery {
 	query := &UserQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := s.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(script.Table, script.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, script.MaintainerTable, script.MaintainerColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, script.ScriptToUserTable, script.ScriptToUserColumn),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -2851,15 +4838,31 @@ func (c *ScriptClient) QueryMaintainer(s *Script) *UserQuery {
 	return query
 }
 
-// QueryFinding queries the finding edge of a Script.
-func (c *ScriptClient) QueryFinding(s *Script) *FindingQuery {
+// QueryScriptToFinding queries the ScriptToFinding edge of a Script.
+func (c *ScriptClient) QueryScriptToFinding(s *Script) *FindingQuery {
 	query := &FindingQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := s.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(script.Table, script.FieldID, id),
 			sqlgraph.To(finding.Table, finding.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, script.FindingTable, script.FindingPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, script.ScriptToFindingTable, script.ScriptToFindingColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryScriptToEnvironment queries the ScriptToEnvironment edge of a Script.
+func (c *ScriptClient) QueryScriptToEnvironment(s *Script) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(script.Table, script.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, script.ScriptToEnvironmentTable, script.ScriptToEnvironmentColumn),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -2870,6 +4873,176 @@ func (c *ScriptClient) QueryFinding(s *Script) *FindingQuery {
 // Hooks returns the client hooks.
 func (c *ScriptClient) Hooks() []Hook {
 	return c.hooks.Script
+}
+
+// ServerTaskClient is a client for the ServerTask schema.
+type ServerTaskClient struct {
+	config
+}
+
+// NewServerTaskClient returns a client for the ServerTask from the given config.
+func NewServerTaskClient(c config) *ServerTaskClient {
+	return &ServerTaskClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `servertask.Hooks(f(g(h())))`.
+func (c *ServerTaskClient) Use(hooks ...Hook) {
+	c.hooks.ServerTask = append(c.hooks.ServerTask, hooks...)
+}
+
+// Create returns a create builder for ServerTask.
+func (c *ServerTaskClient) Create() *ServerTaskCreate {
+	mutation := newServerTaskMutation(c.config, OpCreate)
+	return &ServerTaskCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ServerTask entities.
+func (c *ServerTaskClient) CreateBulk(builders ...*ServerTaskCreate) *ServerTaskCreateBulk {
+	return &ServerTaskCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ServerTask.
+func (c *ServerTaskClient) Update() *ServerTaskUpdate {
+	mutation := newServerTaskMutation(c.config, OpUpdate)
+	return &ServerTaskUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ServerTaskClient) UpdateOne(st *ServerTask) *ServerTaskUpdateOne {
+	mutation := newServerTaskMutation(c.config, OpUpdateOne, withServerTask(st))
+	return &ServerTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ServerTaskClient) UpdateOneID(id uuid.UUID) *ServerTaskUpdateOne {
+	mutation := newServerTaskMutation(c.config, OpUpdateOne, withServerTaskID(id))
+	return &ServerTaskUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ServerTask.
+func (c *ServerTaskClient) Delete() *ServerTaskDelete {
+	mutation := newServerTaskMutation(c.config, OpDelete)
+	return &ServerTaskDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *ServerTaskClient) DeleteOne(st *ServerTask) *ServerTaskDeleteOne {
+	return c.DeleteOneID(st.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *ServerTaskClient) DeleteOneID(id uuid.UUID) *ServerTaskDeleteOne {
+	builder := c.Delete().Where(servertask.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ServerTaskDeleteOne{builder}
+}
+
+// Query returns a query builder for ServerTask.
+func (c *ServerTaskClient) Query() *ServerTaskQuery {
+	return &ServerTaskQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a ServerTask entity by its id.
+func (c *ServerTaskClient) Get(ctx context.Context, id uuid.UUID) (*ServerTask, error) {
+	return c.Query().Where(servertask.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ServerTaskClient) GetX(ctx context.Context, id uuid.UUID) *ServerTask {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryServerTaskToAuthUser queries the ServerTaskToAuthUser edge of a ServerTask.
+func (c *ServerTaskClient) QueryServerTaskToAuthUser(st *ServerTask) *AuthUserQuery {
+	query := &AuthUserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := st.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(servertask.Table, servertask.FieldID, id),
+			sqlgraph.To(authuser.Table, authuser.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, servertask.ServerTaskToAuthUserTable, servertask.ServerTaskToAuthUserColumn),
+		)
+		fromV = sqlgraph.Neighbors(st.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryServerTaskToStatus queries the ServerTaskToStatus edge of a ServerTask.
+func (c *ServerTaskClient) QueryServerTaskToStatus(st *ServerTask) *StatusQuery {
+	query := &StatusQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := st.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(servertask.Table, servertask.FieldID, id),
+			sqlgraph.To(status.Table, status.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, servertask.ServerTaskToStatusTable, servertask.ServerTaskToStatusColumn),
+		)
+		fromV = sqlgraph.Neighbors(st.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryServerTaskToEnvironment queries the ServerTaskToEnvironment edge of a ServerTask.
+func (c *ServerTaskClient) QueryServerTaskToEnvironment(st *ServerTask) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := st.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(servertask.Table, servertask.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, servertask.ServerTaskToEnvironmentTable, servertask.ServerTaskToEnvironmentColumn),
+		)
+		fromV = sqlgraph.Neighbors(st.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryServerTaskToBuild queries the ServerTaskToBuild edge of a ServerTask.
+func (c *ServerTaskClient) QueryServerTaskToBuild(st *ServerTask) *BuildQuery {
+	query := &BuildQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := st.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(servertask.Table, servertask.FieldID, id),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, servertask.ServerTaskToBuildTable, servertask.ServerTaskToBuildColumn),
+		)
+		fromV = sqlgraph.Neighbors(st.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryServerTaskToGinFileMiddleware queries the ServerTaskToGinFileMiddleware edge of a ServerTask.
+func (c *ServerTaskClient) QueryServerTaskToGinFileMiddleware(st *ServerTask) *GinFileMiddlewareQuery {
+	query := &GinFileMiddlewareQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := st.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(servertask.Table, servertask.FieldID, id),
+			sqlgraph.To(ginfilemiddleware.Table, ginfilemiddleware.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, servertask.ServerTaskToGinFileMiddlewareTable, servertask.ServerTaskToGinFileMiddlewareColumn),
+		)
+		fromV = sqlgraph.Neighbors(st.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ServerTaskClient) Hooks() []Hook {
+	return c.hooks.ServerTask
 }
 
 // StatusClient is a client for the Status schema.
@@ -2912,7 +5085,7 @@ func (c *StatusClient) UpdateOne(s *Status) *StatusUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *StatusClient) UpdateOneID(id int) *StatusUpdateOne {
+func (c *StatusClient) UpdateOneID(id uuid.UUID) *StatusUpdateOne {
 	mutation := newStatusMutation(c.config, OpUpdateOne, withStatusID(id))
 	return &StatusUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -2929,7 +5102,7 @@ func (c *StatusClient) DeleteOne(s *Status) *StatusDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *StatusClient) DeleteOneID(id int) *StatusDeleteOne {
+func (c *StatusClient) DeleteOneID(id uuid.UUID) *StatusDeleteOne {
 	builder := c.Delete().Where(status.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -2938,16 +5111,18 @@ func (c *StatusClient) DeleteOneID(id int) *StatusDeleteOne {
 
 // Query returns a query builder for Status.
 func (c *StatusClient) Query() *StatusQuery {
-	return &StatusQuery{config: c.config}
+	return &StatusQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Status entity by its id.
-func (c *StatusClient) Get(ctx context.Context, id int) (*Status, error) {
+func (c *StatusClient) Get(ctx context.Context, id uuid.UUID) (*Status, error) {
 	return c.Query().Where(status.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *StatusClient) GetX(ctx context.Context, id int) *Status {
+func (c *StatusClient) GetX(ctx context.Context, id uuid.UUID) *Status {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -2955,15 +5130,127 @@ func (c *StatusClient) GetX(ctx context.Context, id int) *Status {
 	return obj
 }
 
-// QueryTag queries the tag edge of a Status.
-func (c *StatusClient) QueryTag(s *Status) *TagQuery {
-	query := &TagQuery{config: c.config}
+// QueryStatusToBuild queries the StatusToBuild edge of a Status.
+func (c *StatusClient) QueryStatusToBuild(s *Status) *BuildQuery {
+	query := &BuildQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := s.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(status.Table, status.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, status.TagTable, status.TagColumn),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToBuildTable, status.StatusToBuildColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStatusToProvisionedNetwork queries the StatusToProvisionedNetwork edge of a Status.
+func (c *StatusClient) QueryStatusToProvisionedNetwork(s *Status) *ProvisionedNetworkQuery {
+	query := &ProvisionedNetworkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, id),
+			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToProvisionedNetworkTable, status.StatusToProvisionedNetworkColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStatusToProvisionedHost queries the StatusToProvisionedHost edge of a Status.
+func (c *StatusClient) QueryStatusToProvisionedHost(s *Status) *ProvisionedHostQuery {
+	query := &ProvisionedHostQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, id),
+			sqlgraph.To(provisionedhost.Table, provisionedhost.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToProvisionedHostTable, status.StatusToProvisionedHostColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStatusToProvisioningStep queries the StatusToProvisioningStep edge of a Status.
+func (c *StatusClient) QueryStatusToProvisioningStep(s *Status) *ProvisioningStepQuery {
+	query := &ProvisioningStepQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, id),
+			sqlgraph.To(provisioningstep.Table, provisioningstep.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToProvisioningStepTable, status.StatusToProvisioningStepColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStatusToTeam queries the StatusToTeam edge of a Status.
+func (c *StatusClient) QueryStatusToTeam(s *Status) *TeamQuery {
+	query := &TeamQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, id),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToTeamTable, status.StatusToTeamColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStatusToPlan queries the StatusToPlan edge of a Status.
+func (c *StatusClient) QueryStatusToPlan(s *Status) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToPlanTable, status.StatusToPlanColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStatusToServerTask queries the StatusToServerTask edge of a Status.
+func (c *StatusClient) QueryStatusToServerTask(s *Status) *ServerTaskQuery {
+	query := &ServerTaskQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, id),
+			sqlgraph.To(servertask.Table, servertask.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToServerTaskTable, status.StatusToServerTaskColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryStatusToAdhocPlan queries the StatusToAdhocPlan edge of a Status.
+func (c *StatusClient) QueryStatusToAdhocPlan(s *Status) *AdhocPlanQuery {
+	query := &AdhocPlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(status.Table, status.FieldID, id),
+			sqlgraph.To(adhocplan.Table, adhocplan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, status.StatusToAdhocPlanTable, status.StatusToAdhocPlanColumn),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -3016,7 +5303,7 @@ func (c *TagClient) UpdateOne(t *Tag) *TagUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *TagClient) UpdateOneID(id int) *TagUpdateOne {
+func (c *TagClient) UpdateOneID(id uuid.UUID) *TagUpdateOne {
 	mutation := newTagMutation(c.config, OpUpdateOne, withTagID(id))
 	return &TagUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -3033,7 +5320,7 @@ func (c *TagClient) DeleteOne(t *Tag) *TagDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *TagClient) DeleteOneID(id int) *TagDeleteOne {
+func (c *TagClient) DeleteOneID(id uuid.UUID) *TagDeleteOne {
 	builder := c.Delete().Where(tag.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -3042,16 +5329,18 @@ func (c *TagClient) DeleteOneID(id int) *TagDeleteOne {
 
 // Query returns a query builder for Tag.
 func (c *TagClient) Query() *TagQuery {
-	return &TagQuery{config: c.config}
+	return &TagQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Tag entity by its id.
-func (c *TagClient) Get(ctx context.Context, id int) (*Tag, error) {
+func (c *TagClient) Get(ctx context.Context, id uuid.UUID) (*Tag, error) {
 	return c.Query().Where(tag.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *TagClient) GetX(ctx context.Context, id int) *Tag {
+func (c *TagClient) GetX(ctx context.Context, id uuid.UUID) *Tag {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -3104,7 +5393,7 @@ func (c *TeamClient) UpdateOne(t *Team) *TeamUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *TeamClient) UpdateOneID(id int) *TeamUpdateOne {
+func (c *TeamClient) UpdateOneID(id uuid.UUID) *TeamUpdateOne {
 	mutation := newTeamMutation(c.config, OpUpdateOne, withTeamID(id))
 	return &TeamUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -3121,7 +5410,7 @@ func (c *TeamClient) DeleteOne(t *Team) *TeamDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *TeamClient) DeleteOneID(id int) *TeamDeleteOne {
+func (c *TeamClient) DeleteOneID(id uuid.UUID) *TeamDeleteOne {
 	builder := c.Delete().Where(team.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -3130,16 +5419,18 @@ func (c *TeamClient) DeleteOneID(id int) *TeamDeleteOne {
 
 // Query returns a query builder for Team.
 func (c *TeamClient) Query() *TeamQuery {
-	return &TeamQuery{config: c.config}
+	return &TeamQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a Team entity by its id.
-func (c *TeamClient) Get(ctx context.Context, id int) (*Team, error) {
+func (c *TeamClient) Get(ctx context.Context, id uuid.UUID) (*Team, error) {
 	return c.Query().Where(team.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *TeamClient) GetX(ctx context.Context, id int) *Team {
+func (c *TeamClient) GetX(ctx context.Context, id uuid.UUID) *Team {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -3147,31 +5438,15 @@ func (c *TeamClient) GetX(ctx context.Context, id int) *Team {
 	return obj
 }
 
-// QueryMaintainer queries the maintainer edge of a Team.
-func (c *TeamClient) QueryMaintainer(t *Team) *UserQuery {
-	query := &UserQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := t.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(team.Table, team.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, team.MaintainerTable, team.MaintainerColumn),
-		)
-		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryBuild queries the build edge of a Team.
-func (c *TeamClient) QueryBuild(t *Team) *BuildQuery {
+// QueryTeamToBuild queries the TeamToBuild edge of a Team.
+func (c *TeamClient) QueryTeamToBuild(t *Team) *BuildQuery {
 	query := &BuildQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := t.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(team.Table, team.FieldID, id),
 			sqlgraph.To(build.Table, build.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, team.BuildTable, team.BuildPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, team.TeamToBuildTable, team.TeamToBuildColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil
@@ -3179,15 +5454,15 @@ func (c *TeamClient) QueryBuild(t *Team) *BuildQuery {
 	return query
 }
 
-// QueryTeamToEnvironment queries the TeamToEnvironment edge of a Team.
-func (c *TeamClient) QueryTeamToEnvironment(t *Team) *EnvironmentQuery {
-	query := &EnvironmentQuery{config: c.config}
+// QueryTeamToStatus queries the TeamToStatus edge of a Team.
+func (c *TeamClient) QueryTeamToStatus(t *Team) *StatusQuery {
+	query := &StatusQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := t.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(team.Table, team.FieldID, id),
-			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, team.TeamToEnvironmentTable, team.TeamToEnvironmentPrimaryKey...),
+			sqlgraph.To(status.Table, status.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, team.TeamToStatusTable, team.TeamToStatusColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil
@@ -3195,31 +5470,31 @@ func (c *TeamClient) QueryTeamToEnvironment(t *Team) *EnvironmentQuery {
 	return query
 }
 
-// QueryTag queries the tag edge of a Team.
-func (c *TeamClient) QueryTag(t *Team) *TagQuery {
-	query := &TagQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := t.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(team.Table, team.FieldID, id),
-			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, team.TagTable, team.TagColumn),
-		)
-		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryProvisionedNetworks queries the provisioned_networks edge of a Team.
-func (c *TeamClient) QueryProvisionedNetworks(t *Team) *ProvisionedNetworkQuery {
+// QueryTeamToProvisionedNetwork queries the TeamToProvisionedNetwork edge of a Team.
+func (c *TeamClient) QueryTeamToProvisionedNetwork(t *Team) *ProvisionedNetworkQuery {
 	query := &ProvisionedNetworkQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := t.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(team.Table, team.FieldID, id),
 			sqlgraph.To(provisionednetwork.Table, provisionednetwork.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, team.ProvisionedNetworksTable, team.ProvisionedNetworksPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, team.TeamToProvisionedNetworkTable, team.TeamToProvisionedNetworkColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTeamToPlan queries the TeamToPlan edge of a Team.
+func (c *TeamClient) QueryTeamToPlan(t *Team) *PlanQuery {
+	query := &PlanQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, id),
+			sqlgraph.To(plan.Table, plan.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, team.TeamToPlanTable, team.TeamToPlanColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil
@@ -3230,6 +5505,112 @@ func (c *TeamClient) QueryProvisionedNetworks(t *Team) *ProvisionedNetworkQuery 
 // Hooks returns the client hooks.
 func (c *TeamClient) Hooks() []Hook {
 	return c.hooks.Team
+}
+
+// TokenClient is a client for the Token schema.
+type TokenClient struct {
+	config
+}
+
+// NewTokenClient returns a client for the Token from the given config.
+func NewTokenClient(c config) *TokenClient {
+	return &TokenClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `token.Hooks(f(g(h())))`.
+func (c *TokenClient) Use(hooks ...Hook) {
+	c.hooks.Token = append(c.hooks.Token, hooks...)
+}
+
+// Create returns a create builder for Token.
+func (c *TokenClient) Create() *TokenCreate {
+	mutation := newTokenMutation(c.config, OpCreate)
+	return &TokenCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Token entities.
+func (c *TokenClient) CreateBulk(builders ...*TokenCreate) *TokenCreateBulk {
+	return &TokenCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Token.
+func (c *TokenClient) Update() *TokenUpdate {
+	mutation := newTokenMutation(c.config, OpUpdate)
+	return &TokenUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TokenClient) UpdateOne(t *Token) *TokenUpdateOne {
+	mutation := newTokenMutation(c.config, OpUpdateOne, withToken(t))
+	return &TokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TokenClient) UpdateOneID(id uuid.UUID) *TokenUpdateOne {
+	mutation := newTokenMutation(c.config, OpUpdateOne, withTokenID(id))
+	return &TokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Token.
+func (c *TokenClient) Delete() *TokenDelete {
+	mutation := newTokenMutation(c.config, OpDelete)
+	return &TokenDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *TokenClient) DeleteOne(t *Token) *TokenDeleteOne {
+	return c.DeleteOneID(t.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *TokenClient) DeleteOneID(id uuid.UUID) *TokenDeleteOne {
+	builder := c.Delete().Where(token.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TokenDeleteOne{builder}
+}
+
+// Query returns a query builder for Token.
+func (c *TokenClient) Query() *TokenQuery {
+	return &TokenQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Token entity by its id.
+func (c *TokenClient) Get(ctx context.Context, id uuid.UUID) (*Token, error) {
+	return c.Query().Where(token.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TokenClient) GetX(ctx context.Context, id uuid.UUID) *Token {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTokenToAuthUser queries the TokenToAuthUser edge of a Token.
+func (c *TokenClient) QueryTokenToAuthUser(t *Token) *AuthUserQuery {
+	query := &AuthUserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(token.Table, token.FieldID, id),
+			sqlgraph.To(authuser.Table, authuser.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, token.TokenToAuthUserTable, token.TokenToAuthUserColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *TokenClient) Hooks() []Hook {
+	return c.hooks.Token
 }
 
 // UserClient is a client for the User schema.
@@ -3272,7 +5653,7 @@ func (c *UserClient) UpdateOne(u *User) *UserUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *UserClient) UpdateOneID(id int) *UserUpdateOne {
+func (c *UserClient) UpdateOneID(id uuid.UUID) *UserUpdateOne {
 	mutation := newUserMutation(c.config, OpUpdateOne, withUserID(id))
 	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -3289,7 +5670,7 @@ func (c *UserClient) DeleteOne(u *User) *UserDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *UserClient) DeleteOneID(id int) *UserDeleteOne {
+func (c *UserClient) DeleteOneID(id uuid.UUID) *UserDeleteOne {
 	builder := c.Delete().Where(user.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -3298,16 +5679,18 @@ func (c *UserClient) DeleteOneID(id int) *UserDeleteOne {
 
 // Query returns a query builder for User.
 func (c *UserClient) Query() *UserQuery {
-	return &UserQuery{config: c.config}
+	return &UserQuery{
+		config: c.config,
+	}
 }
 
 // Get returns a User entity by its id.
-func (c *UserClient) Get(ctx context.Context, id int) (*User, error) {
+func (c *UserClient) Get(ctx context.Context, id uuid.UUID) (*User, error) {
 	return c.Query().Where(user.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *UserClient) GetX(ctx context.Context, id int) *User {
+func (c *UserClient) GetX(ctx context.Context, id uuid.UUID) *User {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -3315,15 +5698,31 @@ func (c *UserClient) GetX(ctx context.Context, id int) *User {
 	return obj
 }
 
-// QueryTag queries the tag edge of a User.
-func (c *UserClient) QueryTag(u *User) *TagQuery {
+// QueryUserToTag queries the UserToTag edge of a User.
+func (c *UserClient) QueryUserToTag(u *User) *TagQuery {
 	query := &TagQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := u.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.TagTable, user.TagColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.UserToTagTable, user.UserToTagColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUserToEnvironment queries the UserToEnvironment edge of a User.
+func (c *UserClient) QueryUserToEnvironment(u *User) *EnvironmentQuery {
+	query := &EnvironmentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.UserToEnvironmentTable, user.UserToEnvironmentPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

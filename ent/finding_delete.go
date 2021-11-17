@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/finding"
 	"github.com/gen0cide/laforge/ent/predicate"
 )
@@ -20,9 +20,9 @@ type FindingDelete struct {
 	mutation *FindingMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where appends a list predicates to the FindingDelete builder.
 func (fd *FindingDelete) Where(ps ...predicate.Finding) *FindingDelete {
-	fd.mutation.predicates = append(fd.mutation.predicates, ps...)
+	fd.mutation.Where(ps...)
 	return fd
 }
 
@@ -46,6 +46,9 @@ func (fd *FindingDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(fd.hooks) - 1; i >= 0; i-- {
+			if fd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = fd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, fd.mutation); err != nil {
@@ -69,7 +72,7 @@ func (fd *FindingDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: finding.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: finding.FieldID,
 			},
 		},

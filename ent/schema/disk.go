@@ -1,9 +1,10 @@
 package schema
 
 import (
-	"github.com/facebook/ent"
-	"github.com/facebook/ent/schema/edge"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // Disk holds the schema definition for the Disk entity.
@@ -14,13 +15,18 @@ type Disk struct {
 // Fields of the Disk.
 func (Disk) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int("size").Positive(),
+		field.UUID("id", uuid.UUID{}).
+			Default(uuid.New),
+		field.Int("size").Positive().
+			StructTag(`hcl:"size,attr"`),
 	}
 }
 
 // Edges of the Disk.
 func (Disk) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("tag", Tag.Type),
+		edge.From("DiskToHost", Host.Type).
+			Ref("HostToDisk").
+			Unique(),
 	}
 }

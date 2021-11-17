@@ -6,9 +6,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/predicate"
 	"github.com/gen0cide/laforge/ent/script"
 )
@@ -20,9 +20,9 @@ type ScriptDelete struct {
 	mutation *ScriptMutation
 }
 
-// Where adds a new predicate to the delete builder.
+// Where appends a list predicates to the ScriptDelete builder.
 func (sd *ScriptDelete) Where(ps ...predicate.Script) *ScriptDelete {
-	sd.mutation.predicates = append(sd.mutation.predicates, ps...)
+	sd.mutation.Where(ps...)
 	return sd
 }
 
@@ -46,6 +46,9 @@ func (sd *ScriptDelete) Exec(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(sd.hooks) - 1; i >= 0; i-- {
+			if sd.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = sd.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, sd.mutation); err != nil {
@@ -69,7 +72,7 @@ func (sd *ScriptDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: script.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: script.FieldID,
 			},
 		},

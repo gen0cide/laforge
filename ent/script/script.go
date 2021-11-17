@@ -2,11 +2,17 @@
 
 package script
 
+import (
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the script type in the database.
 	Label = "script"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldHclID holds the string denoting the hcl_id field in the database.
+	FieldHclID = "hcl_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldLanguage holds the string denoting the language field in the database.
@@ -31,40 +37,43 @@ const (
 	FieldVars = "vars"
 	// FieldAbsPath holds the string denoting the abs_path field in the database.
 	FieldAbsPath = "abs_path"
-
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
-	// EdgeMaintainer holds the string denoting the maintainer edge name in mutations.
-	EdgeMaintainer = "maintainer"
-	// EdgeFinding holds the string denoting the finding edge name in mutations.
-	EdgeFinding = "finding"
-
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
+	// EdgeScriptToUser holds the string denoting the scripttouser edge name in mutations.
+	EdgeScriptToUser = "ScriptToUser"
+	// EdgeScriptToFinding holds the string denoting the scripttofinding edge name in mutations.
+	EdgeScriptToFinding = "ScriptToFinding"
+	// EdgeScriptToEnvironment holds the string denoting the scripttoenvironment edge name in mutations.
+	EdgeScriptToEnvironment = "ScriptToEnvironment"
 	// Table holds the table name of the script in the database.
 	Table = "scripts"
-	// TagTable is the table the holds the tag relation/edge.
-	TagTable = "tags"
-	// TagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
-	// TagColumn is the table column denoting the tag relation/edge.
-	TagColumn = "script_tag"
-	// MaintainerTable is the table the holds the maintainer relation/edge.
-	MaintainerTable = "users"
-	// MaintainerInverseTable is the table name for the User entity.
+	// ScriptToUserTable is the table that holds the ScriptToUser relation/edge.
+	ScriptToUserTable = "users"
+	// ScriptToUserInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
-	MaintainerInverseTable = "users"
-	// MaintainerColumn is the table column denoting the maintainer relation/edge.
-	MaintainerColumn = "script_maintainer"
-	// FindingTable is the table the holds the finding relation/edge. The primary key declared below.
-	FindingTable = "finding_script"
-	// FindingInverseTable is the table name for the Finding entity.
+	ScriptToUserInverseTable = "users"
+	// ScriptToUserColumn is the table column denoting the ScriptToUser relation/edge.
+	ScriptToUserColumn = "script_script_to_user"
+	// ScriptToFindingTable is the table that holds the ScriptToFinding relation/edge.
+	ScriptToFindingTable = "findings"
+	// ScriptToFindingInverseTable is the table name for the Finding entity.
 	// It exists in this package in order to avoid circular dependency with the "finding" package.
-	FindingInverseTable = "findings"
+	ScriptToFindingInverseTable = "findings"
+	// ScriptToFindingColumn is the table column denoting the ScriptToFinding relation/edge.
+	ScriptToFindingColumn = "script_script_to_finding"
+	// ScriptToEnvironmentTable is the table that holds the ScriptToEnvironment relation/edge.
+	ScriptToEnvironmentTable = "scripts"
+	// ScriptToEnvironmentInverseTable is the table name for the Environment entity.
+	// It exists in this package in order to avoid circular dependency with the "environment" package.
+	ScriptToEnvironmentInverseTable = "environments"
+	// ScriptToEnvironmentColumn is the table column denoting the ScriptToEnvironment relation/edge.
+	ScriptToEnvironmentColumn = "environment_environment_to_script"
 )
 
 // Columns holds all SQL columns for script fields.
 var Columns = []string{
 	FieldID,
+	FieldHclID,
 	FieldName,
 	FieldLanguage,
 	FieldDescription,
@@ -77,18 +86,14 @@ var Columns = []string{
 	FieldDisabled,
 	FieldVars,
 	FieldAbsPath,
+	FieldTags,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the Script type.
+// ForeignKeys holds the SQL foreign-keys that are owned by the "scripts"
+// table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"provisioning_step_script",
+	"environment_environment_to_script",
 }
-
-var (
-	// FindingPrimaryKey and FindingColumn2 are the table columns denoting the
-	// primary key for the finding relation (M2M).
-	FindingPrimaryKey = []string{"finding_id", "script_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -104,3 +109,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)

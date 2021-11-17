@@ -6,12 +6,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/facebook/ent/dialect/sql"
-	"github.com/facebook/ent/dialect/sql/sqlgraph"
-	"github.com/facebook/ent/schema/field"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/schema/field"
 	"github.com/gen0cide/laforge/ent/disk"
+	"github.com/gen0cide/laforge/ent/host"
 	"github.com/gen0cide/laforge/ent/predicate"
-	"github.com/gen0cide/laforge/ent/tag"
+	"github.com/google/uuid"
 )
 
 // DiskUpdate is the builder for updating Disk entities.
@@ -21,38 +22,42 @@ type DiskUpdate struct {
 	mutation *DiskMutation
 }
 
-// Where adds a new predicate for the builder.
+// Where appends a list predicates to the DiskUpdate builder.
 func (du *DiskUpdate) Where(ps ...predicate.Disk) *DiskUpdate {
-	du.mutation.predicates = append(du.mutation.predicates, ps...)
+	du.mutation.Where(ps...)
 	return du
 }
 
-// SetSize sets the size field.
+// SetSize sets the "size" field.
 func (du *DiskUpdate) SetSize(i int) *DiskUpdate {
 	du.mutation.ResetSize()
 	du.mutation.SetSize(i)
 	return du
 }
 
-// AddSize adds i to size.
+// AddSize adds i to the "size" field.
 func (du *DiskUpdate) AddSize(i int) *DiskUpdate {
 	du.mutation.AddSize(i)
 	return du
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (du *DiskUpdate) AddTagIDs(ids ...int) *DiskUpdate {
-	du.mutation.AddTagIDs(ids...)
+// SetDiskToHostID sets the "DiskToHost" edge to the Host entity by ID.
+func (du *DiskUpdate) SetDiskToHostID(id uuid.UUID) *DiskUpdate {
+	du.mutation.SetDiskToHostID(id)
 	return du
 }
 
-// AddTag adds the tag edges to Tag.
-func (du *DiskUpdate) AddTag(t ...*Tag) *DiskUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableDiskToHostID sets the "DiskToHost" edge to the Host entity by ID if the given value is not nil.
+func (du *DiskUpdate) SetNillableDiskToHostID(id *uuid.UUID) *DiskUpdate {
+	if id != nil {
+		du = du.SetDiskToHostID(*id)
 	}
-	return du.AddTagIDs(ids...)
+	return du
+}
+
+// SetDiskToHost sets the "DiskToHost" edge to the Host entity.
+func (du *DiskUpdate) SetDiskToHost(h *Host) *DiskUpdate {
+	return du.SetDiskToHostID(h.ID)
 }
 
 // Mutation returns the DiskMutation object of the builder.
@@ -60,25 +65,10 @@ func (du *DiskUpdate) Mutation() *DiskMutation {
 	return du.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (du *DiskUpdate) ClearTag() *DiskUpdate {
-	du.mutation.ClearTag()
+// ClearDiskToHost clears the "DiskToHost" edge to the Host entity.
+func (du *DiskUpdate) ClearDiskToHost() *DiskUpdate {
+	du.mutation.ClearDiskToHost()
 	return du
-}
-
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (du *DiskUpdate) RemoveTagIDs(ids ...int) *DiskUpdate {
-	du.mutation.RemoveTagIDs(ids...)
-	return du
-}
-
-// RemoveTag removes tag edges to Tag.
-func (du *DiskUpdate) RemoveTag(t ...*Tag) *DiskUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return du.RemoveTagIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -107,6 +97,9 @@ func (du *DiskUpdate) Save(ctx context.Context) (int, error) {
 			return affected, err
 		})
 		for i := len(du.hooks) - 1; i >= 0; i-- {
+			if du.hooks[i] == nil {
+				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = du.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, du.mutation); err != nil {
@@ -154,7 +147,7 @@ func (du *DiskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   disk.Table,
 			Columns: disk.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: disk.FieldID,
 			},
 		},
@@ -180,52 +173,33 @@ func (du *DiskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: disk.FieldSize,
 		})
 	}
-	if du.mutation.TagCleared() {
+	if du.mutation.DiskToHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   disk.TagTable,
-			Columns: []string{disk.TagColumn},
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   disk.DiskToHostTable,
+			Columns: []string{disk.DiskToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: host.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := du.mutation.RemovedTagIDs(); len(nodes) > 0 && !du.mutation.TagCleared() {
+	if nodes := du.mutation.DiskToHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   disk.TagTable,
-			Columns: []string{disk.TagColumn},
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   disk.DiskToHostTable,
+			Columns: []string{disk.DiskToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := du.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   disk.TagTable,
-			Columns: []string{disk.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: host.FieldID,
 				},
 			},
 		}
@@ -237,8 +211,8 @@ func (du *DiskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{disk.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return 0, err
 	}
@@ -248,36 +222,41 @@ func (du *DiskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // DiskUpdateOne is the builder for updating a single Disk entity.
 type DiskUpdateOne struct {
 	config
+	fields   []string
 	hooks    []Hook
 	mutation *DiskMutation
 }
 
-// SetSize sets the size field.
+// SetSize sets the "size" field.
 func (duo *DiskUpdateOne) SetSize(i int) *DiskUpdateOne {
 	duo.mutation.ResetSize()
 	duo.mutation.SetSize(i)
 	return duo
 }
 
-// AddSize adds i to size.
+// AddSize adds i to the "size" field.
 func (duo *DiskUpdateOne) AddSize(i int) *DiskUpdateOne {
 	duo.mutation.AddSize(i)
 	return duo
 }
 
-// AddTagIDs adds the tag edge to Tag by ids.
-func (duo *DiskUpdateOne) AddTagIDs(ids ...int) *DiskUpdateOne {
-	duo.mutation.AddTagIDs(ids...)
+// SetDiskToHostID sets the "DiskToHost" edge to the Host entity by ID.
+func (duo *DiskUpdateOne) SetDiskToHostID(id uuid.UUID) *DiskUpdateOne {
+	duo.mutation.SetDiskToHostID(id)
 	return duo
 }
 
-// AddTag adds the tag edges to Tag.
-func (duo *DiskUpdateOne) AddTag(t ...*Tag) *DiskUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableDiskToHostID sets the "DiskToHost" edge to the Host entity by ID if the given value is not nil.
+func (duo *DiskUpdateOne) SetNillableDiskToHostID(id *uuid.UUID) *DiskUpdateOne {
+	if id != nil {
+		duo = duo.SetDiskToHostID(*id)
 	}
-	return duo.AddTagIDs(ids...)
+	return duo
+}
+
+// SetDiskToHost sets the "DiskToHost" edge to the Host entity.
+func (duo *DiskUpdateOne) SetDiskToHost(h *Host) *DiskUpdateOne {
+	return duo.SetDiskToHostID(h.ID)
 }
 
 // Mutation returns the DiskMutation object of the builder.
@@ -285,28 +264,20 @@ func (duo *DiskUpdateOne) Mutation() *DiskMutation {
 	return duo.mutation
 }
 
-// ClearTag clears all "tag" edges to type Tag.
-func (duo *DiskUpdateOne) ClearTag() *DiskUpdateOne {
-	duo.mutation.ClearTag()
+// ClearDiskToHost clears the "DiskToHost" edge to the Host entity.
+func (duo *DiskUpdateOne) ClearDiskToHost() *DiskUpdateOne {
+	duo.mutation.ClearDiskToHost()
 	return duo
 }
 
-// RemoveTagIDs removes the tag edge to Tag by ids.
-func (duo *DiskUpdateOne) RemoveTagIDs(ids ...int) *DiskUpdateOne {
-	duo.mutation.RemoveTagIDs(ids...)
+// Select allows selecting one or more fields (columns) of the returned entity.
+// The default is selecting all fields defined in the entity schema.
+func (duo *DiskUpdateOne) Select(field string, fields ...string) *DiskUpdateOne {
+	duo.fields = append([]string{field}, fields...)
 	return duo
 }
 
-// RemoveTag removes tag edges to Tag.
-func (duo *DiskUpdateOne) RemoveTag(t ...*Tag) *DiskUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return duo.RemoveTagIDs(ids...)
-}
-
-// Save executes the query and returns the updated entity.
+// Save executes the query and returns the updated Disk entity.
 func (duo *DiskUpdateOne) Save(ctx context.Context) (*Disk, error) {
 	var (
 		err  error
@@ -332,6 +303,9 @@ func (duo *DiskUpdateOne) Save(ctx context.Context) (*Disk, error) {
 			return node, err
 		})
 		for i := len(duo.hooks) - 1; i >= 0; i-- {
+			if duo.hooks[i] == nil {
+				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
+			}
 			mut = duo.hooks[i](mut)
 		}
 		if _, err := mut.Mutate(ctx, duo.mutation); err != nil {
@@ -379,7 +353,7 @@ func (duo *DiskUpdateOne) sqlSave(ctx context.Context) (_node *Disk, err error) 
 			Table:   disk.Table,
 			Columns: disk.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: disk.FieldID,
 			},
 		},
@@ -389,6 +363,25 @@ func (duo *DiskUpdateOne) sqlSave(ctx context.Context) (_node *Disk, err error) 
 		return nil, &ValidationError{Name: "ID", err: fmt.Errorf("missing Disk.ID for update")}
 	}
 	_spec.Node.ID.Value = id
+	if fields := duo.fields; len(fields) > 0 {
+		_spec.Node.Columns = make([]string, 0, len(fields))
+		_spec.Node.Columns = append(_spec.Node.Columns, disk.FieldID)
+		for _, f := range fields {
+			if !disk.ValidColumn(f) {
+				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
+			}
+			if f != disk.FieldID {
+				_spec.Node.Columns = append(_spec.Node.Columns, f)
+			}
+		}
+	}
+	if ps := duo.mutation.predicates; len(ps) > 0 {
+		_spec.Predicate = func(selector *sql.Selector) {
+			for i := range ps {
+				ps[i](selector)
+			}
+		}
+	}
 	if value, ok := duo.mutation.Size(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeInt,
@@ -403,52 +396,33 @@ func (duo *DiskUpdateOne) sqlSave(ctx context.Context) (_node *Disk, err error) 
 			Column: disk.FieldSize,
 		})
 	}
-	if duo.mutation.TagCleared() {
+	if duo.mutation.DiskToHostCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   disk.TagTable,
-			Columns: []string{disk.TagColumn},
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   disk.DiskToHostTable,
+			Columns: []string{disk.DiskToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: host.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := duo.mutation.RemovedTagIDs(); len(nodes) > 0 && !duo.mutation.TagCleared() {
+	if nodes := duo.mutation.DiskToHostIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   disk.TagTable,
-			Columns: []string{disk.TagColumn},
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   disk.DiskToHostTable,
+			Columns: []string{disk.DiskToHostColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := duo.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   disk.TagTable,
-			Columns: []string{disk.TagColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
+					Type:   field.TypeUUID,
+					Column: host.FieldID,
 				},
 			},
 		}
@@ -459,12 +433,12 @@ func (duo *DiskUpdateOne) sqlSave(ctx context.Context) (_node *Disk, err error) 
 	}
 	_node = &Disk{config: duo.config}
 	_spec.Assign = _node.assignValues
-	_spec.ScanValues = _node.scanValues()
+	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, duo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{disk.Label}
-		} else if cerr, ok := isSQLConstraintError(err); ok {
-			err = cerr
+		} else if sqlgraph.IsConstraintError(err) {
+			err = &ConstraintError{err.Error(), err}
 		}
 		return nil, err
 	}

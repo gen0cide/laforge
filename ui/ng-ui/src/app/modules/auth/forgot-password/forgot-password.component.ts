@@ -7,13 +7,13 @@ import { first } from 'rxjs/operators';
 enum ErrorStates {
   NotSubmitted,
   HasError,
-  NoError,
+  NoError
 }
 
 @Component({
   selector: 'app-forgot-password',
   templateUrl: './forgot-password.component.html',
-  styleUrls: ['./forgot-password.component.scss'],
+  styleUrls: ['./forgot-password.component.scss']
 })
 export class ForgotPasswordComponent implements OnInit {
   forgotPasswordForm: FormGroup;
@@ -23,11 +23,8 @@ export class ForgotPasswordComponent implements OnInit {
 
   // private fields
   private unsubscribe: Subscription[] = []; // Read more: => https://brianflove.com/2016/12/11/anguar-2-unsubscribe-observables/
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService
-  ) {
-    this.isLoading$ = this.authService.isLoading$;
+  constructor(private fb: FormBuilder, private authService: AuthService) {
+    this.isLoading$ = this.authService.isLoading;
   }
 
   ngOnInit(): void {
@@ -47,9 +44,9 @@ export class ForgotPasswordComponent implements OnInit {
           Validators.required,
           Validators.email,
           Validators.minLength(3),
-          Validators.maxLength(320), // https://stackoverflow.com/questions/386294/what-is-the-maximum-length-of-a-valid-email-address
-        ]),
-      ],
+          Validators.maxLength(320) // https://stackoverflow.com/questions/386294/what-is-the-maximum-length-of-a-valid-email-address
+        ])
+      ]
     });
   }
 

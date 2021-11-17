@@ -1,10 +1,12 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { Router, NavigationStart, RouteConfigLoadStart, RouteConfigLoadEnd, NavigationEnd, NavigationCancel } from '@angular/router';
-import { LayoutService } from '../../../../_metronic/core';
+
+import { Subscription, Observable, BehaviorSubject } from 'rxjs';
+
+import { KTUtil } from '../../../../../assets/js/components/util';
 import KTLayoutHeader from '../../../../../assets/js/layout/base/header';
 import KTLayoutHeaderMenu from '../../../../../assets/js/layout/base/header-menu';
-import { KTUtil } from '../../../../../assets/js/components/util';
-import { Subscription, Observable, BehaviorSubject } from 'rxjs';
+import { LayoutService } from '../../../../_metronic/core';
 
 @Component({
   selector: 'app-header',

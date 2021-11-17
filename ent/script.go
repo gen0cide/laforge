@@ -7,225 +7,269 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/facebook/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql"
+	"github.com/gen0cide/laforge/ent/environment"
 	"github.com/gen0cide/laforge/ent/script"
+	"github.com/google/uuid"
 )
 
 // Script is the model entity for the Script schema.
 type Script struct {
-	config `json:"-"`
+	config ` json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
+	// HclID holds the value of the "hcl_id" field.
+	HclID string `json:"hcl_id,omitempty" hcl:"id,label"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" hcl:"name,attr"`
 	// Language holds the value of the "language" field.
-	Language string `json:"language,omitempty"`
+	Language string `json:"language,omitempty" hcl:"language,attr"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitempty" hcl:"description,optional"`
 	// Source holds the value of the "source" field.
-	Source string `json:"source,omitempty"`
+	Source string `json:"source,omitempty" hcl:"source,attr"`
 	// SourceType holds the value of the "source_type" field.
-	SourceType string `json:"source_type,omitempty"`
+	SourceType string `json:"source_type,omitempty" hcl:"source_type,attr"`
 	// Cooldown holds the value of the "cooldown" field.
-	Cooldown int `json:"cooldown,omitempty"`
+	Cooldown int `json:"cooldown,omitempty" hcl:"cooldown,optional"`
 	// Timeout holds the value of the "timeout" field.
-	Timeout int `json:"timeout,omitempty"`
+	Timeout int `json:"timeout,omitempty" hcl:"timeout,optional"`
 	// IgnoreErrors holds the value of the "ignore_errors" field.
-	IgnoreErrors bool `json:"ignore_errors,omitempty"`
+	IgnoreErrors bool `json:"ignore_errors,omitempty" hcl:"ignore_errors,optional"`
 	// Args holds the value of the "args" field.
-	Args []string `json:"args,omitempty"`
+	Args []string `json:"args,omitempty" hcl:"args,optional"`
 	// Disabled holds the value of the "disabled" field.
-	Disabled bool `json:"disabled,omitempty"`
+	Disabled bool `json:"disabled,omitempty" hcl:"disabled,optional" `
 	// Vars holds the value of the "vars" field.
-	Vars map[string]string `json:"vars,omitempty"`
+	Vars map[string]string `json:"vars,omitempty" hcl:"vars,optional"`
 	// AbsPath holds the value of the "abs_path" field.
-	AbsPath string `json:"abs_path,omitempty"`
+	AbsPath string `json:"abs_path,omitempty" hcl:"abs_path,optional"`
+	// Tags holds the value of the "tags" field.
+	Tags map[string]string `json:"tags,omitempty" hcl:"tags,optional"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ScriptQuery when eager-loading is set.
-	Edges                    ScriptEdges `json:"edges"`
-	provisioning_step_script *int
+	Edges ScriptEdges `json:"edges"`
+
+	// Edges put into the main struct to be loaded via hcl
+	// ScriptToUser holds the value of the ScriptToUser edge.
+	HCLScriptToUser []*User `json:"ScriptToUser,omitempty" hcl:"maintainer,block"`
+	// ScriptToFinding holds the value of the ScriptToFinding edge.
+	HCLScriptToFinding []*Finding `json:"ScriptToFinding,omitempty" hcl:"finding,block"`
+	// ScriptToEnvironment holds the value of the ScriptToEnvironment edge.
+	HCLScriptToEnvironment *Environment `json:"ScriptToEnvironment,omitempty"`
+	//
+	environment_environment_to_script *uuid.UUID
 }
 
 // ScriptEdges holds the relations/edges for other nodes in the graph.
 type ScriptEdges struct {
-	// Tag holds the value of the tag edge.
-	Tag []*Tag
-	// Maintainer holds the value of the maintainer edge.
-	Maintainer []*User
-	// Finding holds the value of the finding edge.
-	Finding []*Finding
+	// ScriptToUser holds the value of the ScriptToUser edge.
+	ScriptToUser []*User `json:"ScriptToUser,omitempty" hcl:"maintainer,block"`
+	// ScriptToFinding holds the value of the ScriptToFinding edge.
+	ScriptToFinding []*Finding `json:"ScriptToFinding,omitempty" hcl:"finding,block"`
+	// ScriptToEnvironment holds the value of the ScriptToEnvironment edge.
+	ScriptToEnvironment *Environment `json:"ScriptToEnvironment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// ScriptToUserOrErr returns the ScriptToUser value or an error if the edge
 // was not loaded in eager-loading.
-func (e ScriptEdges) TagOrErr() ([]*Tag, error) {
+func (e ScriptEdges) ScriptToUserOrErr() ([]*User, error) {
 	if e.loadedTypes[0] {
-		return e.Tag, nil
+		return e.ScriptToUser, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "ScriptToUser"}
 }
 
-// MaintainerOrErr returns the Maintainer value or an error if the edge
+// ScriptToFindingOrErr returns the ScriptToFinding value or an error if the edge
 // was not loaded in eager-loading.
-func (e ScriptEdges) MaintainerOrErr() ([]*User, error) {
+func (e ScriptEdges) ScriptToFindingOrErr() ([]*Finding, error) {
 	if e.loadedTypes[1] {
-		return e.Maintainer, nil
+		return e.ScriptToFinding, nil
 	}
-	return nil, &NotLoadedError{edge: "maintainer"}
+	return nil, &NotLoadedError{edge: "ScriptToFinding"}
 }
 
-// FindingOrErr returns the Finding value or an error if the edge
-// was not loaded in eager-loading.
-func (e ScriptEdges) FindingOrErr() ([]*Finding, error) {
+// ScriptToEnvironmentOrErr returns the ScriptToEnvironment value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ScriptEdges) ScriptToEnvironmentOrErr() (*Environment, error) {
 	if e.loadedTypes[2] {
-		return e.Finding, nil
+		if e.ScriptToEnvironment == nil {
+			// The edge ScriptToEnvironment was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: environment.Label}
+		}
+		return e.ScriptToEnvironment, nil
 	}
-	return nil, &NotLoadedError{edge: "finding"}
+	return nil, &NotLoadedError{edge: "ScriptToEnvironment"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Script) scanValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{},  // id
-		&sql.NullString{}, // name
-		&sql.NullString{}, // language
-		&sql.NullString{}, // description
-		&sql.NullString{}, // source
-		&sql.NullString{}, // source_type
-		&sql.NullInt64{},  // cooldown
-		&sql.NullInt64{},  // timeout
-		&sql.NullBool{},   // ignore_errors
-		&[]byte{},         // args
-		&sql.NullBool{},   // disabled
-		&[]byte{},         // vars
-		&sql.NullString{}, // abs_path
+func (*Script) scanValues(columns []string) ([]interface{}, error) {
+	values := make([]interface{}, len(columns))
+	for i := range columns {
+		switch columns[i] {
+		case script.FieldArgs, script.FieldVars, script.FieldTags:
+			values[i] = new([]byte)
+		case script.FieldIgnoreErrors, script.FieldDisabled:
+			values[i] = new(sql.NullBool)
+		case script.FieldCooldown, script.FieldTimeout:
+			values[i] = new(sql.NullInt64)
+		case script.FieldHclID, script.FieldName, script.FieldLanguage, script.FieldDescription, script.FieldSource, script.FieldSourceType, script.FieldAbsPath:
+			values[i] = new(sql.NullString)
+		case script.FieldID:
+			values[i] = new(uuid.UUID)
+		case script.ForeignKeys[0]: // environment_environment_to_script
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		default:
+			return nil, fmt.Errorf("unexpected column %q for type Script", columns[i])
+		}
 	}
-}
-
-// fkValues returns the types for scanning foreign-keys values from sql.Rows.
-func (*Script) fkValues() []interface{} {
-	return []interface{}{
-		&sql.NullInt64{}, // provisioning_step_script
-	}
+	return values, nil
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Script fields.
-func (s *Script) assignValues(values ...interface{}) error {
-	if m, n := len(values), len(script.Columns); m < n {
+func (s *Script) assignValues(columns []string, values []interface{}) error {
+	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	value, ok := values[0].(*sql.NullInt64)
-	if !ok {
-		return fmt.Errorf("unexpected type %T for field id", value)
-	}
-	s.ID = int(value.Int64)
-	values = values[1:]
-	if value, ok := values[0].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field name", values[0])
-	} else if value.Valid {
-		s.Name = value.String
-	}
-	if value, ok := values[1].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field language", values[1])
-	} else if value.Valid {
-		s.Language = value.String
-	}
-	if value, ok := values[2].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field description", values[2])
-	} else if value.Valid {
-		s.Description = value.String
-	}
-	if value, ok := values[3].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field source", values[3])
-	} else if value.Valid {
-		s.Source = value.String
-	}
-	if value, ok := values[4].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field source_type", values[4])
-	} else if value.Valid {
-		s.SourceType = value.String
-	}
-	if value, ok := values[5].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field cooldown", values[5])
-	} else if value.Valid {
-		s.Cooldown = int(value.Int64)
-	}
-	if value, ok := values[6].(*sql.NullInt64); !ok {
-		return fmt.Errorf("unexpected type %T for field timeout", values[6])
-	} else if value.Valid {
-		s.Timeout = int(value.Int64)
-	}
-	if value, ok := values[7].(*sql.NullBool); !ok {
-		return fmt.Errorf("unexpected type %T for field ignore_errors", values[7])
-	} else if value.Valid {
-		s.IgnoreErrors = value.Bool
-	}
-
-	if value, ok := values[8].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field args", values[8])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &s.Args); err != nil {
-			return fmt.Errorf("unmarshal field args: %v", err)
-		}
-	}
-	if value, ok := values[9].(*sql.NullBool); !ok {
-		return fmt.Errorf("unexpected type %T for field disabled", values[9])
-	} else if value.Valid {
-		s.Disabled = value.Bool
-	}
-
-	if value, ok := values[10].(*[]byte); !ok {
-		return fmt.Errorf("unexpected type %T for field vars", values[10])
-	} else if value != nil && len(*value) > 0 {
-		if err := json.Unmarshal(*value, &s.Vars); err != nil {
-			return fmt.Errorf("unmarshal field vars: %v", err)
-		}
-	}
-	if value, ok := values[11].(*sql.NullString); !ok {
-		return fmt.Errorf("unexpected type %T for field abs_path", values[11])
-	} else if value.Valid {
-		s.AbsPath = value.String
-	}
-	values = values[12:]
-	if len(values) == len(script.ForeignKeys) {
-		if value, ok := values[0].(*sql.NullInt64); !ok {
-			return fmt.Errorf("unexpected type %T for edge-field provisioning_step_script", value)
-		} else if value.Valid {
-			s.provisioning_step_script = new(int)
-			*s.provisioning_step_script = int(value.Int64)
+	for i := range columns {
+		switch columns[i] {
+		case script.FieldID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				s.ID = *value
+			}
+		case script.FieldHclID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hcl_id", values[i])
+			} else if value.Valid {
+				s.HclID = value.String
+			}
+		case script.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				s.Name = value.String
+			}
+		case script.FieldLanguage:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field language", values[i])
+			} else if value.Valid {
+				s.Language = value.String
+			}
+		case script.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				s.Description = value.String
+			}
+		case script.FieldSource:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field source", values[i])
+			} else if value.Valid {
+				s.Source = value.String
+			}
+		case script.FieldSourceType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field source_type", values[i])
+			} else if value.Valid {
+				s.SourceType = value.String
+			}
+		case script.FieldCooldown:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field cooldown", values[i])
+			} else if value.Valid {
+				s.Cooldown = int(value.Int64)
+			}
+		case script.FieldTimeout:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field timeout", values[i])
+			} else if value.Valid {
+				s.Timeout = int(value.Int64)
+			}
+		case script.FieldIgnoreErrors:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field ignore_errors", values[i])
+			} else if value.Valid {
+				s.IgnoreErrors = value.Bool
+			}
+		case script.FieldArgs:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field args", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &s.Args); err != nil {
+					return fmt.Errorf("unmarshal field args: %w", err)
+				}
+			}
+		case script.FieldDisabled:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field disabled", values[i])
+			} else if value.Valid {
+				s.Disabled = value.Bool
+			}
+		case script.FieldVars:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field vars", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &s.Vars); err != nil {
+					return fmt.Errorf("unmarshal field vars: %w", err)
+				}
+			}
+		case script.FieldAbsPath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field abs_path", values[i])
+			} else if value.Valid {
+				s.AbsPath = value.String
+			}
+		case script.FieldTags:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field tags", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &s.Tags); err != nil {
+					return fmt.Errorf("unmarshal field tags: %w", err)
+				}
+			}
+		case script.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field environment_environment_to_script", values[i])
+			} else if value.Valid {
+				s.environment_environment_to_script = new(uuid.UUID)
+				*s.environment_environment_to_script = *value.S.(*uuid.UUID)
+			}
 		}
 	}
 	return nil
 }
 
-// QueryTag queries the tag edge of the Script.
-func (s *Script) QueryTag() *TagQuery {
-	return (&ScriptClient{config: s.config}).QueryTag(s)
+// QueryScriptToUser queries the "ScriptToUser" edge of the Script entity.
+func (s *Script) QueryScriptToUser() *UserQuery {
+	return (&ScriptClient{config: s.config}).QueryScriptToUser(s)
 }
 
-// QueryMaintainer queries the maintainer edge of the Script.
-func (s *Script) QueryMaintainer() *UserQuery {
-	return (&ScriptClient{config: s.config}).QueryMaintainer(s)
+// QueryScriptToFinding queries the "ScriptToFinding" edge of the Script entity.
+func (s *Script) QueryScriptToFinding() *FindingQuery {
+	return (&ScriptClient{config: s.config}).QueryScriptToFinding(s)
 }
 
-// QueryFinding queries the finding edge of the Script.
-func (s *Script) QueryFinding() *FindingQuery {
-	return (&ScriptClient{config: s.config}).QueryFinding(s)
+// QueryScriptToEnvironment queries the "ScriptToEnvironment" edge of the Script entity.
+func (s *Script) QueryScriptToEnvironment() *EnvironmentQuery {
+	return (&ScriptClient{config: s.config}).QueryScriptToEnvironment(s)
 }
 
 // Update returns a builder for updating this Script.
-// Note that, you need to call Script.Unwrap() before calling this method, if this Script
+// Note that you need to call Script.Unwrap() before calling this method if this Script
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (s *Script) Update() *ScriptUpdateOne {
 	return (&ScriptClient{config: s.config}).UpdateOne(s)
 }
 
-// Unwrap unwraps the entity that was returned from a transaction after it was closed,
-// so that all next queries will be executed through the driver which created the transaction.
+// Unwrap unwraps the Script entity that was returned from a transaction after it was closed,
+// so that all future queries will be executed through the driver which created the transaction.
 func (s *Script) Unwrap() *Script {
 	tx, ok := s.config.driver.(*txDriver)
 	if !ok {
@@ -240,6 +284,8 @@ func (s *Script) String() string {
 	var builder strings.Builder
 	builder.WriteString("Script(")
 	builder.WriteString(fmt.Sprintf("id=%v", s.ID))
+	builder.WriteString(", hcl_id=")
+	builder.WriteString(s.HclID)
 	builder.WriteString(", name=")
 	builder.WriteString(s.Name)
 	builder.WriteString(", language=")
@@ -264,6 +310,8 @@ func (s *Script) String() string {
 	builder.WriteString(fmt.Sprintf("%v", s.Vars))
 	builder.WriteString(", abs_path=")
 	builder.WriteString(s.AbsPath)
+	builder.WriteString(", tags=")
+	builder.WriteString(fmt.Sprintf("%v", s.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

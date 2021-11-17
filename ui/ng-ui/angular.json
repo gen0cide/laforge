@@ -23,7 +23,11 @@
               "object-path",
               "apexcharts",
               "clipboard.js",
-              "highlight.js"
+              "highlight.js",
+              "lodash",
+              "subscriptions-transport-ws",
+              "graphql-tag",
+              "zen-observable"
             ],
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -110,14 +114,16 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "laforge:build"
+            "browserTarget": "laforge:build",
+            "publicHost": "0.0.0.0:4200"
           },
           "configurations": {
             "production": {
               "browserTarget": "laforge:build:production"
             },
             "dev": {
-              "browserTarget": "laforge:build:dev"
+              "browserTarget": "laforge:build:dev",
+              "disableHostCheck": true
             }
           }
         },
